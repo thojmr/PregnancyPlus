@@ -85,7 +85,7 @@ namespace KK_PregnancyPlus
 
         internal void OnCoordinateLoaded()  
         {  
-            //When clothing changes, reload inflation
+            //When clothing changes, reload inflation state
             // PregnancyPlusPlugin.Logger.LogInfo($" OnCoordinateLoaded > ");  
             MeshInflate(true);
         } 
@@ -158,7 +158,7 @@ namespace KK_PregnancyPlus
                 // PregnancyPlusPlugin.Logger.LogInfo($"   > {skinnedMeshRenderer.name}");         
                 var _foundBellyVerts = GetInflatedVerticies(skinnedMeshRenderer, sphereRadius, waistWidth, true);
                 if (!_foundBellyVerts) continue;
-                var appliedClothMeshChanges = ApplyInflation(skinnedMeshRenderer.sharedMesh, skinnedMeshRenderer.name);
+                var appliedClothMeshChanges = ApplyInflation(skinnedMeshRenderer.sharedMesh, GetMeshKey(skinnedMeshRenderer));
 
                 if (appliedClothMeshChanges) appliedAnyMeshChanges = true;
             }             
@@ -169,7 +169,7 @@ namespace KK_PregnancyPlus
             {
                 var foundBellyVerts = GetInflatedVerticies(skinnedMeshRenderer, sphereRadius, waistWidth);  
                 if (!foundBellyVerts) continue;
-                var appliedBodyMeshChanges = ApplyInflation(skinnedMeshRenderer.sharedMesh, skinnedMeshRenderer.name);
+                var appliedBodyMeshChanges = ApplyInflation(skinnedMeshRenderer.sharedMesh, GetMeshKey(skinnedMeshRenderer));
                 if (appliedBodyMeshChanges) appliedAnyMeshChanges = true;                      
             }
 
@@ -238,7 +238,7 @@ namespace KK_PregnancyPlus
             Vector3 centerVectorRoot = rootPosition - centerVector;  
             
             var mesh = skinnedMeshRenderer.sharedMesh;
-            var rendererName = skinnedMeshRenderer.name;         
+            var rendererName = GetMeshKey(skinnedMeshRenderer);         
 
             //The list of bones to get verticies for
             var boneFilters = new string[] { "cf_s_spine02", "cf_s_waist01" };//"cs_s_spine01" "cf_s_waist02" optionally for wider affected area
@@ -264,12 +264,11 @@ namespace KK_PregnancyPlus
             {
                 var origVert = origVerts[i];
 
-                //Only care about belly verticies and
-                //Only morph verticies in the front of the character (backside stays as is)
+                //Only care about inflating belly verticies
                 if (bellyVertIndex[i]) 
                 {
                     Vector3 verticieToSphere;                         
-                    //Clothing needs to have slightly different to-sphere logic because Uncensor mod alters the vectors root positions for some reason
+                    //Clothing needs to have slightly different to-sphere logic because Uncensor mod alters the vertex mesh root positions for some reason
                     if (!isClothingMesh) 
                     {                        
                         verticieToSphere = (centerVectorRoot + origVert).normalized * sphereRadius - centerVectorRoot + userShiftTransforms;
@@ -328,6 +327,7 @@ namespace KK_PregnancyPlus
             //Allow user adjustment of the height of the belly
             if (infConfig["inflationStretchY"] != 0) {    
                 float yPos;
+                //local Distance up or down from sphere center
                 var distFromYCenter = smoothedVector.y - sphereCenterPos.y;
                 
                 //have to change growth direction above and below center line
@@ -372,7 +372,7 @@ namespace KK_PregnancyPlus
         internal bool GetFilteredVerticieIndexes(SkinnedMeshRenderer skinnedMeshRenderer, string[] boneFilters) 
         {
             var sharedMesh = skinnedMeshRenderer.sharedMesh;
-            var renderName = skinnedMeshRenderer.name;
+            var renderKey = GetMeshKey(skinnedMeshRenderer);
             var bones = skinnedMeshRenderer.bones;
             var bellyBoneIndexes = new List<int>();
             var hasBellyVerticies = false;
@@ -380,7 +380,7 @@ namespace KK_PregnancyPlus
 
             //Do a quick check to see if we need to fetch the bone indexes again.  ex: on second call we should allready have them
             //This saves a lot on compute apparently!            
-            var isInitialized = bellyVerticieIndexes.TryGetValue(renderName, out bool[] existingValues);
+            var isInitialized = bellyVerticieIndexes.TryGetValue(renderKey, out bool[] existingValues);
             if (isInitialized)
             {
                 //If the vertex count has not changed then we can skip this
@@ -411,8 +411,8 @@ namespace KK_PregnancyPlus
             if (sharedMesh.boneWeights.Length == 0) return false;              
 
             //Create new mesh dictionary key for bone indexes
-            bellyVerticieIndexes[renderName] = new bool[sharedMesh.vertexCount];
-            var bellyVertIndex = bellyVerticieIndexes[renderName];
+            bellyVerticieIndexes[renderKey] = new bool[sharedMesh.vertexCount];
+            var bellyVertIndex = bellyVerticieIndexes[renderKey];
 
             var boneWeightsLength = sharedMesh.boneWeights.Length;
             var bbIndexCount = bellyBoneIndexes.Count;
@@ -446,8 +446,8 @@ namespace KK_PregnancyPlus
 
             //Dont need to remember this mesh if there are no belly verts in it
             if (!hasBellyVerticies) {
-                // PregnancyPlusPlugin.Logger.LogInfo($"bellyVerticieIndexes >  removing {renderName}"); 
-                bellyVerticieIndexes.Remove(renderName);
+                // PregnancyPlusPlugin.Logger.LogInfo($"bellyVerticieIndexes >  removing {renderKey}"); 
+                RemoveRenderKey(renderKey);
             }
 
             return hasBellyVerticies;
@@ -521,23 +521,44 @@ namespace KK_PregnancyPlus
             return hasChanges;
         }
         
+        internal void RemoveRenderKeys(List<string> keysToRemove) 
+        {
+            foreach(var key in keysToRemove) 
+            {
+                RemoveRenderKey(key);
+            }
+        }
+
+        internal void RemoveRenderKey(string keyToRemove) 
+        {
+            if (originalVertices.ContainsKey(keyToRemove)) originalVertices.Remove(keyToRemove);
+            if (inflatedVertices.ContainsKey(keyToRemove)) inflatedVertices.Remove(keyToRemove);
+            if (currentVertices.ContainsKey(keyToRemove)) currentVertices.Remove(keyToRemove);
+            if (bellyVerticieIndexes.ContainsKey(keyToRemove)) bellyVerticieIndexes.Remove(keyToRemove);        
+        }
+
+        //Tries to uniquly identify a mesh by its name and number of verticies
+        internal string GetMeshKey(SkinnedMeshRenderer smr) {
+            return smr.name + smr.sharedMesh.vertexCount.ToString();
+        }
+
         /// <summary>
         /// This will update all verticies with a lerp from originalVertices to inflatedVertices depending on the inflationSize config
         /// Only modifies belly verticies, and if none are found, no action taken.
         /// </summary>
         /// <param name="mesh">Target mesh to update</param>
-        /// <param name="renderName">The Shared Mesh render name, used in dictionary keys to get the current verticie values</param>
+        /// <param name="renderKey">The Shared Mesh render name, used in dictionary keys to get the current verticie values</param>
         /// <returns>Will return True if any verticies are changed</returns>
-        internal bool ApplyInflation(Mesh mesh, string renderName) 
+        internal bool ApplyInflation(Mesh mesh, string renderKey) 
         {
             var infSize = infConfig["inflationSize"];
             //Only inflate if the value changed        
             if (infSize.Equals(null) || infSize == 0) return false;            
 
             // StartInflate(balloon);
-            var origVert = originalVertices[renderName];
-            var currentVert = currentVertices[renderName];
-            var bellyVertIndex = bellyVerticieIndexes[renderName];
+            var origVert = originalVertices[renderKey];
+            var currentVert = currentVertices[renderKey];
+            var bellyVertIndex = bellyVerticieIndexes[renderKey];
 
             if (bellyVertIndex.Length == 0) return false;
             infConfigHistory["inflationSize"] = infSize;
@@ -547,13 +568,13 @@ namespace KK_PregnancyPlus
                 //If not a belly index verticie then skip the morph
                 if (bellyVertIndex[i] != true) continue;
 
-                currentVert[i] = Vector3.Lerp(origVert[i], inflatedVertices[renderName][i], (infSize/40));
+                currentVert[i] = Vector3.Lerp(origVert[i], inflatedVertices[renderKey][i], (infSize/40));
             }
 
             if (currentVert.Length != mesh.vertexCount) 
             {
                 PregnancyPlusPlugin.Logger.LogInfo(
-                            $"ApplyInflation > smr '{renderName}' has incorrect vert count {currentVert.Length}|{mesh.vertexCount}");
+                            $"ApplyInflation > smr '{renderKey}' has incorrect vert count {currentVert.Length}|{mesh.vertexCount}");
             }
 
             mesh.vertices = currentVert;
@@ -570,19 +591,14 @@ namespace KK_PregnancyPlus
             var keyList = new List<string>(originalVertices.Keys);
 
             //For every active meshRenderer.name
-            foreach(var renderName in keyList) 
+            foreach(var renderKey in keyList) 
             {
-                var renderer = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderName);
+                var renderer = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderKey);
                 //Normally triggered when user changes clothes, the old clothes render wont be found
-                if (renderer == null) 
-                {
-                    // PregnancyPlusPlugin.Logger.LogInfo(
-                    //     $"ResetInflation > smr '{renderName}' can't be found");
-                    continue;
-                }
+                if (renderer == null) continue;                
 
                 var sharedMesh = renderer.sharedMesh;
-                var success = originalVertices.TryGetValue(renderName, out Vector3[] origVerts); 
+                var success = originalVertices.TryGetValue(renderKey, out Vector3[] origVerts); 
 
                 //On change clothes original verts become useless, so skip this
                 if (!success) return;           
@@ -591,7 +607,7 @@ namespace KK_PregnancyPlus
                 if (origVerts.Length != sharedMesh.vertexCount) 
                 {
                     PregnancyPlusPlugin.Logger.LogInfo(
-                        $"ResetInflation > smr '{renderName}' has incorrect vert count {origVerts.Length}|{sharedMesh.vertexCount}");
+                        $"ResetInflation > smr '{renderKey}' has incorrect vert count {origVerts.Length}|{sharedMesh.vertexCount}");
                     continue;
                 }
 

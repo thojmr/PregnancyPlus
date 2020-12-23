@@ -24,10 +24,10 @@ namespace KK_PregnancyPlus
             return Mathf.Sqrt(distanceSquared);
         }
 
-        internal static SkinnedMeshRenderer GetMeshRenderer(ChaControl chaControl, string renderName) 
+        internal static SkinnedMeshRenderer GetMeshRenderer(ChaControl chaControl, string renderKey) 
         {
             var renderers = chaControl.GetComponentsInChildren<SkinnedMeshRenderer>(true);
-            var renderer = renderers.FirstOrDefault(x => x.name == renderName);
+            var renderer = renderers.FirstOrDefault(x => (x.name + x.sharedMesh.vertexCount.ToString()) == renderKey);
             return renderer;
         }
 
@@ -65,10 +65,10 @@ namespace KK_PregnancyPlus
             return renderers;
         }
 
-        internal static Renderer GetRenderer(ChaControl chaControl, string renderName) 
+        internal static Renderer GetRenderer(ChaControl chaControl, string renderKey) 
         {
             var renderers = chaControl.GetComponentsInChildren<Renderer>(true);
-            var renderer = renderers.FirstOrDefault(x => x.name == renderName);
+            var renderer = renderers.FirstOrDefault(x => x.name == renderKey);
             return renderer;
         }
 
