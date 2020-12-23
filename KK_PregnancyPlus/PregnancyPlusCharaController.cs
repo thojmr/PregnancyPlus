@@ -4,6 +4,7 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UniRx;
 
 namespace KK_PregnancyPlus
 {
@@ -11,8 +12,7 @@ namespace KK_PregnancyPlus
     {
         // public PregnancyData Data { get; private set; }
         internal bool debug = false;//In debug mode, all verticies are affected, and no slerps or lerps applied.  Makes it easier to see what is actually happening in studio mode.  Also creates nightmares
-        public  bool storyMode = false;
-        public  bool allowMorphClothing = true;
+        public  bool storyMode = false;//Some bugs to work out here
 
 
 
@@ -47,7 +47,7 @@ namespace KK_PregnancyPlus
 
         public PregnancyPlusCharaController()
         {
-            // Data = new PregnancyData();   
+            // Data = new PregnancyData();               
         }
 
         protected override void OnCardBeingSaved(GameMode currentGameMode)
@@ -55,11 +55,19 @@ namespace KK_PregnancyPlus
 
         }
 
-        protected override void Awake() {          
+        protected override void Awake() 
+        {          
             InitInflationConfig();            
-            if (storyMode) CharacterApi.CharacterReloaded += OnCharacterReloaded;
+            if (storyMode) CharacterApi.CharacterReloaded += OnCharacterReloaded;            
 
             base.Awake();
+        }
+
+        protected override void Start() 
+        {
+            CurrentCoordinate.Subscribe(value => { OnCoordinateLoaded(); });
+
+            base.Start();
         }
 
         protected override void OnReload(GameMode currentGameMode)
@@ -73,6 +81,13 @@ namespace KK_PregnancyPlus
             if (ChaControl == null || e.ReloadedCharacter == null || e.ReloadedCharacter.name != ChaControl.name) return;
 
             GetWeeksAndSetInflation();
+        } 
+
+        internal void OnCoordinateLoaded()  
+        {  
+            //When clothing changes, reload inflation
+            // PregnancyPlusPlugin.Logger.LogInfo($" OnCoordinateLoaded > ");  
+            MeshInflate(true);
         } 
 
         internal void GetWeeksAndSetInflation() {
@@ -104,13 +119,14 @@ namespace KK_PregnancyPlus
         /// If size 0 is used it will clear all active mesh inflations
         /// This will not run twice for the same parameters, a change of config value is required
         /// </summary>
+        /// <param name="reRunWithCurrentParams">Lets you force bypass the check for values changed</param>
         /// <returns>Will return True if the mesh was altered and False if not</returns>
-        public bool MeshInflate()
+        public bool MeshInflate(bool reRunWithCurrentParams = false)
         {
             if (ChaControl.objBodyBone == null) return false;//Make sure chatacter objs exists first   
 
             //Only continue if one of the config values changed
-            if (!NeedsMeshUpdate()) {                
+            if (!NeedsMeshUpdate() && !reRunWithCurrentParams) {                
                 return false;            
             }
             ResetInflation();
@@ -135,22 +151,20 @@ namespace KK_PregnancyPlus
             
             var appliedAnyMeshChanges = false;
 
-            if (allowMorphClothing) {
-                //Get and apply all clothes render mesh changes
-                var clothRenderers = GetMeshRenderers(ChaControl.objClothes);
-                foreach(var skinnedMeshRenderer in clothRenderers) 
-                {
-                    // PregnancyPlusPlugin.Logger.LogInfo($"   > {skinnedMeshRenderer.name}");         
-                    var _foundBellyVerts = GetInflatedVerticies(skinnedMeshRenderer, sphereRadius, waistWidth, true);
-                    if (!_foundBellyVerts) continue;
-                    var appliedClothMeshChanges = ApplyInflation(skinnedMeshRenderer.sharedMesh, skinnedMeshRenderer.name);
+            //Get and apply all clothes render mesh changes
+            var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);
+            foreach(var skinnedMeshRenderer in clothRenderers) 
+            {
+                // PregnancyPlusPlugin.Logger.LogInfo($"   > {skinnedMeshRenderer.name}");         
+                var _foundBellyVerts = GetInflatedVerticies(skinnedMeshRenderer, sphereRadius, waistWidth, true);
+                if (!_foundBellyVerts) continue;
+                var appliedClothMeshChanges = ApplyInflation(skinnedMeshRenderer.sharedMesh, skinnedMeshRenderer.name);
 
-                    if (appliedClothMeshChanges) appliedAnyMeshChanges = true;
-                } 
-            }
+                if (appliedClothMeshChanges) appliedAnyMeshChanges = true;
+            }             
 
             //do the same for body meshs
-            var bodyRenderers = GetMeshRenderers(ChaControl.objBody);
+            var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody);
             foreach(var skinnedMeshRenderer in bodyRenderers) 
             {
                 var foundBellyVerts = GetInflatedVerticies(skinnedMeshRenderer, sphereRadius, waistWidth);  
@@ -373,9 +387,6 @@ namespace KK_PregnancyPlus
                 if (existingValues.Length == skinnedMeshRenderer.sharedMesh.vertexCount) return true;
             }
 
-            bellyVerticieIndexes[renderName] = new bool[sharedMesh.vertexCount];
-            var bellyVertIndex = bellyVerticieIndexes[renderName];
-
             //For each bone, see if it matches a belly boneFilter
             for (int i = 0; i < bones.Length; i++)
             {   
@@ -396,13 +407,12 @@ namespace KK_PregnancyPlus
                 }
             }
 
-            //return early if none
-            if (sharedMesh.boneWeights.Length == 0) 
-            {
-                // PregnancyPlusPlugin.Logger.LogInfo($"bellyVerticieIndexes >  removing {renderName}");  
-                bellyVerticieIndexes.Remove(renderName);
-                return false;  
-            }
+            //return early if no filtered weights found
+            if (sharedMesh.boneWeights.Length == 0) return false;              
+
+            //Create new mesh dictionary key for bone indexes
+            bellyVerticieIndexes[renderName] = new bool[sharedMesh.vertexCount];
+            var bellyVertIndex = bellyVerticieIndexes[renderName];
 
             var boneWeightsLength = sharedMesh.boneWeights.Length;
             var bbIndexCount = bellyBoneIndexes.Count;
@@ -510,48 +520,7 @@ namespace KK_PregnancyPlus
 
             return hasChanges;
         }
-
-        internal SkinnedMeshRenderer GetMeshRenderer(string renderName) 
-        {
-            var renderers = ChaControl.GetComponentsInChildren<SkinnedMeshRenderer>(true);
-            var renderer = renderers.FirstOrDefault(x => x.name == renderName);
-            return renderer;
-        }
-
-        /// <summary>
-        /// Will get any Mesh Renderers for the given ChaControl.objxxx passed in
-        /// </summary>
-        /// <param name="chaControlObjs">The ChaControl.objxxx to fetch mesh renderers from  Might work for other GameObjects as well</param>
-        internal List<SkinnedMeshRenderer> GetMeshRenderers(GameObject[] chaControlObjs) {            
-            var renderers = new List<SkinnedMeshRenderer>();
-            if (chaControlObjs == null) return renderers;
-
-            foreach(var chaControlObj in chaControlObjs) 
-            {
-                if (chaControlObj == null) continue;
-
-                var skinnedItems = GetMeshRenderers(chaControlObj);
-                if (skinnedItems != null && skinnedItems.Count > 0) {
-                    renderers.AddRange(skinnedItems);
-                }
-            }
-
-            // PregnancyPlusPlugin.Logger.LogInfo($"GetMeshRenderers > {renderers.Count}");
-            return renderers;
-        }
         
-        internal List<SkinnedMeshRenderer> GetMeshRenderers(GameObject characterObj) {            
-            var renderers = new List<SkinnedMeshRenderer>();
-            if (characterObj == null) return renderers;
-
-            var skinnedItem = characterObj.GetComponentsInChildren<SkinnedMeshRenderer>(true);            
-            if (skinnedItem.Length > 0) {
-                renderers.AddRange(skinnedItem);
-            }
-
-            return renderers;
-        }
-    
         /// <summary>
         /// This will update all verticies with a lerp from originalVertices to inflatedVertices depending on the inflationSize config
         /// Only modifies belly verticies, and if none are found, no action taken.
@@ -603,26 +572,30 @@ namespace KK_PregnancyPlus
             //For every active meshRenderer.name
             foreach(var renderName in keyList) 
             {
-                var renderer = GetMeshRenderer(renderName);
-                if (renderer.Equals(null)) 
+                var renderer = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderName);
+                //Normally triggered when user changes clothes, the old clothes render wont be found
+                if (renderer == null) 
                 {
-                    PregnancyPlusPlugin.Logger.LogInfo(
-                        $"ResetInflation > smr '{renderName}' can't be found");
+                    // PregnancyPlusPlugin.Logger.LogInfo(
+                    //     $"ResetInflation > smr '{renderName}' can't be found");
                     continue;
                 }
 
                 var sharedMesh = renderer.sharedMesh;
-                var origVert = originalVertices[renderName];            
+                var success = originalVertices.TryGetValue(renderName, out Vector3[] origVerts); 
 
-                if (!sharedMesh || origVert.Equals(null) || origVert.Length == 0) continue;
-                if (origVert.Length != sharedMesh.vertexCount) 
+                //On change clothes original verts become useless, so skip this
+                if (!success) return;           
+
+                if (!sharedMesh || origVerts.Equals(null) || origVerts.Length == 0) continue;
+                if (origVerts.Length != sharedMesh.vertexCount) 
                 {
                     PregnancyPlusPlugin.Logger.LogInfo(
-                        $"ResetInflation > smr '{renderName}' has incorrect vert count {origVert.Length}|{sharedMesh.vertexCount}");
+                        $"ResetInflation > smr '{renderName}' has incorrect vert count {origVerts.Length}|{sharedMesh.vertexCount}");
                     continue;
                 }
 
-                sharedMesh.vertices = origVert;
+                sharedMesh.vertices = origVerts;
                 sharedMesh.RecalculateBounds();
                 sharedMesh.RecalculateNormals();
                 sharedMesh.RecalculateTangents();

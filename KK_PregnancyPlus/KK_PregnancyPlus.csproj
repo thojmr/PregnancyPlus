@@ -83,6 +83,7 @@
     <Compile Include="GUI\PregnancyPlusGui.cs" />
     <Compile Include="PregnancyPlusPlugin.cs" />
     <Compile Include="PregnancyPlusPlugin.Hooks.cs" />
+    <Compile Include="PregnancyPlusHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

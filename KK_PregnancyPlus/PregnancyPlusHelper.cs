@@ -7,10 +7,10 @@ using System.Linq;
 
 namespace KK_PregnancyPlus
 {
-    internal class PregnancyPlusHelper
+    internal static class PregnancyPlusHelper
     {
 
-        internal float FastDistance(Vector3 firstPosition, Vector3 secondPosition) 
+        internal static float FastDistance(Vector3 firstPosition, Vector3 secondPosition) 
         {
             //Calculates distance faster than vector3.distance.
             Vector3 heading;
@@ -24,7 +24,7 @@ namespace KK_PregnancyPlus
             return Mathf.Sqrt(distanceSquared);
         }
 
-        internal SkinnedMeshRenderer GetMeshRenderer(ChaControl chaControl, string renderName) 
+        internal static SkinnedMeshRenderer GetMeshRenderer(ChaControl chaControl, string renderName) 
         {
             var renderers = chaControl.GetComponentsInChildren<SkinnedMeshRenderer>(true);
             var renderer = renderers.FirstOrDefault(x => x.name == renderName);
@@ -35,7 +35,7 @@ namespace KK_PregnancyPlus
         /// Will get any Mesh Renderers for the given ChaControl.objxxx passed in
         /// </summary>
         /// <param name="chaControlObjs">The ChaControl.objxxx to fetch mesh renderers from  Might work for other GameObjects as well</param>
-        internal List<SkinnedMeshRenderer> GetMeshRenderers(GameObject[] chaControlObjs) {            
+        internal static List<SkinnedMeshRenderer> GetMeshRenderers(GameObject[] chaControlObjs) {            
             var renderers = new List<SkinnedMeshRenderer>();
             if (chaControlObjs == null) return renderers;
 
@@ -53,11 +53,48 @@ namespace KK_PregnancyPlus
             return renderers;
         }
         
-        internal List<SkinnedMeshRenderer> GetMeshRenderers(GameObject characterObj) {            
+        internal static List<SkinnedMeshRenderer> GetMeshRenderers(GameObject characterObj) {            
             var renderers = new List<SkinnedMeshRenderer>();
             if (characterObj == null) return renderers;
 
             var skinnedItem = characterObj.GetComponentsInChildren<SkinnedMeshRenderer>(true);            
+            if (skinnedItem.Length > 0) {
+                renderers.AddRange(skinnedItem);
+            }
+
+            return renderers;
+        }
+
+        internal static Renderer GetRenderer(ChaControl chaControl, string renderName) 
+        {
+            var renderers = chaControl.GetComponentsInChildren<Renderer>(true);
+            var renderer = renderers.FirstOrDefault(x => x.name == renderName);
+            return renderer;
+        }
+
+        internal static List<Renderer> GetRenderers(GameObject[] chaControlObjs) {            
+            var renderers = new List<Renderer>();
+            if (chaControlObjs == null) return renderers;
+
+            foreach(var chaControlObj in chaControlObjs) 
+            {
+                if (chaControlObj == null) continue;
+
+                var skinnedItems = GetRenderers(chaControlObj);
+                if (skinnedItems != null && skinnedItems.Count > 0) {
+                    renderers.AddRange(skinnedItems);
+                }
+            }
+
+            // PregnancyPlusPlugin.Logger.LogInfo($"GetMeshRenderers > {renderers.Count}");
+            return renderers;
+        }
+
+        internal static List<Renderer> GetRenderers(GameObject characterObj) {            
+            var renderers = new List<Renderer>();
+            if (characterObj == null) return renderers;
+
+            var skinnedItem = characterObj.GetComponentsInChildren<Renderer>(true);            
             if (skinnedItem.Length > 0) {
                 renderers.AddRange(skinnedItem);
             }
