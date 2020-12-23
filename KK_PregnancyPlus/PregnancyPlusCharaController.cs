@@ -2,6 +2,7 @@
 using KKAPI.Chara;
 using UnityEngine;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UniRx;
@@ -31,7 +32,8 @@ namespace KK_PregnancyPlus
 
 
         //Allows an easy way to create a default belly config dictionary, you can change the values from there
-        public static Dictionary<string, float> CreateConfig() {
+        public static Dictionary<string, float> CreateConfig() 
+        {
             //Default values
             return new Dictionary<string, float> {
                 ["inflationSize"] = 0, 
@@ -87,10 +89,18 @@ namespace KK_PregnancyPlus
         {  
             //When clothing changes, reload inflation state
             // PregnancyPlusPlugin.Logger.LogInfo($" OnCoordinateLoaded > ");  
-            MeshInflate(true);
+            StartCoroutine(WaitForMeshToSettle());
         } 
 
-        internal void GetWeeksAndSetInflation() {
+        //After clothes change you have to wait a second if you want shadows to calculate correctly
+        IEnumerator WaitForMeshToSettle()
+        {
+            yield return new WaitForSeconds(0.05f);
+            MeshInflate(true);
+        }
+
+        internal void GetWeeksAndSetInflation() 
+        {
             var data = GetExtendedData();
             if (data == null) return;
 
@@ -277,7 +287,7 @@ namespace KK_PregnancyPlus
                     else 
                     {
                         //Give clothes a tiny bit more separation from skin meshes by expanding the radius sligtly
-                        verticieToSphere = (-userMoveTransforms + origVert).normalized * (sphereRadius + 0.002f) + userMoveTransforms + userShiftTransforms;
+                        verticieToSphere = (-userMoveTransforms + origVert).normalized * (sphereRadius + 0.003f) + userMoveTransforms + userShiftTransforms;
                         inflatedVerts[i] = SculptInflatedVerticie(origVert, verticieToSphere, clothesCenterVector, waistWidth, isClothingMesh);                    
                     }                                             
                 }
@@ -472,7 +482,8 @@ namespace KK_PregnancyPlus
         /// It will set up the necessary dictionary config default values
         /// </summary>
         /// <returns>Will return True on the initial init, and false if the default values are already set</returns>
-        internal bool InitInflationConfig() {
+        internal bool InitInflationConfig() 
+        {
             var init = false;
             var configKeys = configDefaults.Keys;
 
@@ -495,7 +506,8 @@ namespace KK_PregnancyPlus
             return init;
         }
        
-        internal bool NeedsMeshUpdate() {
+        internal bool NeedsMeshUpdate() 
+        {
             var hasChanges = false;
             var configKeys = configDefaults.Keys;
 
@@ -538,7 +550,8 @@ namespace KK_PregnancyPlus
         }
 
         //Tries to uniquly identify a mesh by its name and number of verticies
-        internal string GetMeshKey(SkinnedMeshRenderer smr) {
+        internal string GetMeshKey(SkinnedMeshRenderer smr) 
+        {
             return smr.name + smr.sharedMesh.vertexCount.ToString();
         }
 
@@ -583,8 +596,7 @@ namespace KK_PregnancyPlus
             mesh.RecalculateTangents();
 
             return true;
-        }
-        
+        }    
         internal void ResetInflation() 
         {   
             //Resets all mesh inflations
