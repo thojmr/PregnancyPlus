@@ -23,14 +23,14 @@ Simply clone this repository to your drive and use the free version of Visual St
 - https://docs.microsoft.com/en-us/visualstudio/ide/troubleshooting-broken-references?view=vs-2019
 
 ## Compiling with Visual Studio Code (Not the suggested way, but my way)
-Simply clone this repository to your drive and use the free version of Visual Studio Code.  
+Simply clone this repository to your drive and use Visual Studio Code.  
 Install the C# extension for VSCode. 
-Make sure the following directory exists `C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/MSBuild/Current/Bin/msbuild.exe`.  If not you will need to isntall the VS2019 MS build tools (There may be other ways to build, but this is the one that eventually worked for me)
+Make sure the following directory exists `C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/MSBuild/Current/Bin/msbuild.exe`.  If not you will need to install the VS2019 MS build tools (There may be other ways to build, but this is the one that eventually worked for me)
 Install nuget.exe and set the environment path to it. 
 Then use `nuget install -OutputDirectory ../packages` to install the dependancies from the \KK_PregnancyPlus\ directory.  
 Finally create a build script with tasks.json in VSCode.
 Example build task:
-`
+```json
 {
     "label": "build-KK_PregnancyPlus",
     "command": "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/MSBuild/Current/Bin/msbuild.exe",
@@ -63,7 +63,7 @@ Example build task:
         "clear": false
     }
 }
-`
+```
 If sucessfull you should see a KK_PregnancyPlus.dll file in \bin\
 
 ### Some of the KK_PregnancyPlus features
