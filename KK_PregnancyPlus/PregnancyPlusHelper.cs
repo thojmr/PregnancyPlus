@@ -1,0 +1,69 @@
+﻿using KKAPI;
+using KKAPI.Chara;
+using UnityEngine;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace KK_PregnancyPlus
+{
+    internal class PregnancyPlusHelper
+    {
+
+        internal float FastDistance(Vector3 firstPosition, Vector3 secondPosition) 
+        {
+            //Calculates distance faster than vector3.distance.
+            Vector3 heading;
+            float distanceSquared;
+    
+            heading.x = firstPosition.x - secondPosition.x;
+            heading.y = firstPosition.y - secondPosition.y;
+            heading.z = firstPosition.z - secondPosition.z;
+    
+            distanceSquared = heading.x * heading.x + heading.y * heading.y + heading.z * heading.z;
+            return Mathf.Sqrt(distanceSquared);
+        }
+
+        internal SkinnedMeshRenderer GetMeshRenderer(ChaControl chaControl, string renderName) 
+        {
+            var renderers = chaControl.GetComponentsInChildren<SkinnedMeshRenderer>(true);
+            var renderer = renderers.FirstOrDefault(x => x.name == renderName);
+            return renderer;
+        }
+
+        /// <summary>
+        /// Will get any Mesh Renderers for the given ChaControl.objxxx passed in
+        /// </summary>
+        /// <param name="chaControlObjs">The ChaControl.objxxx to fetch mesh renderers from  Might work for other GameObjects as well</param>
+        internal List<SkinnedMeshRenderer> GetMeshRenderers(GameObject[] chaControlObjs) {            
+            var renderers = new List<SkinnedMeshRenderer>();
+            if (chaControlObjs == null) return renderers;
+
+            foreach(var chaControlObj in chaControlObjs) 
+            {
+                if (chaControlObj == null) continue;
+
+                var skinnedItems = GetMeshRenderers(chaControlObj);
+                if (skinnedItems != null && skinnedItems.Count > 0) {
+                    renderers.AddRange(skinnedItems);
+                }
+            }
+
+            // PregnancyPlusPlugin.Logger.LogInfo($"GetMeshRenderers > {renderers.Count}");
+            return renderers;
+        }
+        
+        internal List<SkinnedMeshRenderer> GetMeshRenderers(GameObject characterObj) {            
+            var renderers = new List<SkinnedMeshRenderer>();
+            if (characterObj == null) return renderers;
+
+            var skinnedItem = characterObj.GetComponentsInChildren<SkinnedMeshRenderer>(true);            
+            if (skinnedItem.Length > 0) {
+                renderers.AddRange(skinnedItem);
+            }
+
+            return renderers;
+        }
+    
+    }
+}
