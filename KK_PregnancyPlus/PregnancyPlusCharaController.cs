@@ -241,11 +241,17 @@ namespace KK_PregnancyPlus
             Vector3 userMoveTransforms = Vector3.down * 0.02f + Vector3.up * infConfig["inflationMoveY"] + Vector3.forward * infConfig["inflationMoveZ"];
             Vector3 userShiftTransforms = Vector3.down * infConfig["inflationShiftY"] + Vector3.forward * infConfig["inflationShiftZ"];
 
+            //Get normal mesh root attachment position
+            var meshRoot = GameObject.Find("cf_o_root");
+            //When clothing is improperly attached at chars feet (char local 0,0,0) we need to alter the verts to behave like they are properly attached to cf_o_root.position in chest
+            var needsPositionFix = skinnedMeshRenderer.transform.position != meshRoot.transform.position;
+
             //set sphere center  and allow for adjusting its position from the UI sliders     
             Vector3 centerVector = skinnedMeshRenderer.transform.position + userMoveTransforms;   
-            Vector3 clothesCenterVector = new Vector3(0,0,0) + userMoveTransforms;
+            Vector3 clothesCenterVector = (needsPositionFix ? meshRoot.transform.position : new Vector3(0,0,0)) + userMoveTransforms;
             Vector3 rootPosition = ChaControl.objRoot.transform.position;
-            Vector3 centerVectorRoot = rootPosition - centerVector;  
+            Vector3 centerVectorFix = rootPosition - centerVector;  
+            Vector3 clothesCenterVectorFix = -clothesCenterVector; 
             
             var mesh = skinnedMeshRenderer.sharedMesh;
             var rendererName = GetMeshKey(skinnedMeshRenderer);         
@@ -281,13 +287,13 @@ namespace KK_PregnancyPlus
                     //Clothing needs to have slightly different to-sphere logic because Uncensor mod alters the vertex mesh root positions for some reason
                     if (!isClothingMesh) 
                     {                        
-                        verticieToSphere = (centerVectorRoot + origVert).normalized * sphereRadius - centerVectorRoot + userShiftTransforms;
+                        verticieToSphere = (centerVectorFix + origVert).normalized * sphereRadius - centerVectorFix + userShiftTransforms;
                         inflatedVerts[i] = SculptInflatedVerticie(origVert, verticieToSphere, centerVector, waistWidth);                       
                     }
                     else 
                     {
                         //Give clothes a tiny bit more separation from skin meshes by expanding the radius sligtly
-                        verticieToSphere = (-userMoveTransforms + origVert).normalized * (sphereRadius + 0.003f) + userMoveTransforms + userShiftTransforms;
+                        verticieToSphere = (clothesCenterVectorFix + origVert).normalized * (sphereRadius + 0.003f) - clothesCenterVectorFix + userShiftTransforms;
                         inflatedVerts[i] = SculptInflatedVerticie(origVert, verticieToSphere, clothesCenterVector, waistWidth, isClothingMesh);                    
                     }                                             
                 }
