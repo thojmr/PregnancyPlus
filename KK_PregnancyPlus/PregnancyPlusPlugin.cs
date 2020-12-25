@@ -21,8 +21,9 @@ namespace KK_PregnancyPlus
         private void Start()
         {
             Logger = base.Logger;
-
-            CharacterApi.RegisterExtraBehaviour<PregnancyPlusCharaController>(GUID);
+            
+            var _GUID = "KK_Pregnancy";//Allows us to pull KK_pregnancy data values with GetExtendedData()
+            CharacterApi.RegisterExtraBehaviour<PregnancyPlusCharaController>(_GUID);
 
             var hi = new Harmony(GUID);
             Hooks.InitHooks(hi);

@@ -4,6 +4,7 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ExtensibleSaveFormat;
 
 namespace KK_PregnancyPlus
 {
@@ -100,6 +101,29 @@ namespace KK_PregnancyPlus
             }
 
             return renderers;
+        }
+
+        internal static int GetWeeksFromData(PluginData data)
+        {
+            if (data?.data == null) return 0;
+
+            if (data.data.TryGetValue("Week", out var weekVal))
+            {
+                try
+                {
+                    if (weekVal == null) return 0;
+                    var week = (int)weekVal;
+                    return week;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
+
+                return 0;
+            }
+
+            return 0;
         }
     
     }

@@ -65,18 +65,6 @@ namespace KK_PregnancyPlus
             base.Awake();
         }
 
-        protected override void Start() 
-        {
-            CurrentCoordinate.Subscribe(value => { OnCoordinateLoaded(); });
-
-            base.Start();
-        }
-
-        protected override void OnReload(GameMode currentGameMode)
-        {
-            if (storyMode) GetWeeksAndSetInflation();
-        }
-
         internal void OnCharacterReloaded(object sender, CharaReloadEventArgs e)  
         {  
             //When loading the character, if pregnant, apply the new inflated belly too
@@ -84,6 +72,13 @@ namespace KK_PregnancyPlus
 
             GetWeeksAndSetInflation();
         } 
+
+        protected override void Start() 
+        {
+            CurrentCoordinate.Subscribe(value => { OnCoordinateLoaded(); });
+
+            base.Start();
+        }
 
         internal void OnCoordinateLoaded()  
         {  
@@ -99,17 +94,23 @@ namespace KK_PregnancyPlus
             MeshInflate(true);
         }
 
+        protected override void OnReload(GameMode currentGameMode)
+        {
+            if (storyMode) GetWeeksAndSetInflation();
+        }
+
         internal void GetWeeksAndSetInflation() 
         {
             var data = GetExtendedData();
             if (data == null) return;
 
-            return;
-            // Data = PregnancyData.Load(data) ?? new PregnancyData();
+            var week = PregnancyPlusHelper.GetWeeksFromData(data);
+            // PregnancyPlusPlugin.Logger.LogInfo($" GetWeeksAndSetInflation > {week}");
 
-            // if (Data == null || Data.Week.Equals(null)) return;
-            // MeshInflate(Data.Week);
+            MeshInflate(week);
         }
+
+
 
         protected override void Update()
         {
@@ -149,12 +150,15 @@ namespace KK_PregnancyPlus
 
             //Get belly size base calculations
             var ribBone = ChaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "cf_s_spine02");
-            var waistBone = ChaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "cf_s_waist02");        
-            var waistWidth = gameObject.GetComponentsInChildren<CapsuleCollider>().FirstOrDefault(x => x.name == "cf_hit_spine01").radius * 2; 
+            var waistBone = ChaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "cf_s_waist02");
+            var waistToRibDist = Math.Abs(FastDistance(ribBone.position, waistBone.position));  
 
+            var thighLBone = ChaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "cf_j_thigh00_L");        
+            var thighRBone = ChaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "cf_j_thigh00_R");                    
+            var waistWidth = Math.Abs(FastDistance(thighLBone.position, thighRBone.position));  
+          
             //Calculate sphere radius based on distance from waist to ribs (seems big, but lerping later will trim much of it), added Math.Min for skinny waists
-            var waistToRibDist = Math.Abs(FastDistance(ribBone.position, waistBone.position))/1.25f;            
-            var sphereRadius = Math.Min(waistToRibDist, waistWidth/1.5f) * (infConfig["inflationMultiplier"] + 1);          
+            var sphereRadius = Math.Min(waistToRibDist/1.25f, waistWidth/1.2f) * (infConfig["inflationMultiplier"] + 1);          
 
             // var allMeshRenderers = ChaControl.GetComponentsInChildren<SkinnedMeshRenderer>(true);
             // PregnancyPlusPlugin.Logger.LogInfo($"allMeshRenderers > {allMeshRenderers.Length}");
@@ -245,6 +249,9 @@ namespace KK_PregnancyPlus
             var meshRoot = GameObject.Find("cf_o_root");
             //When clothing is improperly attached at chars feet (char local 0,0,0) we need to alter the verts to behave like they are properly attached to cf_o_root.position in chest
             var needsPositionFix = skinnedMeshRenderer.transform.position != meshRoot.transform.position;
+                        
+            // PregnancyPlusPlugin.Logger.LogInfo(
+            //     $" {skinnedMeshRenderer.name} >  skinnedMeshRenderer {skinnedMeshRenderer.transform.position}   meshRoot {meshRoot.transform.position} rootPosition {ChaControl.objRoot.transform.position}");
 
             //set sphere center  and allow for adjusting its position from the UI sliders     
             Vector3 centerVector = skinnedMeshRenderer.transform.position + userMoveTransforms;   
@@ -259,9 +266,6 @@ namespace KK_PregnancyPlus
             //The list of bones to get verticies for
             var boneFilters = new string[] { "cf_s_spine02", "cf_s_waist01" };//"cs_s_spine01" "cf_s_waist02" optionally for wider affected area
             var hasVerticies = GetFilteredVerticieIndexes(skinnedMeshRenderer, debug ? null : boneFilters);
-            
-            // PregnancyPlusPlugin.Logger.LogInfo(
-            //     $"cloth skinnedMeshRenderer >  {skinnedMeshRenderer.name}  {skinnedMeshRenderer.sharedMesh.vertexCount}  hasBellyVerts:{hasVerticies}");
 
             //If no belly verts found, then we can skip this mesh
             if (!hasVerticies) return false; 
