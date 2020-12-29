@@ -116,7 +116,7 @@ namespace KK_PregnancyPlus
         {
             //Just for testing story mode
             // if (Data != null && Data.Week >= 0) {
-            //     MeshInflate(Data.Week);
+                // MeshInflate(true);
             // }
         }
         
@@ -147,47 +147,39 @@ namespace KK_PregnancyPlus
                 infConfigHistory["inflationSize"] = 0;
                 return false;                                
             }
-
-            //Get belly size base calculations
-            var ribBone = ChaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "cf_s_spine02");
-            var waistBone = ChaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "cf_s_waist02");
-            var waistToRibDist = Math.Abs(FastDistance(ribBone.position, waistBone.position));  
-
-            var thighLBone = ChaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "cf_j_thigh00_L");        
-            var thighRBone = ChaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "cf_j_thigh00_R");                    
-            var waistWidth = Math.Abs(FastDistance(thighLBone.position, thighRBone.position));  
-          
-            //Calculate sphere radius based on distance from waist to ribs (seems big, but lerping later will trim much of it), added Math.Min for skinny waists
-            var sphereRadius = Math.Min(waistToRibDist/1.25f, waistWidth/1.2f) * (infConfig["inflationMultiplier"] + 1);          
+            
+            var measuerments = MeasureWaist(ChaControl);         
+            var waistWidth = measuerments.Item1; 
+            var sphereRadius = measuerments.Item2;
 
             // var allMeshRenderers = ChaControl.GetComponentsInChildren<SkinnedMeshRenderer>(true);
             // PregnancyPlusPlugin.Logger.LogInfo($"allMeshRenderers > {allMeshRenderers.Length}");
             
-            var appliedAnyMeshChanges = false;
+            var anyMeshChanges = false;
 
             //Get and apply all clothes render mesh changes
             var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);
             foreach(var skinnedMeshRenderer in clothRenderers) 
             {
                 // PregnancyPlusPlugin.Logger.LogInfo($"   > {skinnedMeshRenderer.name}");         
-                var _foundBellyVerts = GetInflatedVerticies(skinnedMeshRenderer, sphereRadius, waistWidth, true);
-                if (!_foundBellyVerts) continue;
+                var foundVerts = ComputeMeshVerts(skinnedMeshRenderer, sphereRadius, waistWidth, true);
+                if (!foundVerts) continue;
                 var appliedClothMeshChanges = ApplyInflation(skinnedMeshRenderer.sharedMesh, GetMeshKey(skinnedMeshRenderer));
 
-                if (appliedClothMeshChanges) appliedAnyMeshChanges = true;
+                if (appliedClothMeshChanges) anyMeshChanges = true;
             }             
 
             //do the same for body meshs
             var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody);
             foreach(var skinnedMeshRenderer in bodyRenderers) 
             {
-                var foundBellyVerts = GetInflatedVerticies(skinnedMeshRenderer, sphereRadius, waistWidth);  
-                if (!foundBellyVerts) continue;
+                var foundVerts = ComputeMeshVerts(skinnedMeshRenderer, sphereRadius, waistWidth);  
+                if (!foundVerts) continue;
                 var appliedBodyMeshChanges = ApplyInflation(skinnedMeshRenderer.sharedMesh, GetMeshKey(skinnedMeshRenderer));
-                if (appliedBodyMeshChanges) appliedAnyMeshChanges = true;                      
+                if (appliedBodyMeshChanges) anyMeshChanges = true;                      
             }
 
-            return appliedAnyMeshChanges;
+            return anyMeshChanges;
         }
  
         /// <summary>
@@ -229,6 +221,40 @@ namespace KK_PregnancyPlus
         }
 
         /// <summary>
+        /// Get the characters waist width and calculate the appropriate sphere radius from it
+        /// </summary>
+        /// <param name="chaControl">The character to measure</param>
+        internal Tuple<float, float> MeasureWaist(ChaControl chaControl) {
+            //Get belly size base calculations
+            var ribBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "cf_s_spine02");
+            var waistBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "cf_s_waist02");
+            var waistToRibDist = Math.Abs(FastDistance(ribBone.position, waistBone.position));  
+
+            var thighLBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "cf_j_thigh00_L");        
+            var thighRBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "cf_j_thigh00_R");                    
+            var waistWidth = Math.Abs(FastDistance(thighLBone.position, thighRBone.position));  
+          
+            //Calculate sphere radius based on distance from waist to ribs (seems big, but lerping later will trim much of it), added Math.Min for skinny waists
+            var sphereRadius = Math.Min(waistToRibDist/1.25f, waistWidth/1.2f) * (infConfig["inflationMultiplier"] + 1); 
+
+            return Tuple.Create(waistWidth, sphereRadius);
+        }
+
+        /// <summary>
+        /// Just a simple function to combine searching for verts in a mesh, and then applying the transforms
+        /// </summary>
+        internal bool ComputeMeshVerts(SkinnedMeshRenderer smr, float sphereRadius, float waistWidth, bool isClothingMesh = false) {
+            //The list of bones to get verticies for
+            var boneFilters = new string[] { "cf_s_spine02", "cf_s_waist01" };//"cs_s_spine01" "cf_s_waist02" optionally for wider affected area
+            var hasVerticies = GetFilteredVerticieIndexes(smr, debug ? null : boneFilters);
+
+            //If no belly verts found, then we can skip this mesh
+            if (!hasVerticies) return false; 
+
+            return GetInflatedVerticies(smr, sphereRadius, waistWidth, isClothingMesh);
+        }
+
+        /// <summary>
         /// Does the verticie morph calculations to make a sphere out of the belly verticies, and updates the verticie
         /// dictionaries apprporiately
         /// </summary>
@@ -237,40 +263,27 @@ namespace KK_PregnancyPlus
         /// <param name="waistWidth">The width of the characters waist</param>
         /// <param name="isClothingMesh">Clothing requires a few tweaks to match skin morphs (different offset, not sure why)</param>
         /// <returns>Will return True if mesh verticies > 0 were found  Some meshes wont have any for the belly area, returning false</returns>
-        internal bool GetInflatedVerticies(SkinnedMeshRenderer skinnedMeshRenderer, float sphereRadius, float waistWidth, bool isClothingMesh = false) 
+        internal bool GetInflatedVerticies(SkinnedMeshRenderer smr, float sphereRadius, float waistWidth, bool isClothingMesh = false) 
         {
-            if (skinnedMeshRenderer == null) return false;
+            if (smr == null) return false;
 
-            //User modifications to vertex position.  Moving (skin slides over sphere) vs stretch (pulls skin)
+            //User modifications to vertex position.  Moving (skin slides over sphere) vs stretch (pulls skin), defined by config sliders
             Vector3 userMoveTransforms = Vector3.down * 0.02f + Vector3.up * infConfig["inflationMoveY"] + Vector3.forward * infConfig["inflationMoveZ"];
             Vector3 userShiftTransforms = Vector3.down * infConfig["inflationShiftY"] + Vector3.forward * infConfig["inflationShiftZ"];
 
             //Get normal mesh root attachment position
             var meshRoot = GameObject.Find("cf_o_root");
-            //When clothing is improperly attached at chars feet (char local 0,0,0) we need to alter the verts to behave like they are properly attached to cf_o_root.position in chest
-            var needsPositionFix = skinnedMeshRenderer.transform.position != meshRoot.transform.position;
-                        
+            if (meshRoot == null) return false;
+
+            // PregnancyPlusPlugin.Logger.LogInfo(" ");            
             // PregnancyPlusPlugin.Logger.LogInfo(
-            //     $" {skinnedMeshRenderer.name} >  skinnedMeshRenderer {skinnedMeshRenderer.transform.position}   meshRoot {meshRoot.transform.position} rootPosition {ChaControl.objRoot.transform.position}");
+            //     $" {smr.name} >  smr {smr.transform.position}   meshRoot {meshRoot.transform.position}");
 
-            //set sphere center  and allow for adjusting its position from the UI sliders     
-            Vector3 centerVector = skinnedMeshRenderer.transform.position + userMoveTransforms;   
-            Vector3 clothesCenterVector = (needsPositionFix ? meshRoot.transform.position : new Vector3(0,0,0)) + userMoveTransforms;
-            Vector3 rootPosition = ChaControl.objRoot.transform.position;
-            Vector3 centerVectorFix = rootPosition - centerVector;  
-            Vector3 clothesCenterVectorFix = -clothesCenterVector; 
-            
-            var mesh = skinnedMeshRenderer.sharedMesh;
-            var rendererName = GetMeshKey(skinnedMeshRenderer);         
+            //set sphere center and allow for adjusting its position from the UI sliders     
+            Vector3 sphereCenter = meshRoot.transform.position + userMoveTransforms;               
 
-            //The list of bones to get verticies for
-            var boneFilters = new string[] { "cf_s_spine02", "cf_s_waist01" };//"cs_s_spine01" "cf_s_waist02" optionally for wider affected area
-            var hasVerticies = GetFilteredVerticieIndexes(skinnedMeshRenderer, debug ? null : boneFilters);
-
-            //If no belly verts found, then we can skip this mesh
-            if (!hasVerticies) return false; 
-
-            originalVertices[rendererName] = mesh.vertices;
+            var rendererName = GetMeshKey(smr);         
+            originalVertices[rendererName] = smr.sharedMesh.vertices;
             inflatedVertices[rendererName] = new Vector3[originalVertices[rendererName].Length];
             currentVertices[rendererName] = new Vector3[originalVertices[rendererName].Length];
 
@@ -283,23 +296,26 @@ namespace KK_PregnancyPlus
             for (int i = 0; i < origVerts.Length; i++)
             {
                 var origVert = origVerts[i];
+                var origVertWS = smr.transform.TransformPoint(origVerts[i]);//Convert to worldspace
 
                 //Only care about inflating belly verticies
                 if (bellyVertIndex[i]) 
                 {
-                    Vector3 verticieToSphere;                         
+                    Vector3 inflatedVertWS;                    
+                    Vector3 verticieToSphere;  
+
                     //Clothing needs to have slightly different to-sphere logic because Uncensor mod alters the vertex mesh root positions for some reason
                     if (!isClothingMesh) 
                     {                        
-                        verticieToSphere = (centerVectorFix + origVert).normalized * sphereRadius - centerVectorFix + userShiftTransforms;
-                        inflatedVerts[i] = SculptInflatedVerticie(origVert, verticieToSphere, centerVector, waistWidth);                       
+                        verticieToSphere = (origVertWS - sphereCenter).normalized * sphereRadius + sphereCenter + userShiftTransforms;                     
                     }
                     else 
                     {
-                        //Give clothes a tiny bit more separation from skin meshes by expanding the radius sligtly
-                        verticieToSphere = (clothesCenterVectorFix + origVert).normalized * (sphereRadius + 0.003f) - clothesCenterVectorFix + userShiftTransforms;
-                        inflatedVerts[i] = SculptInflatedVerticie(origVert, verticieToSphere, clothesCenterVector, waistWidth, isClothingMesh);                    
-                    }                                             
+                        //Clothes need some more loving to get them to stop clipping at max size
+                        verticieToSphere = (origVertWS - sphereCenter).normalized * (sphereRadius + 0.003f) + sphereCenter + userShiftTransforms;                                           
+                    }      
+                    inflatedVertWS =  SculptInflatedVerticie(origVertWS, verticieToSphere, sphereCenter, waistWidth);                    
+                    inflatedVerts[i] = smr.transform.InverseTransformPoint(inflatedVertWS);//Convert back to local space
                 }
                 else 
                 {
@@ -321,7 +337,7 @@ namespace KK_PregnancyPlus
         /// <param name="sphereCenterPos">The center of the imaginary sphere</param>
         /// <param name="rootPosition">The characters world root position</param>
         /// <param name="isClothingMesh">Needed for clothing meshes for special positional logic to match the skin mesh position</param>
-        internal Vector3 SculptInflatedVerticie(Vector3 originalVertice, Vector3 inflatedVerticie, Vector3 sphereCenterPos, float waistWidth, bool isClothingMesh = false) 
+        internal Vector3 SculptInflatedVerticie(Vector3 originalVertice, Vector3 inflatedVerticie, Vector3 sphereCenterPos, float waistWidth) 
         {
             //No smoothing modification in debug mode
             if (debug) return inflatedVerticie;            
@@ -357,7 +373,7 @@ namespace KK_PregnancyPlus
                 smoothedVector = new Vector3(smoothedVector.x, yPos, smoothedVector.z);         
             }
 
-            //Remove the skin crease where the inflation begins
+            //Remove the skin cliff where the inflation begins
             if (smoothedVector.z <= zSmoothDist) {
                 var lerpScale = Mathf.Abs(smoothedVector.z/zSmoothDist);
                 smoothedVector = Vector3.Lerp(originalVertice, smoothedVector, lerpScale);
@@ -378,6 +394,12 @@ namespace KK_PregnancyPlus
             //     var lerpScale = Mathf.Abs(((smoothedVector.y - sphereCenterPos.y)/ySmoothDist) - 1f);
             //     smoothedVector = Vector3.Slerp(smoothedVector, originalVertice, lerpScale);
             // }
+
+            var currentVectorDistance = Math.Abs(FastDistance(sphereCenterPos, smoothedVector));
+            //Don't allow any morphs to shrink skin smaller than its original position, only outward morphs allowed (check this last)
+            if (skinToCenterDist > currentVectorDistance) {
+                return originalVertice;
+            }
 
             return smoothedVector;             
         }
@@ -607,6 +629,7 @@ namespace KK_PregnancyPlus
 
             return true;
         }    
+        
         internal void ResetInflation() 
         {   
             //Resets all mesh inflations
