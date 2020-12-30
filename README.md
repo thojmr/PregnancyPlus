@@ -4,12 +4,12 @@ This repository contains the KK_PregnancyPlus plugin, that adds additional belly
 ![ChaStudio GUI](https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/P%2BGUI.PNG)
 
 ## Notes
-- Modding this game is new to me, so dont expect this to feel like a finished product.  More like an interesting way to learn C# for me
+- Modding this game is new to me, so dont expect this to feel like a finished product.  More like an interesting way to learn C#
 - Clothing clips through at max size, so try it without clothing if you are experiencing issues
 - This is currently only available in Character Studio, you should see additional sliders below the KK_Pregnancy slider
 
 ## How to download
-(Comming Soon) Check the Koikatsu Discord "Mod Sharing" channel for the latest releases, or build it yourself.  Explained further below.
+Check the Koikatsu Discord "Mod Sharing" channel for the latest releases, or build it yourself.  Explained further below.
 
 ## How to install
 Almost all plugins are installed in the same way. If there are any extra steps needed they will be added to the plugin descriptions below.
@@ -76,10 +76,10 @@ If sucessfull you should see a KK_PregnancyPlus.dll file in \bin\
 ### Some of the drawbacks of manipulating the mesh instead of the bones directly
 -  Right now clothing can be hit or miss, because of the way the belly grows, clothing will flatten and clip when the belly is set its largest size
 -  Acessories won't automatically move out of the way of the mesh as they do when you manipulate bones
--  It has bigger impact on performance than a simple bone scale change, but not enough to notice on my machine
+-  It has bigger impact on performance than a simple bone scale change, but not enough to notice in general
 
 ## Some TODO items that may or mat not be implemented in the future (depending on interest)
 -  Make accessories move along with the belly to prevent clipping
 -  Fix clothing flattening at the largest belly sizes
 -  There are certain clothing items that do not work in the current state
--  Add the "improved" belly shape into story mode, with optional config toggle
+-  Potentially add the "improved" belly shape into story mode, with optional config toggle
