@@ -125,6 +125,21 @@ namespace KK_PregnancyPlus
 
             return 0;
         }
+
+        internal static CharaCustomFunctionController GetCharacterBehaviorController(ChaControl chaControl, string targetBehaviorId) 
+        {
+            var behaviors = CharacterApi.GetBehaviours(chaControl);
+
+            foreach(var behavior in behaviors) {
+                // PregnancyPlusPlugin.Logger.LogInfo($" {behavior.name} > {behavior.ExtendedDataId}"); 
+
+                if (behavior.ExtendedDataId == targetBehaviorId) {
+                    return behavior;
+                }                
+            }
+
+            return null;
+        }
     
     }
 }

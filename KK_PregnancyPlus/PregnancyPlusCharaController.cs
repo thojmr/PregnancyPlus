@@ -5,14 +5,16 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UniRx;
+using HarmonyLib;
 
 namespace KK_PregnancyPlus
 {
     public class PregnancyPlusCharaController: CharaCustomFunctionController
     {
         // public PregnancyData Data { get; private set; }
-        internal bool debug = false;//In debug mode, all verticies are affected, and no slerps or lerps applied.  Makes it easier to see what is actually happening in studio mode.  Also creates nightmares
+        internal bool debug = true;//In debug mode, all verticies are affected, and no slerps or lerps applied.  Makes it easier to see what is actually happening in studio mode.  Also creates nightmares
         public  bool storyMode = false;//Some bugs to work out here
 
 
@@ -29,6 +31,11 @@ namespace KK_PregnancyPlus
         public Dictionary<string, Vector3[]> inflatedVertices = new Dictionary<string, Vector3[]>();
         public Dictionary<string, Vector3[]> currentVertices = new Dictionary<string, Vector3[]>();
         public Dictionary<string, bool[]> bellyVerticieIndexes = new Dictionary<string, bool[]>();//List of verticie indexes that belong to the belly area
+
+
+        //For fetching uncensor body guid data (bugfix for uncensor body vertex positions)
+        public const string UncensorCOMName = "com.deathweasel.bepinex.uncensorselector";
+        public const string DefaultBodyFemaleGUID = "Default.Body.Female";
 
 
         //Allows an easy way to create a default belly config dictionary, you can change the values from there
@@ -120,6 +127,8 @@ namespace KK_PregnancyPlus
             // }
         }
         
+
+
 
 
 
@@ -278,9 +287,12 @@ namespace KK_PregnancyPlus
             // PregnancyPlusPlugin.Logger.LogInfo(" ");            
             // PregnancyPlusPlugin.Logger.LogInfo(
             //     $" {smr.name} >  smr {smr.transform.position}   meshRoot {meshRoot.transform.position}");
+                        
+            var isUncensorBody = IsUncensorBody();
 
             //set sphere center and allow for adjusting its position from the UI sliders     
-            Vector3 sphereCenter = meshRoot.transform.position + userMoveTransforms;               
+            Vector3 sphereCenter = meshRoot.transform.position + userMoveTransforms; 
+            Vector3 sphereCenterUncesorFix = meshRoot.transform.position + (Vector3.up * (meshRoot.transform.position.y - ChaControl.transform.position.y)) + userMoveTransforms;               
 
             var rendererName = GetMeshKey(smr);         
             originalVertices[rendererName] = smr.sharedMesh.vertices;
@@ -296,7 +308,7 @@ namespace KK_PregnancyPlus
             for (int i = 0; i < origVerts.Length; i++)
             {
                 var origVert = origVerts[i];
-                var origVertWS = smr.transform.TransformPoint(origVerts[i]);//Convert to worldspace
+                var origVertWS = meshRoot.transform.TransformPoint(origVerts[i]);//Convert to worldspace
 
                 //Only care about inflating belly verticies
                 if (bellyVertIndex[i]) 
@@ -304,9 +316,9 @@ namespace KK_PregnancyPlus
                     Vector3 inflatedVertWS;                    
                     Vector3 verticieToSphere;  
 
-                    //Clothing needs to have slightly different to-sphere logic because Uncensor mod alters the vertex mesh root positions for some reason
                     if (!isClothingMesh) 
                     {                        
+                        sphereCenter = isUncensorBody ? sphereCenterUncesorFix : sphereCenter;
                         verticieToSphere = (origVertWS - sphereCenter).normalized * sphereRadius + sphereCenter + userShiftTransforms;                     
                     }
                     else 
@@ -315,7 +327,9 @@ namespace KK_PregnancyPlus
                         verticieToSphere = (origVertWS - sphereCenter).normalized * (sphereRadius + 0.003f) + sphereCenter + userShiftTransforms;                                           
                     }      
                     inflatedVertWS =  SculptInflatedVerticie(origVertWS, verticieToSphere, sphereCenter, waistWidth);                    
-                    inflatedVerts[i] = smr.transform.InverseTransformPoint(inflatedVertWS);//Convert back to local space
+                    inflatedVerts[i] = meshRoot.transform.InverseTransformPoint(inflatedVertWS);//Convert back to local space
+
+                    // if (i % 100 == 0) PregnancyPlusPlugin.Logger.LogInfo($" origVertWS {origVertWS}  verticieToSphere {verticieToSphere}");
                 }
                 else 
                 {
@@ -326,6 +340,25 @@ namespace KK_PregnancyPlus
             }      
 
             return true;                 
+        }
+
+        internal bool IsUncensorBody() 
+        {
+            //Uncensor body needs vert modifications to check to see if it the default mesh or not
+            var uncensorController = PregnancyPlusHelper.GetCharacterBehaviorController(ChaControl, UncensorCOMName);
+            if (uncensorController == null) return false;
+
+            // var bodyGUID = (string)PregnancyPlusHelper.GetPropertyValue(uncensorController, "bodyData.BodyGUID");
+            // if (bodyGUID == null) return false;
+
+            var bodyData = uncensorController.GetType().GetProperty("BodyData").GetValue(uncensorController, null);
+            if (bodyData == null) return false;
+
+            var bodyGUID = Traverse.Create(bodyData).Field("BodyGUID").GetValue<string>();
+            if (bodyGUID == null) return false;
+
+
+            return bodyGUID != DefaultBodyFemaleGUID;
         }
 
         /// <summary>
