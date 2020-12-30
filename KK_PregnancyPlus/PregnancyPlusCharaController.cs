@@ -400,9 +400,10 @@ namespace KK_PregnancyPlus
                 smoothedVector = new Vector3(smoothedVector.x, yPos, smoothedVector.z);         
             }
 
+            var forwardFromCenter = smoothedVector.z - sphereCenterPos.z;
             //Remove the skin cliff where the inflation begins
-            if (smoothedVector.z <= zSmoothDist) {
-                var lerpScale = Mathf.Abs(smoothedVector.z/zSmoothDist);
+            if (forwardFromCenter <= zSmoothDist) {
+                var lerpScale = Mathf.Abs(forwardFromCenter/zSmoothDist);
                 smoothedVector = Vector3.Lerp(originalVertice, smoothedVector, lerpScale);
             }
 
