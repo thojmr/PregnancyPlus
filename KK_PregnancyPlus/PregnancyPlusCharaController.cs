@@ -376,8 +376,14 @@ namespace KK_PregnancyPlus
             var ySmoothDist = maxSphereRadius/2f;//Only smooth the top half of y
 
             //Allow user adjustment of the width of the belly
-            if (infConfig["inflationStretchX"] != 0) {        
-                var xPos = smoothedVector.x * (infConfig["inflationStretchX"] + 1);   
+            if (infConfig["inflationStretchX"] != 0) {       
+                float xPos; 
+                //local Distance left or right from sphere center
+                var distFromXCenter = smoothedVector.x - sphereCenterPos.x;
+
+                var changeInDist = distFromXCenter * (infConfig["inflationStretchX"] + 1);   
+                xPos = sphereCenterPos.x + changeInDist;
+
                 smoothedVector = new Vector3(xPos, smoothedVector.y, smoothedVector.z);         
             }
 
