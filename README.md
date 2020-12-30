@@ -9,7 +9,7 @@ This repository contains the KK_PregnancyPlus plugin, that adds additional belly
 - This is currently only available in Character Studio, you should see additional sliders below the KK_Pregnancy slider
 
 ## How to download
-Check the Koikatsu Discord "Mod Sharing" channel for the latest releases, or build it yourself.  Explained further below.
+You can grab the latest plugin release [here](https://github.com/thojmr/KK_PregnancyPlus/releases), or build it yourself.  Explained further below.
 
 ## How to install
 Almost all plugins are installed in the same way. If there are any extra steps needed they will be added to the plugin descriptions below.
