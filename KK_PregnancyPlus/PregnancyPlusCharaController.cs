@@ -5,16 +5,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using UniRx;
-using HarmonyLib;
 
 namespace KK_PregnancyPlus
 {
     public class PregnancyPlusCharaController: CharaCustomFunctionController
     {
         // public PregnancyData Data { get; private set; }
-        internal bool debug = true;//In debug mode, all verticies are affected, and no slerps or lerps applied.  Makes it easier to see what is actually happening in studio mode.  Also creates nightmares
+        internal bool debug = false;//In debug mode, all verticies are affected, and no slerps or lerps applied.  Makes it easier to see what is actually happening in studio mode.  Also creates nightmares
         public  bool storyMode = false;//Some bugs to work out here
 
 
@@ -36,6 +34,8 @@ namespace KK_PregnancyPlus
         //For fetching uncensor body guid data (bugfix for uncensor body vertex positions)
         public const string UncensorCOMName = "com.deathweasel.bepinex.uncensorselector";
         public const string DefaultBodyFemaleGUID = "Default.Body.Female";
+
+        public const string KK_PregnancyPluginName = "KK_Pregnancy";//Allows us to pull KK_pregnancy data values
 
 
         //Allows an easy way to create a default belly config dictionary, you can change the values from there
@@ -108,11 +108,9 @@ namespace KK_PregnancyPlus
 
         internal void GetWeeksAndSetInflation() 
         {
-            var data = GetExtendedData();
-            if (data == null) return;
-
-            var week = PregnancyPlusHelper.GetWeeksFromData(data);
-            // PregnancyPlusPlugin.Logger.LogInfo($" GetWeeksAndSetInflation > {week}");
+            var week = PregnancyPlusHelper.GetWeeksFromPregnancyPluginData(ChaControl, KK_PregnancyPluginName);
+            // PregnancyPlusPlugin.Logger.LogInfo($" Week >  {week}");
+            if (week < 0) return;
 
             MeshInflate(week);
         }
@@ -288,7 +286,7 @@ namespace KK_PregnancyPlus
             // PregnancyPlusPlugin.Logger.LogInfo(
             //     $" {smr.name} >  smr {smr.transform.position}   meshRoot {meshRoot.transform.position}");
                         
-            var isUncensorBody = IsUncensorBody();
+            var isUncensorBody = PregnancyPlusHelper.IsUncensorBody(ChaControl, UncensorCOMName, DefaultBodyFemaleGUID);
 
             //set sphere center and allow for adjusting its position from the UI sliders     
             Vector3 sphereCenter = meshRoot.transform.position + userMoveTransforms; 
@@ -325,10 +323,10 @@ namespace KK_PregnancyPlus
                     {
                         //Clothes need some more loving to get them to stop clipping at max size
                         verticieToSphere = (origVertWS - sphereCenter).normalized * (sphereRadius + 0.003f) + sphereCenter + userShiftTransforms;                                           
-                    }      
+                    }     
+
                     inflatedVertWS =  SculptInflatedVerticie(origVertWS, verticieToSphere, sphereCenter, waistWidth);                    
                     inflatedVerts[i] = meshRoot.transform.InverseTransformPoint(inflatedVertWS);//Convert back to local space
-
                     // if (i % 100 == 0) PregnancyPlusPlugin.Logger.LogInfo($" origVertWS {origVertWS}  verticieToSphere {verticieToSphere}");
                 }
                 else 
@@ -340,25 +338,6 @@ namespace KK_PregnancyPlus
             }      
 
             return true;                 
-        }
-
-        internal bool IsUncensorBody() 
-        {
-            //Uncensor body needs vert modifications to check to see if it the default mesh or not
-            var uncensorController = PregnancyPlusHelper.GetCharacterBehaviorController(ChaControl, UncensorCOMName);
-            if (uncensorController == null) return false;
-
-            // var bodyGUID = (string)PregnancyPlusHelper.GetPropertyValue(uncensorController, "bodyData.BodyGUID");
-            // if (bodyGUID == null) return false;
-
-            var bodyData = uncensorController.GetType().GetProperty("BodyData").GetValue(uncensorController, null);
-            if (bodyData == null) return false;
-
-            var bodyGUID = Traverse.Create(bodyData).Field("BodyGUID").GetValue<string>();
-            if (bodyGUID == null) return false;
-
-
-            return bodyGUID != DefaultBodyFemaleGUID;
         }
 
         /// <summary>

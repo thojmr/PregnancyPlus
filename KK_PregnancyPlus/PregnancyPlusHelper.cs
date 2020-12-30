@@ -4,7 +4,7 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ExtensibleSaveFormat;
+using HarmonyLib;
 
 namespace KK_PregnancyPlus
 {
@@ -103,36 +103,49 @@ namespace KK_PregnancyPlus
             return renderers;
         }
 
-        internal static int GetWeeksFromData(PluginData data)
+        internal static int GetWeeksFromPregnancyPluginData(ChaControl chaControl, string targetBehaviorId)
         {
-            if (data?.data == null) return 0;
+            var kkPregCtrlInst = PregnancyPlusHelper.GetCharacterBehaviorController(chaControl, targetBehaviorId);
+            if (kkPregCtrlInst == null) return -1;
 
-            if (data.data.TryGetValue("Week", out var weekVal))
-            {
-                try
-                {
-                    if (weekVal == null) return 0;
-                    var week = (int)weekVal;
-                    return week;
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex);
-                }
+            //Get the pregnancy data object
+            var data = kkPregCtrlInst.GetType().GetProperty("Data").GetValue(kkPregCtrlInst, null);
+            if (data == null) return -1;
 
-                return 0;
-            }
+            var week = Traverse.Create(data).Field("Week").GetValue<int>();
+            if (week.Equals(null) || week < -1) return -1;
 
-            return 0;
+            return week;
+        }
+
+        internal static bool IsUncensorBody(ChaControl chaControl, string UncensorCOMName, string defaultBodyFemaleGUID) 
+        {
+            //Uncensor body needs vert modifications.  Check to see if this is the default body mesh or not
+            var uncensorController = PregnancyPlusHelper.GetCharacterBehaviorController(chaControl, UncensorCOMName);
+            if (uncensorController == null) return false;
+
+            //Get the body type name, and see if it is the default mesh name
+            var bodyData = uncensorController.GetType().GetProperty("BodyData").GetValue(uncensorController, null);
+            if (bodyData == null) return false;
+
+            var bodyGUID = Traverse.Create(bodyData).Field("BodyGUID").GetValue<string>();
+            if (bodyGUID == null) return false;
+
+            return bodyGUID != defaultBodyFemaleGUID;
         }
 
         internal static CharaCustomFunctionController GetCharacterBehaviorController(ChaControl chaControl, string targetBehaviorId) 
         {
+            if (chaControl == null) return null;
+
+            //Get all registered behaviors for this character
             var behaviors = CharacterApi.GetBehaviours(chaControl);
+            if (behaviors == null) return null;
 
             foreach(var behavior in behaviors) {
                 // PregnancyPlusPlugin.Logger.LogInfo($" {behavior.name} > {behavior.ExtendedDataId}"); 
 
+                //Find the behavior with matching id (COM name)
                 if (behavior.ExtendedDataId == targetBehaviorId) {
                     return behavior;
                 }                
