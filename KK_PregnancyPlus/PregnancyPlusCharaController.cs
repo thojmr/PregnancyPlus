@@ -11,12 +11,11 @@ namespace KK_PregnancyPlus
 {
     public class PregnancyPlusCharaController: CharaCustomFunctionController
     {
-        // public PregnancyData Data { get; private set; }
-        internal bool debug = false;//In debug mode, all verticies are affected, and no slerps or lerps applied.  Makes it easier to see what is actually happening in studio mode.  Also creates nightmares
+        internal bool debug = false;//In debug mode, all verticies are affected.  Makes it easier to see what is actually happening in studio mode.  Also creates nightmares
         public  bool storyMode = false;//Some bugs to work out here
 
 
-
+#region props
         //Contsins the mesh inflation configuration
         public Dictionary<string, float> infConfig = CreateConfig();
         internal Dictionary<string, float> infConfigHistory = CreateConfig();
@@ -37,6 +36,7 @@ namespace KK_PregnancyPlus
 
         public const string KK_PregnancyPluginName = "KK_Pregnancy";//Allows us to pull KK_pregnancy data values
 
+#endregion
 
         //Allows an easy way to create a default belly config dictionary, you can change the values from there
         public static Dictionary<string, float> CreateConfig() 
@@ -59,6 +59,7 @@ namespace KK_PregnancyPlus
             // Data = new PregnancyData();               
         }
 
+#region overrides
         protected override void OnCardBeingSaved(GameMode currentGameMode)
         {
 
@@ -71,6 +72,27 @@ namespace KK_PregnancyPlus
 
             base.Awake();
         }
+        protected override void Start() 
+        {
+            CurrentCoordinate.Subscribe(value => { OnCoordinateLoaded(); });
+
+            base.Start();
+        }
+
+        protected override void OnReload(GameMode currentGameMode)
+        {
+            if (storyMode) GetWeeksAndSetInflation();
+        }
+
+        protected override void Update()
+        {
+            //Just for testing story mode
+            // if (Data != null && Data.Week >= 0) {
+                // MeshInflate(true);
+            // }
+        }
+        
+#endregion
 
         internal void OnCharacterReloaded(object sender, CharaReloadEventArgs e)  
         {  
@@ -79,13 +101,6 @@ namespace KK_PregnancyPlus
 
             GetWeeksAndSetInflation();
         } 
-
-        protected override void Start() 
-        {
-            CurrentCoordinate.Subscribe(value => { OnCoordinateLoaded(); });
-
-            base.Start();
-        }
 
         internal void OnCoordinateLoaded()  
         {  
@@ -101,11 +116,6 @@ namespace KK_PregnancyPlus
             MeshInflate(true);
         }
 
-        protected override void OnReload(GameMode currentGameMode)
-        {
-            if (storyMode) GetWeeksAndSetInflation();
-        }
-
         internal void GetWeeksAndSetInflation() 
         {
             var week = PregnancyPlusHelper.GetWeeksFromPregnancyPluginData(ChaControl, KK_PregnancyPluginName);
@@ -117,19 +127,14 @@ namespace KK_PregnancyPlus
 
 
 
-        protected override void Update()
-        {
-            //Just for testing story mode
-            // if (Data != null && Data.Week >= 0) {
-                // MeshInflate(true);
-            // }
-        }
+
         
 
 
 
 
 
+#region inflation
 
         /// <summary>
         /// Triggers belly mesh inflation for the current ChaControl.  
@@ -231,7 +236,8 @@ namespace KK_PregnancyPlus
         /// Get the characters waist width and calculate the appropriate sphere radius from it
         /// </summary>
         /// <param name="chaControl">The character to measure</param>
-        internal Tuple<float, float> MeasureWaist(ChaControl chaControl) {
+        internal Tuple<float, float> MeasureWaist(ChaControl chaControl) 
+        {
             //Get belly size base calculations
             var ribBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "cf_s_spine02");
             var waistBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "cf_s_waist02");
@@ -250,7 +256,8 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Just a simple function to combine searching for verts in a mesh, and then applying the transforms
         /// </summary>
-        internal bool ComputeMeshVerts(SkinnedMeshRenderer smr, float sphereRadius, float waistWidth, bool isClothingMesh = false) {
+        internal bool ComputeMeshVerts(SkinnedMeshRenderer smr, float sphereRadius, float waistWidth, bool isClothingMesh = false) 
+        {
             //The list of bones to get verticies for
             var boneFilters = new string[] { "cf_s_spine02", "cf_s_waist01" };//"cs_s_spine01" "cf_s_waist02" optionally for wider affected area
             var hasVerticies = GetFilteredVerticieIndexes(smr, debug ? null : boneFilters);
@@ -302,7 +309,7 @@ namespace KK_PregnancyPlus
             var currentVerts = currentVertices[rendererName];
             var bellyVertIndex = bellyVerticieIndexes[rendererName];           
 
-            //Set each verticies inflated postion, with some constraints to make it look more natural
+            //Set each verticies inflated postion, with some constraints (SculptInflatedVerticie) to make it look more natural
             for (int i = 0; i < origVerts.Length; i++)
             {
                 var origVert = origVerts[i];
@@ -314,9 +321,10 @@ namespace KK_PregnancyPlus
                     Vector3 inflatedVertWS;                    
                     Vector3 verticieToSphere;  
 
+                    //Shift each belly vertex away from sphere center
                     if (!isClothingMesh) 
                     {                        
-                        sphereCenter = isUncensorBody ? sphereCenterUncesorFix : sphereCenter;
+                        sphereCenter = isUncensorBody ? sphereCenterUncesorFix : sphereCenter;//Fix for uncensor local vertex positions being different than default body mesh
                         verticieToSphere = (origVertWS - sphereCenter).normalized * sphereRadius + sphereCenter + userShiftTransforms;                     
                     }
                     else 
@@ -325,6 +333,7 @@ namespace KK_PregnancyPlus
                         verticieToSphere = (origVertWS - sphereCenter).normalized * (sphereRadius + 0.003f) + sphereCenter + userShiftTransforms;                                           
                     }     
 
+                    //Make minor adjustments to the shape
                     inflatedVertWS =  SculptInflatedVerticie(origVertWS, verticieToSphere, sphereCenter, waistWidth);                    
                     inflatedVerts[i] = meshRoot.transform.InverseTransformPoint(inflatedVertWS);//Convert back to local space
                     // if (i % 100 == 0) PregnancyPlusPlugin.Logger.LogInfo($" origVertWS {origVertWS}  verticieToSphere {verticieToSphere}");
@@ -674,6 +683,8 @@ namespace KK_PregnancyPlus
                 sharedMesh.RecalculateTangents();
             }
         }
-    
+
+#endregion
+
     }
 }

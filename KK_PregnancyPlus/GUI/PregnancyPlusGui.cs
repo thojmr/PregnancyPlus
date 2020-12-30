@@ -28,7 +28,7 @@ namespace KK_PregnancyPlus
         {
             var cat = StudioAPI.GetOrCreateCurrentStateCategory(null);
 
-            cat.AddControl(new CurrentStateCategorySlider("Inflate Mesh", c =>
+            cat.AddControl(new CurrentStateCategorySlider("Pregnancy +", c =>
                 {                                       
                     if (c.charInfo == null) return 0;
                     var controller = c.charInfo.GetComponent<PregnancyPlusCharaController>();
@@ -44,6 +44,23 @@ namespace KK_PregnancyPlus
                             ctrl.MeshInflate();                             
                         }
                     });
+
+            cat.AddControl(new CurrentStateCategorySlider("        Multiplier", c =>
+                {                                       
+                    if (c.charInfo == null) return 1;
+                    var controller = c.charInfo.GetComponent<PregnancyPlusCharaController>();
+                    if (controller == null) return 1; 
+                    var exists = controller.infConfig.TryGetValue("inflationMultiplier", out float inflationMultiplier);  
+                    if (!exists) controller.infConfig["inflationMultiplier"] = 0; 
+                    return controller.infConfig["inflationMultiplier"];
+                }, -1, 1))
+                    .Value.Subscribe(f => { 
+                        foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
+                            if (ctrl.infConfig["inflationMultiplier"] == f) continue;     
+                            ctrl.infConfig["inflationMultiplier"] = f;               
+                            ctrl.MeshInflate();                             
+                        }
+                    });                    
 
             cat.AddControl(new CurrentStateCategorySlider("        Move Y", c =>
                 {                                       
@@ -143,23 +160,6 @@ namespace KK_PregnancyPlus
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
                             if (ctrl.infConfig["inflationShiftZ"] == f) continue;                    
                             ctrl.infConfig["inflationShiftZ"] = f;
-                            ctrl.MeshInflate();                             
-                        }
-                    });
-
-            cat.AddControl(new CurrentStateCategorySlider("        Multiplier", c =>
-                {                                       
-                    if (c.charInfo == null) return 1;
-                    var controller = c.charInfo.GetComponent<PregnancyPlusCharaController>();
-                    if (controller == null) return 1; 
-                    var exists = controller.infConfig.TryGetValue("inflationMultiplier", out float inflationMultiplier);  
-                    if (!exists) controller.infConfig["inflationMultiplier"] = 0; 
-                    return controller.infConfig["inflationMultiplier"];
-                }, -1, 1))
-                    .Value.Subscribe(f => { 
-                        foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
-                            if (ctrl.infConfig["inflationMultiplier"] == f) continue;     
-                            ctrl.infConfig["inflationMultiplier"] = f;               
                             ctrl.MeshInflate();                             
                         }
                     });

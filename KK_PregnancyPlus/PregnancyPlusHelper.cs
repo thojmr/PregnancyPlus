@@ -36,7 +36,8 @@ namespace KK_PregnancyPlus
         /// Will get any Mesh Renderers for the given ChaControl.objxxx passed in
         /// </summary>
         /// <param name="chaControlObjs">The ChaControl.objxxx to fetch mesh renderers from  Might work for other GameObjects as well</param>
-        internal static List<SkinnedMeshRenderer> GetMeshRenderers(GameObject[] chaControlObjs) {            
+        internal static List<SkinnedMeshRenderer> GetMeshRenderers(GameObject[] chaControlObjs) 
+        {            
             var renderers = new List<SkinnedMeshRenderer>();
             if (chaControlObjs == null) return renderers;
 
@@ -54,7 +55,8 @@ namespace KK_PregnancyPlus
             return renderers;
         }
         
-        internal static List<SkinnedMeshRenderer> GetMeshRenderers(GameObject characterObj) {            
+        internal static List<SkinnedMeshRenderer> GetMeshRenderers(GameObject characterObj) 
+        {            
             var renderers = new List<SkinnedMeshRenderer>();
             if (characterObj == null) return renderers;
 
@@ -73,7 +75,8 @@ namespace KK_PregnancyPlus
             return renderer;
         }
 
-        internal static List<Renderer> GetRenderers(GameObject[] chaControlObjs) {            
+        internal static List<Renderer> GetRenderers(GameObject[] chaControlObjs) 
+        {            
             var renderers = new List<Renderer>();
             if (chaControlObjs == null) return renderers;
 
@@ -91,7 +94,8 @@ namespace KK_PregnancyPlus
             return renderers;
         }
 
-        internal static List<Renderer> GetRenderers(GameObject characterObj) {            
+        internal static List<Renderer> GetRenderers(GameObject characterObj) 
+        {            
             var renderers = new List<Renderer>();
             if (characterObj == null) return renderers;
 
