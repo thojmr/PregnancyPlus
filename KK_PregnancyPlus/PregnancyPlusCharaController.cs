@@ -30,6 +30,7 @@ namespace KK_PregnancyPlus
         public Dictionary<string, bool[]> bellyVerticieIndexes = new Dictionary<string, bool[]>();//List of verticie indexes that belong to the belly area
 
 
+
         //For fetching uncensor body guid data (bugfix for uncensor body vertex positions)
         public const string UncensorCOMName = "com.deathweasel.bepinex.uncensorselector";
         public const string DefaultBodyFemaleGUID = "Default.Body.Female";
@@ -290,7 +291,7 @@ namespace KK_PregnancyPlus
             //set sphere center and allow for adjusting its position from the UI sliders  
             //Sphere slider adjustments need to be transformed to local space first to eliminate any character rotation in world space   
             Vector3 sphereCenter = meshRoot.transform.position + GetUserMoveTransform(meshRoot.transform); 
-            //For uncensor, move the mesh vectors up by an additional meshRoot.y
+            //For uncensor, move the mesh vectors up by an additional meshRoot.y to match the default body mesh position
             Vector3 sphereCenterUncesorFix = meshRoot.transform.position + (meshRoot.transform.up * FastDistance(meshRoot.transform.position, ChaControl.transform.position)) + GetUserMoveTransform(meshRoot.transform);             
 
             // PregnancyPlusPlugin.Logger.LogInfo($" sphereCenter {sphereCentero} new sphereCenter {sphereCenter}");
@@ -309,13 +310,13 @@ namespace KK_PregnancyPlus
             for (int i = 0; i < origVerts.Length; i++)
             {
                 var origVert = origVerts[i];
-                var origVertWS = meshRoot.transform.TransformPoint(origVerts[i]);//Convert to worldspace
 
                 //Only care about inflating belly verticies
                 if (bellyVertIndex[i]) 
-                {
+                {                    
                     Vector3 inflatedVertWS;                    
                     Vector3 verticieToSphere;  
+                    var origVertWS = meshRoot.transform.TransformPoint(origVerts[i]);//Convert to worldspace
 
                     //Shift each belly vertex away from sphere center
                     if (!isClothingMesh) 
