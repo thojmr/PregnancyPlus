@@ -281,23 +281,19 @@ namespace KK_PregnancyPlus
         {
             if (smr == null) return false;
 
-            //User modifications to vertex position.  Moving (skin slides over sphere) vs stretch (pulls skin), defined by config sliders
-            Vector3 userMoveTransforms = Vector3.down * 0.02f + Vector3.up * infConfig["inflationMoveY"] + Vector3.forward * infConfig["inflationMoveZ"];
-            Vector3 userShiftTransforms = Vector3.down * infConfig["inflationShiftY"] + Vector3.forward * infConfig["inflationShiftZ"];
-
             //Get normal mesh root attachment position
             var meshRoot = GameObject.Find("cf_o_root");
             if (meshRoot == null) return false;
-
-            // PregnancyPlusPlugin.Logger.LogInfo(" ");            
-            // PregnancyPlusPlugin.Logger.LogInfo(
-            //     $" {smr.name} >  smr {smr.transform.position}   meshRoot {meshRoot.transform.position}");
                         
-            var isUncensorBody = PregnancyPlusHelper.IsUncensorBody(ChaControl, UncensorCOMName, DefaultBodyFemaleGUID);
+            var isUncensorBody = PregnancyPlusHelper.IsUncensorBody(ChaControl, UncensorCOMName, DefaultBodyFemaleGUID);              
 
-            //set sphere center and allow for adjusting its position from the UI sliders     
-            Vector3 sphereCenter = meshRoot.transform.position + userMoveTransforms; 
-            Vector3 sphereCenterUncesorFix = meshRoot.transform.position + (Vector3.up * (meshRoot.transform.position.y - ChaControl.transform.position.y)) + userMoveTransforms;               
+            //set sphere center and allow for adjusting its position from the UI sliders  
+            //Sphere slider adjustments need to be transformed to local space first to eliminate any character rotation in world space   
+            Vector3 sphereCenter = meshRoot.transform.position + GetUserMoveTransform(meshRoot.transform); 
+            //For uncensor, move the mesh vectors up by an additional meshRoot.y
+            Vector3 sphereCenterUncesorFix = meshRoot.transform.position + (meshRoot.transform.up * FastDistance(meshRoot.transform.position, ChaControl.transform.position)) + GetUserMoveTransform(meshRoot.transform);             
+
+            // PregnancyPlusPlugin.Logger.LogInfo($" sphereCenter {sphereCentero} new sphereCenter {sphereCenter}");
 
             var rendererName = GetMeshKey(smr);         
             originalVertices[rendererName] = smr.sharedMesh.vertices;
@@ -325,16 +321,16 @@ namespace KK_PregnancyPlus
                     if (!isClothingMesh) 
                     {                        
                         sphereCenter = isUncensorBody ? sphereCenterUncesorFix : sphereCenter;//Fix for uncensor local vertex positions being different than default body mesh
-                        verticieToSphere = (origVertWS - sphereCenter).normalized * sphereRadius + sphereCenter + userShiftTransforms;                     
+                        verticieToSphere = (origVertWS - sphereCenter).normalized * sphereRadius + sphereCenter + GetUserShiftTransform(meshRoot.transform);                     
                     }
                     else 
                     {
                         //Clothes need some more loving to get them to stop clipping at max size
-                        verticieToSphere = (origVertWS - sphereCenter).normalized * (sphereRadius + 0.003f) + sphereCenter + userShiftTransforms;                                           
+                        verticieToSphere = (origVertWS - sphereCenter).normalized * (sphereRadius + 0.003f) + sphereCenter + GetUserShiftTransform(meshRoot.transform);                                           
                     }     
 
                     //Make minor adjustments to the shape
-                    inflatedVertWS =  SculptInflatedVerticie(origVertWS, verticieToSphere, sphereCenter, waistWidth);                    
+                    inflatedVertWS =  SculptInflatedVerticie(origVertWS, verticieToSphere, sphereCenter, waistWidth, meshRoot.transform);                    
                     inflatedVerts[i] = meshRoot.transform.InverseTransformPoint(inflatedVertWS);//Convert back to local space
                     // if (i % 100 == 0) PregnancyPlusPlugin.Logger.LogInfo($" origVertWS {origVertWS}  verticieToSphere {verticieToSphere}");
                 }
@@ -349,6 +345,14 @@ namespace KK_PregnancyPlus
             return true;                 
         }
 
+        internal Vector3 GetUserMoveTransform(Transform fromPosition) {
+            return fromPosition.up * -0.02f + fromPosition.up * infConfig["inflationMoveY"] + fromPosition.forward * infConfig["inflationMoveZ"];
+        }
+
+        internal Vector3 GetUserShiftTransform(Transform fromPosition) {
+            return fromPosition.up * infConfig["inflationShiftY"] + fromPosition.forward * infConfig["inflationShiftZ"];
+        }
+
         /// <summary>
         /// This will take the sphere-ified verticies and apply smoothing to them via Lerps, to remove sharp edges, 
         /// and make the belly more belly like
@@ -356,9 +360,9 @@ namespace KK_PregnancyPlus
         /// <param name="originalVertice">The original verticie position</param>
         /// <param name="inflatedVerticie">The target verticie position, after sphere-ifying</param>
         /// <param name="sphereCenterPos">The center of the imaginary sphere</param>
-        /// <param name="rootPosition">The characters world root position</param>
-        /// <param name="isClothingMesh">Needed for clothing meshes for special positional logic to match the skin mesh position</param>
-        internal Vector3 SculptInflatedVerticie(Vector3 originalVertice, Vector3 inflatedVerticie, Vector3 sphereCenterPos, float waistWidth) 
+        /// <param name="waistWidth">The characters waist width that limits the width of the belly (future implementation)</param>
+        /// <param name="meshRootTf">The transform used to convert a mesh vector from local space to worldspace and back</param>
+        internal Vector3 SculptInflatedVerticie(Vector3 originalVertice, Vector3 inflatedVerticie, Vector3 sphereCenterPos, float waistWidth, Transform meshRootTf) 
         {
             //No smoothing modification in debug mode
             if (debug) return inflatedVerticie;            
@@ -376,35 +380,49 @@ namespace KK_PregnancyPlus
             var ySmoothDist = maxSphereRadius/2f;//Only smooth the top half of y
 
             //Allow user adjustment of the width of the belly
-            if (infConfig["inflationStretchX"] != 0) {       
-                float xPos; 
+            if (infConfig["inflationStretchX"] != 0) {   
+                //Get local space position to eliminate rotation in world space
+                var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
+                var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenterPos);
                 //local Distance left or right from sphere center
-                var distFromXCenter = smoothedVector.x - sphereCenterPos.x;
+                var distFromXCenterLs = smoothedVectorLs.x - sphereCenterLs.x;                
 
-                var changeInDist = distFromXCenter * (infConfig["inflationStretchX"] + 1);   
-                xPos = sphereCenterPos.x + changeInDist;
+                var changeInDist = distFromXCenterLs * (infConfig["inflationStretchX"] + 1);  
+                //Get new local space X position
+                smoothedVectorLs.x = (sphereCenterLs + Vector3.right * changeInDist).x;
 
-                smoothedVector = new Vector3(xPos, smoothedVector.y, smoothedVector.z);         
+                //Convert back to world space
+                smoothedVector = meshRootTf.TransformPoint(smoothedVectorLs);         
             }
 
             //Allow user adjustment of the height of the belly
-            if (infConfig["inflationStretchY"] != 0) {    
-                float yPos;
+            if (infConfig["inflationStretchY"] != 0) {   
+                //Get local space position to eliminate rotation in world space
+                var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
+                var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenterPos);
+
                 //local Distance up or down from sphere center
-                var distFromYCenter = smoothedVector.y - sphereCenterPos.y;
+                var distFromYCenterLs = smoothedVectorLs.y - sphereCenterLs.y; 
                 
                 //have to change growth direction above and below center line
-                var changeInDist = distFromYCenter * (infConfig["inflationStretchY"] + 1);  
-                yPos = sphereCenterPos.y + changeInDist;
+                var changeInDist = distFromYCenterLs * (infConfig["inflationStretchY"] + 1);  
+                //Get new local space X position
+                smoothedVectorLs.y = (sphereCenterLs + Vector3.up * changeInDist).y;
                 
-                smoothedVector = new Vector3(smoothedVector.x, yPos, smoothedVector.z);         
+                //Convert back to world space
+                smoothedVector = meshRootTf.TransformPoint(smoothedVectorLs);        
             }
 
-            var forwardFromCenter = smoothedVector.z - sphereCenterPos.z;
             //Remove the skin cliff where the inflation begins
+            //To calculate vectors z difference, we need to do it from local space to eliminate any character rotation in world space
+            var forwardFromCenter = meshRootTf.InverseTransformPoint(smoothedVector).z - meshRootTf.InverseTransformPoint(sphereCenterPos).z;            
             if (forwardFromCenter <= zSmoothDist) {
+                //Get local space vectors to eliminate rotation in world space
+                var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
+                var originalVerticeLs = meshRootTf.InverseTransformPoint(originalVertice);
                 var lerpScale = Mathf.Abs(forwardFromCenter/zSmoothDist);
-                smoothedVector = Vector3.Lerp(originalVertice, smoothedVector, lerpScale);
+                //Back to world space
+                smoothedVector = meshRootTf.TransformPoint(Vector3.Lerp(originalVerticeLs, smoothedVectorLs, lerpScale));
             }
 
             // //Experimental, move more polygons to the front of the belly at max, Measured by trying to keep belly button size the same at 0 and max inflation size
