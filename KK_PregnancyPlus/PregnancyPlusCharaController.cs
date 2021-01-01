@@ -12,8 +12,6 @@ namespace KK_PregnancyPlus
     public class PregnancyPlusCharaController: CharaCustomFunctionController
     {
         internal bool debug = false;//In debug mode, all verticies are affected.  Makes it easier to see what is actually happening in studio mode.  Also creates nightmares
-        public  bool storyMode = false;//Some bugs to work out here
-
 
 #region props
         //Contsins the mesh inflation configuration
@@ -69,7 +67,7 @@ namespace KK_PregnancyPlus
         protected override void Awake() 
         {          
             InitInflationConfig();            
-            if (storyMode) CharacterApi.CharacterReloaded += OnCharacterReloaded;            
+            if (PregnancyPlusPlugin.StoryMode.Value) CharacterApi.CharacterReloaded += OnCharacterReloaded;            
 
             base.Awake();
         }
@@ -82,7 +80,7 @@ namespace KK_PregnancyPlus
 
         protected override void OnReload(GameMode currentGameMode)
         {
-            if (storyMode) GetWeeksAndSetInflation();
+            if (PregnancyPlusPlugin.StoryMode.Value) GetWeeksAndSetInflation();
         }
 
         protected override void Update()
@@ -165,8 +163,10 @@ namespace KK_PregnancyPlus
             var waistWidth = measuerments.Item1; 
             var sphereRadius = measuerments.Item2;
 
-            // var allMeshRenderers = ChaControl.GetComponentsInChildren<SkinnedMeshRenderer>(true);
+            // var allMeshRenderers = UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects();//.GetComponentsInChildren<Renderer>(true);
+            // var renderers = UnityEngine.Object.FindObjectsOfType<MeshFilter>();
             // PregnancyPlusPlugin.Logger.LogInfo($"allMeshRenderers > {allMeshRenderers.Length}");
+            // PregnancyPlusPlugin.Logger.LogInfo($"MeshFilter > {renderers.Length}");
             
             var anyMeshChanges = false;
 
