@@ -177,7 +177,7 @@ namespace KK_PregnancyPlus
                 // PregnancyPlusPlugin.Logger.LogInfo($"   > {skinnedMeshRenderer.name}");         
                 var foundVerts = ComputeMeshVerts(skinnedMeshRenderer, sphereRadius, waistWidth, true);
                 if (!foundVerts) continue;
-                var appliedClothMeshChanges = ApplyInflation(skinnedMeshRenderer.sharedMesh, GetMeshKey(skinnedMeshRenderer));
+                var appliedClothMeshChanges = ApplyInflation(skinnedMeshRenderer, GetMeshKey(skinnedMeshRenderer));
 
                 if (appliedClothMeshChanges) anyMeshChanges = true;
             }             
@@ -188,7 +188,7 @@ namespace KK_PregnancyPlus
             {
                 var foundVerts = ComputeMeshVerts(skinnedMeshRenderer, sphereRadius, waistWidth);  
                 if (!foundVerts) continue;
-                var appliedBodyMeshChanges = ApplyInflation(skinnedMeshRenderer.sharedMesh, GetMeshKey(skinnedMeshRenderer));
+                var appliedBodyMeshChanges = ApplyInflation(skinnedMeshRenderer, GetMeshKey(skinnedMeshRenderer));
                 if (appliedBodyMeshChanges) anyMeshChanges = true;                      
             }
 
@@ -641,11 +641,17 @@ namespace KK_PregnancyPlus
         /// <param name="mesh">Target mesh to update</param>
         /// <param name="renderKey">The Shared Mesh render name, used in dictionary keys to get the current verticie values</param>
         /// <returns>Will return True if any verticies are changed</returns>
-        internal bool ApplyInflation(Mesh mesh, string renderKey) 
+        internal bool ApplyInflation(SkinnedMeshRenderer smr, string renderKey) 
         {
             var infSize = infConfig["inflationSize"];
             //Only inflate if the value changed        
-            if (infSize.Equals(null) || infSize == 0) return false;            
+            if (infSize.Equals(null) || infSize == 0) return false;      
+
+            //Create an instance of sharedMesh so we don't modify the mesh shared between characters
+            Mesh meshCopy = (Mesh)UnityEngine.Object.Instantiate(smr.sharedMesh);    
+            smr.sharedMesh = meshCopy;
+
+            var sharedMesh = smr.sharedMesh;
 
             // StartInflate(balloon);
             var origVert = originalVertices[renderKey];
@@ -663,16 +669,16 @@ namespace KK_PregnancyPlus
                 currentVert[i] = Vector3.Lerp(origVert[i], inflatedVertices[renderKey][i], (infSize/40));
             }
 
-            if (currentVert.Length != mesh.vertexCount) 
+            if (currentVert.Length != sharedMesh.vertexCount) 
             {
                 PregnancyPlusPlugin.Logger.LogInfo(
-                            $"ApplyInflation > smr '{renderKey}' has incorrect vert count {currentVert.Length}|{mesh.vertexCount}");
+                            $"ApplyInflation > smr '{renderKey}' has incorrect vert count {currentVert.Length}|{sharedMesh.vertexCount}");
             }
 
-            mesh.vertices = currentVert;
-            mesh.RecalculateBounds();
-            mesh.RecalculateNormals();
-            mesh.RecalculateTangents();
+            sharedMesh.vertices = currentVert;
+            sharedMesh.RecalculateBounds();
+            sharedMesh.RecalculateNormals();
+            sharedMesh.RecalculateTangents();
 
             return true;
         }    
@@ -685,11 +691,15 @@ namespace KK_PregnancyPlus
             //For every active meshRenderer.name
             foreach(var renderKey in keyList) 
             {
-                var renderer = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderKey);
+                var smr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderKey);
                 //Normally triggered when user changes clothes, the old clothes render wont be found
-                if (renderer == null) continue;                
+                if (smr == null) continue;                
 
-                var sharedMesh = renderer.sharedMesh;
+                //Create an instance of sharedMesh so we don't modify the mesh shared between characters
+                Mesh meshCopy = (Mesh)UnityEngine.Object.Instantiate(smr.sharedMesh);
+                smr.sharedMesh = meshCopy;
+
+                var sharedMesh = smr.sharedMesh;
                 var success = originalVertices.TryGetValue(renderKey, out Vector3[] origVerts); 
 
                 //On change clothes original verts become useless, so skip this
