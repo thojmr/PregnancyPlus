@@ -162,11 +162,6 @@ namespace KK_PregnancyPlus
             var measuerments = MeasureWaist(ChaControl);         
             var waistWidth = measuerments.Item1; 
             var sphereRadius = measuerments.Item2;
-
-            // var allMeshRenderers = UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects();//.GetComponentsInChildren<Renderer>(true);
-            // var renderers = UnityEngine.Object.FindObjectsOfType<MeshFilter>();
-            // PregnancyPlusPlugin.Logger.LogInfo($"allMeshRenderers > {allMeshRenderers.Length}");
-            // PregnancyPlusPlugin.Logger.LogInfo($"MeshFilter > {renderers.Length}");
             
             var anyMeshChanges = false;
 
@@ -239,7 +234,7 @@ namespace KK_PregnancyPlus
         /// <param name="chaControl">The character to measure</param>
         internal Tuple<float, float> MeasureWaist(ChaControl chaControl) 
         {
-            //Get belly size base calculations
+            //Get the characters bones to measure from
             var ribBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "cf_s_spine02");
             var waistBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "cf_s_waist02");
             var waistToRibDist = Math.Abs(FastDistance(ribBone.position, waistBone.position));  
@@ -255,7 +250,7 @@ namespace KK_PregnancyPlus
         }
 
         /// <summary>
-        /// Just a simple function to combine searching for verts in a mesh, and then applying the transforms
+        /// Just a helper function to combine searching for verts in a mesh, and then applying the transforms
         /// </summary>
         internal bool ComputeMeshVerts(SkinnedMeshRenderer smr, float sphereRadius, float waistWidth, bool isClothingMesh = false) 
         {
@@ -270,7 +265,7 @@ namespace KK_PregnancyPlus
         }
 
         /// <summary>
-        /// Does the verticie morph calculations to make a sphere out of the belly verticies, and updates the verticie
+        /// Does the vertex morph calculations to make a sphere out of the belly verticies, and updates the vertex
         /// dictionaries apprporiately
         /// </summary>
         /// <param name="skinnedMeshRenderer">The mesh renderer target</param>
@@ -672,7 +667,8 @@ namespace KK_PregnancyPlus
             if (currentVert.Length != sharedMesh.vertexCount) 
             {
                 PregnancyPlusPlugin.Logger.LogInfo(
-                            $"ApplyInflation > smr '{renderKey}' has incorrect vert count {currentVert.Length}|{sharedMesh.vertexCount}");
+                            $"ApplyInflation > smr.sharedMesh '{renderKey}' has incorrect vert count {currentVert.Length}|{sharedMesh.vertexCount}");
+                return false;
             }
 
             sharedMesh.vertices = currentVert;

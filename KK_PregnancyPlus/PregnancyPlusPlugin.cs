@@ -22,7 +22,7 @@ namespace KK_PregnancyPlus
             Logger = base.Logger;     
 
 #if (Debug || DEBUG)
-            StoryMode = Config.Bind<bool>("", "Enable in story mode (lots o bugs)", false, "This will add PregnancyPlus size slider in addition to the KK_Pregnancy slider, but be aware that it is super buggy right now with clothing.");
+            StoryMode = Config.Bind<bool>("", "Enable in story mode (clothing bugs)", false, "This will combine the effects of KK_PregnancyPlus with KK_Pregnancy (larger and rounder belly overall), but be aware that you will see lots of clothes clipping at large sizes.");
             StoryMode.SettingChanged += StoryMode_SettingsChanged;
 #endif
 
