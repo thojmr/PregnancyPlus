@@ -4,4 +4,4 @@
 ::CLear last release
 rd /s /q "./release"
 
-"%ProgramFiles%\7-Zip\7z.exe" a -tzip "./release/KK_PregnancyPlus v0.4.zip" "./bin/BepinEx" -mx0
+"%ProgramFiles%\7-Zip\7z.exe" a -tzip "./release/KK_PregnancyPlus v0.5.zip" "./bin/BepinEx" -mx0
