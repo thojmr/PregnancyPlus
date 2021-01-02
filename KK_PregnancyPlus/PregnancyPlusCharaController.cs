@@ -67,7 +67,9 @@ namespace KK_PregnancyPlus
         protected override void Awake() 
         {          
             InitInflationConfig();            
-            if (PregnancyPlusPlugin.StoryMode.Value) CharacterApi.CharacterReloaded += OnCharacterReloaded;            
+            if (PregnancyPlusPlugin.StoryMode != null) {
+                if (PregnancyPlusPlugin.StoryMode.Value) CharacterApi.CharacterReloaded += OnCharacterReloaded;            
+            }
 
             base.Awake();
         }
@@ -80,7 +82,9 @@ namespace KK_PregnancyPlus
 
         protected override void OnReload(GameMode currentGameMode)
         {
-            if (PregnancyPlusPlugin.StoryMode.Value) GetWeeksAndSetInflation();
+            if (PregnancyPlusPlugin.StoryMode != null) {
+                if (PregnancyPlusPlugin.StoryMode.Value) GetWeeksAndSetInflation();
+            }
         }
 
         protected override void Update()
