@@ -64,7 +64,7 @@ namespace KK_PregnancyPlus
 #region overrides
         protected override void OnCardBeingSaved(GameMode currentGameMode)
         {
-
+            //TODO add logic to save slider values to card or scene?
         }
 
         protected override void Awake() 
@@ -79,11 +79,22 @@ namespace KK_PregnancyPlus
         protected override void Start() 
         {
 #if KK            
+            //Detect clothing change in KK
             CurrentCoordinate.Subscribe(value => { OnCoordinateLoaded(); });
 #endif
 
             base.Start();
         }
+
+#if HS2
+        //The Hs2 way to detect clothing change in studio
+        protected override void OnCoordinateBeingLoaded(ChaFileCoordinate coordinate) {
+            // PregnancyPlusPlugin.Logger.LogInfo($" OnCoordinateBeingLoaded > "); 
+            OnCoordinateLoaded();
+
+            base.OnCoordinateBeingLoaded(coordinate);
+        }
+#endif
 
         protected override void OnReload(GameMode currentGameMode)
         {
@@ -94,10 +105,8 @@ namespace KK_PregnancyPlus
 
         protected override void Update()
         {
-            //Just for testing story mode
-            // if (Data != null && Data.Week >= 0) {
-                // MeshInflate(true);
-            // }
+            //just for testing, pretty compute heavy for Update()
+            // MeshInflate(true);
         }
         
 #endregion
@@ -119,8 +128,9 @@ namespace KK_PregnancyPlus
 
         //After clothes change you have to wait a second if you want shadows to calculate correctly
         IEnumerator WaitForMeshToSettle()
-        {
-            yield return new WaitForSeconds(0.05f);
+        {   
+            var waitTime = 0.10f;
+            yield return new WaitForSeconds(waitTime);
             MeshInflate(true);
         }
 
@@ -243,14 +253,17 @@ namespace KK_PregnancyPlus
         /// <param name="chaControl">The character to measure</param>
         internal Tuple<float, float> MeasureWaist(ChaControl chaControl) 
         {
-            //Get the characters bones to measure from
-#if KK            
-            var ribBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "cf_s_spine02");
-            var waistBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "cf_s_waist02");
-            var waistToRibDist = Math.Abs(FastDistance(ribBone.position, waistBone.position));  
+#if KK
+            var ribName = "cf_J_Spine02_s";
+            var waistName = "cf_J_Kosi02";
 #elif HS2
-            var waistToRibDist = 1000;
-#endif
+            var ribName = "cf_J_Spine02_s";
+            var waistName = "cf_J_Kosi02";
+#endif            
+            //Get the characters bones to measure from           
+            var ribBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == ribName);
+            var waistBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == waistName);
+            var waistToRibDist = Math.Abs(FastDistance(ribBone.position, waistBone.position));  
 
 #if KK
             var thighLName = "cf_j_thigh00_L";
@@ -502,6 +515,12 @@ namespace KK_PregnancyPlus
             var hasBellyVerticies = false;
             var hasBoneFilters = boneFilters != null && boneFilters.Length > 0;
 
+            if (!sharedMesh.isReadable) {
+                PregnancyPlusPlugin.Logger.LogInfo(
+                    $"GetFilteredVerticieIndexes > smr '{renderKey}' is not readable, skipping");
+                    return false;
+            }
+
             //Do a quick check to see if we need to fetch the bone indexes again.  ex: on second call we should allready have them
             //This saves a lot on compute apparently!            
             var isInitialized = bellyVerticieIndexes.TryGetValue(renderKey, out bool[] existingValues);
@@ -688,6 +707,12 @@ namespace KK_PregnancyPlus
 
             var sharedMesh = smr.sharedMesh;
 
+            if (!sharedMesh.isReadable) {
+                PregnancyPlusPlugin.Logger.LogInfo(
+                    $"ApplyInflation > smr '{renderKey}' is not readable, skipping");
+                    return false;
+            } 
+
             // StartInflate(balloon);
             var origVert = originalVertices[renderKey];
             var currentVert = currentVertices[renderKey];
@@ -739,7 +764,12 @@ namespace KK_PregnancyPlus
                 var success = originalVertices.TryGetValue(renderKey, out Vector3[] origVerts); 
 
                 //On change clothes original verts become useless, so skip this
-                if (!success) return;           
+                if (!success) return;          
+                if (!sharedMesh.isReadable) {
+                    PregnancyPlusPlugin.Logger.LogInfo(
+                        $"ResetInflation > smr '{renderKey}' is not readable, skipping");
+                        continue;
+                } 
 
                 if (!sharedMesh || origVerts.Equals(null) || origVerts.Length == 0) continue;
                 if (origVerts.Length != sharedMesh.vertexCount) 
