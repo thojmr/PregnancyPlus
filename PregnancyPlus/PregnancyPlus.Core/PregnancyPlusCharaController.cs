@@ -248,20 +248,19 @@ namespace KK_PregnancyPlus
             var ribBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "cf_s_spine02");
             var waistBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "cf_s_waist02");
             var waistToRibDist = Math.Abs(FastDistance(ribBone.position, waistBone.position));  
-#endif
-#if HS2
+#elif HS2
             var waistToRibDist = 1000;
 #endif
 
 #if KK
-            var thighLBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "cf_j_thigh00_L");        
-            var thighRBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "cf_j_thigh00_R");                     
+            var thighLName = "cf_j_thigh00_L";
+            var thighRName = "cf_j_thigh00_R";                    
+#elif HS2
+            var thighLName = "cf_J_LegUp00_L";
+            var thighRName = "cf_J_LegUp00_R";
 #endif
-
-#if HS2
-            var thighLBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "cf_J_LegUp00_L");        
-            var thighRBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "cf_J_LegUp00_R");  
-#endif
+            var thighLBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == thighLName);        
+            var thighRBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == thighRName); 
             var waistWidth = Math.Abs(FastDistance(thighLBone.position, thighRBone.position)); 
 
             //Calculate sphere radius based on distance from waist to ribs (seems big, but lerping later will trim much of it), added Math.Min for skinny waists
@@ -278,9 +277,7 @@ namespace KK_PregnancyPlus
             //The list of bones to get verticies for
 #if KK            
             var boneFilters = new string[] { "cf_s_spine02", "cf_s_waist01" };//"cs_s_spine01" "cf_s_waist02" optionally for wider affected area
-#endif
-
-#if HS2
+#elif HS2
             var boneFilters = new string[] { "cf_J_Spine02_s", "cf_J_Kosi01_s" };
 #endif
             var hasVerticies = GetFilteredVerticieIndexes(smr, debug ? null : boneFilters);        
@@ -303,13 +300,12 @@ namespace KK_PregnancyPlus
         internal bool GetInflatedVerticies(SkinnedMeshRenderer smr, float sphereRadius, float waistWidth, bool isClothingMesh = false) 
         {
             if (smr == null) return false;
-
-            //Get normal mesh root attachment position            
+                      
 #if KK
+            //Get normal mesh root attachment position  
             var meshRoot = GameObject.Find("cf_o_root");
-#endif
-
-#if HS2
+#elif HS2
+            //For HS2, get the equivalent position game object (near bellybutton)//TODO maybe just make this the belly button for all
             var meshRoot = GameObject.Find("cf_J_Spine01");
 #endif
             if (meshRoot == null) return false;
@@ -323,9 +319,10 @@ namespace KK_PregnancyPlus
             Vector3 sphereCenterUncesorFix = meshRoot.transform.position + (meshRoot.transform.up * FastDistance(meshRoot.transform.position, ChaControl.transform.position)) + GetUserMoveTransform(meshRoot.transform);             
 
 #if HS2
+            //All mesh origins are character origin 0,0,0 in HS2, and mixed positions in KK
             sphereCenter = sphereCenterUncesorFix;            
 #endif
-            // PregnancyPlusPlugin.Logger.LogInfo($" sphereCenter {sphereCentero} new sphereCenter {sphereCenter}");
+            // PregnancyPlusPlugin.Logger.LogInfo($" sphereCenter {sphereCenter} char origin {ChaControl.transform.position}");
 
             var rendererName = GetMeshKey(smr);         
             originalVertices[rendererName] = smr.sharedMesh.vertices;
