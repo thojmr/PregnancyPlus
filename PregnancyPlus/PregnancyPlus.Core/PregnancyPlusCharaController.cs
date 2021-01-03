@@ -324,7 +324,7 @@ namespace KK_PregnancyPlus
             if (meshRoot == null) return false;
                         
             //set sphere center and allow for adjusting its position from the UI sliders  
-            Vector3 sphereCenter = GetSphereCenter(meshRoot.transform);
+            Vector3 sphereCenter = GetSphereCenter(meshRoot.transform, isClothingMesh);
 
             var rendererName = GetMeshKey(smr);         
             originalVertices[rendererName] = smr.sharedMesh.vertices;

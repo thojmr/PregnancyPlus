@@ -1,7 +1,7 @@
 ::Zips the dll into the correct directory structure for release
 ::Make sure to increment the version
 
-set kk_version=0.5
+set kk_version=0.6
 set kk_name=KK_PregnancyPlus
 set hs2_name=HS2_PregnancyPlus
 
