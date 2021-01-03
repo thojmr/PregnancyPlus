@@ -6,6 +6,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UniRx;
+#if HS2
+using AIChara;
+#endif
 
 namespace KK_PregnancyPlus
 {
@@ -61,7 +64,7 @@ namespace KK_PregnancyPlus
 #region overrides
         protected override void OnCardBeingSaved(GameMode currentGameMode)
         {
-
+            //TODO add logic to save slider values to card or scene?
         }
 
         protected override void Awake() 
@@ -75,10 +78,23 @@ namespace KK_PregnancyPlus
         }
         protected override void Start() 
         {
+#if KK            
+            //Detect clothing change in KK
             CurrentCoordinate.Subscribe(value => { OnCoordinateLoaded(); });
+#endif
 
             base.Start();
         }
+
+#if HS2
+        //The Hs2 way to detect clothing change in studio
+        protected override void OnCoordinateBeingLoaded(ChaFileCoordinate coordinate) {
+            // PregnancyPlusPlugin.Logger.LogInfo($" OnCoordinateBeingLoaded > "); 
+            OnCoordinateLoaded();
+
+            base.OnCoordinateBeingLoaded(coordinate);
+        }
+#endif
 
         protected override void OnReload(GameMode currentGameMode)
         {
@@ -89,10 +105,8 @@ namespace KK_PregnancyPlus
 
         protected override void Update()
         {
-            //Just for testing story mode
-            // if (Data != null && Data.Week >= 0) {
-                // MeshInflate(true);
-            // }
+            //just for testing, pretty compute heavy for Update()
+            // MeshInflate(true);
         }
         
 #endregion
@@ -114,8 +128,9 @@ namespace KK_PregnancyPlus
 
         //After clothes change you have to wait a second if you want shadows to calculate correctly
         IEnumerator WaitForMeshToSettle()
-        {
-            yield return new WaitForSeconds(0.05f);
+        {   
+            var waitTime = 0.10f;
+            yield return new WaitForSeconds(waitTime);
             MeshInflate(true);
         }
 
@@ -238,15 +253,29 @@ namespace KK_PregnancyPlus
         /// <param name="chaControl">The character to measure</param>
         internal Tuple<float, float> MeasureWaist(ChaControl chaControl) 
         {
-            //Get the characters bones to measure from
-            var ribBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "cf_s_spine02");
-            var waistBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "cf_s_waist02");
+#if KK
+            var ribName = "cf_s_spine02";
+            var waistName = "cf_s_waist02";
+#elif HS2
+            var ribName = "cf_J_Spine02_s";
+            var waistName = "cf_J_Kosi02";
+#endif            
+            //Get the characters bones to measure from           
+            var ribBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == ribName);
+            var waistBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == waistName);
             var waistToRibDist = Math.Abs(FastDistance(ribBone.position, waistBone.position));  
 
-            var thighLBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "cf_j_thigh00_L");        
-            var thighRBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "cf_j_thigh00_R");                    
-            var waistWidth = Math.Abs(FastDistance(thighLBone.position, thighRBone.position));  
-          
+#if KK
+            var thighLName = "cf_j_thigh00_L";
+            var thighRName = "cf_j_thigh00_R";                    
+#elif HS2
+            var thighLName = "cf_J_LegUp00_L";
+            var thighRName = "cf_J_LegUp00_R";
+#endif
+            var thighLBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == thighLName);        
+            var thighRBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == thighRName); 
+            var waistWidth = Math.Abs(FastDistance(thighLBone.position, thighRBone.position)); 
+
             //Calculate sphere radius based on distance from waist to ribs (seems big, but lerping later will trim much of it), added Math.Min for skinny waists
             var sphereRadius = Math.Min(waistToRibDist/1.25f, waistWidth/1.2f) * (infConfig["inflationMultiplier"] + 1); 
 
@@ -259,8 +288,12 @@ namespace KK_PregnancyPlus
         internal bool ComputeMeshVerts(SkinnedMeshRenderer smr, float sphereRadius, float waistWidth, bool isClothingMesh = false) 
         {
             //The list of bones to get verticies for
+#if KK            
             var boneFilters = new string[] { "cf_s_spine02", "cf_s_waist01" };//"cs_s_spine01" "cf_s_waist02" optionally for wider affected area
-            var hasVerticies = GetFilteredVerticieIndexes(smr, debug ? null : boneFilters);
+#elif HS2
+            var boneFilters = new string[] { "cf_J_Spine02_s", "cf_J_Kosi01_s" };
+#endif
+            var hasVerticies = GetFilteredVerticieIndexes(smr, debug ? null : boneFilters);        
 
             //If no belly verts found, then we can skip this mesh
             if (!hasVerticies) return false; 
@@ -280,20 +313,18 @@ namespace KK_PregnancyPlus
         internal bool GetInflatedVerticies(SkinnedMeshRenderer smr, float sphereRadius, float waistWidth, bool isClothingMesh = false) 
         {
             if (smr == null) return false;
-
-            //Get normal mesh root attachment position
+                      
+#if KK
+            //Get normal mesh root attachment position  
             var meshRoot = GameObject.Find("cf_o_root");
+#elif HS2
+            //For HS2, get the equivalent position game object (near bellybutton)//TODO maybe just make this the belly button for all
+            var meshRoot = GameObject.Find("cf_J_Spine01");
+#endif
             if (meshRoot == null) return false;
                         
-            var isUncensorBody = PregnancyPlusHelper.IsUncensorBody(ChaControl, UncensorCOMName, DefaultBodyFemaleGUID);              
-
             //set sphere center and allow for adjusting its position from the UI sliders  
-            //Sphere slider adjustments need to be transformed to local space first to eliminate any character rotation in world space   
-            Vector3 sphereCenter = meshRoot.transform.position + GetUserMoveTransform(meshRoot.transform); 
-            //For uncensor, move the mesh vectors up by an additional meshRoot.y to match the default body mesh position
-            Vector3 sphereCenterUncesorFix = meshRoot.transform.position + (meshRoot.transform.up * FastDistance(meshRoot.transform.position, ChaControl.transform.position)) + GetUserMoveTransform(meshRoot.transform);             
-
-            // PregnancyPlusPlugin.Logger.LogInfo($" sphereCenter {sphereCentero} new sphereCenter {sphereCenter}");
+            Vector3 sphereCenter = GetSphereCenter(meshRoot.transform);
 
             var rendererName = GetMeshKey(smr);         
             originalVertices[rendererName] = smr.sharedMesh.vertices;
@@ -303,7 +334,14 @@ namespace KK_PregnancyPlus
             var origVerts = originalVertices[rendererName];
             var inflatedVerts = inflatedVertices[rendererName];
             var currentVerts = currentVertices[rendererName];
-            var bellyVertIndex = bellyVerticieIndexes[rendererName];           
+            var bellyVertIndex = bellyVerticieIndexes[rendererName];    
+
+#if KK
+            float clothesOffset = 0.003f;       
+#elif HS2
+            //Everything is bigger in HS2 :/
+            float clothesOffset = 0.035f;       
+#endif            
 
             //Set each verticies inflated postion, with some constraints (SculptInflatedVerticie) to make it look more natural
             for (int i = 0; i < origVerts.Length; i++)
@@ -314,19 +352,18 @@ namespace KK_PregnancyPlus
                 if (bellyVertIndex[i]) 
                 {                    
                     Vector3 inflatedVertWS;                    
-                    Vector3 verticieToSphere;  
+                    Vector3 verticieToSphere;                      
                     var origVertWS = meshRoot.transform.TransformPoint(origVerts[i]);//Convert to worldspace
 
                     //Shift each belly vertex away from sphere center
                     if (!isClothingMesh) 
                     {                        
-                        sphereCenter = isUncensorBody ? sphereCenterUncesorFix : sphereCenter;//Fix for uncensor local vertex positions being different than default body mesh
                         verticieToSphere = (origVertWS - sphereCenter).normalized * sphereRadius + sphereCenter + GetUserShiftTransform(meshRoot.transform);                     
                     }
                     else 
                     {
                         //Clothes need some more loving to get them to stop clipping at max size
-                        verticieToSphere = (origVertWS - sphereCenter).normalized * (sphereRadius + 0.003f) + sphereCenter + GetUserShiftTransform(meshRoot.transform);                                           
+                        verticieToSphere = (origVertWS - sphereCenter).normalized * (sphereRadius + clothesOffset) + sphereCenter + GetUserShiftTransform(meshRoot.transform);                                           
                     }     
 
                     //Make minor adjustments to the shape
@@ -345,8 +382,42 @@ namespace KK_PregnancyPlus
             return true;                 
         }
 
+        /// <summary>
+        /// Calculates the position of the inflation sphere.  It appends users selected slider values as well.
+        /// </summary>
+        /// <param name="boneOrMeshTf">The transform where you want the sphere to be located at (near belly buttom)</param>
+        /// <param name="isClothingMesh"></param>
+        internal Vector3 GetSphereCenter(Transform boneOrMeshTf, bool isClothingMesh = false) {
+            //set sphere center and allow for adjusting its position from the UI sliders  
+
+            var isUncensorBody = PregnancyPlusHelper.IsUncensorBody(ChaControl, UncensorCOMName, DefaultBodyFemaleGUID); 
+
+            //Sphere slider adjustments need to be transformed to local space first to eliminate any character rotation in world space   
+            Vector3 sphereCenter = boneOrMeshTf.transform.position + GetUserMoveTransform(boneOrMeshTf.transform) + GetBellyButtonOffset(boneOrMeshTf.transform); 
+            //For uncensor, move the mesh vectors up by an additional meshRoot.y to match the default body mesh position
+            Vector3 sphereCenterUncesorFix = boneOrMeshTf.transform.position + (boneOrMeshTf.transform.up * FastDistance(boneOrMeshTf.transform.position, ChaControl.transform.position)) + GetUserMoveTransform(boneOrMeshTf.transform) + GetBellyButtonOffset(boneOrMeshTf.transform);             
+
+#if HS2
+            //All mesh origins are character origin 0,0,0 in HS2, and mixed positions in KK
+            sphereCenter = sphereCenterUncesorFix;            
+#elif KK
+            //Fix for uncensor mesh position
+            if (!isClothingMesh) {
+                sphereCenter = isUncensorBody ? sphereCenterUncesorFix : sphereCenter;//Fix for uncensor local vertex positions being different than default body mesh
+            }
+#endif
+
+            // PregnancyPlusPlugin.Logger.LogInfo($" sphereCenter {sphereCenter} char origin {ChaControl.transform.position}");
+            return sphereCenter;
+        }
+
         internal Vector3 GetUserMoveTransform(Transform fromPosition) {
-            return fromPosition.up * -0.02f + fromPosition.up * infConfig["inflationMoveY"] + fromPosition.forward * infConfig["inflationMoveZ"];
+            return fromPosition.up * infConfig["inflationMoveY"] + fromPosition.forward * infConfig["inflationMoveZ"];
+        }
+
+        internal Vector3 GetBellyButtonOffset(Transform fromPosition) {
+            //If there is not a bone close enough to belly button.y position, this can offset it to match the correct height
+            return fromPosition.up * -0.02f;
         }
 
         internal Vector3 GetUserShiftTransform(Transform fromPosition) {
@@ -361,23 +432,31 @@ namespace KK_PregnancyPlus
         /// <param name="inflatedVerticie">The target verticie position, after sphere-ifying</param>
         /// <param name="sphereCenterPos">The center of the imaginary sphere</param>
         /// <param name="waistWidth">The characters waist width that limits the width of the belly (future implementation)</param>
-        /// <param name="meshRootTf">The transform used to convert a mesh vector from local space to worldspace and back</param>
+        /// <param name="meshRootTf">The transform used to convert a mesh vector from local space to worldspace and back, also servers as the point where we want to stop making mesh changes when Z < 0</param>
         internal Vector3 SculptInflatedVerticie(Vector3 originalVertice, Vector3 inflatedVerticie, Vector3 sphereCenterPos, float waistWidth, Transform meshRootTf) 
         {
             //No smoothing modification in debug mode
             if (debug) return inflatedVerticie;            
             
-            //Clothing needs to be referenced form zero as the center?
+            //get the smoothing distance limits so we don't have weird polygons and shapes on the edges, and prevents morphs from shrinking past original skin boundary
+            var preMorphSphereCenter = sphereCenterPos - GetUserMoveTransform(meshRootTf);
+            var pmSkinToCenterDist = Math.Abs(FastDistance(preMorphSphereCenter, originalVertice));
+            var pmInflatedToCenterDist = Math.Abs(FastDistance(preMorphSphereCenter, inflatedVerticie));
             var skinToCenterDist = Math.Abs(FastDistance(sphereCenterPos, originalVertice));
-            var maxSphereRadius = Math.Abs(FastDistance(sphereCenterPos, inflatedVerticie));
+            var inflatedToCenterDist = Math.Abs(FastDistance(sphereCenterPos, inflatedVerticie));
             var waistRadius = waistWidth/2;
             
+            // PregnancyPlusPlugin.Logger.LogInfo($" ");
+            // PregnancyPlusPlugin.Logger.LogInfo($" preMorphSphereCenter {preMorphSphereCenter} sphereCenterPos {sphereCenterPos} meshRootTf.pos {meshRootTf.position}");
+            // PregnancyPlusPlugin.Logger.LogInfo($" skinToCenterDist {skinToCenterDist} inflatedToCenterDist {inflatedToCenterDist}");
+            // PregnancyPlusPlugin.Logger.LogInfo($" morphedSphereRadius {morphedSphereRadius}  waistRadius {waistRadius}");
+
             //Only apply morphs if the imaginary sphere is outside of the skins boundary (Don't want to shrink anything inwards, only out)
-            if (skinToCenterDist >= maxSphereRadius) return originalVertice;        
+            if (skinToCenterDist >= inflatedToCenterDist || pmSkinToCenterDist > pmInflatedToCenterDist) return originalVertice;        
 
             var smoothedVector = inflatedVerticie;
-            var zSmoothDist = maxSphereRadius/1.75f;//Just pick a float that looks good
-            var ySmoothDist = maxSphereRadius/2f;//Only smooth the top half of y
+            var zSmoothDist = pmInflatedToCenterDist/3f;//Just pick a float that looks good
+            var ySmoothDist = pmInflatedToCenterDist/2f;//Only smooth the top half of y
 
             //Allow user adjustment of the width of the belly
             if (infConfig["inflationStretchX"] != 0) {   
@@ -415,7 +494,7 @@ namespace KK_PregnancyPlus
 
             //Remove the skin cliff where the inflation begins
             //To calculate vectors z difference, we need to do it from local space to eliminate any character rotation in world space
-            var forwardFromCenter = meshRootTf.InverseTransformPoint(smoothedVector).z - meshRootTf.InverseTransformPoint(sphereCenterPos).z;            
+            var forwardFromCenter = meshRootTf.InverseTransformPoint(smoothedVector).z - meshRootTf.InverseTransformPoint(preMorphSphereCenter).z;            
             if (forwardFromCenter <= zSmoothDist) {
                 //Get local space vectors to eliminate rotation in world space
                 var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
@@ -442,9 +521,20 @@ namespace KK_PregnancyPlus
             // }
 
             var currentVectorDistance = Math.Abs(FastDistance(sphereCenterPos, smoothedVector));
+            var pmCurrentVectorDistance = Math.Abs(FastDistance(preMorphSphereCenter, smoothedVector));
             //Don't allow any morphs to shrink skin smaller than its original position, only outward morphs allowed (check this last)
-            if (skinToCenterDist > currentVectorDistance) {
+            if (skinToCenterDist > currentVectorDistance || pmSkinToCenterDist > pmCurrentVectorDistance) {
                 return originalVertice;
+            }
+
+            //Don't allow any morphs to move behind the character's.z = 0 position, otherwise skin sometimes pokes out the back side :/
+            if (meshRootTf.position.z > smoothedVector.z) {
+                return originalVertice;
+            }
+
+            //Don't allow any morphs to move behind the original verticie z = 0 position
+            if (originalVertice.z > smoothedVector.z) {
+                return new Vector3(smoothedVector.x, smoothedVector.y, originalVertice.z);
             }
 
             return smoothedVector;             
@@ -465,6 +555,12 @@ namespace KK_PregnancyPlus
             var bellyBoneIndexes = new List<int>();
             var hasBellyVerticies = false;
             var hasBoneFilters = boneFilters != null && boneFilters.Length > 0;
+
+            if (!sharedMesh.isReadable) {
+                PregnancyPlusPlugin.Logger.LogInfo(
+                    $"GetFilteredVerticieIndexes > smr '{renderKey}' is not readable, skipping");
+                    return false;
+            }
 
             //Do a quick check to see if we need to fetch the bone indexes again.  ex: on second call we should allready have them
             //This saves a lot on compute apparently!            
@@ -652,6 +748,12 @@ namespace KK_PregnancyPlus
 
             var sharedMesh = smr.sharedMesh;
 
+            if (!sharedMesh.isReadable) {
+                PregnancyPlusPlugin.Logger.LogInfo(
+                    $"ApplyInflation > smr '{renderKey}' is not readable, skipping");
+                    return false;
+            } 
+
             // StartInflate(balloon);
             var origVert = originalVertices[renderKey];
             var currentVert = currentVertices[renderKey];
@@ -703,7 +805,12 @@ namespace KK_PregnancyPlus
                 var success = originalVertices.TryGetValue(renderKey, out Vector3[] origVerts); 
 
                 //On change clothes original verts become useless, so skip this
-                if (!success) return;           
+                if (!success) return;          
+                if (!sharedMesh.isReadable) {
+                    PregnancyPlusPlugin.Logger.LogInfo(
+                        $"ResetInflation > smr '{renderKey}' is not readable, skipping");
+                        continue;
+                } 
 
                 if (!sharedMesh || origVerts.Equals(null) || origVerts.Length == 0) continue;
                 if (origVerts.Length != sharedMesh.vertexCount) 
