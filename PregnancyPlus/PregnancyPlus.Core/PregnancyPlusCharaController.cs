@@ -254,8 +254,8 @@ namespace KK_PregnancyPlus
         internal Tuple<float, float> MeasureWaist(ChaControl chaControl) 
         {
 #if KK
-            var ribName = "cf_J_Spine02_s";
-            var waistName = "cf_J_Kosi02";
+            var ribName = "cf_s_spine02";
+            var waistName = "cf_s_waist02";
 #elif HS2
             var ribName = "cf_J_Spine02_s";
             var waistName = "cf_J_Kosi02";
@@ -438,7 +438,7 @@ namespace KK_PregnancyPlus
             //No smoothing modification in debug mode
             if (debug) return inflatedVerticie;            
             
-            //get the smoothing limits so we don't have weird polygons and shapes on the edges
+            //get the smoothing distance limits so we don't have weird polygons and shapes on the edges, and prevents morphs from shrinking past original skin boundary
             var preMorphSphereCenter = sphereCenterPos - GetUserMoveTransform(meshRootTf);
             var pmSkinToCenterDist = Math.Abs(FastDistance(preMorphSphereCenter, originalVertice));
             var pmInflatedToCenterDist = Math.Abs(FastDistance(preMorphSphereCenter, inflatedVerticie));
@@ -447,7 +447,7 @@ namespace KK_PregnancyPlus
             var waistRadius = waistWidth/2;
             
             // PregnancyPlusPlugin.Logger.LogInfo($" ");
-            // PregnancyPlusPlugin.Logger.LogInfo($" preMorphSphereCenter {preMorphSphereCenter} sphereCenterPos {sphereCenterPos}");
+            // PregnancyPlusPlugin.Logger.LogInfo($" preMorphSphereCenter {preMorphSphereCenter} sphereCenterPos {sphereCenterPos} meshRootTf.pos {meshRootTf.position}");
             // PregnancyPlusPlugin.Logger.LogInfo($" skinToCenterDist {skinToCenterDist} inflatedToCenterDist {inflatedToCenterDist}");
             // PregnancyPlusPlugin.Logger.LogInfo($" morphedSphereRadius {morphedSphereRadius}  waistRadius {waistRadius}");
 
@@ -525,6 +525,16 @@ namespace KK_PregnancyPlus
             //Don't allow any morphs to shrink skin smaller than its original position, only outward morphs allowed (check this last)
             if (skinToCenterDist > currentVectorDistance || pmSkinToCenterDist > pmCurrentVectorDistance) {
                 return originalVertice;
+            }
+
+            //Don't allow any morphs to move behind the character's.z = 0 position, otherwise skin sometimes pokes out the back side :/
+            if (meshRootTf.position.z > smoothedVector.z) {
+                return originalVertice;
+            }
+
+            //Don't allow any morphs to move behind the original verticie z = 0 position
+            if (originalVertice.z > smoothedVector.z) {
+                return new Vector3(smoothedVector.x, smoothedVector.y, originalVertice.z);
             }
 
             return smoothedVector;             

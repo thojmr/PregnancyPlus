@@ -145,7 +145,7 @@ namespace KK_PregnancyPlus
                     var exists = controller.infConfig.TryGetValue("inflationShiftY", out float inflationShiftY);  
                     if (!exists) controller.infConfig["inflationShiftY"] = 0; 
                     return controller.infConfig["inflationShiftY"];
-                }, -0.1f * scaleLimits, 0.1f * scaleLimits))
+                }, -0.05f * scaleLimits, 0.05f * scaleLimits))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
                             if (ctrl.infConfig["inflationShiftY"] == f) continue;                    
@@ -162,7 +162,7 @@ namespace KK_PregnancyPlus
                     var exists = controller.infConfig.TryGetValue("inflationShiftZ", out float inflationShiftZ);  
                     if (!exists) controller.infConfig["inflationShiftZ"] = 0; 
                     return controller.infConfig["inflationShiftZ"];
-                }, -0.1f * scaleLimits, 0.1f * scaleLimits))
+                }, -0.05f * scaleLimits, 0.05f * scaleLimits))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
                             if (ctrl.infConfig["inflationShiftZ"] == f) continue;                    
