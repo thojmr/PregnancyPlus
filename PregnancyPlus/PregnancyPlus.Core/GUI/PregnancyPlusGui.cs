@@ -28,6 +28,13 @@ namespace KK_PregnancyPlus
         {
             var cat = StudioAPI.GetOrCreateCurrentStateCategory(null);
 
+#if KK
+            var scaleLimits = 1;
+#elif HS2
+            //once again everything is bigger in HS2
+            var scaleLimits = 5;
+#endif
+
             cat.AddControl(new CurrentStateCategorySlider("Pregnancy +", c =>
                 {                                       
                     if (c.charInfo == null) return 0;
@@ -70,7 +77,7 @@ namespace KK_PregnancyPlus
                     var exists = controller.infConfig.TryGetValue("inflationMoveY", out float inflationMoveY);  
                     if (!exists) controller.infConfig["inflationMoveY"] = 0; 
                     return controller.infConfig["inflationMoveY"];
-                }, -0.20f, 0.20f))
+                }, -0.20f * scaleLimits, 0.20f * scaleLimits))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
                             if (ctrl.infConfig["inflationMoveY"] == f) continue;                    
@@ -87,7 +94,7 @@ namespace KK_PregnancyPlus
                     var exists = controller.infConfig.TryGetValue("inflationMoveZ", out float inflationMoveZ);  
                     if (!exists) controller.infConfig["inflationMoveZ"] = 0; 
                     return controller.infConfig["inflationMoveZ"];
-                }, -0.1f, 0.1f))
+                }, -0.1f * scaleLimits, 0.1f * scaleLimits))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
                             if (ctrl.infConfig["inflationMoveZ"] == f) continue;   
@@ -104,7 +111,7 @@ namespace KK_PregnancyPlus
                     var exists = controller.infConfig.TryGetValue("inflationStretchX", out float inflationStretchX);  
                     if (!exists) controller.infConfig["inflationStretchX"] = 0; 
                     return controller.infConfig["inflationStretchX"];
-                }, -0.25f, 0.25f))
+                }, -0.25f * scaleLimits, 0.25f * scaleLimits))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
                             if (ctrl.infConfig["inflationStretchX"] == f) continue;                    
@@ -121,7 +128,7 @@ namespace KK_PregnancyPlus
                     var exists = controller.infConfig.TryGetValue("inflationStretchY", out float inflationStretchY);  
                     if (!exists) controller.infConfig["inflationStretchY"] = 0; 
                     return controller.infConfig["inflationStretchY"];
-                }, -0.25f, 0.25f))
+                }, -0.25f * scaleLimits, 0.25f * scaleLimits))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
                             if (ctrl.infConfig["inflationStretchY"] == f) continue;                    
@@ -138,7 +145,7 @@ namespace KK_PregnancyPlus
                     var exists = controller.infConfig.TryGetValue("inflationShiftY", out float inflationShiftY);  
                     if (!exists) controller.infConfig["inflationShiftY"] = 0; 
                     return controller.infConfig["inflationShiftY"];
-                }, -0.1f, 0.1f))
+                }, -0.1f * scaleLimits, 0.1f * scaleLimits))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
                             if (ctrl.infConfig["inflationShiftY"] == f) continue;                    
@@ -155,7 +162,7 @@ namespace KK_PregnancyPlus
                     var exists = controller.infConfig.TryGetValue("inflationShiftZ", out float inflationShiftZ);  
                     if (!exists) controller.infConfig["inflationShiftZ"] = 0; 
                     return controller.infConfig["inflationShiftZ"];
-                }, -0.1f, 0.1f))
+                }, -0.1f * scaleLimits, 0.1f * scaleLimits))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
                             if (ctrl.infConfig["inflationShiftZ"] == f) continue;                    
