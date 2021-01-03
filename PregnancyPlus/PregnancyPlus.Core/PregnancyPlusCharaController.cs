@@ -332,7 +332,14 @@ namespace KK_PregnancyPlus
             var origVerts = originalVertices[rendererName];
             var inflatedVerts = inflatedVertices[rendererName];
             var currentVerts = currentVertices[rendererName];
-            var bellyVertIndex = bellyVerticieIndexes[rendererName];           
+            var bellyVertIndex = bellyVerticieIndexes[rendererName];    
+
+#if KK
+            float clothesOffset = 0.003f;       
+#elif HS2
+            //Everything is bigger in HS2 :/
+            float clothesOffset = 0.035f;       
+#endif            
 
             //Set each verticies inflated postion, with some constraints (SculptInflatedVerticie) to make it look more natural
             for (int i = 0; i < origVerts.Length; i++)
@@ -343,7 +350,7 @@ namespace KK_PregnancyPlus
                 if (bellyVertIndex[i]) 
                 {                    
                     Vector3 inflatedVertWS;                    
-                    Vector3 verticieToSphere;  
+                    Vector3 verticieToSphere;                      
                     var origVertWS = meshRoot.transform.TransformPoint(origVerts[i]);//Convert to worldspace
 
                     //Shift each belly vertex away from sphere center
@@ -355,7 +362,7 @@ namespace KK_PregnancyPlus
                     else 
                     {
                         //Clothes need some more loving to get them to stop clipping at max size
-                        verticieToSphere = (origVertWS - sphereCenter).normalized * (sphereRadius + 0.003f) + sphereCenter + GetUserShiftTransform(meshRoot.transform);                                           
+                        verticieToSphere = (origVertWS - sphereCenter).normalized * (sphereRadius + clothesOffset) + sphereCenter + GetUserShiftTransform(meshRoot.transform);                                           
                     }     
 
                     //Make minor adjustments to the shape

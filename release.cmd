@@ -1,7 +1,9 @@
 ::Zips the dll into the correct directory structure for release
 ::Make sure to increment the version
 
-::CLear last release
-rd /s /q "./release"
+set kk_version=0.5
+set kk_name=KK_PregnancyPlus
+set hs2_name=HS2_PregnancyPlus
 
-"%ProgramFiles%\7-Zip\7z.exe" a -tzip "%HOMEPATH%/downloads/KK_PregnancyPlus v0.5.zip" "./bin/BepinEx" -mx0
+IF EXIST "./bin/%kk_name%/BepinEx/plugins/%kk_name%.dll" "%ProgramFiles%\7-Zip\7z.exe" a -tzip "%HOMEPATH%/downloads/%kk_name% v%kk_version%.zip" "./bin/%kk_name%/BepinEx" -mx0
+IF EXIST "./bin/%hs2_name%/BepinEx/plugins/%hs2_name%.dll" "%ProgramFiles%\7-Zip\7z.exe" a -tzip "%HOMEPATH%/downloads/%hs2_name% v%kk_version%.zip" "./bin/%hs2_name%/BepinEx" -mx0
