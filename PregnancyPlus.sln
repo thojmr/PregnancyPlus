@@ -4,6 +4,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 16.0.29806.167
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBD}") = "KK_PregnancyPlus", "PregnancyPlus\KK_PregnancyPlus\KK_PregnancyPlus.csproj", "{930A00A6-2935-4EA0-81F0-B16D3E71B74D}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFCD}") = "HS2_PregnancyPlus", "PregnancyPlus\HS2_PregnancyPlus\HS2_PregnancyPlus.csproj", "{930A00A6-2935-4EA0-81F0-B16D3E71B75D}"
 EndProject
 Global
