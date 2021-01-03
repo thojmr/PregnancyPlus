@@ -6,6 +6,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UniRx;
+#if HS2
+using AIChara;
+#endif
 
 namespace KK_PregnancyPlus
 {
@@ -75,7 +78,9 @@ namespace KK_PregnancyPlus
         }
         protected override void Start() 
         {
+#if KK            
             CurrentCoordinate.Subscribe(value => { OnCoordinateLoaded(); });
+#endif
 
             base.Start();
         }
@@ -239,14 +244,26 @@ namespace KK_PregnancyPlus
         internal Tuple<float, float> MeasureWaist(ChaControl chaControl) 
         {
             //Get the characters bones to measure from
+#if KK            
             var ribBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "cf_s_spine02");
             var waistBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "cf_s_waist02");
             var waistToRibDist = Math.Abs(FastDistance(ribBone.position, waistBone.position));  
+#endif
+#if HS2
+            var waistToRibDist = 1000;
+#endif
 
+#if KK
             var thighLBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "cf_j_thigh00_L");        
-            var thighRBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "cf_j_thigh00_R");                    
-            var waistWidth = Math.Abs(FastDistance(thighLBone.position, thighRBone.position));  
-          
+            var thighRBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "cf_j_thigh00_R");                     
+#endif
+
+#if HS2
+            var thighLBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "cf_J_LegUp00_L");        
+            var thighRBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "cf_J_LegUp00_R");  
+#endif
+            var waistWidth = Math.Abs(FastDistance(thighLBone.position, thighRBone.position)); 
+
             //Calculate sphere radius based on distance from waist to ribs (seems big, but lerping later will trim much of it), added Math.Min for skinny waists
             var sphereRadius = Math.Min(waistToRibDist/1.25f, waistWidth/1.2f) * (infConfig["inflationMultiplier"] + 1); 
 
@@ -259,8 +276,14 @@ namespace KK_PregnancyPlus
         internal bool ComputeMeshVerts(SkinnedMeshRenderer smr, float sphereRadius, float waistWidth, bool isClothingMesh = false) 
         {
             //The list of bones to get verticies for
+#if KK            
             var boneFilters = new string[] { "cf_s_spine02", "cf_s_waist01" };//"cs_s_spine01" "cf_s_waist02" optionally for wider affected area
-            var hasVerticies = GetFilteredVerticieIndexes(smr, debug ? null : boneFilters);
+#endif
+
+#if HS2
+            var boneFilters = new string[] { "cf_J_Spine02_s", "cf_J_Kosi01_s" };
+#endif
+            var hasVerticies = GetFilteredVerticieIndexes(smr, debug ? null : boneFilters);        
 
             //If no belly verts found, then we can skip this mesh
             if (!hasVerticies) return false; 
@@ -281,8 +304,14 @@ namespace KK_PregnancyPlus
         {
             if (smr == null) return false;
 
-            //Get normal mesh root attachment position
+            //Get normal mesh root attachment position            
+#if KK
             var meshRoot = GameObject.Find("cf_o_root");
+#endif
+
+#if HS2
+            var meshRoot = GameObject.Find("cf_J_Spine01");
+#endif
             if (meshRoot == null) return false;
                         
             var isUncensorBody = PregnancyPlusHelper.IsUncensorBody(ChaControl, UncensorCOMName, DefaultBodyFemaleGUID);              
@@ -293,6 +322,9 @@ namespace KK_PregnancyPlus
             //For uncensor, move the mesh vectors up by an additional meshRoot.y to match the default body mesh position
             Vector3 sphereCenterUncesorFix = meshRoot.transform.position + (meshRoot.transform.up * FastDistance(meshRoot.transform.position, ChaControl.transform.position)) + GetUserMoveTransform(meshRoot.transform);             
 
+#if HS2
+            sphereCenter = sphereCenterUncesorFix;            
+#endif
             // PregnancyPlusPlugin.Logger.LogInfo($" sphereCenter {sphereCentero} new sphereCenter {sphereCenter}");
 
             var rendererName = GetMeshKey(smr);         
