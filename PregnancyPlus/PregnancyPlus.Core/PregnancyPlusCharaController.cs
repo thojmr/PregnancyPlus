@@ -62,6 +62,9 @@ namespace KK_PregnancyPlus
 #endif
             ReadCardData();
 
+            //Set the initial belly size if the character card has data
+            if (infConfig.inflationSize > 0) StartCoroutine(WaitForMeshToSettle(0.5f));
+
             base.Start();
         }
 
@@ -109,15 +112,14 @@ namespace KK_PregnancyPlus
         {  
             //When clothing changes, reload inflation state
             // PregnancyPlusPlugin.Logger.LogInfo($" OnCoordinateLoaded > ");  
-            StartCoroutine(WaitForMeshToSettle());
+            StartCoroutine(WaitForMeshToSettle(0.10f, true));
         } 
 
         //After clothes change you have to wait a second if you want shadows to calculate correctly
-        IEnumerator WaitForMeshToSettle()
+        IEnumerator WaitForMeshToSettle(float waitTime = 0.10f, bool force = false)
         {   
-            var waitTime = 0.10f;
             yield return new WaitForSeconds(waitTime);
-            MeshInflate(true);
+            MeshInflate(force);
         }
 
         internal void GetWeeksAndSetInflation() 
