@@ -39,15 +39,13 @@ namespace KK_PregnancyPlus
                 {                                       
                     if (c.charInfo == null) return 0;
                     var controller = c.charInfo.GetComponent<PregnancyPlusCharaController>();
-                    if (controller == null) return 0;   
-                    var exists = controller.infConfig.TryGetValue("inflationSize", out float inflationSize);  
-                    if (!exists) controller.infConfig["inflationSize"] = 0;                        
-                    return controller.infConfig["inflationSize"];
+                    if (controller == null) return 0;                          
+                    return controller.infConfig.inflationSize;
                 }, 0, 40))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
-                            if (ctrl.infConfig["inflationSize"] == f) continue;    
-                            ctrl.infConfig["inflationSize"] = f;                
+                            if (ctrl.infConfig.inflationSize == f) continue;    
+                            ctrl.infConfig.inflationSize = f;                
                             ctrl.MeshInflate();                             
                         }
                     });
@@ -57,14 +55,12 @@ namespace KK_PregnancyPlus
                     if (c.charInfo == null) return 1;
                     var controller = c.charInfo.GetComponent<PregnancyPlusCharaController>();
                     if (controller == null) return 1; 
-                    var exists = controller.infConfig.TryGetValue("inflationMultiplier", out float inflationMultiplier);  
-                    if (!exists) controller.infConfig["inflationMultiplier"] = 0; 
-                    return controller.infConfig["inflationMultiplier"];
+                    return controller.infConfig.inflationMultiplier;
                 }, -1, 1))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
-                            if (ctrl.infConfig["inflationMultiplier"] == f) continue;     
-                            ctrl.infConfig["inflationMultiplier"] = f;               
+                            if (ctrl.infConfig.inflationMultiplier == f) continue;     
+                            ctrl.infConfig.inflationMultiplier = f;               
                             ctrl.MeshInflate();                             
                         }
                     });                    
@@ -74,14 +70,12 @@ namespace KK_PregnancyPlus
                     if (c.charInfo == null) return 0;
                     var controller = c.charInfo.GetComponent<PregnancyPlusCharaController>();
                     if (controller == null) return 0;    
-                    var exists = controller.infConfig.TryGetValue("inflationMoveY", out float inflationMoveY);  
-                    if (!exists) controller.infConfig["inflationMoveY"] = 0; 
-                    return controller.infConfig["inflationMoveY"];
+                    return controller.infConfig.inflationMoveY;
                 }, -0.20f * scaleLimits, 0.20f * scaleLimits))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
-                            if (ctrl.infConfig["inflationMoveY"] == f) continue;                    
-                            ctrl.infConfig["inflationMoveY"] = f;
+                            if (ctrl.infConfig.inflationMoveY == f) continue;                    
+                            ctrl.infConfig.inflationMoveY = f;
                             ctrl.MeshInflate();                             
                         }
                     });
@@ -91,14 +85,12 @@ namespace KK_PregnancyPlus
                     if (c.charInfo == null) return 0;
                     var controller = c.charInfo.GetComponent<PregnancyPlusCharaController>();
                     if (controller == null) return 0; 
-                    var exists = controller.infConfig.TryGetValue("inflationMoveZ", out float inflationMoveZ);  
-                    if (!exists) controller.infConfig["inflationMoveZ"] = 0; 
-                    return controller.infConfig["inflationMoveZ"];
+                    return controller.infConfig.inflationMoveZ;
                 }, -0.1f * scaleLimits, 0.1f * scaleLimits))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
-                            if (ctrl.infConfig["inflationMoveZ"] == f) continue;   
-                            ctrl.infConfig["inflationMoveZ"] = f;                 
+                            if (ctrl.infConfig.inflationMoveZ == f) continue;   
+                            ctrl.infConfig.inflationMoveZ = f;                 
                             ctrl.MeshInflate();                             
                         }
                     });
@@ -108,14 +100,12 @@ namespace KK_PregnancyPlus
                     if (c.charInfo == null) return 1;
                     var controller = c.charInfo.GetComponent<PregnancyPlusCharaController>();
                     if (controller == null) return 1;    
-                    var exists = controller.infConfig.TryGetValue("inflationStretchX", out float inflationStretchX);  
-                    if (!exists) controller.infConfig["inflationStretchX"] = 0; 
-                    return controller.infConfig["inflationStretchX"];
+                    return controller.infConfig.inflationStretchX;
                 }, -0.25f * scaleLimits, 0.25f * scaleLimits))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
-                            if (ctrl.infConfig["inflationStretchX"] == f) continue;                    
-                            ctrl.infConfig["inflationStretchX"] = f;
+                            if (ctrl.infConfig.inflationStretchX == f) continue;                    
+                            ctrl.infConfig.inflationStretchX = f;
                             ctrl.MeshInflate();                             
                         }
                     });
@@ -125,14 +115,12 @@ namespace KK_PregnancyPlus
                     if (c.charInfo == null) return 1;
                     var controller = c.charInfo.GetComponent<PregnancyPlusCharaController>();
                     if (controller == null) return 1;    
-                    var exists = controller.infConfig.TryGetValue("inflationStretchY", out float inflationStretchY);  
-                    if (!exists) controller.infConfig["inflationStretchY"] = 0; 
-                    return controller.infConfig["inflationStretchY"];
+                    return controller.infConfig.inflationStretchY;
                 }, -0.25f * scaleLimits, 0.25f * scaleLimits))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
-                            if (ctrl.infConfig["inflationStretchY"] == f) continue;                    
-                            ctrl.infConfig["inflationStretchY"] = f;
+                            if (ctrl.infConfig.inflationStretchY == f) continue;                    
+                            ctrl.infConfig.inflationStretchY = f;
                             ctrl.MeshInflate();                             
                         }
                     });        
@@ -142,14 +130,12 @@ namespace KK_PregnancyPlus
                     if (c.charInfo == null) return 0;
                     var controller = c.charInfo.GetComponent<PregnancyPlusCharaController>();
                     if (controller == null) return 0;    
-                    var exists = controller.infConfig.TryGetValue("inflationShiftY", out float inflationShiftY);  
-                    if (!exists) controller.infConfig["inflationShiftY"] = 0; 
-                    return controller.infConfig["inflationShiftY"];
+                    return controller.infConfig.inflationShiftY;
                 }, -0.05f * scaleLimits, 0.05f * scaleLimits))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
-                            if (ctrl.infConfig["inflationShiftY"] == f) continue;                    
-                            ctrl.infConfig["inflationShiftY"] = f;
+                            if (ctrl.infConfig.inflationShiftY == f) continue;                    
+                            ctrl.infConfig.inflationShiftY = f;
                             ctrl.MeshInflate();                             
                         }
                     });
@@ -159,14 +145,12 @@ namespace KK_PregnancyPlus
                     if (c.charInfo == null) return 0;
                     var controller = c.charInfo.GetComponent<PregnancyPlusCharaController>();
                     if (controller == null) return 0;    
-                    var exists = controller.infConfig.TryGetValue("inflationShiftZ", out float inflationShiftZ);  
-                    if (!exists) controller.infConfig["inflationShiftZ"] = 0; 
-                    return controller.infConfig["inflationShiftZ"];
+                    return controller.infConfig.inflationShiftZ;
                 }, -0.05f * scaleLimits, 0.05f * scaleLimits))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
-                            if (ctrl.infConfig["inflationShiftZ"] == f) continue;                    
-                            ctrl.infConfig["inflationShiftZ"] = f;
+                            if (ctrl.infConfig.inflationShiftZ == f) continue;                    
+                            ctrl.infConfig.inflationShiftZ = f;
                             ctrl.MeshInflate();                             
                         }
                     });

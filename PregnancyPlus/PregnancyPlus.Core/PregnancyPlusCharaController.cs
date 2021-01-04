@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UniRx;
 #if HS2
 using AIChara;
@@ -18,10 +19,8 @@ namespace KK_PregnancyPlus
 
 #region props
         //Contsins the mesh inflation configuration
-        public Dictionary<string, float> infConfig = CreateConfig();
-        internal Dictionary<string, float> infConfigHistory = CreateConfig();
-        public Dictionary<string, float> configDefaults = CreateConfig();
-        
+        public PregnancyPlusData infConfig = new PregnancyPlusData();
+        internal PregnancyPlusData infConfigHistory = new PregnancyPlusData();        
 
 
         //Keeps track of all belly verticies
@@ -40,36 +39,15 @@ namespace KK_PregnancyPlus
 
 #endregion
 
-        //Allows an easy way to create a default belly config dictionary, you can change the values from there
-        public static Dictionary<string, float> CreateConfig() 
-        {
-            //Default values
-            return new Dictionary<string, float> {
-                ["inflationSize"] = 0, 
-                ["inflationMoveY"] = 0, 
-                ["inflationMoveZ"] = 0, 
-                ["inflationStretchX"] = 0, 
-                ["inflationStretchY"] = 0, 
-                ["inflationShiftY"] = 0, 
-                ["inflationShiftZ"] = 0, 
-                ["inflationMultiplier"] = 0
-            };
-        }
-
-        public PregnancyPlusCharaController()
-        {
-            // Data = new PregnancyData();               
-        }
 
 #region overrides
         protected override void OnCardBeingSaved(GameMode currentGameMode)
         {
-            //TODO add logic to save slider values to card or scene?
+            SetExtendedData(infConfig.Save());
         }
 
         protected override void Awake() 
-        {          
-            InitInflationConfig();            
+        {                    
             if (PregnancyPlusPlugin.StoryMode != null) {
                 if (PregnancyPlusPlugin.StoryMode.Value) CharacterApi.CharacterReloaded += OnCharacterReloaded;            
             }
@@ -82,6 +60,7 @@ namespace KK_PregnancyPlus
             //Detect clothing change in KK
             CurrentCoordinate.Subscribe(value => { OnCoordinateLoaded(); });
 #endif
+            ReadCardData();
 
             base.Start();
         }
@@ -101,6 +80,7 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.StoryMode != null) {
                 if (PregnancyPlusPlugin.StoryMode.Value) GetWeeksAndSetInflation();
             }
+            ReadCardData();
         }
 
         protected override void Update()
@@ -110,6 +90,12 @@ namespace KK_PregnancyPlus
         }
         
 #endregion
+
+        internal void ReadCardData()
+        {
+            var data = GetExtendedData();
+            infConfig = PregnancyPlusData.Load(data) ?? new PregnancyPlusData();
+        }
 
         internal void OnCharacterReloaded(object sender, CharaReloadEventArgs e)  
         {  
@@ -173,8 +159,8 @@ namespace KK_PregnancyPlus
             ResetInflation();
 
             //Only continue when size above 0
-            if (infConfig["inflationSize"] <= 0) {
-                infConfigHistory["inflationSize"] = 0;
+            if (infConfig.inflationSize <= 0) {
+                infConfigHistory.inflationSize = 0;
                 return false;                                
             }
             
@@ -218,31 +204,10 @@ namespace KK_PregnancyPlus
         {                  
             if (inflationSize.Equals(null)) return false;
 
-            InitInflationConfig();  
-
             //Allow an initial size to be passed in, and sets it to the config
             if (inflationSize > 0) {
-                infConfig["inflationSize"] = inflationSize;
+                infConfig.inflationSize = inflationSize;
             }   
-
-            return MeshInflate();
-        }
-
-        /// <summary>
-        /// An overload for MeshInflate() that lets you pass a dictionary object with inflation params to alter the way the belly looks
-        /// Create a new Config dict from the CreateConfig() method first, then modify its values as needed
-        /// ex: you can make the belly 0.2f wider by chainging key inflationStretchX from default 0 -> 0.2, or decrease it by 0 -> -0.2
-        /// </summary>
-        /// <param name="inflationConfig">Dictionary of config values used to alter the belly size and shape.false  Create from CreateConfig() in this class </param>
-        public bool MeshInflate(Dictionary<string, float> inflationConfig)
-        {                  
-            if (inflationConfig == null) return false;            
-
-            //Overwrite current config with users new values
-            infConfig = inflationConfig;
-
-            //Will check and fill empty or missing values with defaults
-            InitInflationConfig(); 
 
             return MeshInflate();
         }
@@ -277,7 +242,7 @@ namespace KK_PregnancyPlus
             var waistWidth = Math.Abs(FastDistance(thighLBone.position, thighRBone.position)); 
 
             //Calculate sphere radius based on distance from waist to ribs (seems big, but lerping later will trim much of it), added Math.Min for skinny waists
-            var sphereRadius = Math.Min(waistToRibDist/1.25f, waistWidth/1.2f) * (infConfig["inflationMultiplier"] + 1); 
+            var sphereRadius = Math.Min(waistToRibDist/1.25f, waistWidth/1.2f) * (infConfig.inflationMultiplier + 1); 
 
             return Tuple.Create(waistWidth, sphereRadius);
         }
@@ -412,7 +377,7 @@ namespace KK_PregnancyPlus
         }
 
         internal Vector3 GetUserMoveTransform(Transform fromPosition) {
-            return fromPosition.up * infConfig["inflationMoveY"] + fromPosition.forward * infConfig["inflationMoveZ"];
+            return fromPosition.up * infConfig.inflationMoveY + fromPosition.forward * infConfig.inflationMoveZ;
         }
 
         internal Vector3 GetBellyButtonOffset(Transform fromPosition) {
@@ -421,7 +386,7 @@ namespace KK_PregnancyPlus
         }
 
         internal Vector3 GetUserShiftTransform(Transform fromPosition) {
-            return fromPosition.up * infConfig["inflationShiftY"] + fromPosition.forward * infConfig["inflationShiftZ"];
+            return fromPosition.up * infConfig.inflationShiftY + fromPosition.forward * infConfig.inflationShiftZ;
         }
 
         /// <summary>
@@ -459,14 +424,14 @@ namespace KK_PregnancyPlus
             var ySmoothDist = pmInflatedToCenterDist/2f;//Only smooth the top half of y
 
             //Allow user adjustment of the width of the belly
-            if (infConfig["inflationStretchX"] != 0) {   
+            if (infConfig.inflationStretchX != 0) {   
                 //Get local space position to eliminate rotation in world space
                 var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
                 var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenterPos);
                 //local Distance left or right from sphere center
                 var distFromXCenterLs = smoothedVectorLs.x - sphereCenterLs.x;                
 
-                var changeInDist = distFromXCenterLs * (infConfig["inflationStretchX"] + 1);  
+                var changeInDist = distFromXCenterLs * (infConfig.inflationStretchX + 1);  
                 //Get new local space X position
                 smoothedVectorLs.x = (sphereCenterLs + Vector3.right * changeInDist).x;
 
@@ -475,7 +440,7 @@ namespace KK_PregnancyPlus
             }
 
             //Allow user adjustment of the height of the belly
-            if (infConfig["inflationStretchY"] != 0) {   
+            if (infConfig.inflationStretchY != 0) {   
                 //Get local space position to eliminate rotation in world space
                 var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
                 var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenterPos);
@@ -484,7 +449,7 @@ namespace KK_PregnancyPlus
                 var distFromYCenterLs = smoothedVectorLs.y - sphereCenterLs.y; 
                 
                 //have to change growth direction above and below center line
-                var changeInDist = distFromYCenterLs * (infConfig["inflationStretchY"] + 1);  
+                var changeInDist = distFromYCenterLs * (infConfig.inflationStretchY + 1);  
                 //Get new local space X position
                 smoothedVectorLs.y = (sphereCenterLs + Vector3.up * changeInDist).y;
                 
@@ -650,59 +615,19 @@ namespace KK_PregnancyPlus
             distanceSquared = heading.x * heading.x + heading.y * heading.y + heading.z * heading.z;
             return Mathf.Sqrt(distanceSquared);
         }
-
-        /// <summary>
-        /// This should be the first thing called on class start
-        /// It will set up the necessary dictionary config default values
-        /// </summary>
-        /// <returns>Will return True on the initial init, and false if the default values are already set</returns>
-        internal bool InitInflationConfig() 
-        {
-            var init = false;
-            var configKeys = configDefaults.Keys;
-
-            //Check each config option for a value, otherwise create the dictionary key
-            foreach(var key in configKeys) 
-            {
-                //Check for existing value
-                if (!infConfig.TryGetValue(key, out float value)) {
-                    //Create the default dict value if it did not exists
-                    infConfig[key] = configDefaults[key];
-                    init = true;
-                }
-                if (!infConfigHistory.TryGetValue(key, out float valueHistory)) {
-                    infConfigHistory[key] = configDefaults[key];
-                    init = true;
-                }
-            }
-
-            //If initializing the values for the first time return true
-            return init;
-        }
        
         internal bool NeedsMeshUpdate() 
         {
-            var hasChanges = false;
-            var configKeys = configDefaults.Keys;
+            bool hasChanges = false;
 
-            //Check each config option for a value
-            foreach(var key in configKeys) 
-            {
-                //See if the user has changed any config values that were not caught by the config UI triggers
-                if (!infConfig.TryGetValue(key, out float value)) {
-                    PregnancyPlusPlugin.Logger.LogInfo($"NeedsMeshUpdate > {key} was not properly initialized.  Should call InitInflationConfig() first");
-                    continue;
-                }
-                if (!infConfigHistory.TryGetValue(key, out float valueHistory)) {
-                    PregnancyPlusPlugin.Logger.LogInfo($"NeedsMeshUpdate > {key} was not properly initialized.  Should call InitInflationConfig() first");
-                    continue;
-                }
-
-                if (infConfig[key] != infConfigHistory[key]) {
-                    // PregnancyPlusPlugin.Logger.LogInfo($"NeedsMeshUpdate > {key} {Math.Round(infConfigHistory[key], 3)}->{Math.Round(infConfig[key], 3)}");
-                    hasChanges = true;                
-                }
-            }
+            if (infConfig.inflationSize != infConfigHistory.inflationSize) hasChanges = true;              
+            if (infConfig.inflationMoveY != infConfigHistory.inflationMoveY) hasChanges = true;
+            if (infConfig.inflationMoveZ != infConfigHistory.inflationMoveZ) hasChanges = true;
+            if (infConfig.inflationStretchX != infConfigHistory.inflationStretchX) hasChanges = true;
+            if (infConfig.inflationStretchY != infConfigHistory.inflationStretchY) hasChanges = true;
+            if (infConfig.inflationShiftY != infConfigHistory.inflationShiftY) hasChanges = true;
+            if (infConfig.inflationShiftZ != infConfigHistory.inflationShiftZ) hasChanges = true;
+            if (infConfig.inflationMultiplier != infConfigHistory.inflationMultiplier) hasChanges = true;
 
             return hasChanges;
         }
@@ -738,7 +663,7 @@ namespace KK_PregnancyPlus
         /// <returns>Will return True if any verticies are changed</returns>
         internal bool ApplyInflation(SkinnedMeshRenderer smr, string renderKey) 
         {
-            var infSize = infConfig["inflationSize"];
+            var infSize = infConfig.inflationSize;
             //Only inflate if the value changed        
             if (infSize.Equals(null) || infSize == 0) return false;      
 
@@ -760,7 +685,7 @@ namespace KK_PregnancyPlus
             var bellyVertIndex = bellyVerticieIndexes[renderKey];
 
             if (bellyVertIndex.Length == 0) return false;
-            infConfigHistory["inflationSize"] = infSize;
+            infConfigHistory.inflationSize = infSize;
 
             for (int i = 0; i < currentVert.Length; i++)
             {
