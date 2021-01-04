@@ -160,6 +160,42 @@ namespace KK_PregnancyPlus
 
             return null;
         }
+
+        /// <summary>
+        /// Calculates the length of a set of chained bones from bottom up.  It will only caluculate the local Y values, to ignore any angular distance added, like animations
+        /// </summary>
+        /// <param name="boneStart">The starting (bottom) bone name</param>
+        /// <param name="boneEnd">The optional end bone name.  If null, the entire bone tree from bottom to top will be calculated.</param>
+        internal static float BoneChainStraigntenedDistance(string boneStart, string boneEnd = null) {
+            //loops through each bone starting bottom going up through parent to destination (or root)
+            var currentBone = GameObject.Find(boneStart);  
+            GameObject lastBone = currentBone;
+
+            if (currentBone == null) return 0;  
+            float distance = 0;
+
+            //Keep going while a parent transform exists
+            while (currentBone != null && currentBone.transform.parent) {
+                // PregnancyPlusPlugin.Logger.LogInfo($" distance {distance}  currentBone.name {currentBone.name}");
+
+                //If the bone name matches the end return the total distance to this bone
+                if (boneEnd != null && currentBone.name.ToLower() == boneEnd.ToLower()) {
+                    return distance;
+                }
+
+                //calculate the diatance by measuring y local distances only (we want to exclude angular distances)
+                var newDifference = (lastBone != null ? currentBone.transform.InverseTransformPoint(currentBone.transform.position).y - currentBone.transform.InverseTransformPoint(lastBone.transform.position).y : 0);
+                //Ignore any negatice bone differences (like char root bone which is at 0,0,0)
+                if (newDifference > 0) {
+                    distance = distance + newDifference;
+                }
+                lastBone = currentBone;
+
+                currentBone = currentBone.transform.parent.gameObject;
+            }
+
+            return distance;
+        }
     
     }
 }
