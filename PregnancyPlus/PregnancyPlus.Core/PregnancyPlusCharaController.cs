@@ -303,13 +303,6 @@ namespace KK_PregnancyPlus
             var currentVerts = currentVertices[rendererName];
             var bellyVertIndex = bellyVerticieIndexes[rendererName];    
 
-#if KK
-            float clothesOffset = 0.003f;       
-#elif HS2
-            //Everything is bigger in HS2 :/
-            float clothesOffset = 0.035f;       
-#endif            
-
             //Set each verticies inflated postion, with some constraints (SculptInflatedVerticie) to make it look more natural
             for (int i = 0; i < origVerts.Length; i++)
             {
@@ -321,6 +314,7 @@ namespace KK_PregnancyPlus
                     Vector3 inflatedVertWS;                    
                     Vector3 verticieToSphere;                      
                     var origVertWS = meshRoot.transform.TransformPoint(origVerts[i]);//Convert to worldspace
+                    float reduceClothFlattenOffset = GetClothesFixOffset(sphereCenter, sphereRadius, waistWidth, origVertWS);//Reduce cloth flattening at largest inflation values
 
                     //Shift each belly vertex away from sphere center
                     if (!isClothingMesh) 
@@ -330,7 +324,7 @@ namespace KK_PregnancyPlus
                     else 
                     {
                         //Clothes need some more loving to get them to stop clipping at max size
-                        verticieToSphere = (origVertWS - sphereCenter).normalized * (sphereRadius + clothesOffset) + sphereCenter + GetUserShiftTransform(meshRoot.transform);                                           
+                        verticieToSphere = (origVertWS - sphereCenter).normalized * (sphereRadius + reduceClothFlattenOffset) + sphereCenter + GetUserShiftTransform(meshRoot.transform);                                           
                     }     
 
                     //Make minor adjustments to the shape
@@ -350,12 +344,35 @@ namespace KK_PregnancyPlus
         }
 
         /// <summary>
+        /// Tried to correct cloth flattening when inflation is at max, by offsetting each vert based on the distance it is from the sphere center to the max sphere radius
+        /// </summary>
+        /// <param name="boneOrMeshTf">The transform that defined the center of the sphere X, Y, and Z for KK and X, Z for HS2 with calculated Y</param>
+        /// <param name="isClothingMesh"></param>
+        internal float GetClothesFixOffset(Vector3 sphereCenter, float sphereRadius, float waistWidth, Vector3 origVertWS) {
+#if KK      
+            float flattenExtent = 0.05f;//The size of the area to spread the flattened offsets over like shrinking center -> inflated distance into a small area at the sphere radius
+#elif HS2
+            float flattenExtent = 0.1f;
+#endif
+            var inflatedVerWS = (origVertWS - sphereCenter).normalized * sphereRadius + sphereCenter;//Get the line we want to do measurements on            
+            //We dont care about empty space at sphere center, move outwards a bit before determining vector location on the line
+            float awayFromCenter = (waistWidth/3);
+
+            var totatDist = (sphereRadius - awayFromCenter);
+            var originToEndDist = FastDistance(origVertWS, inflatedVerWS);
+            //Get the positon on a line that this vector exists between flattenExtensStartAt -> to sphereRadius.  Shrink it to scale
+            var offset = Math.Abs((totatDist - originToEndDist)) * flattenExtent;
+
+            return offset;
+        }
+
+        /// <summary>
         /// Calculates the position of the inflation sphere.  It appends some users selected slider values as well.  This sure got messy fast
         /// </summary>
         /// <param name="boneOrMeshTf">The transform that defined the center of the sphere X, Y, and Z for KK and X, Z for HS2 with calculated Y</param>
         /// <param name="isClothingMesh"></param>
         internal Vector3 GetSphereCenter(Transform boneOrMeshTf, bool isClothingMesh = false) { 
-            
+
             var isUncensorBody = PregnancyPlusHelper.IsUncensorBody(ChaControl, UncensorCOMName, DefaultBodyFemaleGUID); 
             //Sphere slider adjustments need to be transformed to local space first to eliminate any character rotation in world space   
             Vector3 sphereCenter = boneOrMeshTf.position + GetUserMoveTransform(boneOrMeshTf) + GetBellyButtonOffset(boneOrMeshTf);                     
