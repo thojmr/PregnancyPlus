@@ -377,19 +377,21 @@ namespace KK_PregnancyPlus
             //Sphere slider adjustments need to be transformed to local space first to eliminate any character rotation in world space   
             Vector3 sphereCenter = boneOrMeshTf.position + GetUserMoveTransform(boneOrMeshTf) + GetBellyButtonOffset(boneOrMeshTf);                     
             var bellyButtonHeight = boneOrMeshTf.up * GetBellyButtonLocalHeight(boneOrMeshTf); 
+            //For uncensor, move the mesh vectors up by an additional meshRoot.y to match the default body mesh position
+            Vector3 sphereCenterUncesorFix = boneOrMeshTf.transform.position + (boneOrMeshTf.transform.up * FastDistance(boneOrMeshTf.transform.position, ChaControl.transform.position)) + GetUserMoveTransform(boneOrMeshTf.transform) + GetBellyButtonOffset(boneOrMeshTf.transform);             
 
 #if HS2 || AI
             //All mesh origins are character origin 0,0,0 in HS2, and mixed positions in KK, so we have to add the belly button hight since KK already has it figured in the mesh position
-            sphereCenter = sphereCenter + bellyButtonHeight;      
+            sphereCenter = sphereCenter + bellyButtonHeight;    //bellyButtonHeight is an HS2 experimental measurement to replace meshRoot position that KK uses  
 #elif KK
-            //Fix for uncensor mesh position if is uncensor body         
-            if (!isClothingMesh && isUncensorBody) {
-                sphereCenter = sphereCenter + (bellyButtonHeight/2);          
+            //Fix for uncensor mesh position
+            if (!isClothingMesh) {
+                sphereCenter = isUncensorBody ? sphereCenterUncesorFix : sphereCenter;//Fix for uncensor local vertex positions being different than default body mesh
             }
 #endif
-            // var trueHeight = FastDistance(ChaControl.transform.position, GameObject.Find("cf_J_Kosi01").transform.position);            
+            // var trueHeight = FastDistance(ChaControl.transform.position, GameObject.Find("cf_j_waist01").transform.position); //cf_J_Kosi01          
             // PregnancyPlusPlugin.Logger.LogInfo($" sphereCenter {sphereCenter} meshRoot {boneOrMeshTf.position} char origin {ChaControl.transform.position}");
-            // PregnancyPlusPlugin.Logger.LogInfo($" bellyButtonHeight {bellyButtonHeight} trueHeight {trueHeight}");
+            // PregnancyPlusPlugin.Logger.LogInfo($" bellyButtonHeight {bellyButtonHeight} trueHeight TPose {trueHeight}");
             // PregnancyPlusPlugin.Logger.LogInfo($" ");
             return sphereCenter;
         }
@@ -397,7 +399,7 @@ namespace KK_PregnancyPlus
         internal float GetBellyButtonLocalHeight(Transform boneOrMeshTf) {            
             //Calculate the belly button height by getting each bone distance from foot to belly button (ignores animations!)
 #if KK
-            var bbHeight = PregnancyPlusHelper.BoneChainStraigntenedDistance( "cf_j_foot_L", "cf_s_waist01");
+            var bbHeight = PregnancyPlusHelper.BoneChainStraigntenedDistance( "cf_j_foot_L", "cf_j_waist01", ChaControl.transform);//Not used at the moment, needs some love in KK
 #elif HS2 || AI            
             var bbHeight = PregnancyPlusHelper.BoneChainStraigntenedDistance( "cf_J_Toes01_L", "cf_J_Kosi01");                        
 #endif            
@@ -417,7 +419,7 @@ namespace KK_PregnancyPlus
 #if KK   
             var offset = fromPosition.up * -0.01f;
 #elif HS2 || AI 
-            var offset = fromPosition.up * 0.65f;
+            var offset = fromPosition.up * 0.75f;
 #endif                   
             return offset;     
         }
@@ -566,8 +568,8 @@ namespace KK_PregnancyPlus
             var hasBoneFilters = boneFilters != null && boneFilters.Length > 0;
 
             if (!sharedMesh.isReadable) {
-                PregnancyPlusPlugin.Logger.LogInfo(
-                    $"GetFilteredVerticieIndexes > smr '{renderKey}' is not readable, skipping");
+                // PregnancyPlusPlugin.Logger.LogInfo(
+                //     $"GetFilteredVerticieIndexes > smr '{renderKey}' is not readable, skipping");
                     return false;
             }
 
