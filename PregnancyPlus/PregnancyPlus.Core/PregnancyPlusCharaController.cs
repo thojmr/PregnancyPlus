@@ -387,8 +387,10 @@ namespace KK_PregnancyPlus
                 sphereCenter = sphereCenter + (bellyButtonHeight/2);          
             }
 #endif
-
-            // PregnancyPlusPlugin.Logger.LogInfo($" sphereCenter {sphereCenter} meshRoot {boneOrMeshTf.position} char origin {ChaControl.transform.position} bellyButtonHeight {bellyButtonHeight}");
+            // var trueHeight = FastDistance(ChaControl.transform.position, GameObject.Find("cf_J_Kosi01").transform.position);            
+            // PregnancyPlusPlugin.Logger.LogInfo($" sphereCenter {sphereCenter} meshRoot {boneOrMeshTf.position} char origin {ChaControl.transform.position}");
+            // PregnancyPlusPlugin.Logger.LogInfo($" bellyButtonHeight {bellyButtonHeight} trueHeight {trueHeight}");
+            // PregnancyPlusPlugin.Logger.LogInfo($" ");
             return sphereCenter;
         }
 
@@ -397,8 +399,8 @@ namespace KK_PregnancyPlus
 #if KK
             var bbHeight = PregnancyPlusHelper.BoneChainStraigntenedDistance( "cf_j_foot_L", "cf_s_waist01");
 #elif HS2 || AI            
-            var bbHeight = PregnancyPlusHelper.BoneChainStraigntenedDistance( "cf_J_Foot02_L", "cf_J_Kosi01");                        
-#endif
+            var bbHeight = PregnancyPlusHelper.BoneChainStraigntenedDistance( "cf_J_Toes01_L", "cf_J_Kosi01");                        
+#endif            
             var bbPos = boneOrMeshTf.position + boneOrMeshTf.up * bbHeight + GetBellyButtonOffset(boneOrMeshTf);            
 
             //Calculate height from local position of character root to belly button
@@ -415,7 +417,7 @@ namespace KK_PregnancyPlus
 #if KK   
             var offset = fromPosition.up * -0.01f;
 #elif HS2 || AI 
-            var offset = fromPosition.up * 0.85f;
+            var offset = fromPosition.up * 0.65f;
 #endif                   
             return offset;     
         }

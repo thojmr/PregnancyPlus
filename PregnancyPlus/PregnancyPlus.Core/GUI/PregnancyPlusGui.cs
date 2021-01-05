@@ -86,7 +86,7 @@ namespace KK_PregnancyPlus
                     var controller = c.charInfo.GetComponent<PregnancyPlusCharaController>();
                     if (controller == null) return 0; 
                     return controller.infConfig.inflationMoveZ;
-                }, -0.1f * scaleLimits, 0.1f * scaleLimits))
+                }, -0.15f * scaleLimits, 0.15f * scaleLimits))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
                             if (ctrl.infConfig.inflationMoveZ == f) continue;   
