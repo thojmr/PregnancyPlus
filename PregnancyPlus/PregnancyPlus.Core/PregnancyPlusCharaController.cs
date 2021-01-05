@@ -292,6 +292,13 @@ namespace KK_PregnancyPlus
                         
             //set sphere center and allow for adjusting its position from the UI sliders  
             Vector3 sphereCenter = GetSphereCenter(meshRoot.transform, isClothingMesh);
+            var needsPositionFix = smr.transform.position != meshRoot.transform.position;
+#if KK            
+            //Hmm this is suspiciously the same as the uncensor fix
+            var clothKKSphereCenterFix = needsPositionFix ? sphereCenter + (meshRoot.transform.transform.up * FastDistance(meshRoot.transform.transform.position, ChaControl.transform.position)) : sphereCenter ;
+#elif HS2 || AI
+            var clothKKSphereCenterFix = sphereCenter;
+#endif            
 
             var rendererName = GetMeshKey(smr);         
             originalVertices[rendererName] = smr.sharedMesh.vertices;
@@ -322,9 +329,9 @@ namespace KK_PregnancyPlus
                         verticieToSphere = (origVertWS - sphereCenter).normalized * sphereRadius + sphereCenter + GetUserShiftTransform(meshRoot.transform);                     
                     }
                     else 
-                    {
+                    {                        
                         //Clothes need some more loving to get them to stop clipping at max size
-                        verticieToSphere = (origVertWS - sphereCenter).normalized * (sphereRadius + reduceClothFlattenOffset) + sphereCenter + GetUserShiftTransform(meshRoot.transform);                                           
+                        verticieToSphere = (origVertWS - clothKKSphereCenterFix).normalized * (sphereRadius + reduceClothFlattenOffset) + clothKKSphereCenterFix + GetUserShiftTransform(meshRoot.transform);                                           
                     }     
 
                     //Make minor adjustments to the shape
