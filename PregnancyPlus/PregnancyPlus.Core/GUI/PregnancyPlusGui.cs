@@ -30,7 +30,7 @@ namespace KK_PregnancyPlus
 
 #if KK
             var scaleLimits = 1;
-#elif HS2
+#elif HS2 || AI
             //once again everything is bigger in HS2
             var scaleLimits = 5;
 #endif

@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UniRx;
-#if HS2
+#if HS2 || AI
 using AIChara;
 #endif
 
@@ -68,7 +68,7 @@ namespace KK_PregnancyPlus
             base.Start();
         }
 
-#if HS2
+#if HS2 || AI
         //The Hs2 way to detect clothing change in studio
         protected override void OnCoordinateBeingLoaded(ChaFileCoordinate coordinate) {
             // PregnancyPlusPlugin.Logger.LogInfo($" OnCoordinateBeingLoaded > "); 
@@ -223,7 +223,7 @@ namespace KK_PregnancyPlus
 #if KK
             var ribName = "cf_s_spine02";
             var waistName = "cf_s_waist02";
-#elif HS2
+#elif HS2 || AI
             var ribName = "cf_J_Spine02_s";
             var waistName = "cf_J_Kosi02";
 #endif            
@@ -235,7 +235,7 @@ namespace KK_PregnancyPlus
 #if KK
             var thighLName = "cf_j_thigh00_L";
             var thighRName = "cf_j_thigh00_R";                    
-#elif HS2
+#elif HS2 || AI
             var thighLName = "cf_J_LegUp00_L";
             var thighRName = "cf_J_LegUp00_R";
 #endif
@@ -257,7 +257,7 @@ namespace KK_PregnancyPlus
             //The list of bones to get verticies for
 #if KK            
             var boneFilters = new string[] { "cf_s_spine02", "cf_s_waist01" };//"cs_s_spine01" "cf_s_waist02" optionally for wider affected area
-#elif HS2
+#elif HS2 || AI
             var boneFilters = new string[] { "cf_J_Spine02_s", "cf_J_Kosi01_s" };
 #endif
             var hasVerticies = GetFilteredVerticieIndexes(smr, debug ? null : boneFilters);        
@@ -284,7 +284,7 @@ namespace KK_PregnancyPlus
 #if KK
             //Get normal mesh root attachment position  
             var meshRoot = GameObject.Find("cf_o_root");
-#elif HS2
+#elif HS2 || AI
             //For HS2, get the equivalent position game object (near bellybutton)
             var meshRoot = GameObject.Find("n_o_root");
 #endif
@@ -351,7 +351,7 @@ namespace KK_PregnancyPlus
         internal float GetClothesFixOffset(Vector3 sphereCenter, float sphereRadius, float waistWidth, Vector3 origVertWS) {
 #if KK      
             float flattenExtent = 0.05f;//The size of the area to spread the flattened offsets over like shrinking center -> inflated distance into a small area at the sphere radius
-#elif HS2
+#elif HS2 || AI
             float flattenExtent = 0.1f;
 #endif
             var inflatedVerWS = (origVertWS - sphereCenter).normalized * sphereRadius + sphereCenter;//Get the line we want to do measurements on            
@@ -378,7 +378,7 @@ namespace KK_PregnancyPlus
             Vector3 sphereCenter = boneOrMeshTf.position + GetUserMoveTransform(boneOrMeshTf) + GetBellyButtonOffset(boneOrMeshTf);                     
             var bellyButtonHeight = boneOrMeshTf.up * GetBellyButtonLocalHeight(boneOrMeshTf); 
 
-#if HS2
+#if HS2 || AI
             //All mesh origins are character origin 0,0,0 in HS2, and mixed positions in KK, so we have to add the belly button hight since KK already has it figured in the mesh position
             sphereCenter = sphereCenter + bellyButtonHeight;      
 #elif KK
@@ -396,7 +396,7 @@ namespace KK_PregnancyPlus
             //Calculate the belly button height by getting each bone distance from foot to belly button (ignores animations!)
 #if KK
             var bbHeight = PregnancyPlusHelper.BoneChainStraigntenedDistance( "cf_j_foot_L", "cf_s_waist01");
-#elif HS2            
+#elif HS2 || AI            
             var bbHeight = PregnancyPlusHelper.BoneChainStraigntenedDistance( "cf_J_Foot02_L", "cf_J_Kosi01");                        
 #endif
             var bbPos = boneOrMeshTf.position + boneOrMeshTf.up * bbHeight + GetBellyButtonOffset(boneOrMeshTf);            
@@ -414,7 +414,7 @@ namespace KK_PregnancyPlus
             //Makes slight vertical adjustments to put the sphere at the correct point      
 #if KK   
             var offset = fromPosition.up * -0.01f;
-#elif HS2   
+#elif HS2 || AI 
             var offset = fromPosition.up * 0.85f;
 #endif                   
             return offset;     
