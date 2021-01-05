@@ -93,6 +93,7 @@
     <Compile Include="..\PregnancyPlus.Core\PregnancyPlusPlugin.Hooks.cs" />
     <Compile Include="..\PregnancyPlus.Core\PregnancyPlusHelper.cs" />
     <Compile Include="..\PregnancyPlus.Core\PregnancyPlusData.cs" />
+    <Compile Include="..\PregnancyPlus.Core\tools\NormalsSolver.cs" />
   </ItemGroup>
 
   <ItemGroup>

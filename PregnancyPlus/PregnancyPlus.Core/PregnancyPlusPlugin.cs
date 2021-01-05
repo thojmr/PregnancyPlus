@@ -17,6 +17,7 @@ namespace KK_PregnancyPlus
         public const string Version = "0.7";
         internal static new ManualLogSource Logger { get; private set; }
         public static ConfigEntry<bool> StoryMode { get; private set; }
+        public static ConfigEntry<bool> HDSmoothing { get; private set; }
 
 
         private void Start()
@@ -28,6 +29,10 @@ namespace KK_PregnancyPlus
             StoryMode.SettingChanged += StoryMode_SettingsChanged;
 #endif
 
+            HDSmoothing = Config.Bind<bool>("", "Experimental HD smoothing", false, "This will reduce the hard edges you sometimes see on characters after using sliders.  But will dramatically slow down the slider performance.  Only use it if you can see the edges.  Typically only noticable on HD models like in HS2 or AI.");
+            HDSmoothing.SettingChanged += HDSmoothing_SettingsChanged;
+
+
             CharacterApi.RegisterExtraBehaviour<PregnancyPlusCharaController>(GUID);
 
             var hi = new Harmony(GUID);
@@ -36,6 +41,11 @@ namespace KK_PregnancyPlus
         }
 
         internal void StoryMode_SettingsChanged(object sender, System.EventArgs e) 
+        {            
+            //TODO
+        }
+
+        internal void HDSmoothing_SettingsChanged(object sender, System.EventArgs e) 
         {            
             //TODO
         }

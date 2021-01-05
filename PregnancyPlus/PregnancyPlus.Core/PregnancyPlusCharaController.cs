@@ -15,7 +15,7 @@ namespace KK_PregnancyPlus
 {
     public class PregnancyPlusCharaController: CharaCustomFunctionController
     {
-        internal bool debug = false;//In debug mode, all verticies are affected.  Makes it easier to see what is actually happening in studio mode.  Also creates nightmares
+        internal bool debug = false;//In debug mode, all verticies are affected.  Makes it easier to see what is actually happening in studio mode.  Also creates nightmares        
 
 #region props
         //Contsins the mesh inflation configuration
@@ -417,7 +417,7 @@ namespace KK_PregnancyPlus
         internal Vector3 GetBellyButtonOffset(Transform fromPosition) {
             //Makes slight vertical adjustments to put the sphere at the correct point      
 #if KK   
-            var offset = fromPosition.up * -0.01f;
+            var offset = fromPosition.up * -0.02f;
 #elif HS2 || AI 
             var offset = fromPosition.up * 0.75f;
 #endif                   
@@ -720,8 +720,8 @@ namespace KK_PregnancyPlus
             var sharedMesh = smr.sharedMesh;
 
             if (!sharedMesh.isReadable) {
-                PregnancyPlusPlugin.Logger.LogInfo(
-                    $"ApplyInflation > smr '{renderKey}' is not readable, skipping");
+                // PregnancyPlusPlugin.Logger.LogInfo(
+                //     $"ApplyInflation > smr '{renderKey}' is not readable, skipping");
                     return false;
             } 
 
@@ -750,7 +750,8 @@ namespace KK_PregnancyPlus
 
             sharedMesh.vertices = currentVert;
             sharedMesh.RecalculateBounds();
-            sharedMesh.RecalculateNormals();
+            if (PregnancyPlusPlugin.HDSmoothing.Value) NormalSolver.RecalculateNormals(sharedMesh, 35f);
+            if (!PregnancyPlusPlugin.HDSmoothing.Value) sharedMesh.RecalculateNormals();
             sharedMesh.RecalculateTangents();
 
             return true;
@@ -778,8 +779,8 @@ namespace KK_PregnancyPlus
                 //On change clothes original verts become useless, so skip this
                 if (!success) return;          
                 if (!sharedMesh.isReadable) {
-                    PregnancyPlusPlugin.Logger.LogInfo(
-                        $"ResetInflation > smr '{renderKey}' is not readable, skipping");
+                    // PregnancyPlusPlugin.Logger.LogInfo(
+                    //     $"ResetInflation > smr '{renderKey}' is not readable, skipping");
                         continue;
                 } 
 
@@ -793,7 +794,8 @@ namespace KK_PregnancyPlus
 
                 sharedMesh.vertices = origVerts;
                 sharedMesh.RecalculateBounds();
-                sharedMesh.RecalculateNormals();
+                if (PregnancyPlusPlugin.HDSmoothing.Value) NormalSolver.RecalculateNormals(sharedMesh, 35f);
+                if (!PregnancyPlusPlugin.HDSmoothing.Value) sharedMesh.RecalculateNormals();
                 sharedMesh.RecalculateTangents();
             }
         }
