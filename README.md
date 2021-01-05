@@ -6,7 +6,7 @@ This repository contains the KK_PregnancyPlus plugin, that adds additional belly
 ## Notes
 - Modding this game is new to me, so dont expect this to feel like a finished product.  More like an interesting way to learn C#
 - Clothing clips through at max size, so try it without clothing if you are experiencing issues
-- This is currently only available in Character Studio, you should see additional sliders below the KK_Pregnancy slider
+- This is currently only available in Character Studio, you should see additional sliders under the Character Control tab
 - This plugin now works in both Koikatsu and Honey Select 2.  Grab the KK one for Koikatsu or HS2 for Honey Select 2 [here](https://github.com/thojmr/KK_PregnancyPlus/releases)
 
 ## How to download
@@ -69,7 +69,7 @@ Example build task:
     }
 }
 ```
-If sucessfull you should see a KK_PregnancyPlus.dll file in .\bin\
+If sucessfull you should see a KK_PregnancyPlus.dll file nested in .\bin\
 
 ### Some of the KK_PregnancyPlus features
 - Adds a number of sliders that can alter the size and shape of the belly.  More customizability overall
