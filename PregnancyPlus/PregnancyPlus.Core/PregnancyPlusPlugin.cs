@@ -14,7 +14,7 @@ namespace KK_PregnancyPlus
     public partial class PregnancyPlusPlugin : BaseUnityPlugin
     {
         public const string GUID = "KK_PregnancyPlus";
-        public const string Version = "0.8";
+        public const string Version = "0.9";
         internal static new ManualLogSource Logger { get; private set; }
         public static ConfigEntry<bool> StoryMode { get; private set; }
         public static ConfigEntry<bool> HDSmoothing { get; private set; }
