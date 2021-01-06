@@ -1,5 +1,5 @@
 # Introduction
-This repository contains the KK_PregnancyPlus plugin, that adds additional belly sliders in Character Studio.  It is intended to compliment the [KK_Pregnancy](https://github.com/ManlyMarco/KoikatuGameplayMods) plugin, but can be used without it.   (For example: HS2)
+This repository contains the KK_PregnancyPlus plugin, that adds additional belly sliders in Character Studio.  It is intended to compliment the [KK_Pregnancy](https://github.com/ManlyMarco/KoikatuGameplayMods) plugin, but can be used without it.   (For example: HS2 , AI)
 
 ![ChaStudio GUI](https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/P%2BGUI.PNG)
 
@@ -7,7 +7,7 @@ This repository contains the KK_PregnancyPlus plugin, that adds additional belly
 - Modding this game is new to me, so dont expect this to feel like a finished product.  More like an interesting way to learn C#
 - Clothing clips through at max size, so try it without clothing if you are experiencing issues
 - This is currently only available in Character Studio, you should see additional sliders under the Character Control tab
-- This plugin now works in both Koikatsu and Honey Select 2.  Grab the KK one for Koikatsu or HS2 for Honey Select 2 [here](https://github.com/thojmr/KK_PregnancyPlus/releases)
+- This plugin now works in both Koikatsu and Honey Select 2.  Grab the KK one for Koikatsu, HS2 for Honey Select 2, and AI for AI [here](https://github.com/thojmr/KK_PregnancyPlus/releases)
 
 ## How to download
 You can grab the latest plugin release [here](https://github.com/thojmr/KK_PregnancyPlus/releases), or build it yourself.  Explained further below.
@@ -78,7 +78,7 @@ If sucessfull you should see a KK_PregnancyPlus.dll file nested in .\bin\
 
 ### Some of the drawbacks of manipulating the mesh instead of the bones directly
 -  Right now clothing can be hit or miss, because of the way the belly grows, clothing will flatten and clip when the belly is set its largest size
-    -  There are some clothing items in HS2 that simply wont work with the sliders at all
+    -  There are some clothing items in HS2 and AI that simply wont work with the sliders at all
 -  Acessories won't automatically move out of the way of the mesh as they do when you manipulate bones
 -  It has bigger impact on performance than a simple bone scale change, but not enough to notice in general
 
