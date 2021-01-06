@@ -1,5 +1,6 @@
 ﻿using KKAPI;
 using KKAPI.Chara;
+using KKABMX.Core;
 using UnityEngine;
 using System;
 using System.Collections.Generic;
@@ -207,6 +208,24 @@ namespace KK_PregnancyPlus
 
             if (PregnancyPlusPlugin.debugLog && debugHelper) PregnancyPlusPlugin.Logger.LogInfo($" total distx {distance}");
             return distance;
+        }
+
+        internal static Vector3 GetCharacterScale(ChaControl chaControl) 
+        {
+#if KK            
+            var scaleBoneName = "cf_n_height";
+            var scaleCorrection = 0.06f;//local scale does not match bone midified scale by ABMX, scale it up to match by this much (close approx)
+#elif HS2 || AI             
+            var scaleBoneName = "cf_N_height";
+            var scaleCorrection = 0.12f;
+#endif
+
+            var scaleBone = chaControl.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == scaleBoneName);
+            if (!scaleBone) return Vector3.one;
+
+            var correctedScale = scaleBone.localScale + scaleBone.localScale * scaleCorrection;//Why is local scale always a little off?  Where is the true scalar stored?
+            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" character scale (adjusted) {correctedScale.x} {correctedScale.y} {correctedScale.z}");
+            return correctedScale;
         }
     
     }

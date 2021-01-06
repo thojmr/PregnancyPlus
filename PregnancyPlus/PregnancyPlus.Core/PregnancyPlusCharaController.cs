@@ -169,7 +169,7 @@ namespace KK_PregnancyPlus
                 infConfigHistory.inflationSize = 0;
                 return false;                                
             }
-            
+                        
             var measuerments = MeasureWaist(ChaControl);         
             var waistWidth = measuerments.Item1; 
             var sphereRadius = measuerments.Item2;
@@ -206,6 +206,8 @@ namespace KK_PregnancyPlus
         /// <param name="chaControl">The character to measure</param>
         internal Tuple<float, float> MeasureWaist(ChaControl chaControl) 
         {
+            var charScale = PregnancyPlusHelper.GetCharacterScale(ChaControl);
+
 #if KK
             var ribName = "cf_s_spine02";
             var waistName = "cf_s_waist02";
@@ -216,7 +218,12 @@ namespace KK_PregnancyPlus
             //Get the characters bones to measure from           
             var ribBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == ribName);
             var waistBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == waistName);
-            var waistToRibDist = Vector3.Distance(ribBone.position, waistBone.position);  
+            var waistToRibDist = Vector3.Distance(ribBone.position, waistBone.position);
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" waistToRibDist {waistToRibDist}");
+
+            //Adjust based on character scale
+            waistToRibDist = Math.Abs(waistToRibDist - (waistToRibDist * charScale.y - waistToRibDist)/charScale.y);
+
 
 #if KK
             var thighLName = "cf_j_thigh00_L";
@@ -228,11 +235,15 @@ namespace KK_PregnancyPlus
             var thighLBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == thighLName);        
             var thighRBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == thighRName); 
             var waistWidth = Vector3.Distance(thighLBone.position, thighRBone.position); 
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" waistWidth {waistWidth}");
+
+            //Adjust based on character scale
+            waistWidth = Math.Abs(waistWidth - (waistWidth * charScale.x - waistWidth)/charScale.x);
 
             //Calculate sphere radius based on distance from waist to ribs (seems big, but lerping later will trim much of it), added Math.Min for skinny waists
             var sphereRadius = Math.Min(waistToRibDist/1.25f, waistWidth/1.2f) * (infConfig.inflationMultiplier + 1);   
 
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" waistToRibDist {waistToRibDist} waistWidth {waistWidth} sphereRadius {sphereRadius}");
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" scaled waistToRibDist {waistToRibDist} scaled waistWidth {waistWidth} sphereRadius {sphereRadius}");
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" ---------- ");
 
             return Tuple.Create(waistWidth, sphereRadius);
