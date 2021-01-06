@@ -260,8 +260,8 @@ namespace KK_PregnancyPlus
         /// <returns>Will return True if mesh verticies > 0 were found  Some meshes wont have any for the belly area, returning false</returns>
         internal bool GetInflatedVerticies(SkinnedMeshRenderer smr, float sphereRadius, float waistWidth, bool isClothingMesh = false) 
         {
-            Vector3 bodySphereCenterOffset;
-            Vector3 clothSphereCenterOffset;
+            Vector3 bodySphereCenterOffset = Vector3.zero;
+            Vector3 clothSphereCenterOffset = Vector3.zero;
 
             if (smr == null) return false;
 
@@ -277,16 +277,27 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" isClothingMesh {isClothingMesh} needsPositionFix {needsPositionFix} isDefaultBody {isDefaultBody} ");
 
 #if KK            
-            //KK just has to have strange vert positions, so we have to use adjust the sphere center location for body and clothes
-            var bbHeight = (meshRootTf.up * GetBellyButtonLocalHeight(meshRootTf));//belly button height
-            var clothesMeshRoot = GameObject.Find("cf_o_root").transform.position;
-            //TODO this is almost but not quite lined up with body
-            //Distance from bb to clothes mesh root posiiton
-            var clothesMeshRootOffset = meshRootTf.up * FastDistance(clothesMeshRoot, meshRootTf.position + bbHeight);
-            clothSphereCenterOffset = needsPositionFix ? meshRootTf.position + bbHeight - clothesMeshRootOffset : sphereCenter;
-            bodySphereCenterOffset = isDefaultBody ? meshRootTf.position + bbHeight : sphereCenter;
+            if (isClothingMesh) 
+            {
+                //KK just has to have strange vert positions, so we have to use adjust the sphere center location for body and clothes
+                var clothesMeshRoot = GameObject.Find("cf_o_root").transform.position;
+                //Get distance from bb to clothesMeshRoot if needs fix
+                clothSphereCenterOffset = needsPositionFix ? sphereCenter - meshRootTf.up * FastDistance(clothesMeshRoot, sphereCenter) * 1.021f : sphereCenter;//At belly button - meshRoot position (plus some tiny dumb offset that I cant find the source of)
+                sphereCenter = needsPositionFix ? clothSphereCenterOffset : sphereCenter;
+            } 
+            else if (isDefaultBody) 
+            {
+                bodySphereCenterOffset = meshRootTf.position + GetUserMoveTransform(meshRootTf) + meshRootTf.up * -0.021f;////at 0,0,0, once again what is this crazy small offset?
+                sphereCenter = meshRootTf.position + GetUserMoveTransform(meshRootTf);//at belly button - meshRoot position
+            }
+            else 
+            {
+                //For uncensor body mesh
+                clothSphereCenterOffset = bodySphereCenterOffset = sphereCenter;//at belly button
+            }
+            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" corrected sphereCenter {sphereCenter}");
 #elif (HS2 || AI)
-            //Its so simple when its not KK :/
+            //Its so simple when its not KK defaults :/
             clothSphereCenterOffset = bodySphereCenterOffset = sphereCenter;
 #endif            
 
@@ -340,7 +351,8 @@ namespace KK_PregnancyPlus
             return true;                 
         }
 
-        internal Transform GetMeshRoot() {                                
+        internal Transform GetMeshRoot() 
+        {                                
 #if KK
             //Get normal mesh root attachment position, and if its not near 0,0,0 fix it
             var kkMeshRoot = GameObject.Find("cf_o_root"); 
@@ -364,7 +376,8 @@ namespace KK_PregnancyPlus
         /// </summary>
         /// <param name="boneOrMeshTf">The transform that defined the center of the sphere X, Y, and Z for KK and X, Z for HS2 with calculated Y</param>
         /// <param name="isClothingMesh"></param>
-        internal Vector3 GetSphereCenter(Transform boneOrMeshTf, bool isClothingMesh = false) { 
+        internal Vector3 GetSphereCenter(Transform boneOrMeshTf, bool isClothingMesh = false) 
+        { 
             
             //Sphere slider adjustments need to be transformed to local space first to eliminate any character rotation in world space   
             Vector3 bellyButtonHeight = boneOrMeshTf.up * GetBellyButtonLocalHeight(boneOrMeshTf); 
@@ -614,7 +627,8 @@ namespace KK_PregnancyPlus
         /// </summary>
         /// <param name="boneOrMeshTf">The transform that defined the center of the sphere X, Y, and Z for KK and X, Z for HS2 with calculated Y</param>
         /// <param name="isClothingMesh"></param>
-        internal float GetClothesFixOffset(Vector3 sphereCenter, float sphereRadius, float waistWidth, Vector3 origVertWS) {
+        internal float GetClothesFixOffset(Vector3 sphereCenter, float sphereRadius, float waistWidth, Vector3 origVertWS) 
+        {
 #if KK      
             float flattenExtent = 0.05f;//The size of the area to spread the flattened offsets over like shrinking center -> inflated distance into a small area at the sphere radius
 #elif HS2 || AI
@@ -632,7 +646,8 @@ namespace KK_PregnancyPlus
             return offset;
         }
 
-        internal float GetBellyButtonLocalHeight(Transform boneOrMeshTf) {            
+        internal float GetBellyButtonLocalHeight(Transform boneOrMeshTf) 
+        {            
             //Calculate the belly button height by getting each bone distance from foot to belly button (ignores animations!)
 #if KK
             var bbHeight = PregnancyPlusHelper.BoneChainStraigntenedDistance( "cf_j_foot_L", "cf_j_waist01");//Not used at the moment, needs some love in KK
@@ -642,11 +657,13 @@ namespace KK_PregnancyPlus
             return bbHeight;
         }
 
-        internal Vector3 GetUserMoveTransform(Transform fromPosition) {
+        internal Vector3 GetUserMoveTransform(Transform fromPosition) 
+        {
             return fromPosition.up * infConfig.inflationMoveY + fromPosition.forward * infConfig.inflationMoveZ;
         }
 
-        internal Vector3 GetBellyButtonOffset(Transform fromPosition) {
+        internal Vector3 GetBellyButtonOffset(Transform fromPosition) 
+        {
             //Makes slight vertical adjustments to put the sphere at the correct point      
 #if KK   
             var offset = fromPosition.up * 0.15f;
@@ -656,7 +673,8 @@ namespace KK_PregnancyPlus
             return offset;     
         }
 
-        internal Vector3 GetUserTiltTransform(Transform meshRootTf, Vector3 smoothedVector, Vector3 sphereCenterPos, float sphereRadius) {
+        internal Vector3 GetUserTiltTransform(Transform meshRootTf, Vector3 smoothedVector, Vector3 sphereCenterPos, float sphereRadius) 
+        {
             // inflationTiltX
             //Get local space equivalents
             var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
@@ -682,7 +700,8 @@ namespace KK_PregnancyPlus
             return meshRootTf.TransformPoint(smoothedVectorLs);
         }
 
-        internal Vector3 GetUserShiftTransform(Transform meshRootTf, Vector3 smoothedVector, Vector3 sphereCenterPos, float sphereRadius) {
+        internal Vector3 GetUserShiftTransform(Transform meshRootTf, Vector3 smoothedVector, Vector3 sphereCenterPos, float sphereRadius) 
+        {
             if (infConfig.inflationShiftY == 0 && infConfig.inflationShiftZ == 0) return smoothedVector;
 
             //Get local space equivalents
@@ -704,7 +723,8 @@ namespace KK_PregnancyPlus
         }
 
         
-        internal Vector3 GetUserStretchXTransform(Transform meshRootTf, Vector3 smoothedVector, Vector3 sphereCenterPos) {
+        internal Vector3 GetUserStretchXTransform(Transform meshRootTf, Vector3 smoothedVector, Vector3 sphereCenterPos) 
+        {
             //Allow user adjustment of the width of the belly
             //Get local space position to eliminate rotation in world space
             var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
@@ -720,7 +740,8 @@ namespace KK_PregnancyPlus
             return meshRootTf.TransformPoint(smoothedVectorLs);  
         }
 
-        internal Vector3 GetUserStretchYTransform(Transform meshRootTf, Vector3 smoothedVector, Vector3 sphereCenterPos) {
+        internal Vector3 GetUserStretchYTransform(Transform meshRootTf, Vector3 smoothedVector, Vector3 sphereCenterPos) 
+        {
             //Allow user adjustment of the height of the belly
             //Get local space position to eliminate rotation in world space
             var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
