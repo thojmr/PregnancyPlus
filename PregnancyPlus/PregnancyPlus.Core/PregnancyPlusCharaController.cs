@@ -13,6 +13,7 @@ using AIChara;
 
 namespace KK_PregnancyPlus
 {
+
     public class PregnancyPlusCharaController: CharaCustomFunctionController
     {
         internal bool debug = false;//In debug mode, all verticies are affected.  Makes it easier to see what is actually happening in studio mode.  Also creates nightmares        
@@ -125,7 +126,7 @@ namespace KK_PregnancyPlus
         internal void GetWeeksAndSetInflation() 
         {
             var week = PregnancyPlusHelper.GetWeeksFromPregnancyPluginData(ChaControl, KK_PregnancyPluginName);
-            // PregnancyPlusPlugin.Logger.LogInfo($" Week >  {week}");
+            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" Week >  {week}");
             if (week < 0) return;
 
             MeshInflate(week);
@@ -175,10 +176,9 @@ namespace KK_PregnancyPlus
             //Get and apply all clothes render mesh changes
             var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);
             foreach(var skinnedMeshRenderer in clothRenderers) 
-            {
-                // PregnancyPlusPlugin.Logger.LogInfo($"   > {skinnedMeshRenderer.name}");         
+            {                
                 var foundVerts = ComputeMeshVerts(skinnedMeshRenderer, sphereRadius, waistWidth, true);
-                if (!foundVerts) continue;
+                if (!foundVerts) continue;                        
                 var appliedClothMeshChanges = ApplyInflation(skinnedMeshRenderer, GetMeshKey(skinnedMeshRenderer));
 
                 if (appliedClothMeshChanges) anyMeshChanges = true;
@@ -230,7 +230,7 @@ namespace KK_PregnancyPlus
             //Get the characters bones to measure from           
             var ribBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == ribName);
             var waistBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == waistName);
-            var waistToRibDist = Math.Abs(FastDistance(ribBone.position, waistBone.position));  
+            var waistToRibDist = Vector3.Distance(ribBone.position, waistBone.position);  
 
 #if KK
             var thighLName = "cf_j_thigh00_L";
@@ -241,10 +241,13 @@ namespace KK_PregnancyPlus
 #endif
             var thighLBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == thighLName);        
             var thighRBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == thighRName); 
-            var waistWidth = Math.Abs(FastDistance(thighLBone.position, thighRBone.position)); 
+            var waistWidth = Vector3.Distance(thighLBone.position, thighRBone.position); 
 
             //Calculate sphere radius based on distance from waist to ribs (seems big, but lerping later will trim much of it), added Math.Min for skinny waists
-            var sphereRadius = Math.Min(waistToRibDist/1.25f, waistWidth/1.2f) * (infConfig.inflationMultiplier + 1); 
+            var sphereRadius = Math.Min(waistToRibDist/1.25f, waistWidth/1.2f) * (infConfig.inflationMultiplier + 1);   
+
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" waistToRibDist {waistToRibDist} waistWidth {waistWidth} sphereRadius {sphereRadius}");
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" ---------- ");
 
             return Tuple.Create(waistWidth, sphereRadius);
         }
@@ -265,6 +268,7 @@ namespace KK_PregnancyPlus
             //If no belly verts found, then we can skip this mesh
             if (!hasVerticies) return false; 
 
+            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($"  SkinnedMeshRenderer > {smr.name}"); 
             return GetInflatedVerticies(smr, sphereRadius, waistWidth, isClothingMesh);
         }
 
@@ -383,23 +387,25 @@ namespace KK_PregnancyPlus
             var isUncensorBody = PregnancyPlusHelper.IsUncensorBody(ChaControl, UncensorCOMName, DefaultBodyFemaleGUID); 
             //Sphere slider adjustments need to be transformed to local space first to eliminate any character rotation in world space   
             Vector3 sphereCenter = boneOrMeshTf.position + GetUserMoveTransform(boneOrMeshTf) + GetBellyButtonOffset(boneOrMeshTf);                     
-            var bellyButtonHeight = boneOrMeshTf.up * GetBellyButtonLocalHeight(boneOrMeshTf); 
+            Vector3 bellyButtonHeight = boneOrMeshTf.up * GetBellyButtonLocalHeight(boneOrMeshTf); 
             //For uncensor, move the mesh vectors up by an additional meshRoot.y to match the default body mesh position
             Vector3 sphereCenterUncesorFix = boneOrMeshTf.transform.position + (boneOrMeshTf.transform.up * FastDistance(boneOrMeshTf.transform.position, ChaControl.transform.position)) + GetUserMoveTransform(boneOrMeshTf.transform) + GetBellyButtonOffset(boneOrMeshTf.transform);             
 
 #if HS2 || AI
             //All mesh origins are character origin 0,0,0 in HS2, and mixed positions in KK, so we have to add the belly button hight since KK already has it figured in the mesh position
             sphereCenter = sphereCenter + bellyButtonHeight;    //bellyButtonHeight is an HS2 experimental measurement to replace meshRoot position that KK uses  
+            var trueHeight = FastDistance(boneOrMeshTf.position, GameObject.Find("cf_J_Kosi01").transform.position);
 #elif KK
             //Fix for uncensor mesh position
             if (!isClothingMesh) {
                 sphereCenter = isUncensorBody ? sphereCenterUncesorFix : sphereCenter;//Fix for uncensor local vertex positions being different than default body mesh
             }
+            var trueHeight = FastDistance(boneOrMeshTf.position, GameObject.Find("cf_j_waist01").transform.position);
 #endif
-            // var trueHeight = FastDistance(ChaControl.transform.position, GameObject.Find("cf_j_waist01").transform.position); //cf_J_Kosi01          
-            // PregnancyPlusPlugin.Logger.LogInfo($" sphereCenter {sphereCenter} meshRoot {boneOrMeshTf.position} char origin {ChaControl.transform.position}");
-            // PregnancyPlusPlugin.Logger.LogInfo($" bellyButtonHeight {bellyButtonHeight} trueHeight TPose {trueHeight}");
-            // PregnancyPlusPlugin.Logger.LogInfo($" ");
+                     
+            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" sphereCenter {sphereCenter} meshRoot {boneOrMeshTf.position} char origin {ChaControl.transform.position}");
+            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" bellyButtonHeight {bellyButtonHeight} trueWSHeight {trueHeight}");
+            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" ");
             return sphereCenter;
         }
 
@@ -408,13 +414,9 @@ namespace KK_PregnancyPlus
 #if KK
             var bbHeight = PregnancyPlusHelper.BoneChainStraigntenedDistance( "cf_j_foot_L", "cf_j_waist01", ChaControl.transform);//Not used at the moment, needs some love in KK
 #elif HS2 || AI            
-            var bbHeight = PregnancyPlusHelper.BoneChainStraigntenedDistance( "cf_J_Toes01_L", "cf_J_Kosi01");                        
-#endif            
-            var bbPos = boneOrMeshTf.position + boneOrMeshTf.up * bbHeight + GetBellyButtonOffset(boneOrMeshTf);            
-
-            //Calculate height from local position of character root to belly button
-            float height = ChaControl.transform.InverseTransformPoint(bbPos).y;
-            return height;
+            var bbHeight = PregnancyPlusHelper.BoneChainStraigntenedDistance( "cf_J_Toes01_L", "cf_J_Kosi01");                       
+#endif                      
+            return bbHeight;
         }
 
         internal Vector3 GetUserMoveTransform(Transform fromPosition) {
@@ -426,7 +428,7 @@ namespace KK_PregnancyPlus
 #if KK   
             var offset = fromPosition.up * -0.02f;
 #elif HS2 || AI 
-            var offset = fromPosition.up * 0.75f;
+            var offset = fromPosition.up * 1.5f;
 #endif                   
             return offset;     
         }
@@ -575,8 +577,8 @@ namespace KK_PregnancyPlus
             var hasBoneFilters = boneFilters != null && boneFilters.Length > 0;
 
             if (!sharedMesh.isReadable) {
-                // PregnancyPlusPlugin.Logger.LogInfo(
-                //     $"GetFilteredVerticieIndexes > smr '{renderKey}' is not readable, skipping");
+                if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(
+                     $"GetFilteredVerticieIndexes > smr '{renderKey}' is not readable, skipping");
                     return false;
             }
 
@@ -648,7 +650,7 @@ namespace KK_PregnancyPlus
 
             //Dont need to remember this mesh if there are no belly verts in it
             if (!hasBellyVerticies) {
-                // PregnancyPlusPlugin.Logger.LogInfo($"bellyVerticieIndexes >  removing {renderKey}"); 
+                // PregnancyPlusPlugin.Logger.LogInfo($"bellyVerticieIndexes > removing {renderKey}"); 
                 RemoveRenderKey(renderKey);
             }
 
@@ -727,8 +729,8 @@ namespace KK_PregnancyPlus
             var sharedMesh = smr.sharedMesh;
 
             if (!sharedMesh.isReadable) {
-                // PregnancyPlusPlugin.Logger.LogInfo(
-                //     $"ApplyInflation > smr '{renderKey}' is not readable, skipping");
+                if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(
+                     $"ApplyInflation > smr '{renderKey}' is not readable, skipping");
                     return false;
             } 
 
@@ -786,8 +788,8 @@ namespace KK_PregnancyPlus
                 //On change clothes original verts become useless, so skip this
                 if (!success) return;          
                 if (!sharedMesh.isReadable) {
-                    // PregnancyPlusPlugin.Logger.LogInfo(
-                    //     $"ResetInflation > smr '{renderKey}' is not readable, skipping");
+                    if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(
+                         $"ResetInflation > smr '{renderKey}' is not readable, skipping");
                         continue;
                 } 
 

@@ -176,7 +176,8 @@ namespace KK_PregnancyPlus
 
             float distance = 0;
             if (includeRootTf != null) {
-                lastBone = includeRootTf.gameObject;
+                distance = includeRootTf.InverseTransformPoint(currentBone.transform.position).y;
+                if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" initDiff {distance}  currentBone.name {currentBone.name} includeRootTf scale {includeRootTf.localScale}");
             }
             
 
@@ -185,14 +186,16 @@ namespace KK_PregnancyPlus
                 
                 //If the bone name matches the end return the total distance to this bone
                 if (boneEnd != null && currentBone.name.ToLower() == boneEnd.ToLower()) {
-                    // PregnancyPlusPlugin.Logger.LogInfo($" total dist {distance}");
+                    if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" total dist {distance}");
                     return distance;
                 }
 
                 //calculate the diatance by measuring y local distances only (we want to exclude angular distances)
                 var newDifference = (lastBone != null ? currentBone.transform.InverseTransformPoint(currentBone.transform.position).y - currentBone.transform.InverseTransformPoint(lastBone.transform.position).y : 0);
+                //include any local scales
+                newDifference = newDifference * (currentBone.transform.localScale.y);
                 //Ignore any negative bone differences (like char root bone which is at 0,0,0)
-                // PregnancyPlusPlugin.Logger.LogInfo($" newDifference {newDifference}  currentBone.name {currentBone.name}");
+                if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" newDifference {newDifference}  currentBone.name {currentBone.name}  scale {currentBone.transform.localScale} corrected {((newDifference * currentBone.transform.localScale.y) - newDifference)}");
                 if (newDifference > 0) {                    
                     distance = distance + newDifference;
                     lastBone = currentBone;
@@ -201,7 +204,7 @@ namespace KK_PregnancyPlus
                 currentBone = currentBone.transform.parent.gameObject;
             }
 
-            // PregnancyPlusPlugin.Logger.LogInfo($" total distx {distance}");
+            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" total distx {distance}");
             return distance;
         }
     

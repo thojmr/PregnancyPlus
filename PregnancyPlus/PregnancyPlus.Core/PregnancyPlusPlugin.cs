@@ -19,12 +19,18 @@ namespace KK_PregnancyPlus
         public static ConfigEntry<bool> StoryMode { get; private set; }
         public static ConfigEntry<bool> HDSmoothing { get; private set; }
 
+#if DEBUG
+        internal static bool debugLog = true;
+#else
+        internal static bool debugLog = false;
+#endif
+
 
         private void Start()
         {
             Logger = base.Logger;     
 
-#if (Debug || DEBUG)
+#if DEBUG
             StoryMode = Config.Bind<bool>("", "Enable in story mode (clothing bugs)", false, "This will combine the effects of KK_PregnancyPlus with KK_Pregnancy (larger and rounder belly overall), but be aware that you will see lots of clothes clipping at large sizes.");
             StoryMode.SettingChanged += StoryMode_SettingsChanged;
 #endif

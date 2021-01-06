@@ -14,6 +14,16 @@ namespace KK_PregnancyPlus
     {
         private static PregnancyPlusPlugin _pluginInstance;
 
+        
+#region Don't change these, they would change users cards default scales
+#if KK
+        private static int scaleLimits = 1;
+#elif HS2 || AI
+            //once again everything is bigger in HS2
+        private static int scaleLimits = 5;
+#endif
+#endregion
+
         internal static void Init(Harmony hi, PregnancyPlusPlugin instance)
         {
             _pluginInstance = instance;
@@ -27,13 +37,6 @@ namespace KK_PregnancyPlus
         private static void RegisterStudioControls()
         {
             var cat = StudioAPI.GetOrCreateCurrentStateCategory(null);
-
-#if KK
-            var scaleLimits = 1;
-#elif HS2 || AI
-            //once again everything is bigger in HS2
-            var scaleLimits = 5;
-#endif
 
             cat.AddControl(new CurrentStateCategorySlider("Pregnancy +", c =>
                 {                                       
@@ -56,7 +59,7 @@ namespace KK_PregnancyPlus
                     var controller = c.charInfo.GetComponent<PregnancyPlusCharaController>();
                     if (controller == null) return 1; 
                     return controller.infConfig.inflationMultiplier;
-                }, -1, 1))
+                }, -1.25f, 1.25f))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
                             if (ctrl.infConfig.inflationMultiplier == f) continue;     
