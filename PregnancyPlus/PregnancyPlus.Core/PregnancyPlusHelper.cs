@@ -13,6 +13,7 @@ namespace KK_PregnancyPlus
 {
     internal static class PregnancyPlusHelper
     {
+        internal static bool debugHelper = false;
 
         internal static float FastDistance(Vector3 firstPosition, Vector3 secondPosition) 
         {
@@ -177,7 +178,7 @@ namespace KK_PregnancyPlus
             float distance = 0;
             if (includeRootTf != null) {
                 distance = includeRootTf.InverseTransformPoint(currentBone.transform.position).y;
-                if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" initDiff {distance}  currentBone.name {currentBone.name} includeRootTf scale {includeRootTf.localScale}");
+                if (PregnancyPlusPlugin.debugLog && debugHelper) PregnancyPlusPlugin.Logger.LogInfo($" initDiff {distance}  currentBone.name {currentBone.name} includeRootTf scale {includeRootTf.localScale}");
             }
             
 
@@ -186,7 +187,7 @@ namespace KK_PregnancyPlus
                 
                 //If the bone name matches the end return the total distance to this bone
                 if (boneEnd != null && currentBone.name.ToLower() == boneEnd.ToLower()) {
-                    if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" total dist {distance}");
+                    if (PregnancyPlusPlugin.debugLog && debugHelper) PregnancyPlusPlugin.Logger.LogInfo($" total dist {distance}");
                     return distance;
                 }
 
@@ -195,7 +196,7 @@ namespace KK_PregnancyPlus
                 //include any local scales
                 newDifference = newDifference * (currentBone.transform.localScale.y);
                 //Ignore any negative bone differences (like char root bone which is at 0,0,0)
-                if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" newDifference {newDifference}  currentBone.name {currentBone.name}  scale {currentBone.transform.localScale} corrected {((newDifference * currentBone.transform.localScale.y) - newDifference)}");
+                if (PregnancyPlusPlugin.debugLog && debugHelper) PregnancyPlusPlugin.Logger.LogInfo($" newDifference {newDifference}  currentBone.name {currentBone.name}  scale {currentBone.transform.localScale} corrected {((newDifference * currentBone.transform.localScale.y) - newDifference)}");
                 if (newDifference > 0) {                    
                     distance = distance + newDifference;
                     lastBone = currentBone;
@@ -204,7 +205,7 @@ namespace KK_PregnancyPlus
                 currentBone = currentBone.transform.parent.gameObject;
             }
 
-            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" total distx {distance}");
+            if (PregnancyPlusPlugin.debugLog && debugHelper) PregnancyPlusPlugin.Logger.LogInfo($" total distx {distance}");
             return distance;
         }
     
