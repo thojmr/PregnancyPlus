@@ -16,6 +16,7 @@ namespace KK_PregnancyPlus
         public float inflationStretchY = 0;
         public float inflationShiftY = 0;
         public float inflationShiftZ = 0;
+        public float inflationTiltX = 0;
         public float inflationMultiplier = 0;
 
 #endregion

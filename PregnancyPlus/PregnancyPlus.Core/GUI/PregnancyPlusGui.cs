@@ -157,6 +157,21 @@ namespace KK_PregnancyPlus
                             ctrl.MeshInflate();                             
                         }
                     });
+
+            cat.AddControl(new CurrentStateCategorySlider("        Tilt X", c =>
+                {                                       
+                    if (c.charInfo == null) return 0;
+                    var controller = c.charInfo.GetComponent<PregnancyPlusCharaController>();
+                    if (controller == null) return 0;    
+                    return controller.infConfig.inflationTiltX;
+                }, -0.075f * scaleLimits, 0.075f * scaleLimits))
+                    .Value.Subscribe(f => { 
+                        foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
+                            if (ctrl.infConfig.inflationTiltX == f) continue;                    
+                            ctrl.infConfig.inflationTiltX = f;
+                            ctrl.MeshInflate();                             
+                        }
+                    });
         }
 
     }

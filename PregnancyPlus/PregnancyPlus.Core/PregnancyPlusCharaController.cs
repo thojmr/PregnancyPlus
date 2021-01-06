@@ -402,6 +402,10 @@ namespace KK_PregnancyPlus
                 smoothedVector = GetUserStretchYTransform(meshRootTf, smoothedVector, sphereCenterPos);
             }
 
+            if (infConfig.inflationTiltX != 0) {
+                smoothedVector = GetUserTiltTransform(meshRootTf, smoothedVector, sphereCenterPos, skinToCenterDist);
+            }
+
             //Remove the skin cliff where the inflation begins
             //To calculate vectors z difference, we need to do it from local space to eliminate any character rotation in world space
             var forwardFromCenter = meshRootTf.InverseTransformPoint(smoothedVector).z - meshRootTf.InverseTransformPoint(preMorphSphereCenter).z;            
@@ -638,6 +642,32 @@ namespace KK_PregnancyPlus
             return offset;     
         }
 
+        internal Vector3 GetUserTiltTransform(Transform meshRootTf, Vector3 smoothedVector, Vector3 sphereCenterPos, float sphereRadius) {
+            // inflationTiltX
+            //Get local space equivalents
+            var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
+            var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenterPos);
+
+            //local Distance up or down from sphere center
+            var distFromYCenterLs = smoothedVectorLs.y - sphereCenterLs.y; 
+            var distFromXCenterLs = smoothedVectorLs.x - sphereCenterLs.x; 
+            //Left side tilts one way, right side the opposite
+            var isTop = distFromYCenterLs > 0; 
+            var isRight = distFromXCenterLs > 0; 
+
+            //Increase tilt amount for vecters further above or below center.  No shift along center
+            var tiltX = Mathf.Lerp(0, infConfig.inflationTiltX, Math.Abs(distFromYCenterLs)/sphereRadius);
+            //Second lerp to limit how much it shifts l/r when near x=0 line, no shift along center
+            tiltX = Mathf.Lerp(0, tiltX, Math.Abs(distFromXCenterLs)/sphereRadius);
+            //Reverse the direction based on which side the vert is on
+            tiltX = (isRight ? tiltX : -tiltX);
+            tiltX = (isTop ? tiltX : -tiltX);
+
+            smoothedVectorLs.x = (smoothedVectorLs + meshRootTf.right * tiltX).x;
+
+            return meshRootTf.TransformPoint(smoothedVectorLs);
+        }
+
         internal Vector3 GetUserShiftTransform(Transform meshRootTf, Vector3 smoothedVector, Vector3 sphereCenterPos, float sphereRadius) {
             if (infConfig.inflationShiftY == 0 && infConfig.inflationShiftZ == 0) return smoothedVector;
 
@@ -711,7 +741,7 @@ namespace KK_PregnancyPlus
         internal bool NeedsMeshUpdate() 
         {
             bool hasChanges = false;
-
+            //TODO change to loop over all objects in preg data, so when we add a new one we dont have to add it here
             if (infConfig.inflationSize != infConfigHistory.inflationSize) hasChanges = true;              
             if (infConfig.inflationMoveY != infConfigHistory.inflationMoveY) hasChanges = true;
             if (infConfig.inflationMoveZ != infConfigHistory.inflationMoveZ) hasChanges = true;
@@ -719,6 +749,7 @@ namespace KK_PregnancyPlus
             if (infConfig.inflationStretchY != infConfigHistory.inflationStretchY) hasChanges = true;
             if (infConfig.inflationShiftY != infConfigHistory.inflationShiftY) hasChanges = true;
             if (infConfig.inflationShiftZ != infConfigHistory.inflationShiftZ) hasChanges = true;
+            if (infConfig.inflationTiltX != infConfigHistory.inflationTiltX) hasChanges = true;
             if (infConfig.inflationMultiplier != infConfigHistory.inflationMultiplier) hasChanges = true;
 
             return hasChanges;
@@ -850,4 +881,5 @@ namespace KK_PregnancyPlus
 
     }
 }
+
 
