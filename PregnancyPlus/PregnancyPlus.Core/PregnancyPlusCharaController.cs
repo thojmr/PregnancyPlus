@@ -301,13 +301,13 @@ namespace KK_PregnancyPlus
                     //Shift each belly vertex away from sphere center
                     if (!isClothingMesh) 
                     {                        
-                        verticieToSphere = (origVertWS - bodySphereCenterOffset).normalized * sphereRadius + bodySphereCenterOffset + GetUserShiftTransform(meshRootTf);                     
+                        verticieToSphere = (origVertWS - bodySphereCenterOffset).normalized * sphereRadius + bodySphereCenterOffset;
                     }
                     else 
                     {                       
                         float reduceClothFlattenOffset = GetClothesFixOffset(clothSphereCenterOffset, sphereRadius, waistWidth, origVertWS);//Reduce cloth flattening at largest inflation values 
                         //Clothes need some more loving to get them to stop clipping at max size
-                        verticieToSphere = (origVertWS - clothSphereCenterOffset).normalized * (sphereRadius + reduceClothFlattenOffset) + clothSphereCenterOffset + GetUserShiftTransform(meshRootTf);                                           
+                        verticieToSphere = (origVertWS - clothSphereCenterOffset).normalized * (sphereRadius + reduceClothFlattenOffset) + clothSphereCenterOffset;
                     }     
 
                     //Make minor adjustments to the shape
@@ -388,7 +388,7 @@ namespace KK_PregnancyPlus
             //Only apply morphs if the imaginary sphere is outside of the skins boundary (Don't want to shrink anything inwards, only out)
             if (skinToCenterDist >= inflatedToCenterDist || pmSkinToCenterDist > pmInflatedToCenterDist) return originalVertice;        
 
-            var smoothedVector = inflatedVerticie;
+            var smoothedVector = GetUserShiftTransform(meshRootTf, inflatedVerticie, sphereCenterPos, skinToCenterDist);
             var zSmoothDist = pmInflatedToCenterDist/3f;//Just pick a float that looks good
             var ySmoothDist = pmInflatedToCenterDist/2f;//Only smooth the top half of y
 
@@ -638,8 +638,25 @@ namespace KK_PregnancyPlus
             return offset;     
         }
 
-        internal Vector3 GetUserShiftTransform(Transform fromPosition) {
-            return fromPosition.up * infConfig.inflationShiftY + fromPosition.forward * infConfig.inflationShiftZ;
+        internal Vector3 GetUserShiftTransform(Transform meshRootTf, Vector3 smoothedVector, Vector3 sphereCenterPos, float sphereRadius) {
+            if (infConfig.inflationShiftY == 0 && infConfig.inflationShiftZ == 0) return smoothedVector;
+
+            //Get local space equivalents
+            var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
+            var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenterPos);
+
+            //IF the user has selected a y value
+            if (infConfig.inflationShiftY != 0) {
+                //return the shift up/down 
+                smoothedVector = smoothedVector + meshRootTf.up * infConfig.inflationShiftY;
+            }
+            //If the user has selected a z value
+            if (infConfig.inflationShiftZ != 0) {
+                //Move the verts closest to sphere center Z more slowly than verts at the belly button.  Otherwise you stretch the ones near the body too much
+                var lerpY = Mathf.Lerp(0, infConfig.inflationShiftZ, (smoothedVectorLs.z - sphereCenterLs.z)/(sphereRadius *2));
+                smoothedVector = smoothedVector + meshRootTf.forward * lerpY;
+            }
+            return smoothedVector;
         }
 
         
