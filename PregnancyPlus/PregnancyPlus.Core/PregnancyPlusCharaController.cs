@@ -429,8 +429,8 @@ namespace KK_PregnancyPlus
                 smoothedVector = GetUserStretchYTransform(meshRootTf, smoothedVector, sphereCenterPos);
             }
 
-            if (infConfig.inflationTiltX != 0) {
-                smoothedVector = GetUserTiltTransform(meshRootTf, smoothedVector, sphereCenterPos, skinToCenterDist);
+            if (infConfig.inflationTaperY != 0) {
+                smoothedVector = GetUserTaperTransform(meshRootTf, smoothedVector, sphereCenterPos, skinToCenterDist);
             }
 
             //Remove the skin cliff where the inflation begins
@@ -673,9 +673,8 @@ namespace KK_PregnancyPlus
             return offset;     
         }
 
-        internal Vector3 GetUserTiltTransform(Transform meshRootTf, Vector3 smoothedVector, Vector3 sphereCenterPos, float sphereRadius) 
+        internal Vector3 GetUserTaperTransform(Transform meshRootTf, Vector3 smoothedVector, Vector3 sphereCenterPos, float sphereRadius) 
         {
-            // inflationTiltX
             //Get local space equivalents
             var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
             var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenterPos);
@@ -687,15 +686,15 @@ namespace KK_PregnancyPlus
             var isTop = distFromYCenterLs > 0; 
             var isRight = distFromXCenterLs > 0; 
 
-            //Increase tilt amount for vecters further above or below center.  No shift along center
-            var tiltX = Mathf.Lerp(0, infConfig.inflationTiltX, Math.Abs(distFromYCenterLs)/sphereRadius);
+            //Increase taper amount for vecters further above or below center.  No shift along center
+            var taperY = Mathf.Lerp(0, infConfig.inflationTaperY, Math.Abs(distFromYCenterLs)/sphereRadius);
             //Second lerp to limit how much it shifts l/r when near x=0 line, no shift along center
-            tiltX = Mathf.Lerp(0, tiltX, Math.Abs(distFromXCenterLs)/sphereRadius);
+            taperY = Mathf.Lerp(0, taperY, Math.Abs(distFromXCenterLs)/sphereRadius);
             //Reverse the direction based on which side the vert is on
-            tiltX = (isRight ? tiltX : -tiltX);
-            tiltX = (isTop ? tiltX : -tiltX);
+            taperY = (isRight ? taperY : -taperY);
+            taperY = (isTop ? taperY : -taperY);
 
-            smoothedVectorLs.x = (smoothedVectorLs + meshRootTf.right * tiltX).x;
+            smoothedVectorLs.x = (smoothedVectorLs + meshRootTf.right * taperY).x;
 
             return meshRootTf.TransformPoint(smoothedVectorLs);
         }
@@ -784,7 +783,7 @@ namespace KK_PregnancyPlus
             if (infConfig.inflationStretchY != infConfigHistory.inflationStretchY) hasChanges = true;
             if (infConfig.inflationShiftY != infConfigHistory.inflationShiftY) hasChanges = true;
             if (infConfig.inflationShiftZ != infConfigHistory.inflationShiftZ) hasChanges = true;
-            if (infConfig.inflationTiltX != infConfigHistory.inflationTiltX) hasChanges = true;
+            if (infConfig.inflationTaperY != infConfigHistory.inflationTaperY) hasChanges = true;
             if (infConfig.inflationMultiplier != infConfigHistory.inflationMultiplier) hasChanges = true;
 
             return hasChanges;
