@@ -16,7 +16,8 @@ namespace KK_PregnancyPlus
 
     public class PregnancyPlusCharaController: CharaCustomFunctionController
     {
-        internal bool debug = false;//In debug mode, all verticies are affected.  Makes it easier to see what is actually happening in studio mode.  Also creates nightmares        
+        internal bool debug = false;//In debug mode, all verticies are affected.  Makes it easier to see what is actually happening in studio mode.  Also creates nightmares   
+        internal bool initialized = false;     
 
 #region props
         //Contsins the mesh inflation configuration
@@ -62,6 +63,7 @@ namespace KK_PregnancyPlus
             CurrentCoordinate.Subscribe(value => { OnCoordinateLoaded(); });
 #endif
             ReadCardData();
+            initialized = true;
 
             //Set the initial belly size if the character card has data
             if (infConfig.inflationSize > 0) StartCoroutine(WaitForMeshToSettle(0.5f));
@@ -111,6 +113,7 @@ namespace KK_PregnancyPlus
 
         internal void OnCoordinateLoaded()  
         {  
+            if (!initialized) return;//No loading coordinate changes before the pregnancydata values are fetched
             //When clothing changes, reload inflation state
             // PregnancyPlusPlugin.Logger.LogInfo($" OnCoordinateLoaded > ");  
             StartCoroutine(WaitForMeshToSettle(0.10f, true));
