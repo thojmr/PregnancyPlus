@@ -53,6 +53,18 @@ namespace KK_PregnancyPlus
                         }
                     });
 
+            cat.AddControl(new CurrentStateCategorySwitch("        Reset All", c =>
+                {                                       
+                    return false;
+                }))
+                    .Value.Subscribe(f => { 
+                        foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
+                            if (!f) return;
+                            ctrl.infConfig = new PregnancyPlusData();             
+                            ctrl.MeshInflate(true);                             
+                        }
+                    });
+
             cat.AddControl(new CurrentStateCategorySlider("        Multiplier", c =>
                 {                                       
                     if (c.charInfo == null) return 1;
