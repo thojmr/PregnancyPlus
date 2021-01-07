@@ -1,0 +1,367 @@
+﻿using KKAPI;
+using KKAPI.Chara;
+using UnityEngine;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using UniRx;
+#if HS2 || AI
+using AIChara;
+#endif
+
+namespace KK_PregnancyPlus
+{
+
+    //This partial class contains all the less critical mesh inflation methods
+    public partial class PregnancyPlusCharaController: CharaCustomFunctionController
+    {
+
+
+        /// <summary>
+        /// An overload for MeshInflate() that allows you to pass an initial inflationSize param
+        /// For quickly setting the size, without worrying about the other config params
+        /// </summary>
+        /// <param name="inflationSize">Sets inflation size from 0 to 40</param>
+        public bool MeshInflate(float inflationSize)
+        {                  
+            if (inflationSize.Equals(null)) return false;
+
+            //Allow an initial size to be passed in, and sets it to the config
+            if (inflationSize > 0) {
+                infConfig.inflationSize = inflationSize;
+            }   
+
+            return MeshInflate();
+        }
+
+
+        /// <summary>
+        /// Just a helper function to combine searching for verts in a mesh, and then applying the transforms
+        /// </summary>
+        internal bool ComputeMeshVerts(SkinnedMeshRenderer smr, float sphereRadius, float waistWidth, bool isClothingMesh = false) 
+        {
+            //The list of bones to get verticies for
+#if KK            
+            var boneFilters = new string[] { "cf_s_spine02", "cf_s_waist01" };//"cs_s_spine01" "cf_s_waist02" optionally for wider affected area
+#elif HS2 || AI
+            var boneFilters = new string[] { "cf_J_Spine02_s", "cf_J_Kosi01_s" };
+#endif
+            var hasVerticies = GetFilteredVerticieIndexes(smr, debug ? null : boneFilters);        
+
+            //If no belly verts found, then we can skip this mesh
+            if (!hasVerticies) return false; 
+
+            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" ");
+            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($"  SkinnedMeshRenderer > {smr.name}"); 
+            return GetInflatedVerticies(smr, sphereRadius, waistWidth, isClothingMesh);
+        }
+
+
+        /// <summary>
+        /// Tried to correct cloth flattening when inflation is at max, by offsetting each vert based on the distance it is from the sphere center to the max sphere radius
+        /// </summary>
+        /// <param name="boneOrMeshTf">The transform that defined the center of the sphere X, Y, and Z for KK and X, Z for HS2 with calculated Y</param>
+        /// <param name="isClothingMesh"></param>
+        internal float GetClothesFixOffset(Vector3 sphereCenter, float sphereRadius, float waistWidth, Vector3 origVertWS) 
+        {
+#if KK      
+            float flattenExtent = 0.05f;//The size of the area to spread the flattened offsets over like shrinking center -> inflated distance into a small area at the sphere radius
+#elif HS2 || AI
+            float flattenExtent = 0.1f;
+#endif
+            var inflatedVerWS = (origVertWS - sphereCenter).normalized * sphereRadius + sphereCenter;//Get the line we want to do measurements on            
+            //We dont care about empty space at sphere center, move outwards a bit before determining vector location on the line
+            float awayFromCenter = (waistWidth/3);
+
+            var totatDist = (sphereRadius - awayFromCenter);
+            var originToEndDist = FastDistance(origVertWS, inflatedVerWS);
+            //Get the positon on a line that this vector exists between flattenExtensStartAt -> to sphereRadius.  Shrink it to scale
+            var offset = Math.Abs((totatDist - originToEndDist)) * flattenExtent;
+
+            return offset;
+        }
+
+
+        internal float GetBellyButtonLocalHeight(Transform boneOrMeshTf) 
+        {            
+            //Calculate the belly button height by getting each bone distance from foot to belly button (ignores animations!)
+#if KK
+            var bbHeight = PregnancyPlusHelper.BoneChainStraigntenedDistance( "cf_j_foot_L", "cf_j_waist01");//Not used at the moment, needs some love in KK
+#elif HS2 || AI            
+            var bbHeight = PregnancyPlusHelper.BoneChainStraigntenedDistance( "cf_J_Toes01_L", "cf_J_Kosi01");                       
+#endif                      
+            return bbHeight;
+        }
+
+
+        internal Vector3 GetUserMoveTransform(Transform fromPosition) 
+        {
+            return fromPosition.up * infConfig.inflationMoveY + fromPosition.forward * infConfig.inflationMoveZ;
+        }
+
+
+        internal Vector3 GetBellyButtonOffset(Transform fromPosition) 
+        {
+            //Makes slight vertical adjustments to put the sphere at the correct point      
+#if KK   
+            var offset = fromPosition.up * 0.15f;
+#elif HS2 || AI 
+            var offset = fromPosition.up * 1.5f;
+#endif                   
+            return offset;     
+        }
+
+
+        internal Vector3 GetUserTaperTransform(Transform meshRootTf, Vector3 smoothedVector, Vector3 sphereCenterPos, float sphereRadius) 
+        {
+            //Get local space equivalents
+            var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
+            var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenterPos);
+
+            //local Distance up or down from sphere center
+            var distFromYCenterLs = smoothedVectorLs.y - sphereCenterLs.y; 
+            var distFromXCenterLs = smoothedVectorLs.x - sphereCenterLs.x; 
+            //Left side tilts one way, right side the opposite
+            var isTop = distFromYCenterLs > 0; 
+            var isRight = distFromXCenterLs > 0; 
+
+            //Increase taper amount for vecters further above or below center.  No shift along center
+            var taperY = Mathf.Lerp(0, infConfig.inflationTaperY, Math.Abs(distFromYCenterLs)/sphereRadius);
+            //Second lerp to limit how much it shifts l/r when near x=0 line, no shift along center
+            taperY = Mathf.Lerp(0, taperY, Math.Abs(distFromXCenterLs)/sphereRadius);
+            //Reverse the direction based on which side the vert is on
+            taperY = (isRight ? taperY : -taperY);
+            taperY = (isTop ? taperY : -taperY);
+
+            smoothedVectorLs.x = (smoothedVectorLs + meshRootTf.right * taperY).x;
+
+            return meshRootTf.TransformPoint(smoothedVectorLs);
+        }
+
+        internal Vector3 GetUserShiftTransform(Transform meshRootTf, Vector3 smoothedVector, Vector3 sphereCenterPos, float sphereRadius) 
+        {
+            if (infConfig.inflationShiftY == 0 && infConfig.inflationShiftZ == 0) return smoothedVector;
+
+            //Get local space equivalents
+            var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
+            var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenterPos);
+
+            //IF the user has selected a y value
+            if (infConfig.inflationShiftY != 0) {
+                //return the shift up/down 
+                smoothedVector = smoothedVector + meshRootTf.up * infConfig.inflationShiftY;
+            }
+            //If the user has selected a z value
+            if (infConfig.inflationShiftZ != 0) {
+                //Move the verts closest to sphere center Z more slowly than verts at the belly button.  Otherwise you stretch the ones near the body too much
+                var lerpY = Mathf.Lerp(0, infConfig.inflationShiftZ, (smoothedVectorLs.z - sphereCenterLs.z)/(sphereRadius *2));
+                smoothedVector = smoothedVector + meshRootTf.forward * lerpY;
+            }
+            return smoothedVector;
+        }
+
+        
+        internal Vector3 GetUserStretchXTransform(Transform meshRootTf, Vector3 smoothedVector, Vector3 sphereCenterPos) 
+        {
+            //Allow user adjustment of the width of the belly
+            //Get local space position to eliminate rotation in world space
+            var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
+            var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenterPos);
+            //local Distance left or right from sphere center
+            var distFromXCenterLs = smoothedVectorLs.x - sphereCenterLs.x;                
+
+            var changeInDist = distFromXCenterLs * (infConfig.inflationStretchX + 1);  
+            //Get new local space X position
+            smoothedVectorLs.x = (sphereCenterLs + Vector3.right * changeInDist).x;
+
+            //Convert back to world space
+            return meshRootTf.TransformPoint(smoothedVectorLs);  
+        }
+
+
+        internal Vector3 GetUserStretchYTransform(Transform meshRootTf, Vector3 smoothedVector, Vector3 sphereCenterPos) 
+        {
+            //Allow user adjustment of the height of the belly
+            //Get local space position to eliminate rotation in world space
+            var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
+            var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenterPos);
+
+            //local Distance up or down from sphere center
+            var distFromYCenterLs = smoothedVectorLs.y - sphereCenterLs.y; 
+            
+            //have to change growth direction above and below center line
+            var changeInDist = distFromYCenterLs * (infConfig.inflationStretchY + 1);  
+            //Get new local space X position
+            smoothedVectorLs.y = (sphereCenterLs + Vector3.up * changeInDist).y;
+            
+            //Convert back to world space
+            return meshRootTf.TransformPoint(smoothedVectorLs); 
+        }
+
+
+        internal float FastDistance(Vector3 firstPosition, Vector3 secondPosition) 
+        {
+            //Calculates distance faster than vector3.distance.
+            Vector3 heading;
+            float distanceSquared;
+    
+            heading.x = firstPosition.x - secondPosition.x;
+            heading.y = firstPosition.y - secondPosition.y;
+            heading.z = firstPosition.z - secondPosition.z;
+    
+            distanceSquared = heading.x * heading.x + heading.y * heading.y + heading.z * heading.z;
+            return Mathf.Sqrt(distanceSquared);
+        }
+       
+
+        internal bool NeedsMeshUpdate() 
+        {
+            bool hasChanges = false;
+            //TODO change to loop over all objects in preg data, so when we add a new one we dont have to add it here
+            if (infConfig.inflationSize != infConfigHistory.inflationSize) hasChanges = true;              
+            if (infConfig.inflationMoveY != infConfigHistory.inflationMoveY) hasChanges = true;
+            if (infConfig.inflationMoveZ != infConfigHistory.inflationMoveZ) hasChanges = true;
+            if (infConfig.inflationStretchX != infConfigHistory.inflationStretchX) hasChanges = true;
+            if (infConfig.inflationStretchY != infConfigHistory.inflationStretchY) hasChanges = true;
+            if (infConfig.inflationShiftY != infConfigHistory.inflationShiftY) hasChanges = true;
+            if (infConfig.inflationShiftZ != infConfigHistory.inflationShiftZ) hasChanges = true;
+            if (infConfig.inflationTaperY != infConfigHistory.inflationTaperY) hasChanges = true;
+            if (infConfig.inflationMultiplier != infConfigHistory.inflationMultiplier) hasChanges = true;
+
+            return hasChanges;
+        }
+        
+
+        internal void RemoveRenderKeys(List<string> keysToRemove) 
+        {
+            foreach(var key in keysToRemove) 
+            {
+                RemoveRenderKey(key);
+            }
+        }
+
+
+        internal void RemoveRenderKey(string keyToRemove) 
+        {
+            if (originalVertices.ContainsKey(keyToRemove)) originalVertices.Remove(keyToRemove);
+            if (inflatedVertices.ContainsKey(keyToRemove)) inflatedVertices.Remove(keyToRemove);
+            if (currentVertices.ContainsKey(keyToRemove)) currentVertices.Remove(keyToRemove);
+            if (bellyVerticieIndexes.ContainsKey(keyToRemove)) bellyVerticieIndexes.Remove(keyToRemove);        
+        }
+
+
+        //Tries to uniquly identify a mesh by its name and number of verticies
+        internal string GetMeshKey(SkinnedMeshRenderer smr) 
+        {
+            return smr.name + smr.sharedMesh.vertexCount.ToString();
+        }
+
+
+        /// <summary>
+        /// This will update all verticies with a lerp from originalVertices to inflatedVertices depending on the inflationSize config
+        /// Only modifies belly verticies, and if none are found, no action taken.
+        /// </summary>
+        /// <param name="mesh">Target mesh to update</param>
+        /// <param name="renderKey">The Shared Mesh render name, used in dictionary keys to get the current verticie values</param>
+        /// <returns>Will return True if any verticies are changed</returns>
+        internal bool ApplyInflation(SkinnedMeshRenderer smr, string renderKey) 
+        {
+            var infSize = infConfig.inflationSize;
+            //Only inflate if the value changed        
+            if (infSize.Equals(null) || infSize == 0) return false;      
+
+            //Create an instance of sharedMesh so we don't modify the mesh shared between characters
+            Mesh meshCopy = (Mesh)UnityEngine.Object.Instantiate(smr.sharedMesh);    
+            smr.sharedMesh = meshCopy;
+
+            var sharedMesh = smr.sharedMesh;
+
+            if (!sharedMesh.isReadable) {
+                if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(
+                     $"ApplyInflation > smr '{renderKey}' is not readable, skipping");
+                    return false;
+            } 
+
+            // StartInflate(balloon);
+            var origVert = originalVertices[renderKey];
+            var currentVert = currentVertices[renderKey];
+            var bellyVertIndex = bellyVerticieIndexes[renderKey];
+
+            if (bellyVertIndex.Length == 0) return false;
+            infConfigHistory.inflationSize = infSize;
+
+            for (int i = 0; i < currentVert.Length; i++)
+            {
+                //If not a belly index verticie then skip the morph
+                if (bellyVertIndex[i] != true) continue;
+
+                currentVert[i] = Vector3.Lerp(origVert[i], inflatedVertices[renderKey][i], (infSize/40));
+            }
+
+            if (currentVert.Length != sharedMesh.vertexCount) 
+            {
+                PregnancyPlusPlugin.Logger.LogInfo(
+                            $"ApplyInflation > smr.sharedMesh '{renderKey}' has incorrect vert count {currentVert.Length}|{sharedMesh.vertexCount}");
+                return false;
+            }
+
+            sharedMesh.vertices = currentVert;
+            sharedMesh.RecalculateBounds();
+            if (PregnancyPlusPlugin.HDSmoothing.Value) NormalSolver.RecalculateNormals(sharedMesh, 35f, bellyVerticieIndexes[renderKey]);
+            if (!PregnancyPlusPlugin.HDSmoothing.Value) sharedMesh.RecalculateNormals();
+            sharedMesh.RecalculateTangents();
+
+            return true;
+        }    
+        
+
+        internal void ResetInflation() 
+        {   
+            //Resets all mesh inflations
+            var keyList = new List<string>(originalVertices.Keys);
+
+            //For every active meshRenderer.name
+            foreach(var renderKey in keyList) 
+            {
+                var smr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderKey);
+                //Normally triggered when user changes clothes, the old clothes render wont be found
+                if (smr == null) continue;                
+
+                //Create an instance of sharedMesh so we don't modify the mesh shared between characters
+                Mesh meshCopy = (Mesh)UnityEngine.Object.Instantiate(smr.sharedMesh);
+                smr.sharedMesh = meshCopy;
+
+                var sharedMesh = smr.sharedMesh;
+                var success = originalVertices.TryGetValue(renderKey, out Vector3[] origVerts); 
+
+                //On change clothes original verts become useless, so skip this
+                if (!success) return;          
+                if (!sharedMesh.isReadable) {
+                    if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(
+                         $"ResetInflation > smr '{renderKey}' is not readable, skipping");
+                        continue;
+                } 
+
+                if (!sharedMesh || origVerts.Equals(null) || origVerts.Length == 0) continue;
+                if (origVerts.Length != sharedMesh.vertexCount) 
+                {
+                    PregnancyPlusPlugin.Logger.LogInfo(
+                        $"ResetInflation > smr '{renderKey}' has incorrect vert count {origVerts.Length}|{sharedMesh.vertexCount}");
+                    continue;
+                }
+
+                sharedMesh.vertices = origVerts;
+                sharedMesh.RecalculateBounds();
+                if (PregnancyPlusPlugin.HDSmoothing.Value) NormalSolver.RecalculateNormals(sharedMesh, 35f, bellyVerticieIndexes[renderKey]);
+                if (!PregnancyPlusPlugin.HDSmoothing.Value) sharedMesh.RecalculateNormals();
+                sharedMesh.RecalculateTangents();
+            }
+        }
+        
+
+    }
+}
+
+
