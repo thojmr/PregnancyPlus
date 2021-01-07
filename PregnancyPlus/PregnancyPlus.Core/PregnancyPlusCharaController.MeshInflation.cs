@@ -169,8 +169,9 @@ namespace KK_PregnancyPlus
                 clothSphereCenterOffset = bodySphereCenterOffset = sphereCenter;//at belly button
             }
             if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" corrected sphereCenter {sphereCenter} isDefaultBody {isDefaultBody}");
+
 #elif (HS2 || AI)
-            //Its so simple when its not KK defaults :/
+            //Its so simple when its not KK default mesh :/
             clothSphereCenterOffset = bodySphereCenterOffset = sphereCenter;
 #endif            
 
@@ -231,7 +232,7 @@ namespace KK_PregnancyPlus
         internal Transform GetMeshRoot() 
         {                                
 #if KK
-            //Get normal mesh root attachment position, and if its not near 0,0,0 fix it
+            //Get normal mesh root attachment position, and if its not near 0,0,0 fix it so that it is
             var kkMeshRoot = GameObject.Find("cf_o_root"); 
             if (!kkMeshRoot) return null;
             

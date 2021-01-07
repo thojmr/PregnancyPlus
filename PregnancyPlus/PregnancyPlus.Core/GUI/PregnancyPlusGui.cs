@@ -39,11 +39,10 @@ namespace KK_PregnancyPlus
             var cat = StudioAPI.GetOrCreateCurrentStateCategory(null);
 
             cat.AddControl(new CurrentStateCategorySlider("Pregnancy +", c =>
-                {                                       
-                    if (c.charInfo == null) return 0;
-                    var controller = c.charInfo.GetComponent<PregnancyPlusCharaController>();
-                    if (controller == null) return 0;                          
-                    return controller.infConfig.inflationSize;
+                {   
+                    var ctrl = GetCharCtrl(c);                                                   
+                    return ctrl != null ? ctrl.infConfig.inflationSize : 0;
+
                 }, 0, 40))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
@@ -67,10 +66,9 @@ namespace KK_PregnancyPlus
 
             cat.AddControl(new CurrentStateCategorySlider("        Multiplier", c =>
                 {                                       
-                    if (c.charInfo == null) return 1;
-                    var controller = c.charInfo.GetComponent<PregnancyPlusCharaController>();
-                    if (controller == null) return 1; 
-                    return controller.infConfig.inflationMultiplier;
+                    var ctrl = GetCharCtrl(c);                                                   
+                    return ctrl != null ? ctrl.infConfig.inflationMultiplier: 0;
+
                 }, -2f, 2f))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
@@ -82,10 +80,9 @@ namespace KK_PregnancyPlus
 
             cat.AddControl(new CurrentStateCategorySlider("        Move Y", c =>
                 {                                       
-                    if (c.charInfo == null) return 0;
-                    var controller = c.charInfo.GetComponent<PregnancyPlusCharaController>();
-                    if (controller == null) return 0;    
-                    return controller.infConfig.inflationMoveY;
+                    var ctrl = GetCharCtrl(c);                                                   
+                    return ctrl != null ? ctrl.infConfig.inflationMoveY: 0;
+
                 }, -0.5f * scaleLimits, 0.5f * scaleLimits))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
@@ -97,10 +94,9 @@ namespace KK_PregnancyPlus
             
             cat.AddControl(new CurrentStateCategorySlider("        Move Z", c =>
                 {                                       
-                    if (c.charInfo == null) return 0;
-                    var controller = c.charInfo.GetComponent<PregnancyPlusCharaController>();
-                    if (controller == null) return 0; 
-                    return controller.infConfig.inflationMoveZ;
+                    var ctrl = GetCharCtrl(c);                                                   
+                    return ctrl != null ? ctrl.infConfig.inflationMoveZ: 0;
+
                 }, -0.2f * scaleLimits, 0.2f * scaleLimits))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
@@ -112,10 +108,9 @@ namespace KK_PregnancyPlus
 
             cat.AddControl(new CurrentStateCategorySlider("        Stretch X", c =>
                 {                                       
-                    if (c.charInfo == null) return 1;
-                    var controller = c.charInfo.GetComponent<PregnancyPlusCharaController>();
-                    if (controller == null) return 1;    
-                    return controller.infConfig.inflationStretchX;
+                    var ctrl = GetCharCtrl(c);                                                   
+                    return ctrl != null ? ctrl.infConfig.inflationStretchX: 0;
+
                 }, -0.3f * scaleLimits, 0.3f * scaleLimits))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
@@ -127,10 +122,9 @@ namespace KK_PregnancyPlus
 
             cat.AddControl(new CurrentStateCategorySlider("        Stretch Y", c =>
                 {                                       
-                    if (c.charInfo == null) return 1;
-                    var controller = c.charInfo.GetComponent<PregnancyPlusCharaController>();
-                    if (controller == null) return 1;    
-                    return controller.infConfig.inflationStretchY;
+                    var ctrl = GetCharCtrl(c);                                                   
+                    return ctrl != null ? ctrl.infConfig.inflationStretchY: 0;
+                    
                 }, -0.3f * scaleLimits, 0.3f * scaleLimits))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
@@ -142,10 +136,9 @@ namespace KK_PregnancyPlus
             
             cat.AddControl(new CurrentStateCategorySlider("        Shift Y", c =>
                 {                                       
-                    if (c.charInfo == null) return 0;
-                    var controller = c.charInfo.GetComponent<PregnancyPlusCharaController>();
-                    if (controller == null) return 0;    
-                    return controller.infConfig.inflationShiftY;
+                    var ctrl = GetCharCtrl(c);                                                   
+                    return ctrl != null ? ctrl.infConfig.inflationShiftY: 0;
+
                 }, -0.15f * scaleLimits, 0.15f * scaleLimits))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
@@ -157,10 +150,9 @@ namespace KK_PregnancyPlus
 
             cat.AddControl(new CurrentStateCategorySlider("        Shift Z", c =>
                 {                                       
-                    if (c.charInfo == null) return 0;
-                    var controller = c.charInfo.GetComponent<PregnancyPlusCharaController>();
-                    if (controller == null) return 0;    
-                    return controller.infConfig.inflationShiftZ;
+                    var ctrl = GetCharCtrl(c);                                                   
+                    return ctrl != null ? ctrl.infConfig.inflationShiftZ: 0;
+
                 }, -0.15f * scaleLimits, 0.15f * scaleLimits))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
@@ -172,10 +164,9 @@ namespace KK_PregnancyPlus
 
             cat.AddControl(new CurrentStateCategorySlider("        Taper Y", c =>
                 {                                       
-                    if (c.charInfo == null) return 0;
-                    var controller = c.charInfo.GetComponent<PregnancyPlusCharaController>();
-                    if (controller == null) return 0;    
-                    return controller.infConfig.inflationTaperY;
+                    var ctrl = GetCharCtrl(c);                                                   
+                    return ctrl != null ? ctrl.infConfig.inflationTaperY: 0;
+                    
                 }, -0.075f * scaleLimits, 0.075f * scaleLimits))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
@@ -184,6 +175,13 @@ namespace KK_PregnancyPlus
                             ctrl.MeshInflate();                             
                         }
                     });
+        }
+
+        internal static PregnancyPlusCharaController GetCharCtrl(Studio.OCIChar c) {
+            if (c.charInfo == null) return null;
+            var controller = c.charInfo.GetComponent<PregnancyPlusCharaController>();
+            if (controller == null) return null;    
+            return controller;
         }
 
     }
