@@ -861,7 +861,7 @@ namespace KK_PregnancyPlus
 
             sharedMesh.vertices = currentVert;
             sharedMesh.RecalculateBounds();
-            if (PregnancyPlusPlugin.HDSmoothing.Value) NormalSolver.RecalculateNormals(sharedMesh, 35f);
+            if (PregnancyPlusPlugin.HDSmoothing.Value) NormalSolver.RecalculateNormals(sharedMesh, 35f, bellyVerticieIndexes[renderKey]);
             if (!PregnancyPlusPlugin.HDSmoothing.Value) sharedMesh.RecalculateNormals();
             sharedMesh.RecalculateTangents();
 
@@ -905,7 +905,7 @@ namespace KK_PregnancyPlus
 
                 sharedMesh.vertices = origVerts;
                 sharedMesh.RecalculateBounds();
-                if (PregnancyPlusPlugin.HDSmoothing.Value) NormalSolver.RecalculateNormals(sharedMesh, 35f);
+                if (PregnancyPlusPlugin.HDSmoothing.Value) NormalSolver.RecalculateNormals(sharedMesh, 35f, bellyVerticieIndexes[renderKey]);
                 if (!PregnancyPlusPlugin.HDSmoothing.Value) sharedMesh.RecalculateNormals();
                 sharedMesh.RecalculateTangents();
             }
