@@ -5,6 +5,11 @@ using HarmonyLib;
 using KKAPI;
 using KKAPI.Studio;
 using KKAPI.Chara;
+#if AI || HS2
+using AIChara;
+#elif KK
+using KKAPI.MainGame;
+#endif
 
 namespace KK_PregnancyPlus
 {
@@ -92,5 +97,13 @@ namespace KK_PregnancyPlus
             //     ctrl.MeshInflate(true);                             
             // }                  
         }
+
+        /// <summary>
+        /// Provides access to methods for getting and setting clothes state changes to a specific CharCustomFunctionController.
+        /// </summary>
+        /// <param name="chaControl"></param>
+        /// <returns>KKAPI character controller</returns>
+        public static PregnancyPlusCharaController GetCharaController(ChaControl chaControl) => chaControl == null ? null : chaControl.gameObject.GetComponent<PregnancyPlusCharaController>();
+    
     }
 }

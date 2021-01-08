@@ -32,7 +32,7 @@ namespace KK_PregnancyPlus
 
         internal static SkinnedMeshRenderer GetMeshRenderer(ChaControl chaControl, string renderKey) 
         {
-            var renderers = chaControl.GetComponentsInChildren<SkinnedMeshRenderer>(true);
+            var renderers = chaControl.GetComponentsInChildren<SkinnedMeshRenderer>();
             var renderer = renderers.FirstOrDefault(x => (x.name + x.sharedMesh.vertexCount.ToString()) == renderKey);
             return renderer;
         }
@@ -65,7 +65,7 @@ namespace KK_PregnancyPlus
             var renderers = new List<SkinnedMeshRenderer>();
             if (characterObj == null) return renderers;
 
-            var skinnedItem = characterObj.GetComponentsInChildren<SkinnedMeshRenderer>(true);            
+            var skinnedItem = characterObj.GetComponentsInChildren<SkinnedMeshRenderer>();            
             if (skinnedItem.Length > 0) {
                 renderers.AddRange(skinnedItem);
             }

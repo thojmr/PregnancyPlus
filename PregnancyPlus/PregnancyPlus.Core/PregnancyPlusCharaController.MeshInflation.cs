@@ -43,7 +43,9 @@ namespace KK_PregnancyPlus
                 infConfigHistory.inflationSize = 0;
                 return false;                                
             }
-                        
+            
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" ");
+            
             var measuerments = MeasureWaist(ChaControl);         
             var waistWidth = measuerments.Item1; 
             var sphereRadius = measuerments.Item2;
@@ -200,26 +202,36 @@ namespace KK_PregnancyPlus
                 //Only care about inflating belly verticies
                 if (bellyVertIndex[i]) 
                 {                    
-                    Vector3 inflatedVertWS;                    
-                    Vector3 verticieToSphere;                      
-                    var origVertWS = meshRootTf.TransformPoint(origVerts[i]);//Convert to worldspace                    
+                    var origVertWS = meshRootTf.TransformPoint(origVerts[i]);//Convert to worldspace 
+                    var originIsInsideRadius = FastDistance(origVertWS, sphereCenter) <= sphereRadius;
 
-                    //Shift each belly vertex away from sphere center
-                    if (!isClothingMesh) 
-                    {                        
-                        //You have to normalize to sphere center instead of 0,0,0.  This way the belly will expand out as expected.  So shift all mesh verts to be origin at sphereCenter first, then normalize, then shift back
-                        verticieToSphere = (origVertWS - bodySphereCenterOffset).normalized * sphereRadius + bodySphereCenterOffset;
+                    //Ignore verts outside the sphere radius
+                    if (originIsInsideRadius) {
+                        Vector3 inflatedVertWS;                    
+                        Vector3 verticieToSphere;                                                             
+
+                        //Shift each belly vertex away from sphere center
+                        if (!isClothingMesh) 
+                        {                        
+                            //You have to normalize to sphere center instead of 0,0,0.  This way the belly will expand out as expected.  So shift all mesh verts to be origin at sphereCenter first, then normalize, then shift back
+                            verticieToSphere = (origVertWS - bodySphereCenterOffset).normalized * sphereRadius + bodySphereCenterOffset;
+                        }
+                        else 
+                        {                       
+                            float reduceClothFlattenOffset = GetClothesFixOffset(clothSphereCenterOffset, sphereRadius, waistWidth, origVertWS);//Reduce cloth flattening at largest inflation values 
+                            verticieToSphere = (origVertWS - clothSphereCenterOffset).normalized * (sphereRadius + reduceClothFlattenOffset) + clothSphereCenterOffset;
+                        }     
+
+                        //Make adjustments to the shape, and feed in user slider input
+                        inflatedVertWS =  SculptInflatedVerticie(origVertWS, verticieToSphere, sphereCenter, waistWidth, meshRootTf);                    
+                        inflatedVerts[i] = meshRootTf.InverseTransformPoint(inflatedVertWS);//Convert back to local space
+                        // if (i % 100 == 0) PregnancyPlusPlugin.Logger.LogInfo($" origVertWS {origVertWS}  verticieToSphere {verticieToSphere}");
                     }
                     else 
-                    {                       
-                        float reduceClothFlattenOffset = GetClothesFixOffset(clothSphereCenterOffset, sphereRadius, waistWidth, origVertWS);//Reduce cloth flattening at largest inflation values 
-                        verticieToSphere = (origVertWS - clothSphereCenterOffset).normalized * (sphereRadius + reduceClothFlattenOffset) + clothSphereCenterOffset;
-                    }     
+                    {
+                        inflatedVerts[i] = origVert;
+                    }
 
-                    //Make adjustments to the shape, and feed in user slider input
-                    inflatedVertWS =  SculptInflatedVerticie(origVertWS, verticieToSphere, sphereCenter, waistWidth, meshRootTf);                    
-                    inflatedVerts[i] = meshRootTf.InverseTransformPoint(inflatedVertWS);//Convert back to local space
-                    // if (i % 100 == 0) PregnancyPlusPlugin.Logger.LogInfo($" origVertWS {origVertWS}  verticieToSphere {verticieToSphere}");
                 }
                 else 
                 {

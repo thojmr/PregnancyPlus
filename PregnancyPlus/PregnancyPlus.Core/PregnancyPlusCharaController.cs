@@ -40,12 +40,15 @@ namespace KK_PregnancyPlus
 
         public const string KK_PregnancyPluginName = "KK_Pregnancy";//Allows us to pull KK_pregnancy data values
 
+        internal Guid debounceGuid;//Track multiple events to allow debounce
+
 
 
 
 #region overrides
         protected override void OnCardBeingSaved(GameMode currentGameMode)
         {
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnCardBeingSaved ");
             SetExtendedData(infConfig.Save());
         }
 
@@ -80,6 +83,7 @@ namespace KK_PregnancyPlus
         //The Hs2 way to detect clothing change in studio
         protected override void OnCoordinateBeingLoaded(ChaFileCoordinate coordinate) 
         {
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnCoordinateBeingLoaded {coordinate.coordinateName}");
             // PregnancyPlusPlugin.Logger.LogInfo($" OnCoordinateBeingLoaded > "); 
             OnCoordinateLoaded();
 
@@ -87,9 +91,15 @@ namespace KK_PregnancyPlus
         }
 #endif
 
+        protected override void OnCoordinateBeingSaved(ChaFileCoordinate coordinate) {
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnCoordinateBeingSaved {coordinate.coordinateName}");
+        }
+
 
         protected override void OnReload(GameMode currentGameMode)
         {
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnReload {currentGameMode}");
+
             if (PregnancyPlusPlugin.StoryMode != null) {
                 if (PregnancyPlusPlugin.StoryMode.Value) GetWeeksAndSetInflation();
             }
@@ -106,6 +116,17 @@ namespace KK_PregnancyPlus
 
 #endregion
 
+        /// <summary>
+        /// Triggered when clothing state is changed, i.e. pulled aside or taken off.
+        /// </summary>
+        internal void ClothesStateChangeEvent(int chaID, int clothesKind)
+        {
+            //Wait for card data to load, and make sure this is the same character the clothes event triggered for
+            if (!initialized || chaID != ChaControl.chaID) return;
+
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= ClothesStateChangeEvent {clothesKind}");
+            StartCoroutine(WaitForMeshToSettle(0.10f, true));
+        }
 
         internal void ReadCardData()
         {
@@ -118,6 +139,7 @@ namespace KK_PregnancyPlus
         {  
             //When loading the character, if pregnant, apply the new inflated belly too
             if (ChaControl == null || e.ReloadedCharacter == null || e.ReloadedCharacter.name != ChaControl.name) return;
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= OnCharacterReloaded ");
 
             GetWeeksAndSetInflation();
         } 
@@ -127,8 +149,8 @@ namespace KK_PregnancyPlus
         {  
             //No loading coordinate changes before the pregnancydata values are fetched
             if (!initialized) return;
+
             //When clothing changes, reload inflation state
-            // PregnancyPlusPlugin.Logger.LogInfo($" OnCoordinateLoaded > ");  
             StartCoroutine(WaitForMeshToSettle(0.10f, true));
         } 
 
@@ -136,8 +158,16 @@ namespace KK_PregnancyPlus
         //After clothes change you have to wait a second if you want shadows to calculate correctly (longer in HS2, AI)
         IEnumerator WaitForMeshToSettle(float waitTime = 0.10f, bool force = false)
         {   
+            //Allows us to debounce when multiple back to back request
+            var guid = Guid.NewGuid();
+            debounceGuid = guid;
+
             yield return new WaitForSeconds(waitTime);
-            MeshInflate(force);
+            //If guid is the latest, trigger method
+            if (debounceGuid == guid) {
+                if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" WaitForMeshToSettle");
+                MeshInflate(force);
+            }
         }
 
 
