@@ -45,9 +45,9 @@ namespace KK_PregnancyPlus
         {
             //The list of bones to get verticies for
 #if KK            
-            var boneFilters = new string[] { "cf_s_spine02", "cf_s_waist01" };//"cs_s_spine01" "cf_s_waist02" optionally for wider affected area
+            var boneFilters = new string[] { "cf_s_spine02", "cf_s_waist01", "cf_s_waist02" };//"cs_s_spine01" optionally for wider affected area
 #elif HS2 || AI
-            var boneFilters = new string[] { "cf_J_Spine02_s", "cf_J_Kosi01_s" };
+            var boneFilters = new string[] { "cf_J_Spine02_s", "cf_J_Kosi01_s", "cf_J_Kosi02_s" };
 #endif
             var hasVerticies = GetFilteredVerticieIndexes(smr, debug ? null : boneFilters);        
 

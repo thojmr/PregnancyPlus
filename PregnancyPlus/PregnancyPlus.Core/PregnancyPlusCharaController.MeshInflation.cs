@@ -17,6 +17,7 @@ namespace KK_PregnancyPlus
     //This partial class contains the mesh inflation logic
     public partial class PregnancyPlusCharaController: CharaCustomFunctionController
     {
+        internal bool debug = false;//In debug mode, all verticies are affected.  Makes it easier to see what is actually happening in studio mode.  Also creates nightmares   
 
 
         /// <summary>
@@ -149,6 +150,7 @@ namespace KK_PregnancyPlus
             Vector3 sphereCenter = GetSphereCenter(meshRootTf, isClothingMesh);
             var needsPositionFix = smr.transform.position != meshRootTf.position;                        
 
+#region Fixes for differet mesh localspace positions between KK and HS2/AI
 #if KK            
             var isDefaultBody = !PregnancyPlusHelper.IsUncensorBody(ChaControl, UncensorCOMName, DefaultBodyFemaleGUID); 
             if (isClothingMesh) 
@@ -174,7 +176,8 @@ namespace KK_PregnancyPlus
 #elif (HS2 || AI)
             //Its so simple when its not KK default mesh :/
             clothSphereCenterOffset = bodySphereCenterOffset = sphereCenter;
-#endif            
+#endif    
+#endregion        
 
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" isClothingMesh {isClothingMesh} needsPositionFix {needsPositionFix} ");
 
@@ -204,12 +207,12 @@ namespace KK_PregnancyPlus
                     //Shift each belly vertex away from sphere center
                     if (!isClothingMesh) 
                     {                        
+                        //You have to normalize to sphere center instead of 0,0,0.  This way the belly will expand out as expected.  So shift all mesh verts to be origin at sphereCenter first, then normalize, then shift back
                         verticieToSphere = (origVertWS - bodySphereCenterOffset).normalized * sphereRadius + bodySphereCenterOffset;
                     }
                     else 
                     {                       
                         float reduceClothFlattenOffset = GetClothesFixOffset(clothSphereCenterOffset, sphereRadius, waistWidth, origVertWS);//Reduce cloth flattening at largest inflation values 
-                        //Clothes need some more loving to get them to stop clipping at max size
                         verticieToSphere = (origVertWS - clothSphereCenterOffset).normalized * (sphereRadius + reduceClothFlattenOffset) + clothSphereCenterOffset;
                     }     
 
