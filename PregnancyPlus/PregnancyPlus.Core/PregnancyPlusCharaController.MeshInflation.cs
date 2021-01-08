@@ -54,9 +54,9 @@ namespace KK_PregnancyPlus
             foreach(var skinnedMeshRenderer in clothRenderers) 
             {                
                 var foundVerts = ComputeMeshVerts(skinnedMeshRenderer, sphereRadius, waistWidth, true);
-                if (!foundVerts) continue;                        
-                var appliedClothMeshChanges = ApplyInflation(skinnedMeshRenderer, GetMeshKey(skinnedMeshRenderer));
+                if (!foundVerts) continue;    
 
+                var appliedClothMeshChanges = ApplyInflation(skinnedMeshRenderer, GetMeshKey(skinnedMeshRenderer));
                 if (appliedClothMeshChanges) anyMeshChanges = true;
             }             
 
@@ -66,6 +66,7 @@ namespace KK_PregnancyPlus
             {
                 var foundVerts = ComputeMeshVerts(skinnedMeshRenderer, sphereRadius, waistWidth);  
                 if (!foundVerts) continue;
+                
                 var appliedBodyMeshChanges = ApplyInflation(skinnedMeshRenderer, GetMeshKey(skinnedMeshRenderer));
                 if (appliedBodyMeshChanges) anyMeshChanges = true;                      
             }
@@ -115,7 +116,7 @@ namespace KK_PregnancyPlus
             waistWidth = Math.Abs(waistWidth - (waistWidth * charScale.x - waistWidth)/charScale.x);
 
             //Calculate sphere radius based on distance from waist to ribs (seems big, but lerping later will trim much of it), added Math.Min for skinny waists
-            var sphereRadius = Math.Min(waistToRibDist/1.25f, waistWidth/1.2f) * (infConfig.inflationMultiplier + 1);   
+            var sphereRadius = Math.Min(waistToRibDist/1.25f, waistWidth/1.2f) * (GetInflationMultiplier() + 1);   
 
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" scaled waistToRibDist {waistToRibDist} scaled waistWidth {waistWidth} sphereRadius {sphereRadius}");
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" ---------- ");
@@ -309,7 +310,7 @@ namespace KK_PregnancyPlus
                 smoothedVector = GetUserStretchYTransform(meshRootTf, smoothedVector, sphereCenterPos);
             }
 
-            if (infConfig.inflationTaperY != 0) {
+            if (GetInflationTaperY() != 0) {
                 smoothedVector = GetUserTaperTransform(meshRootTf, smoothedVector, sphereCenterPos, skinToCenterDist);
             }
 

@@ -19,18 +19,18 @@ namespace KK_PregnancyPlus
     {
 
         internal bool debug = false;//In debug mode, all verticies are affected.  Makes it easier to see what is actually happening in studio mode.  Also creates nightmares   
-        internal bool initialized = false;     
+        internal bool initialized = false;//Prevent some actions from happening before character data loads   
 
 
-        //Contsins the mesh inflation configuration
+        //Holds the user entered slider values
         public PregnancyPlusData infConfig = new PregnancyPlusData();
         internal PregnancyPlusData infConfigHistory = new PregnancyPlusData();        
 
 
-        //Keeps track of all belly verticies
+        //Keeps track of all belly verticies, the dicts are indexed by the (meshRenderer.name + the vertex count) to make the indexes unique
         public Dictionary<string, Vector3[]> originalVertices = new Dictionary<string, Vector3[]>();
-        public Dictionary<string, Vector3[]> inflatedVertices = new Dictionary<string, Vector3[]>();
-        public Dictionary<string, Vector3[]> currentVertices = new Dictionary<string, Vector3[]>();
+        public Dictionary<string, Vector3[]> inflatedVertices = new Dictionary<string, Vector3[]>();//Max extended mesh verts, after all slider calculations
+        public Dictionary<string, Vector3[]> currentVertices = new Dictionary<string, Vector3[]>();//Currently active visible mesh verts
         public Dictionary<string, bool[]> bellyVerticieIndexes = new Dictionary<string, bool[]>();//List of verticie indexes that belong to the belly area
 
 
@@ -126,14 +126,15 @@ namespace KK_PregnancyPlus
 
         internal void OnCoordinateLoaded()  
         {  
-            if (!initialized) return;//No loading coordinate changes before the pregnancydata values are fetched
+            //No loading coordinate changes before the pregnancydata values are fetched
+            if (!initialized) return;
             //When clothing changes, reload inflation state
             // PregnancyPlusPlugin.Logger.LogInfo($" OnCoordinateLoaded > ");  
             StartCoroutine(WaitForMeshToSettle(0.10f, true));
         } 
 
 
-        //After clothes change you have to wait a second if you want shadows to calculate correctly
+        //After clothes change you have to wait a second if you want shadows to calculate correctly (longer in HS2, AI)
         IEnumerator WaitForMeshToSettle(float waitTime = 0.10f, bool force = false)
         {   
             yield return new WaitForSeconds(waitTime);
@@ -141,13 +142,17 @@ namespace KK_PregnancyPlus
         }
 
 
+        //fetch KK_Pregnancy Data.Week value for experimental story mode integration (It works if you don't mind the clipping)
         internal void GetWeeksAndSetInflation() 
         {
             var week = PregnancyPlusHelper.GetWeeksFromPregnancyPluginData(ChaControl, KK_PregnancyPluginName);
             if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" Week >  {week}");
             if (week < 0) return;
 
-            MeshInflate(week);
+            //Compute the additonal belly size added based on user configured vallue from 0-40
+            var additionalPregPlusSize = Mathf.Lerp(0, week, PregnancyPlusPlugin.MaxStoryModeBelly.Value/40);
+
+            MeshInflate(additionalPregPlusSize);
         }
         
 

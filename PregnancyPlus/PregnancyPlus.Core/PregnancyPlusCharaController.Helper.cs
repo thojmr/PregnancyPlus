@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using KKAPI.Studio;
 using UniRx;
 #if HS2 || AI
 using AIChara;
@@ -128,7 +129,7 @@ namespace KK_PregnancyPlus
             var isRight = distFromXCenterLs > 0; 
 
             //Increase taper amount for vecters further above or below center.  No shift along center
-            var taperY = Mathf.Lerp(0, infConfig.inflationTaperY, Math.Abs(distFromYCenterLs)/sphereRadius);
+            var taperY = Mathf.Lerp(0, GetInflationTaperY(), Math.Abs(distFromYCenterLs)/sphereRadius);
             //Second lerp to limit how much it shifts l/r when near x=0 line, no shift along center
             taperY = Mathf.Lerp(0, taperY, Math.Abs(distFromXCenterLs)/sphereRadius);
             //Reverse the direction based on which side the vert is on
@@ -142,7 +143,7 @@ namespace KK_PregnancyPlus
 
         internal Vector3 GetUserShiftTransform(Transform meshRootTf, Vector3 smoothedVector, Vector3 sphereCenterPos, float sphereRadius) 
         {
-            if (infConfig.inflationShiftY == 0 && infConfig.inflationShiftZ == 0) return smoothedVector;
+            if (infConfig.inflationShiftY == 0 && GetInflationShiftZ() == 0) return smoothedVector;
 
             //Get local space equivalents
             var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
@@ -154,9 +155,9 @@ namespace KK_PregnancyPlus
                 smoothedVector = smoothedVector + meshRootTf.up * infConfig.inflationShiftY;
             }
             //If the user has selected a z value
-            if (infConfig.inflationShiftZ != 0) {
+            if (GetInflationShiftZ() != 0) {
                 //Move the verts closest to sphere center Z more slowly than verts at the belly button.  Otherwise you stretch the ones near the body too much
-                var lerpY = Mathf.Lerp(0, infConfig.inflationShiftZ, (smoothedVectorLs.z - sphereCenterLs.z)/(sphereRadius *2));
+                var lerpY = Mathf.Lerp(0, GetInflationShiftZ(), (smoothedVectorLs.z - sphereCenterLs.z)/(sphereRadius *2));
                 smoothedVector = smoothedVector + meshRootTf.forward * lerpY;
             }
             return smoothedVector;
@@ -236,6 +237,7 @@ namespace KK_PregnancyPlus
 
         internal void RemoveRenderKeys(List<string> keysToRemove) 
         {
+            //Chear out any tracked verticie dictionaries by render key
             foreach(var key in keysToRemove) 
             {
                 RemoveRenderKey(key);
@@ -284,7 +286,6 @@ namespace KK_PregnancyPlus
                     return false;
             } 
 
-            // StartInflate(balloon);
             var origVert = originalVertices[renderKey];
             var currentVert = currentVertices[renderKey];
             var bellyVertIndex = bellyVerticieIndexes[renderKey];
@@ -292,11 +293,13 @@ namespace KK_PregnancyPlus
             if (bellyVertIndex.Length == 0) return false;
             infConfigHistory.inflationSize = infSize;
 
-            for (int i = 0; i < currentVert.Length; i++)
+            var currentVertLength = currentVert.Length;
+            for (int i = 0; i < currentVertLength; i++)
             {
                 //If not a belly index verticie then skip the morph
-                if (bellyVertIndex[i] != true) continue;
+                if (!bellyVertIndex[i]) continue;
 
+                //Set the lerp size of the belly based on the users slider value
                 currentVert[i] = Vector3.Lerp(origVert[i], inflatedVertices[renderKey][i], (infSize/40));
             }
 
@@ -322,22 +325,23 @@ namespace KK_PregnancyPlus
             //Resets all mesh inflations
             var keyList = new List<string>(originalVertices.Keys);
 
-            //For every active meshRenderer.name
+            //For every active meshRenderer key we have created
             foreach(var renderKey in keyList) 
             {
                 var smr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderKey);
                 //Normally triggered when user changes clothes, the old clothes render wont be found
                 if (smr == null) continue;                
 
-                //Create an instance of sharedMesh so we don't modify the mesh shared between characters
+                //Create an instance of sharedMesh so we don't modify the mesh shared between characters, that was a fun issue
                 Mesh meshCopy = (Mesh)UnityEngine.Object.Instantiate(smr.sharedMesh);
                 smr.sharedMesh = meshCopy;
 
                 var sharedMesh = smr.sharedMesh;
-                var success = originalVertices.TryGetValue(renderKey, out Vector3[] origVerts); 
+                var hasValue = originalVertices.TryGetValue(renderKey, out Vector3[] origVerts); 
 
                 //On change clothes original verts become useless, so skip this
-                if (!success) return;          
+                if (!hasValue) return;   
+
                 if (!sharedMesh.isReadable) {
                     if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(
                          $"ResetInflation > smr '{renderKey}' is not readable, skipping");
@@ -361,6 +365,25 @@ namespace KK_PregnancyPlus
         }
         
 
+
+        //Allow user config values to be added in during story mode
+        internal float GetInflationMultiplier() {
+            if (StudioAPI.InsideStudio) return infConfig.inflationMultiplier;
+            var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationMultiplier != null ? PregnancyPlusPlugin.StoryModeInflationMultiplier.Value : 0;
+            return (infConfig.inflationMultiplier + globalOverrideVal);
+        }
+
+        internal float GetInflationShiftZ() {
+            if (StudioAPI.InsideStudio) return infConfig.inflationShiftZ;
+            var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationShiftZ != null ? PregnancyPlusPlugin.StoryModeInflationShiftZ.Value : 0;
+            return (infConfig.inflationShiftZ + globalOverrideVal);
+        }
+
+        internal float GetInflationTaperY() {
+            if (StudioAPI.InsideStudio) return infConfig.inflationTaperY;
+            var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationTaperY != null ? PregnancyPlusPlugin.StoryModeInflationTaperY.Value : 0;
+            return (infConfig.inflationTaperY + globalOverrideVal);
+        }
     }
 }
 
