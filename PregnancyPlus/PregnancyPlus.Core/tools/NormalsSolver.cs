@@ -55,6 +55,11 @@ public static class NormalSolver
                 int i2 = triangles[i + 1];
                 int i3 = triangles[i + 2];
 
+                //Break early if this all of these verts are not belly verts
+                if (indexedVerts != null) {
+                    if (!indexedVerts[i1] && !indexedVerts[i2] && !indexedVerts[i3]) continue;
+                }
+
                 // Calculate the normal of the triangle
                 Vector3 p1 = vertices[i2] - vertices[i1];
                 Vector3 p2 = vertices[i3] - vertices[i1];
