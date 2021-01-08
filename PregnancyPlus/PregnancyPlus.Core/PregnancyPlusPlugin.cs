@@ -35,7 +35,7 @@ namespace KK_PregnancyPlus
         {
             Logger = base.Logger;     
 
-            HDSmoothing = Config.Bind<bool>("Character Studio", "HD smoothing (CPU intense)", false, "This will reduce the hard edges you sometimes see on characters after using sliders.  But will dramatically slow down the slider performance.  Only use it if you can see the edges.  Typically only noticable on HD models like in HS2 or AI.");
+            HDSmoothing = Config.Bind<bool>("Character Studio", "HD Crease Smoothing (CPU heavy)", false, "This will reduce the hard edges you sometimes see along the characters body after using a slider.  Typically only noticable on HD models like in HS2 or AI.  Turn it off if you are bothered by the added CPU load, or don't mind the edges.  It basically adds a custom vector norm method that handles UV boundaries better tha Unity's solution.");
             HDSmoothing.SettingChanged += HDSmoothing_SettingsChanged;
 
 #if KK
