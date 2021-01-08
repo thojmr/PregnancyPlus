@@ -15,7 +15,7 @@ namespace KK_PregnancyPlus
     public partial class PregnancyPlusPlugin : BaseUnityPlugin
     {
         public const string GUID = "KK_PregnancyPlus";
-        public const string Version = "0.9";
+        public const string Version = "0.10";
         internal static new ManualLogSource Logger { get; private set; }
         public static ConfigEntry<bool> StoryMode { get; private set; }
         public static ConfigEntry<bool> HDSmoothing { get; private set; }
@@ -43,7 +43,7 @@ namespace KK_PregnancyPlus
             StoryMode.SettingChanged += StoryMode_SettingsChanged;
 
             MaxStoryModeBelly = Config.Bind<float>("Experimental Story Mode (Requires KK_Pregnancy)", "Max additional belly size", 20f, 
-                new ConfigDescription("The maximum additional belly size that this plugin will add to the original KK_Pregnancy belly. The character must be pregnant.\r\n0 will result in the original KK_Pregnancy belly, while 40 will be the original +40",
+                new ConfigDescription("The maximum additional belly size that this plugin will add to the original KK_Pregnancy belly. The character must be pregnant.\r\n0 will result in the original KK_Pregnancy belly, while 40 will be the original + an additional 40",
                 new AcceptableValueRange<float>(0f, 40f)));
             MaxStoryModeBelly.SettingChanged += InflationConfig_SettingsChanged;
 
