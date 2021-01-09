@@ -38,9 +38,9 @@ namespace KK_PregnancyPlus
         public const string UncensorCOMName = "com.deathweasel.bepinex.uncensorselector";
         public const string DefaultBodyFemaleGUID = "Default.Body.Female";
 
-        public const string KK_PregnancyPluginName = "KK_Pregnancy";//Allows us to pull KK_pregnancy data values
+        public const string KK_PregnancyPluginName = "KK_Pregnancy";//key that allows us to pull KK_pregnancy data values
 
-        internal Guid debounceGuid;//Track multiple events to allow debounce
+        internal Guid debounceGuid;//Track multiple events with a debounce based on these id's
 
 
 
@@ -65,15 +65,16 @@ namespace KK_PregnancyPlus
 
         protected override void Start() 
         {
-#if KK            
-            //Detect clothing change in KK
-            CurrentCoordinate.Subscribe(value => { OnCoordinateLoaded(); });
-#endif
             ReadCardData();
             initialized = true;
 
             //Set the initial belly size if the character card has data
             if (infConfig.inflationSize > 0) StartCoroutine(WaitForMeshToSettle(0.5f));
+
+#if KK            
+            //Detect clothing change in KK
+            CurrentCoordinate.Subscribe(value => { OnCoordinateLoaded(); });
+#endif
 
             base.Start();
         }
@@ -84,7 +85,6 @@ namespace KK_PregnancyPlus
         protected override void OnCoordinateBeingLoaded(ChaFileCoordinate coordinate) 
         {
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnCoordinateBeingLoaded {coordinate.coordinateName}");
-            // PregnancyPlusPlugin.Logger.LogInfo($" OnCoordinateBeingLoaded > "); 
             OnCoordinateLoaded();
 
             base.OnCoordinateBeingLoaded(coordinate);
@@ -99,11 +99,11 @@ namespace KK_PregnancyPlus
         protected override void OnReload(GameMode currentGameMode)
         {
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnReload {currentGameMode}");
+            ReadCardData();
 
             if (PregnancyPlusPlugin.StoryMode != null) {
                 if (PregnancyPlusPlugin.StoryMode.Value) GetWeeksAndSetInflation();
-            }
-            ReadCardData();
+            }            
         }
 
 
@@ -115,6 +115,7 @@ namespace KK_PregnancyPlus
         
 
 #endregion
+
 
         /// <summary>
         /// Triggered when clothing state is changed, i.e. pulled aside or taken off.
@@ -154,8 +155,10 @@ namespace KK_PregnancyPlus
             StartCoroutine(WaitForMeshToSettle(0.10f, true));
         } 
 
-
-        //After clothes change you have to wait a second if you want shadows to calculate correctly (longer in HS2, AI)
+        
+        /// <summary>
+        /// After clothes change you have to wait a second if you want shadows to calculate correctly (longer in HS2, AI)
+        /// </summary>
         IEnumerator WaitForMeshToSettle(float waitTime = 0.10f, bool force = false)
         {   
             //Allows us to debounce when multiple back to back request
@@ -170,12 +173,14 @@ namespace KK_PregnancyPlus
             }
         }
 
-
-        //fetch KK_Pregnancy Data.Week value for experimental story mode integration (It works if you don't mind the clipping)
+        
+        /// <summary>
+        /// fetch KK_Pregnancy Data.Week value for story mode integration (It works if you don't mind the clipping)
+        /// </summary>
         internal void GetWeeksAndSetInflation() 
         {
             var week = PregnancyPlusHelper.GetWeeksFromPregnancyPluginData(ChaControl, KK_PregnancyPluginName);
-            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" Week >  {week}");
+            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" Week {ChaControl.name} >  {week}");
             if (week < 0) return;
 
             //Compute the additonal belly size added based on user configured vallue from 0-40

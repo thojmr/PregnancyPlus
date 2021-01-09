@@ -16,19 +16,6 @@ namespace KK_PregnancyPlus
     {
         internal static bool debugHelper = false;
 
-        internal static float FastDistance(Vector3 firstPosition, Vector3 secondPosition) 
-        {
-            //Calculates distance faster than vector3.distance.
-            Vector3 heading;
-            float distanceSquared;
-    
-            heading.x = firstPosition.x - secondPosition.x;
-            heading.y = firstPosition.y - secondPosition.y;
-            heading.z = firstPosition.z - secondPosition.z;
-    
-            distanceSquared = heading.x * heading.x + heading.y * heading.y + heading.z * heading.z;
-            return Mathf.Sqrt(distanceSquared);
-        }
 
         internal static SkinnedMeshRenderer GetMeshRenderer(ChaControl chaControl, string renderKey) 
         {
@@ -112,6 +99,9 @@ namespace KK_PregnancyPlus
             return renderers;
         }
 
+        /// <summary>   
+        /// Will fetch number of weeks from KK_Pregnancy data for this character
+        /// </summary>  
         internal static int GetWeeksFromPregnancyPluginData(ChaControl chaControl, string targetBehaviorId)
         {
             var kkPregCtrlInst = PregnancyPlusHelper.GetCharacterBehaviorController(chaControl, targetBehaviorId);
@@ -127,9 +117,13 @@ namespace KK_PregnancyPlus
             return week;
         }
 
+        /// <summary>   
+        /// If the current characters mesh is set by the Uncensor plugin we need to know this to correctly shift the mesh's localspace vertex positions
+        /// The LS positions for uncensor match that of HS2 and AI, but not the defulat KK body mesh (This took forever to track down!)
+        /// </summary>  
         internal static bool IsUncensorBody(ChaControl chaControl, string UncensorCOMName, string defaultBodyFemaleGUID) 
         {
-            //Uncensor body needs vert modifications.  Check to see if this is the default body mesh or not
+            //grab the active uncensor controller of it exists
             var uncensorController = PregnancyPlusHelper.GetCharacterBehaviorController(chaControl, UncensorCOMName);
             if (uncensorController == null) return false;
 
@@ -143,6 +137,9 @@ namespace KK_PregnancyPlus
             return bodyGUID != defaultBodyFemaleGUID;
         }
 
+        /// <summary>   
+        /// Will fetch an active CharaCustomFunctionController for the given character and plugin GUID
+        /// </summary>  
         internal static CharaCustomFunctionController GetCharacterBehaviorController(ChaControl chaControl, string targetBehaviorId) 
         {
             if (chaControl == null) return null;
@@ -152,8 +149,6 @@ namespace KK_PregnancyPlus
             if (behaviors == null) return null;
 
             foreach(var behavior in behaviors) {
-                // PregnancyPlusPlugin.Logger.LogInfo($" {behavior.name} > {behavior.ExtendedDataId}"); 
-
                 //Find the behavior with matching id (COM name)
                 if (behavior.ExtendedDataId == targetBehaviorId) {
                     return behavior;
@@ -164,6 +159,9 @@ namespace KK_PregnancyPlus
         }
 
 
+        /// <summary>   
+        /// Needed a standard way to pull bones from ChaControl obj
+        /// </summary>  
         internal static Transform GetBone(ChaControl chaControl, string boneName) {
             if (chaControl == null) return null;
             
@@ -180,11 +178,12 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Calculates the length of a set of chained bones from bottom up.  It will only caluculate the local Y values, to ignore any angular distance added, like animations
+        /// Calculates the length of a set of chained bones from bottom up.  It will only caluculate the true Y distance, so it effectively ignores any animations (behaves like a TPose measurement).false  Should include bones scales as well
         /// </summary>
-        /// <param name="boneStart">The starting (bottom) bone name</param>
-        /// <param name="boneEnd">The optional end bone name.  If null, the entire bone tree from bottom to top will be calculated.</param>
-        /// <param name="includeRootTf">The optional flag to include the distance from the characters root (just below feet) to the boneStart (High heels are weird with height)</param>
+        /// <param name="chaControl">The character to fetch bones from</param>
+        /// <param name="boneStart">The starting (bottom of tree) bone name</param>
+        /// <param name="boneEnd">The optional (top level) end bone name.  If null, the entire bone tree from bottom to top will be calculated.</param>
+        /// <param name="includeRootTf">(not finished) The optional flag to include the distance from the characters root (just below feet) to the boneStart (High heels are weird with height)</param>
         internal static float BoneChainStraigntenedDistance(ChaControl chaControl, string boneStart, string boneEnd = null, Transform includeRootTf = null) {
             //loops through each bone starting bottom going up through parent to destination (or root)
             var currentBone = GetBoneGO(chaControl, boneStart);
@@ -193,6 +192,8 @@ namespace KK_PregnancyPlus
             if (currentBone == null) return 0;  
 
             float distance = 0;
+
+            //If char root in included, append it to the total distance from includeRootTf to first boneStart
             if (includeRootTf != null) {
                 distance = includeRootTf.InverseTransformPoint(currentBone.transform.position).y;
                 if (PregnancyPlusPlugin.debugLog && debugHelper) PregnancyPlusPlugin.Logger.LogInfo($" initDiff {distance}  currentBone.name {currentBone.name} includeRootTf scale {includeRootTf.localScale}");
@@ -202,18 +203,19 @@ namespace KK_PregnancyPlus
             //Keep going while a parent transform exists
             while (currentBone != null && currentBone.transform.parent) {
                 
-                //If the bone name matches the end return the total distance to this bone
+                //If the bone name matches boneEnd return the total distance to this bone so far
                 if (boneEnd != null && currentBone.name.ToLower() == boneEnd.ToLower()) {
-                    if (PregnancyPlusPlugin.debugLog && debugHelper) PregnancyPlusPlugin.Logger.LogInfo($" total dist {distance}");
+                    if (PregnancyPlusPlugin.debugLog && debugHelper) PregnancyPlusPlugin.Logger.LogInfo($" total dist to {boneEnd} {distance}");
                     return distance;
                 }
 
                 //calculate the diatance by measuring y local distances only (we want to exclude angular distances)
                 var newDifference = (lastBone != null ? currentBone.transform.InverseTransformPoint(currentBone.transform.position).y - currentBone.transform.InverseTransformPoint(lastBone.transform.position).y : 0);
-                //include any local scales
-                newDifference = newDifference * (currentBone.transform.localScale.y);
-                //Ignore any negative bone differences (like char root bone which is at 0,0,0)
+                //include any local scales (TODO sometimes off by <10%)
+                newDifference = newDifference * (currentBone.transform.localScale.y);                
                 if (PregnancyPlusPlugin.debugLog && debugHelper) PregnancyPlusPlugin.Logger.LogInfo($" newDifference {newDifference}  currentBone.name {currentBone.name}  scale {currentBone.transform.localScale} corrected {((newDifference * currentBone.transform.localScale.y) - newDifference)}");
+                
+                //Ignore any negative bone differences (like char root bone which is at 0,0,0)
                 if (newDifference > 0) {                    
                     distance = distance + newDifference;
                     lastBone = currentBone;
@@ -222,10 +224,13 @@ namespace KK_PregnancyPlus
                 currentBone = currentBone.transform.parent.gameObject;
             }
 
-            if (PregnancyPlusPlugin.debugLog && debugHelper) PregnancyPlusPlugin.Logger.LogInfo($" total distx {distance}");
+            if (PregnancyPlusPlugin.debugLog && debugHelper) PregnancyPlusPlugin.Logger.LogInfo($" total dist {distance}");
             return distance;
         }
 
+        /// <summary>
+        /// Check the characters root scale bone that ABMX modifies. and return it's localScale value
+        /// </summary>
         internal static Vector3 GetCharacterScale(ChaControl chaControl) 
         {
 #if KK            
@@ -239,7 +244,7 @@ namespace KK_PregnancyPlus
             var scaleBone = chaControl.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == scaleBoneName);
             if (!scaleBone) return Vector3.one;
 
-            var correctedScale = scaleBone.localScale + scaleBone.localScale * scaleCorrection;//Why is local scale always a little off?  Where is the true scalar stored?
+            var correctedScale = scaleBone.localScale + scaleBone.localScale * scaleCorrection;//Why is local scale always a little off (<12%)?  Where is the true scalar stored?
             if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" character scale (adjusted) {correctedScale.x} {correctedScale.y} {correctedScale.z}");
             return correctedScale;
         }

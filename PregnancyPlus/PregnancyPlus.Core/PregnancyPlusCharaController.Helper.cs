@@ -18,8 +18,10 @@ namespace KK_PregnancyPlus
     //This partial class contains all the less critical mesh inflation methods
     public partial class PregnancyPlusCharaController: CharaCustomFunctionController
     {
-
-        //Limit where you can and cannot trigger inflation
+        
+        /// <summary>
+        /// Limit where you can and cannot trigger inflation
+        /// </summary>
         public bool ShouldInflate() {
             var storyModeEnabled = PregnancyPlusPlugin.StoryMode != null ? PregnancyPlusPlugin.StoryMode.Value : false;
             return StudioAPI.InsideStudio || storyModeEnabled;
@@ -69,8 +71,10 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Tried to correct cloth flattening when inflation is at max, by offsetting each vert based on the distance it is from the sphere center to the max sphere radius
         /// </summary>
-        /// <param name="boneOrMeshTf">The transform that defined the center of the sphere X, Y, and Z for KK and X, Z for HS2 with calculated Y</param>
-        /// <param name="isClothingMesh"></param>
+        /// <param name="sphereCenter">The center position of the inflation sphere</param>
+        /// <param name="sphereRadius">The desired sphere radius</param>
+        /// <param name="waistWidth">The average width of the characters waist</param>
+        /// <param name="origVertWS">The original verticie's worldspace position</param>
         internal float GetClothesFixOffset(Vector3 sphereCenter, float sphereRadius, float waistWidth, Vector3 origVertWS) 
         {
 #if KK      
@@ -87,10 +91,14 @@ namespace KK_PregnancyPlus
             //Get the positon on a line that this vector exists between flattenExtensStartAt -> to sphereRadius.  Shrink it to scale
             var offset = Math.Abs((totatDist - originToEndDist)) * flattenExtent;
 
+            //This is the additional distance we want to move this vert away from sphere center
             return offset;
         }
 
 
+        /// <summary>
+        /// Get the distance from the characters feet to the belly button unfolded into a straight Y line, even when not standing straight
+        /// </summary>
         internal float GetBellyButtonLocalHeight(Transform boneOrMeshTf) 
         {            
             //Calculate the belly button height by getting each bone distance from foot to belly button (even during animation the height is correct!)
@@ -103,12 +111,18 @@ namespace KK_PregnancyPlus
         }
 
 
+        /// <summary>
+        /// Calculate the user input move distance
+        /// </summary>
         internal Vector3 GetUserMoveTransform(Transform fromPosition) 
         {
             return fromPosition.up * infConfig.inflationMoveY + fromPosition.forward * infConfig.inflationMoveZ;
         }
 
 
+        /// <summary>   
+        /// Move the sphereCenter this much up or down to place it better visually
+        /// </summary>
         internal Vector3 GetBellyButtonOffset(Transform fromPosition) 
         {
             //Makes slight vertical adjustments to put the sphere at the correct point      
@@ -121,6 +135,9 @@ namespace KK_PregnancyPlus
         }
 
 
+        /// <summary>   
+        /// This sill taper the belly shape based on user input slider. shrinking the top width, and expanding the bottom width
+        /// </summary>
         internal Vector3 GetUserTaperTransform(Transform meshRootTf, Vector3 smoothedVector, Vector3 sphereCenterPos, float sphereRadius) 
         {
             //Get local space equivalents
@@ -147,6 +164,9 @@ namespace KK_PregnancyPlus
             return meshRootTf.TransformPoint(smoothedVectorLs);
         }
 
+        /// <summary>   
+        /// This will shift the sphereCenter position *After sphereifying* on Y or Z axis (This stretches the mesh, where pre sphereifying, it would move the sphere within the mesh like Move Y)
+        /// </summary>
         internal Vector3 GetUserShiftTransform(Transform meshRootTf, Vector3 smoothedVector, Vector3 sphereCenterPos, float sphereRadius) 
         {
             if (infConfig.inflationShiftY == 0 && GetInflationShiftZ() == 0) return smoothedVector;
@@ -169,7 +189,10 @@ namespace KK_PregnancyPlus
             return smoothedVector;
         }
 
-        
+
+        /// <summary>   
+        /// This will stretch the mesh wider
+        /// </summary>        
         internal Vector3 GetUserStretchXTransform(Transform meshRootTf, Vector3 smoothedVector, Vector3 sphereCenterPos) 
         {
             //Allow user adjustment of the width of the belly
@@ -223,6 +246,9 @@ namespace KK_PregnancyPlus
         }
        
 
+        /// <summary>   
+        /// Compares current to last slider values, if they havent changed it returns false
+        /// </summary>        
         internal bool NeedsMeshUpdate() 
         {
             bool hasChanges = false;
@@ -259,8 +285,10 @@ namespace KK_PregnancyPlus
             if (bellyVerticieIndexes.ContainsKey(keyToRemove)) bellyVerticieIndexes.Remove(keyToRemove);        
         }
 
-
-        //Tries to uniquly identify a mesh by its name and number of verticies
+        
+        /// <summary>   
+        /// Creates a mesh dictionary key based on mesh name and vert count. (because mesh names can be the same, vertex count makes it almost always unique)
+        /// </summary>    
         internal string GetMeshKey(SkinnedMeshRenderer smr) 
         {
             return smr.name + smr.sharedMesh.vertexCount.ToString();
@@ -324,8 +352,11 @@ namespace KK_PregnancyPlus
 
             return true;
         }    
-        
 
+
+        /// <summary>   
+        /// Will reset all meshes stored in the mesh dictionaries to default positons
+        /// </summary>   
         internal void ResetInflation() 
         {   
             //Resets all mesh inflations

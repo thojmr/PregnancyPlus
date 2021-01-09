@@ -96,7 +96,7 @@ namespace KK_PregnancyPlus
             var ribName = "cf_J_Spine02_s";
             var waistName = "cf_J_Kosi02";
 #endif            
-            //Get the characters bones to measure from           
+            //Get the characters Y bones to measure from
             var ribBone = PregnancyPlusHelper.GetBone(ChaControl, ribName);
             var waistBone = PregnancyPlusHelper.GetBone(ChaControl, waistName);
             if (ribBone == null || waistBone == null) return Tuple.Create<float, float>(0, 0);
@@ -115,6 +115,7 @@ namespace KK_PregnancyPlus
             var thighLName = "cf_J_LegUp00_L";
             var thighRName = "cf_J_LegUp00_R";
 #endif
+            //Get the characters X bones to measure from
             var thighLBone = PregnancyPlusHelper.GetBone(ChaControl, thighLName);
             var thighRBone = PregnancyPlusHelper.GetBone(ChaControl, thighRName);
             if (thighLBone == null || thighRBone == null) return Tuple.Create<float, float>(0, 0);
@@ -136,8 +137,7 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Does the vertex morph calculations to make a sphere out of the belly verticies, and updates the vertex
-        /// dictionaries apprporiately
+        /// Does the vertex morph calculations to make a sphere out of the belly verticies, and updates the vertex dictionaries apprporiately
         /// </summary>
         /// <param name="skinnedMeshRenderer">The mesh renderer target</param>
         /// <param name="sphereRadius">The radius of the inflation sphere</param>
@@ -159,7 +159,7 @@ namespace KK_PregnancyPlus
             Vector3 sphereCenter = GetSphereCenter(meshRootTf, isClothingMesh);
             var needsPositionFix = smr.transform.position != meshRootTf.position;                        
 
-#region Fixes for differet mesh localspace positions between KK and HS2/AI
+#region Fixes for different mesh localspace positions between KK and HS2/AI
 #if KK            
             var isDefaultBody = !PregnancyPlusHelper.IsUncensorBody(ChaControl, UncensorCOMName, DefaultBodyFemaleGUID); 
             if (isClothingMesh) 
@@ -217,7 +217,7 @@ namespace KK_PregnancyPlus
                         Vector3 inflatedVertWS;                    
                         Vector3 verticieToSphere;                                                             
 
-                        //Shift each belly vertex away from sphere center
+                        //Shift each belly vertex away from sphere center in a sphere pattern
                         if (!isClothingMesh) 
                         {                        
                             //You have to normalize to sphere center instead of 0,0,0.  This way the belly will expand out as expected.  So shift all mesh verts to be origin at sphereCenter first, then normalize, then shift back
@@ -252,6 +252,9 @@ namespace KK_PregnancyPlus
         }
 
 
+        /// <summary>
+        /// Get the root position of the mesh, so we can calculate the true position of its mesh verticies later
+        /// </summary>
         internal Transform GetMeshRoot() 
         {                                
 #if KK
@@ -292,8 +295,7 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// This will take the sphere-ified verticies and apply smoothing to them via Lerps, to remove sharp edges, 
-        /// and make the belly more belly like
+        /// This will take the sphere-ified verticies and apply smoothing to them via Lerps, to remove sharp edges, and make the belly more belly like
         /// </summary>
         /// <param name="originalVertice">The original verticie position</param>
         /// <param name="inflatedVerticie">The target verticie position, after sphere-ifying</param>
