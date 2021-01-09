@@ -230,6 +230,46 @@ namespace KK_PregnancyPlus
             return meshRootTf.TransformPoint(smoothedVectorLs); 
         }
 
+        /// <summary>
+        /// This will help pvent too much XY direction change, keeping the belly more round than disk like at large sizes
+        /// </summary>
+        internal Vector3 SculptBaseShape(Transform meshRootTf, Vector3 originalVertice, Vector3 smoothedVector, Vector3 sphereCenter) {
+
+            //We only want to limit expansion n XY plane for this lerp
+            var sphereCenterXY = new Vector2(sphereCenter.x, sphereCenter.y);
+            var origVertXY = new Vector2(originalVertice.x, originalVertice.y);
+            var smoothedVertXY = new Vector2(smoothedVector.x, smoothedVector.y);
+
+            //As the inflatied vert moves further than the original sphere radius lerp its movement slower
+            var radiusLerpScale = Vector2.Distance(sphereCenterXY, smoothedVertXY)/(bellyInfo.OriginalSphereRadius * 7);
+            var lerpXY = Vector3.Lerp(smoothedVertXY, origVertXY, radiusLerpScale);
+
+            //set limited XY, but keep the new z postion
+            smoothedVector = new Vector3(lerpXY.x, lerpXY.y, smoothedVector.z);
+
+            return smoothedVector;
+        }
+
+        /// <summary>
+        /// Dampen any mesh changed near edged of the belly (sides, top, and bottom) to prevent too much vertex stretching.false  The more forward the vertex is from Z the more it's allowd to be altered by sliders
+        /// </summary>        
+        internal Vector3 RoundToSides(Transform meshRootTf, Vector3 originalVertice, Vector3 smoothedVector, Vector3 sphereCenter, float inflatedToCenterDist) {        
+            var zSmoothDist = inflatedToCenterDist/3f;//Just pick a float that looks good as a z limiter
+            //Get local space vectors to eliminate rotation in world space
+            var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
+
+            // To calculate vectors z difference, we need to do it from local space to eliminate any character rotation in world space
+            var forwardFromCenter = smoothedVectorLs.z - meshRootTf.InverseTransformPoint(sphereCenter).z;            
+            if (forwardFromCenter <= zSmoothDist) {                                
+                var originalVerticeLs = meshRootTf.InverseTransformPoint(originalVertice);
+                var lerpScale = Mathf.Abs(forwardFromCenter/zSmoothDist);//As vert.z approaches our z limit, allow it to move more
+                //Back to world space
+                smoothedVector = meshRootTf.TransformPoint(Vector3.Lerp(originalVerticeLs, smoothedVectorLs, lerpScale));
+            }
+
+            return smoothedVector;
+        }
+
 
         internal float FastDistance(Vector3 firstPosition, Vector3 secondPosition) 
         {

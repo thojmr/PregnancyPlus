@@ -20,6 +20,7 @@ namespace KK_PregnancyPlus
         
         internal bool initialized = false;//Prevent some actions from happening before character data loads   
 
+        public BellyInfo bellyInfo;
 
         //Holds the user entered slider values
         public PregnancyPlusData infConfig = new PregnancyPlusData();

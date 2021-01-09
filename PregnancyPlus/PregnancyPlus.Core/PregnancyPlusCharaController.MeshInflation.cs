@@ -19,6 +19,23 @@ namespace KK_PregnancyPlus
     {
         internal bool debug = false;//In debug mode, all verticies are affected.  Makes it easier to see what is actually happening in studio mode.  Also creates nightmares   
 
+        public class BellyInfo {
+            public float WaistWidth;
+            public float WaistHeight;
+            public float SphereRadius;
+            public float OriginalSphereRadius;
+            public bool IsInitialized {
+                get { return WaistWidth > 0 && WaistHeight > 0; }
+            }
+
+            internal BellyInfo(float waistWidth, float waistHeight, float sphereRadius, float originalSphereRadius) {
+                WaistWidth = waistWidth;
+                WaistHeight = waistHeight;
+                SphereRadius = sphereRadius;
+                OriginalSphereRadius = originalSphereRadius;
+            }
+
+        }
 
         /// <summary>
         /// Triggers belly mesh inflation for the current ChaControl.  
@@ -127,12 +144,15 @@ namespace KK_PregnancyPlus
             waistWidth = Math.Abs(waistWidth - (waistWidth * charScale.x - waistWidth)/charScale.x);
 
             //Calculate sphere radius based on distance from waist to ribs (seems big, but lerping later will trim much of it), added Math.Min for skinny waists
-            var sphereRadius = Math.Min(waistToRibDist/1.25f, waistWidth/1.2f) * (GetInflationMultiplier() + 1);   
+            var sphereRadius = Math.Min(waistToRibDist/1.25f, waistWidth/1.2f); 
+            var sphereRadiusMultiplied = sphereRadius * (GetInflationMultiplier() + 1);   
 
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" scaled waistToRibDist {waistToRibDist} scaled waistWidth {waistWidth} sphereRadius {sphereRadius}");
+            bellyInfo = new BellyInfo(waistWidth, waistToRibDist, sphereRadiusMultiplied, sphereRadius);
+
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" scaled waistToRibDist {waistToRibDist} scaled waistWidth {waistWidth} sphereRadiusM {sphereRadiusMultiplied}");
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" ---------- ");
 
-            return Tuple.Create(waistWidth, sphereRadius);
+            return Tuple.Create(waistWidth, sphereRadiusMultiplied);
         }
 
 
@@ -318,10 +338,12 @@ namespace KK_PregnancyPlus
             // PregnancyPlusPlugin.Logger.LogInfo($" preMorphSphereCenter {preMorphSphereCenter} sphereCenterPos {sphereCenterPos} meshRootTf.pos {meshRootTf.position}");
 
             //Only apply morphs if the imaginary sphere is outside of the skins boundary (Don't want to shrink anything inwards, only out)
-            if (skinToCenterDist >= inflatedToCenterDist || pmSkinToCenterDist > pmInflatedToCenterDist) return originalVertice;        
+            if (skinToCenterDist >= inflatedToCenterDist || pmSkinToCenterDist > pmInflatedToCenterDist) return originalVertice; 
 
-            var smoothedVector = GetUserShiftTransform(meshRootTf, inflatedVerticie, sphereCenterPos, skinToCenterDist);
-            var zSmoothDist = pmInflatedToCenterDist/3f;//Just pick a float that looks good
+            //Get the base shape with smoothed edges
+            var smoothedVector = SculptBaseShape(meshRootTf, originalVertice, inflatedVerticie, sphereCenterPos);       
+
+            smoothedVector = GetUserShiftTransform(meshRootTf, smoothedVector, sphereCenterPos, skinToCenterDist);            
             var ySmoothDist = pmInflatedToCenterDist/2f;//Only smooth the top half of y
 
             //Allow user adjustment of the width of the belly
@@ -338,17 +360,10 @@ namespace KK_PregnancyPlus
                 smoothedVector = GetUserTaperTransform(meshRootTf, smoothedVector, sphereCenterPos, skinToCenterDist);
             }
 
-            //Remove the skin cliff where the inflation begins
-            //To calculate vectors z difference, we need to do it from local space to eliminate any character rotation in world space
-            var forwardFromCenter = meshRootTf.InverseTransformPoint(smoothedVector).z - meshRootTf.InverseTransformPoint(preMorphSphereCenter).z;            
-            if (forwardFromCenter <= zSmoothDist) {
-                //Get local space vectors to eliminate rotation in world space
-                var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
-                var originalVerticeLs = meshRootTf.InverseTransformPoint(originalVertice);
-                var lerpScale = Mathf.Abs(forwardFromCenter/zSmoothDist);
-                //Back to world space
-                smoothedVector = meshRootTf.TransformPoint(Vector3.Lerp(originalVerticeLs, smoothedVectorLs, lerpScale));
-            }
+            smoothedVector = RoundToSides(meshRootTf, originalVertice, smoothedVector, sphereCenterPos, inflatedToCenterDist);
+
+            //After all user transforms are applied, dampen the effects near the edges of the belly 
+            // smoothedVector = DampenNearEdges(meshRootTf, originalVertice, smoothedVector, sphereCenterPos, pmInflatedToCenterDist);
 
             // //Experimental, move more polygons to the front of the belly at max, Measured by trying to keep belly button size the same at 0 and max inflation size
             // var bellyTipZ = (center.z + maxSphereRadius);
@@ -359,6 +374,9 @@ namespace KK_PregnancyPlus
             //     //lerp towards belly point
             //     smoothedVector = Vector3.Slerp(smoothedVector, bellyTipVector, invertLerpScale);
             // }
+
+
+            //**** All of the below are post mesh change checks to make sure the vertex position don't go outside of bounds
 
             var currentVectorDistance = Math.Abs(FastDistance(sphereCenterPos, smoothedVector));
             var pmCurrentVectorDistance = Math.Abs(FastDistance(preMorphSphereCenter, smoothedVector));
