@@ -163,15 +163,31 @@ namespace KK_PregnancyPlus
             return null;
         }
 
+
+        internal static Transform GetBone(ChaControl chaControl, string boneName) {
+            if (chaControl == null) return null;
+            
+            return chaControl.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == boneName);
+        }
+
+        internal static GameObject GetBoneGO(ChaControl chaControl, string boneName) {
+            if (chaControl == null) return null;
+            
+            var bone = GetBone(chaControl, boneName);
+            if (bone == null) return null;
+            return bone.gameObject;
+        }
+
+
         /// <summary>
         /// Calculates the length of a set of chained bones from bottom up.  It will only caluculate the local Y values, to ignore any angular distance added, like animations
         /// </summary>
         /// <param name="boneStart">The starting (bottom) bone name</param>
         /// <param name="boneEnd">The optional end bone name.  If null, the entire bone tree from bottom to top will be calculated.</param>
         /// <param name="includeRootTf">The optional flag to include the distance from the characters root (just below feet) to the boneStart (High heels are weird with height)</param>
-        internal static float BoneChainStraigntenedDistance(string boneStart, string boneEnd = null, Transform includeRootTf = null) {
+        internal static float BoneChainStraigntenedDistance(ChaControl chaControl, string boneStart, string boneEnd = null, Transform includeRootTf = null) {
             //loops through each bone starting bottom going up through parent to destination (or root)
-            var currentBone = GameObject.Find(boneStart);  
+            var currentBone = GetBoneGO(chaControl, boneStart);
             GameObject lastBone = currentBone;
 
             if (currentBone == null) return 0;  

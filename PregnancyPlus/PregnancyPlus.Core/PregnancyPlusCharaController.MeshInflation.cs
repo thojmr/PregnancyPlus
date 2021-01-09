@@ -46,9 +46,10 @@ namespace KK_PregnancyPlus
             
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" ");
             
-            var measuerments = MeasureWaist(ChaControl);         
+            var measuerments = MeasureWaist(ChaControl);                     
             var waistWidth = measuerments.Item1; 
-            var sphereRadius = measuerments.Item2;
+            var sphereRadius = measuerments.Item2;            
+            if (waistWidth <= 0 || sphereRadius <= 0) return false;
             
             var anyMeshChanges = false;
 
@@ -94,8 +95,10 @@ namespace KK_PregnancyPlus
             var waistName = "cf_J_Kosi02";
 #endif            
             //Get the characters bones to measure from           
-            var ribBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == ribName);
-            var waistBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == waistName);
+            var ribBone = PregnancyPlusHelper.GetBone(ChaControl, ribName);
+            var waistBone = PregnancyPlusHelper.GetBone(ChaControl, waistName);
+            if (ribBone == null || waistBone == null) return Tuple.Create<float, float>(0, 0);
+
             var waistToRibDist = Vector3.Distance(ribBone.position, waistBone.position);
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" waistToRibDist {waistToRibDist}");
 
@@ -110,8 +113,10 @@ namespace KK_PregnancyPlus
             var thighLName = "cf_J_LegUp00_L";
             var thighRName = "cf_J_LegUp00_R";
 #endif
-            var thighLBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == thighLName);        
-            var thighRBone = chaControl.objBodyBone.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == thighRName); 
+            var thighLBone = PregnancyPlusHelper.GetBone(ChaControl, thighLName);
+            var thighRBone = PregnancyPlusHelper.GetBone(ChaControl, thighRName);
+            if (thighLBone == null || thighRBone == null) return Tuple.Create<float, float>(0, 0);
+            
             var waistWidth = Vector3.Distance(thighLBone.position, thighRBone.position); 
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" waistWidth {waistWidth}");
 
@@ -158,7 +163,7 @@ namespace KK_PregnancyPlus
             if (isClothingMesh) 
             {
                 //KK just has to have strange vert positions, so we have to use adjust the sphere center location for body and clothes
-                var clothesMeshRoot = GameObject.Find("cf_o_root").transform.position;
+                var clothesMeshRoot = PregnancyPlusHelper.GetBone(ChaControl, "cf_o_root").position;
                 //Get distance from bb to clothesMeshRoot if needs fix
                 clothSphereCenterOffset = needsPositionFix ? sphereCenter - meshRootTf.up * FastDistance(clothesMeshRoot, sphereCenter) * 1.021f : sphereCenter;//At belly button - meshRoot position (plus some tiny dumb offset that I cant find the source of)
                 sphereCenter = needsPositionFix ? clothSphereCenterOffset : sphereCenter;
@@ -249,7 +254,7 @@ namespace KK_PregnancyPlus
         {                                
 #if KK
             //Get normal mesh root attachment position, and if its not near 0,0,0 fix it so that it is
-            var kkMeshRoot = GameObject.Find("cf_o_root"); 
+            var kkMeshRoot = PregnancyPlusHelper.GetBoneGO(ChaControl, "cf_o_root");
             if (!kkMeshRoot) return null;
             
             var meshRoot = kkMeshRoot.transform;
@@ -257,7 +262,7 @@ namespace KK_PregnancyPlus
             
 #elif HS2 || AI
             //For HS2, get the equivalent position game object (near bellybutton)
-            var meshRootGo = GameObject.Find("n_o_root");
+            var meshRootGo = PregnancyPlusHelper.GetBoneGO(ChaControl, "n_o_root");
             if (!meshRootGo) return null;
             var meshRoot = meshRootGo.transform;
 #endif
