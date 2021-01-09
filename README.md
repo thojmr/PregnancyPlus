@@ -3,11 +3,18 @@ This repository contains the KK_PregnancyPlus plugin, that adds additional belly
 
 ![ChaStudio GUI](https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/P%2BGUI.PNG)
 
+## Features
+- Adds a number of slider that will allow you to change the size and shape of the belly area in Character Studio
+    - Slider values will be saved to Scene, but anyone that you share the scene with must have KK_PregnancyPlus installed to see the belly shape.
+- Adds an experimental config option to enable some of these sliders for Story Mode in KK.  This feature does require [KK_Pregnancy](https://github.com/ManlyMarco/KoikatuGameplayMods).
+    - The inflated belly effect will be added on top of the KK_Pregnancy effect if you have that plugin installed, hence you can use the F1 config sliders to adjust the results.
+- Adds 'HD Crease Smoothing' config option to remove skin creases you might encounter when using the Studio sliders.
+
 ## Notes
 - Modding this game is new to me, so dont expect this to feel like a finished product.  More like an interesting way to learn C#
 - Clothing clips through at max size, so try it without clothing if you are experiencing issues
-- This is currently only available in Character Studio, you should see additional sliders under the Character Control tab
-- This plugin now works in both Koikatsu and Honey Select 2.  Grab the KK one for Koikatsu, HS2 for Honey Select 2, and AI for AI [here](https://github.com/thojmr/KK_PregnancyPlus/releases)
+- This is currently only available in Character Studio, and experimentally for KK Story Mode
+- This plugin now works in both Koikatsu, Honey Select 2, and AI.  Grab the KK zip for Koikatsu, HS2 zip for Honey Select 2, and AI zip for AI [here](https://github.com/thojmr/KK_PregnancyPlus/releases)
 
 ## How to download
 You can grab the latest plugin release [here](https://github.com/thojmr/KK_PregnancyPlus/releases), or build it yourself.  Explained further below.
@@ -71,19 +78,18 @@ Example build task:
 ```
 If sucessfull you should see a KK_PregnancyPlus.dll file nested in .\bin\
 
-### Some of the KK_PregnancyPlus features
-- Adds a number of sliders that can alter the size and shape of the belly.  More customizability overall
+### Some KK_PregnancyPlus technical details
 - Instead of manipulating the bones like KK_Pregnancy does, this mod alters the mesh itself which has benifits and drawbacks
-- Integrates with KK_Pregnancy (in Character Studio only for now) so that all sliders can be used together
+- Integrates with KK_Pregnancy (in Character Studio (KK, Hs2, AI) and Story Mode for KK) so that both plugins can work together
 
 ### Some of the drawbacks of manipulating the mesh instead of the bones directly
 -  Right now clothing can be hit or miss, because of the way the belly grows, clothing will flatten and clip when the belly is set its largest size
     -  There are some clothing items in HS2 and AI that simply wont work with the sliders at all
 -  Acessories won't automatically move out of the way of the mesh as they do when you manipulate bones
--  It has bigger impact on performance than a simple bone scale change, but not enough to notice in general
+-  It has bigger impact on performance than a simple bone scale change, but doesn't affect the shape of bones which is a bonus!
 
 ## Some TODO items that may or mat not be implemented in the future (depending on interest)
 -  Make accessories move along with the belly to prevent clipping
--  Fix clothing flattening at the largest belly sizes
+-  Fix clothing flattening at the largest belly sizes (Has been slightly improved already)
 -  There are certain clothing items that do not work in the current state
--  Potentially add the "improved" belly shape into story mode, with optional config toggle
+-  Improve some of the sliders to help prevent skin stretching, and improve overall base shape
