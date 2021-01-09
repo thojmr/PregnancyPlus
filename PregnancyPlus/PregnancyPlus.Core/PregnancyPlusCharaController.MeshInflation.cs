@@ -32,6 +32,8 @@ namespace KK_PregnancyPlus
         {
             if (ChaControl.objBodyBone == null) return false;//Make sure chatacter objs exists first   
 
+            if (!ShouldInflate()) return false;//if outside studio, make sure StoryMode is enabled first
+
             //Only continue if one of the config values changed
             if (!NeedsMeshUpdate() && !reRunWithCurrentParams) {                
                 return false;            

@@ -19,6 +19,12 @@ namespace KK_PregnancyPlus
     public partial class PregnancyPlusCharaController: CharaCustomFunctionController
     {
 
+        //Limit where you can and cannot trigger inflation
+        public bool ShouldInflate() {
+            var storyModeEnabled = PregnancyPlusPlugin.StoryMode != null ? PregnancyPlusPlugin.StoryMode.Value : false;
+            return StudioAPI.InsideStudio || storyModeEnabled;
+        }
+
 
         /// <summary>
         /// An overload for MeshInflate() that allows you to pass an initial inflationSize param
@@ -27,7 +33,7 @@ namespace KK_PregnancyPlus
         /// <param name="inflationSize">Sets inflation size from 0 to 40</param>
         public bool MeshInflate(float inflationSize)
         {                  
-            if (inflationSize.Equals(null)) return false;
+            if (!ShouldInflate() || inflationSize.Equals(null)) return false;
 
             //Allow an initial size to be passed in, and sets it to the config
             if (inflationSize > 0) {
