@@ -168,23 +168,30 @@ namespace KK_PregnancyPlus
         /// This will shift the sphereCenter position *After sphereifying* on Y or Z axis (This stretches the mesh, where pre sphereifying, it would move the sphere within the mesh like Move Y)
         /// </summary>
         internal Vector3 GetUserShiftTransform(Transform meshRootTf, Vector3 smoothedVector, Vector3 sphereCenterPos, float sphereRadius) 
-        {
-            if (infConfig.inflationShiftY == 0 && GetInflationShiftZ() == 0) return smoothedVector;
-
+        {            
             //Get local space equivalents
             var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
             var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenterPos);
 
-            //IF the user has selected a y value
+            //IF the user has selected a y value, lerp the top and bottom slower and lerp any verts closer to z = 0 slower
             if (infConfig.inflationShiftY != 0) {
+                var distFromYCenterLs = smoothedVectorLs.y - sphereCenterLs.y;
+                //Lerp up and down positon more when the belly is near the center Y, and less for top and bottom
+                var lerpY = Mathf.Lerp(infConfig.inflationShiftY, infConfig.inflationShiftY/4, Math.Abs(distFromYCenterLs/sphereRadius));
+                var yLerpedsmoothedVector = smoothedVectorLs + meshRootTf.up * lerpY;
+
+                //Then lerp the previous result based on the distance forward.  More forward is able to move more
+                var distanceForward = smoothedVectorLs.z - sphereCenterLs.z; 
+                var finalLerpPos = Vector3.Lerp(smoothedVectorLs, yLerpedsmoothedVector, Math.Abs(distanceForward/sphereRadius));
+
                 //return the shift up/down 
-                smoothedVector = smoothedVector + meshRootTf.up * infConfig.inflationShiftY;
+                smoothedVector = meshRootTf.TransformPoint(finalLerpPos);
             }
             //If the user has selected a z value
             if (GetInflationShiftZ() != 0) {
                 //Move the verts closest to sphere center Z more slowly than verts at the belly button.  Otherwise you stretch the ones near the body too much
-                var lerpY = Mathf.Lerp(0, GetInflationShiftZ(), (smoothedVectorLs.z - sphereCenterLs.z)/(sphereRadius *2));
-                smoothedVector = smoothedVector + meshRootTf.forward * lerpY;
+                var lerpZ = Mathf.Lerp(0, GetInflationShiftZ(), (smoothedVectorLs.z - sphereCenterLs.z)/(sphereRadius *2));
+                smoothedVector = smoothedVector + meshRootTf.forward * lerpZ;
             }
             return smoothedVector;
         }

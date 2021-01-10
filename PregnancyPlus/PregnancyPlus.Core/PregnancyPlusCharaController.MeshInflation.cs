@@ -220,6 +220,9 @@ namespace KK_PregnancyPlus
             var currentVerts = currentVertices[rendererName];
             var bellyVertIndex = bellyVerticieIndexes[rendererName];    
 
+            //Pre compute some values needed by SculptInflatedVerticie
+            var preMorphSphereCenter = sphereCenter - GetUserMoveTransform(meshRootTf);
+
             var vertsLength = origVerts.Length;
             //Set each verticies inflated postion, with some constraints (SculptInflatedVerticie) to make it look more natural
             for (int i = 0; i < vertsLength; i++)
@@ -250,7 +253,7 @@ namespace KK_PregnancyPlus
                         }     
 
                         //Make adjustments to the shape, and feed in user slider input
-                        inflatedVertWS =  SculptInflatedVerticie(origVertWS, verticieToSphere, sphereCenter, waistWidth, meshRootTf);                    
+                        inflatedVertWS =  SculptInflatedVerticie(origVertWS, verticieToSphere, sphereCenter, waistWidth, meshRootTf, preMorphSphereCenter, sphereRadius);                    
                         inflatedVerts[i] = meshRootTf.InverseTransformPoint(inflatedVertWS);//Convert back to local space
                         // if (i % 100 == 0) PregnancyPlusPlugin.Logger.LogInfo($" origVertWS {origVertWS}  verticieToSphere {verticieToSphere}");
                     }
@@ -322,29 +325,29 @@ namespace KK_PregnancyPlus
         /// <param name="sphereCenterPos">The center of the imaginary sphere</param>
         /// <param name="waistWidth">The characters waist width that limits the width of the belly (future implementation)</param>
         /// <param name="meshRootTf">The transform used to convert a mesh vector from local space to worldspace and back, also servers as the point where we want to stop making mesh changes when Z < 0</param>
-        internal Vector3 SculptInflatedVerticie(Vector3 originalVertice, Vector3 inflatedVerticie, Vector3 sphereCenterPos, float waistWidth, Transform meshRootTf) 
+        internal Vector3 SculptInflatedVerticie(Vector3 originalVertice, Vector3 inflatedVerticie, Vector3 sphereCenterPos, float waistWidth, Transform meshRootTf, Vector3 preMorphSphereCenter, float sphereRadius) 
         {
             //No smoothing modification in debug mode
             if (debug) return inflatedVerticie;            
             
             //get the smoothing distance limits so we don't have weird polygons and shapes on the edges, and prevents morphs from shrinking past original skin boundary
-            var preMorphSphereCenter = sphereCenterPos - GetUserMoveTransform(meshRootTf);
             var pmSkinToCenterDist = Math.Abs(FastDistance(preMorphSphereCenter, originalVertice));
             var pmInflatedToCenterDist = Math.Abs(FastDistance(preMorphSphereCenter, inflatedVerticie));
             var skinToCenterDist = Math.Abs(FastDistance(sphereCenterPos, originalVertice));
             var inflatedToCenterDist = Math.Abs(FastDistance(sphereCenterPos, inflatedVerticie));
-            // var waistRadius = waistWidth/2;
             
             // PregnancyPlusPlugin.Logger.LogInfo($" preMorphSphereCenter {preMorphSphereCenter} sphereCenterPos {sphereCenterPos} meshRootTf.pos {meshRootTf.position}");
 
             //Only apply morphs if the imaginary sphere is outside of the skins boundary (Don't want to shrink anything inwards, only out)
             if (skinToCenterDist >= inflatedToCenterDist || pmSkinToCenterDist > pmInflatedToCenterDist) return originalVertice; 
 
-            //Get the base shape with smoothed edges
+            //Get the base shape with XY plane size limits
             var smoothedVector = SculptBaseShape(meshRootTf, originalVertice, inflatedVerticie, sphereCenterPos);       
 
-            smoothedVector = GetUserShiftTransform(meshRootTf, smoothedVector, sphereCenterPos, skinToCenterDist);            
-            var ySmoothDist = pmInflatedToCenterDist/2f;//Only smooth the top half of y
+            //Allow user adjustment of the height and width placement of the belly
+            if (infConfig.inflationShiftY != 0 || GetInflationShiftZ() != 0) {
+                smoothedVector = GetUserShiftTransform(meshRootTf, smoothedVector, sphereCenterPos, skinToCenterDist);            
+            }
 
             //Allow user adjustment of the width of the belly
             if (infConfig.inflationStretchX != 0) {   
@@ -356,14 +359,13 @@ namespace KK_PregnancyPlus
                 smoothedVector = GetUserStretchYTransform(meshRootTf, smoothedVector, sphereCenterPos);
             }
 
+            //Allow user adjustment of the egg like shape of the belly
             if (GetInflationTaperY() != 0) {
                 smoothedVector = GetUserTaperTransform(meshRootTf, smoothedVector, sphereCenterPos, skinToCenterDist);
             }
 
+            //After all user transforms are applied, remove the edges from the sides/top of the belly
             smoothedVector = RoundToSides(meshRootTf, originalVertice, smoothedVector, sphereCenterPos, inflatedToCenterDist);
-
-            //After all user transforms are applied, dampen the effects near the edges of the belly 
-            // smoothedVector = DampenNearEdges(meshRootTf, originalVertice, smoothedVector, sphereCenterPos, pmInflatedToCenterDist);
 
             // //Experimental, move more polygons to the front of the belly at max, Measured by trying to keep belly button size the same at 0 and max inflation size
             // var bellyTipZ = (center.z + maxSphereRadius);
@@ -380,18 +382,20 @@ namespace KK_PregnancyPlus
 
             var currentVectorDistance = Math.Abs(FastDistance(sphereCenterPos, smoothedVector));
             var pmCurrentVectorDistance = Math.Abs(FastDistance(preMorphSphereCenter, smoothedVector));
-            //Don't allow any morphs to shrink skin smaller than its original position, only outward morphs allowed (check this last)
+            var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
+
+            //Don't allow any morphs to shrink skin smaller than its original position, only outward morphs allowed (check this after all morphs)
             if (skinToCenterDist > currentVectorDistance || pmSkinToCenterDist > pmCurrentVectorDistance) {
                 return originalVertice;
             }
 
             //Don't allow any morphs to move behind the character's.z = 0 position, otherwise skin sometimes pokes out the back side :/
-            if (meshRootTf.InverseTransformPoint(meshRootTf.position).z > meshRootTf.InverseTransformPoint(smoothedVector).z) {
+            if (meshRootTf.InverseTransformPoint(meshRootTf.position).z > smoothedVectorLs.z) {
                 return originalVertice;
             }
 
             //Don't allow any morphs to move behind the original verticie z = 0 position
-            if (meshRootTf.InverseTransformPoint(originalVertice).z > meshRootTf.InverseTransformPoint(smoothedVector).z) {
+            if (meshRootTf.InverseTransformPoint(originalVertice).z > smoothedVectorLs.z) {
                 return new Vector3(smoothedVector.x, smoothedVector.y, originalVertice.z);
             }
 
