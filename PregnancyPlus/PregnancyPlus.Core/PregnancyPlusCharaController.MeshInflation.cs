@@ -361,7 +361,12 @@ namespace KK_PregnancyPlus
 
             //Allow user adjustment of the egg like shape of the belly
             if (GetInflationTaperY() != 0) {
-                smoothedVector = GetUserTaperTransform(meshRootTf, smoothedVector, sphereCenterPos, skinToCenterDist);
+                smoothedVector = GetUserTaperYTransform(meshRootTf, smoothedVector, sphereCenterPos, skinToCenterDist);
+            }
+
+            //Allow user adjustment of the front angle of the belly
+            if (infConfig.inflationTaperZ != 0) {
+                smoothedVector = GetUserTaperZTransform(meshRootTf, smoothedVector, sphereCenterPos, skinToCenterDist);
             }
 
             //After all user transforms are applied, remove the edges from the sides/top of the belly
@@ -396,8 +401,14 @@ namespace KK_PregnancyPlus
 
             //Don't allow any morphs to move behind the original verticie z = 0 position
             if (meshRootTf.InverseTransformPoint(originalVertice).z > smoothedVectorLs.z) {
-                return new Vector3(smoothedVector.x, smoothedVector.y, originalVertice.z);
+                //Get the average x and y change to move the new position halfway back to the oiriginal vert (hopefullt less strange triangles near belly to body edge)
+                var yChangeAvg = (smoothedVector.y - originalVertice.y)/3;
+                var xChangeAvg = (smoothedVector.x - originalVertice.x)/3;
+                smoothedVector = new Vector3(smoothedVector.x - xChangeAvg, smoothedVector.y - yChangeAvg, originalVertice.z);
             }
+
+            //TODO at this point we really need some form of final mesh smoothing pass for where the belly meets the body to remove the sharp edges that the transforms above create.
+            //Just don't want to make the sliders any slower than they already are
 
             return smoothedVector;             
         }

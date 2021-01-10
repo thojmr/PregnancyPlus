@@ -175,6 +175,20 @@ namespace KK_PregnancyPlus
                             ctrl.MeshInflate();                             
                         }
                     });
+
+            cat.AddControl(new CurrentStateCategorySlider("        Taper Z", c =>
+                {                                       
+                    var ctrl = GetCharCtrl(c);                                                   
+                    return ctrl != null ? ctrl.infConfig.inflationTaperZ: 0;
+                    
+                }, -0.075f * scaleLimits, 0.075f * scaleLimits))
+                    .Value.Subscribe(f => { 
+                        foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
+                            if (ctrl.infConfig.inflationTaperZ == f) continue;                    
+                            ctrl.infConfig.inflationTaperZ = f;
+                            ctrl.MeshInflate();                             
+                        }
+                    });
         }
 
         internal static PregnancyPlusCharaController GetCharCtrl(Studio.OCIChar c) {

@@ -136,9 +136,9 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>   
-        /// This sill taper the belly shape based on user input slider. shrinking the top width, and expanding the bottom width
+        /// This sill taper the belly shape based on user input slider. shrinking the top width, and expanding the bottom width along the YX adis
         /// </summary>
-        internal Vector3 GetUserTaperTransform(Transform meshRootTf, Vector3 smoothedVector, Vector3 sphereCenterPos, float sphereRadius) 
+        internal Vector3 GetUserTaperYTransform(Transform meshRootTf, Vector3 smoothedVector, Vector3 sphereCenterPos, float sphereRadius) 
         {
             //Get local space equivalents
             var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
@@ -160,6 +160,38 @@ namespace KK_PregnancyPlus
             taperY = (isTop ? taperY : -taperY);
 
             smoothedVectorLs.x = (smoothedVectorLs + meshRootTf.right * taperY).x;
+
+            return meshRootTf.TransformPoint(smoothedVectorLs);
+        }
+
+        /// <summary>   
+        /// This sill taper the belly shape based on user input slider. pulling out the bottom and pushing in the top along the XZ axis
+        /// </summary>
+        internal Vector3 GetUserTaperZTransform(Transform meshRootTf, Vector3 smoothedVector, Vector3 sphereCenterPos, float sphereRadius) 
+        {
+            //Get local space equivalents
+            var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
+            var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenterPos);
+
+            //local Distance up or down from sphere center
+            var distFromYCenterLs = smoothedVectorLs.y - sphereCenterLs.y; 
+            var distFromZCenterLs = smoothedVectorLs.z - sphereCenterLs.z; 
+            //top of belly shifts one way, bottom shifts the opposite
+            var isTop = distFromYCenterLs > 0; 
+
+            //Increase taper amount for vecters further above or below center.  No shifting at center
+            var taperZ = Mathf.Lerp(0, infConfig.inflationTaperZ, Math.Abs(distFromYCenterLs)/sphereRadius);
+            //Reverse the direction based on which side the vert is on
+            taperZ = (isTop ? taperZ : -taperZ);
+            var taperedZVert = smoothedVectorLs + meshRootTf.forward * taperZ;
+
+            //Only lerp z when pulling out, pushing in looks fine as is
+            if (smoothedVectorLs.z < taperedZVert.z) {
+                //Move verts closest to z=0 more slowly than those out front to reduce skin stretching
+                smoothedVectorLs = Vector3.Lerp(smoothedVectorLs, taperedZVert, Math.Abs(distFromZCenterLs)/sphereRadius);
+            } else {
+                smoothedVectorLs = taperedZVert;
+            }
 
             return meshRootTf.TransformPoint(smoothedVectorLs);
         }
@@ -308,6 +340,7 @@ namespace KK_PregnancyPlus
             if (infConfig.inflationShiftY != infConfigHistory.inflationShiftY) hasChanges = true;
             if (infConfig.inflationShiftZ != infConfigHistory.inflationShiftZ) hasChanges = true;
             if (infConfig.inflationTaperY != infConfigHistory.inflationTaperY) hasChanges = true;
+            if (infConfig.inflationTaperZ != infConfigHistory.inflationTaperZ) hasChanges = true;
             if (infConfig.inflationMultiplier != infConfigHistory.inflationMultiplier) hasChanges = true;
 
             return hasChanges;
