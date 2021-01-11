@@ -20,7 +20,7 @@ namespace KK_PregnancyPlus
     public partial class PregnancyPlusPlugin : BaseUnityPlugin
     {
         public const string GUID = "KK_PregnancyPlus";
-        public const string Version = "0.11";
+        public const string Version = "0.12";
         internal static new ManualLogSource Logger { get; private set; }
         public static ConfigEntry<bool> StoryMode { get; private set; }
         public static ConfigEntry<bool> HDSmoothing { get; private set; }
@@ -83,9 +83,10 @@ namespace KK_PregnancyPlus
         internal void HDSmoothing_SettingsChanged(object sender, System.EventArgs e) 
         {            
             if (!StudioAPI.InsideStudio) return;
+            var ctrls = StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>();
 
             //Re trigger inflation and recalculate vert positions
-            foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
+            foreach (var ctrl in ctrls) {  
                 ctrl.MeshInflate(true);                             
             }
         }
@@ -129,8 +130,11 @@ namespace KK_PregnancyPlus
         {
             if (!StudioAPI.InsideStudio) return;
 
+            var ctrls = StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>();
+            //TODO why doesnt this work when there are multiple characters?
+            
             //Re trigger inflation and recalculate vert positions
-            foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
+            foreach (var ctrl in ctrls) {  
                 ctrl.MeshInflate(true, true);                             
             }          
         }
