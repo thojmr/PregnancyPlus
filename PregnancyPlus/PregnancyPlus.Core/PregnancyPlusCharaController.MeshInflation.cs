@@ -16,23 +16,24 @@ namespace KK_PregnancyPlus
 
     //This partial class contains the mesh inflation logic
     public partial class PregnancyPlusCharaController: CharaCustomFunctionController
-    {
-        internal bool debug = false;//In debug mode, all verticies are affected.  Makes it easier to see what is actually happening in studio mode.  Also creates nightmares   
+    {           
 
         public class BellyInfo {
             public float WaistWidth;
             public float WaistHeight;
             public float SphereRadius;
             public float OriginalSphereRadius;
+            public Vector3 CharacterScale;
             public bool IsInitialized {
                 get { return WaistWidth > 0 && WaistHeight > 0; }
             }
 
-            internal BellyInfo(float waistWidth, float waistHeight, float sphereRadius, float originalSphereRadius) {
+            internal BellyInfo(float waistWidth, float waistHeight, float sphereRadius, float originalSphereRadius, Vector3 characterScale) {
                 WaistWidth = waistWidth;
                 WaistHeight = waistHeight;
                 SphereRadius = sphereRadius;
                 OriginalSphereRadius = originalSphereRadius;
+                CharacterScale = characterScale;
             }
 
         }
@@ -63,7 +64,7 @@ namespace KK_PregnancyPlus
                 return false;                                
             }
             
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" ");
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" ---------- ");
             
             var measuerments = MeasureWaist(ChaControl);                     
             var waistWidth = measuerments.Item1; 
@@ -147,10 +148,9 @@ namespace KK_PregnancyPlus
             var sphereRadius = Math.Min(waistToRibDist/1.25f, waistWidth/1.2f); 
             var sphereRadiusMultiplied = sphereRadius * (GetInflationMultiplier() + 1);   
 
-            bellyInfo = new BellyInfo(waistWidth, waistToRibDist, sphereRadiusMultiplied, sphereRadius);
+            bellyInfo = new BellyInfo(waistWidth, waistToRibDist, sphereRadiusMultiplied, sphereRadius, charScale);
 
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" scaled waistToRibDist {waistToRibDist} scaled waistWidth {waistWidth} sphereRadiusM {sphereRadiusMultiplied}");
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" ---------- ");
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" scaled waistToRibDist {waistToRibDist} scaled waistWidth {waistWidth} sphereRadiusM {sphereRadiusMultiplied}");            
 
             return Tuple.Create(waistWidth, sphereRadiusMultiplied);
         }
@@ -308,11 +308,12 @@ namespace KK_PregnancyPlus
         { 
             
             //Sphere slider adjustments need to be transformed to local space first to eliminate any character rotation in world space   
-            Vector3 bellyButtonHeight = boneOrMeshTf.up * GetBellyButtonLocalHeight(boneOrMeshTf); 
-            Vector3 sphereCenter = boneOrMeshTf.position + bellyButtonHeight + GetUserMoveTransform(boneOrMeshTf) + GetBellyButtonOffset(boneOrMeshTf);                                 
+            var bbHeight = GetBellyButtonLocalHeight(boneOrMeshTf);
+            Vector3 bellyButtonPos = boneOrMeshTf.up * bbHeight; 
+            Vector3 sphereCenter = boneOrMeshTf.position + bellyButtonPos + GetUserMoveTransform(boneOrMeshTf) + GetBellyButtonOffset(boneOrMeshTf, bbHeight);                                 
 
             if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" sphereCenter {sphereCenter} meshRoot {boneOrMeshTf.position} char origin {ChaControl.transform.position}");
-            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" bellyButtonHeight {bellyButtonHeight}");            
+            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" bellyButtonPos {bellyButtonPos} bbHeight {bbHeight}");            
             return sphereCenter;
         }
 

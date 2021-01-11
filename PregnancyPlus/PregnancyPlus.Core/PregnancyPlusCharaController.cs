@@ -18,6 +18,8 @@ namespace KK_PregnancyPlus
     public partial class PregnancyPlusCharaController: CharaCustomFunctionController
     {
         
+        internal bool debug = false;//In debug mode, all verticies are affected.  Makes it easier to see what is actually happening in studio mode.  Also creates nightmares
+        
         internal bool initialized = false;//Prevent some actions from happening before character data loads   
 
         public BellyInfo bellyInfo;

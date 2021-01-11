@@ -123,15 +123,10 @@ namespace KK_PregnancyPlus
         /// <summary>   
         /// Move the sphereCenter this much up or down to place it better visually
         /// </summary>
-        internal Vector3 GetBellyButtonOffset(Transform fromPosition) 
+        internal Vector3 GetBellyButtonOffset(Transform fromPosition, float currentHeight) 
         {
-            //Makes slight vertical adjustments to put the sphere at the correct point      
-#if KK   
-            var offset = fromPosition.up * 0.15f;
-#elif HS2 || AI 
-            var offset = fromPosition.up * 1.5f;
-#endif                   
-            return offset;     
+            //Makes slight vertical adjustments to put the sphere at the correct point                  
+            return fromPosition.up * (0.15f * currentHeight);     
         }
 
 

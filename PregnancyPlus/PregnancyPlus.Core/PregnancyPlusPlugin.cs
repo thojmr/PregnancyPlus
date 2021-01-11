@@ -33,7 +33,7 @@ namespace KK_PregnancyPlus
         internal static bool debugLog = true;
 #else
         internal static bool debugLog = false;
-#endif
+#endif        
 
 
         private void Start()

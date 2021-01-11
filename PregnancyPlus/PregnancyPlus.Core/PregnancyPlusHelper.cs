@@ -13,9 +13,7 @@ using AIChara;
 namespace KK_PregnancyPlus
 {
     internal static class PregnancyPlusHelper
-    {
-        internal static bool debugHelper = false;
-
+    {        
 
         internal static SkinnedMeshRenderer GetMeshRenderer(ChaControl chaControl, string renderKey) 
         {
@@ -196,7 +194,7 @@ namespace KK_PregnancyPlus
             //If char root in included, append it to the total distance from includeRootTf to first boneStart
             if (includeRootTf != null) {
                 distance = includeRootTf.InverseTransformPoint(currentBone.transform.position).y;
-                if (PregnancyPlusPlugin.debugLog && debugHelper) PregnancyPlusPlugin.Logger.LogInfo($" initDiff {distance}  currentBone.name {currentBone.name} includeRootTf scale {includeRootTf.localScale}");
+                // if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" initDiff {distance}  currentBone.name {currentBone.name} includeRootTf scale {includeRootTf.localScale}");
             }
             
 
@@ -205,15 +203,14 @@ namespace KK_PregnancyPlus
                 
                 //If the bone name matches boneEnd return the total distance to this bone so far
                 if (boneEnd != null && currentBone.name.ToLower() == boneEnd.ToLower()) {
-                    if (PregnancyPlusPlugin.debugLog && debugHelper) PregnancyPlusPlugin.Logger.LogInfo($" total dist to {boneEnd} {distance}");
-                    return distance;
+                    break;
                 }
 
                 //calculate the diatance by measuring y local distances only (we want to exclude angular distances)
                 var newDifference = (lastBone != null ? currentBone.transform.InverseTransformPoint(currentBone.transform.position).y - currentBone.transform.InverseTransformPoint(lastBone.transform.position).y : 0);
-                //include any local scales (TODO sometimes off by <10%)
+                //include any local scales
                 newDifference = newDifference * (currentBone.transform.localScale.y);                
-                if (PregnancyPlusPlugin.debugLog && debugHelper) PregnancyPlusPlugin.Logger.LogInfo($" newDifference {newDifference}  currentBone.name {currentBone.name}  scale {currentBone.transform.localScale} corrected {((newDifference * currentBone.transform.localScale.y) - newDifference)}");
+                // if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" newDifference {newDifference}  currentBone.name {currentBone.name}  scale {currentBone.transform.localScale} corrected {((newDifference * currentBone.transform.localScale.y) - newDifference)}");
                 
                 //Ignore any negative bone differences (like char root bone which is at 0,0,0)
                 if (newDifference > 0) {                    
@@ -224,28 +221,44 @@ namespace KK_PregnancyPlus
                 currentBone = currentBone.transform.parent.gameObject;
             }
 
-            if (PregnancyPlusPlugin.debugLog && debugHelper) PregnancyPlusPlugin.Logger.LogInfo($" total dist {distance}");
+            //Check for BodyTop scale to apply it to distance (cf_n_height scale doesnt matter here for some reason)
+            var bodyTopBone = GetBone(chaControl, "BodyTop");
+            if (bodyTopBone != null && bodyTopBone.localScale.y != 1) {
+                if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" applying BodyTop scale to distance: {distance} scale: {bodyTopBone.localScale.y}");
+                distance = distance * bodyTopBone.localScale.y;
+            }
+
+            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" total dist {distance}");
             return distance;
         }
 
         /// <summary>
-        /// Check the characters root scale bone that ABMX modifies. and return it's localScale value
+        /// Check the characters root scale bones that ABMX modifies. and return their total scales
         /// </summary>
         internal static Vector3 GetCharacterScale(ChaControl chaControl) 
         {
+            var scaleBone2Name = "BodyTop";
 #if KK            
             var scaleBoneName = "cf_n_height";
-            var scaleCorrection = 0.06f;//local scale does not match bone midified scale by ABMX, scale it up to match by this much (close approx)
 #elif HS2 || AI             
-            var scaleBoneName = "cf_N_height";
-            var scaleCorrection = 0.12f;
+            var scaleBoneName = "cf_N_height";            
 #endif
 
-            var scaleBone = chaControl.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == scaleBoneName);
+            //Get the scale of the 2 scale bones
+            var scaleBone = GetBone(chaControl, scaleBoneName);
             if (!scaleBone) return Vector3.one;
+            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" {scaleBoneName} scale {scaleBone.localScale}"); 
 
-            var correctedScale = scaleBone.localScale + scaleBone.localScale * scaleCorrection;//Why is local scale always a little off (<12%)?  Where is the true scalar stored?
-            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" character scale (adjusted) {correctedScale.x} {correctedScale.y} {correctedScale.z}");
+            var scaleBone2 = GetBone(chaControl, scaleBone2Name);
+            if (!scaleBone2) return Vector3.one;
+            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" {scaleBone2Name} scale {scaleBone2.localScale}"); 
+
+            //When calculating scale there are 2 bones I know of that commonly have scales applied to them.            
+            //Multiply both scale bones scales to get the total character scale
+            var correctedScale = new Vector3(scaleBone.localScale.x * scaleBone2.localScale.x, scaleBone.localScale.y * scaleBone2.localScale.y, scaleBone.localScale.z * scaleBone2.localScale.z);
+            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" total char scale {correctedScale.x} {correctedScale.y} {correctedScale.z}");            
+
+            //Only figuring in Y scale for now.  Might break with X or Z scaled characters
             return correctedScale;
         }
     
