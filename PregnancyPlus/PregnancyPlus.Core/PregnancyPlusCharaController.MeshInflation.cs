@@ -86,6 +86,7 @@ namespace KK_PregnancyPlus
             var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);
             foreach(var skinnedMeshRenderer in clothRenderers) 
             {                
+                if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" skinnedMeshRenderer {skinnedMeshRenderer.name} ");
                 var foundVerts = ComputeMeshVerts(skinnedMeshRenderer, sphereRadius, waistWidth, true);
                 if (!foundVerts) continue;    
 
@@ -250,7 +251,7 @@ namespace KK_PregnancyPlus
                         }
                         else 
                         {                       
-                            float reduceClothFlattenOffset = GetClothesFixOffset(clothSphereCenterOffset, sphereRadius, waistWidth, origVertWS);//Reduce cloth flattening at largest inflation values 
+                            float reduceClothFlattenOffset = GetClothesFixOffset(clothSphereCenterOffset, sphereRadius, waistWidth, origVertWS, smr.name);//Reduce cloth flattening at largest inflation values 
                             verticieToSphere = (origVertWS - clothSphereCenterOffset).normalized * (sphereRadius + reduceClothFlattenOffset) + clothSphereCenterOffset;
                         }     
 

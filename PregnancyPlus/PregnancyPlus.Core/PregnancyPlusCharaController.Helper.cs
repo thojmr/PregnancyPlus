@@ -75,7 +75,7 @@ namespace KK_PregnancyPlus
         /// <param name="sphereRadius">The desired sphere radius</param>
         /// <param name="waistWidth">The average width of the characters waist</param>
         /// <param name="origVertWS">The original verticie's worldspace position</param>
-        internal float GetClothesFixOffset(Vector3 sphereCenter, float sphereRadius, float waistWidth, Vector3 origVertWS) 
+        internal float GetClothesFixOffset(Vector3 sphereCenter, float sphereRadius, float waistWidth, Vector3 origVertWS, string meshName) 
         {
 #if KK      
             float flattenExtent = 0.05f;//The size of the area to spread the flattened offsets over like shrinking center -> inflated distance into a small area at the sphere radius
@@ -91,9 +91,31 @@ namespace KK_PregnancyPlus
             //Get the positon on a line that this vector exists between flattenExtensStartAt -> to sphereRadius.  Shrink it to scale
             var offset = Math.Abs((totatDist - originToEndDist)) * flattenExtent;
 
-            //This is the additional distance we want to move this vert away from sphere center
-            return offset;
+            //This is the total additional distance we want to move this vert away from sphere center
+            return offset + GetClothLayerOffset(meshName);
         }
+
+
+        /// <summary>
+        /// There are two cloth layers, inner and outer. I've assigned each cloth layer a default offset. layers: 1 = skin tight, 2 = above skin tight.  This way each layer will have less change of cliping through to the next
+        /// </summary>
+        internal float GetClothLayerOffset(string meshName) {
+#if KK      
+            float baseOffset = 0.0005f;//The mininum distance offset for each layer
+            string[] innerLayers = {"o_bra_a", "o_bra_b", "o_shorts_a", "o_shorts_b", "o_panst_garter1", "o_panst_a", "o_panst_b"};
+#elif HS2 || AI
+            float baseOffset = 0.005f;
+            string[] innerLayers = {"o_bra_a", "o_bra_b", "o_shorts_a", "o_shorts_b", "o_panst_garter1", "o_panst_a", "o_panst_b"};
+#endif            
+
+            //If inner layer then use default offset
+            if (innerLayers.Contains(meshName)) {
+                return baseOffset;
+            }
+
+            //If outer layer then double the offset
+            return baseOffset * 2;
+        } 
 
 
         /// <summary>
