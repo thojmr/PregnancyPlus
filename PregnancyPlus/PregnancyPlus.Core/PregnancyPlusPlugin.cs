@@ -36,6 +36,9 @@ namespace KK_PregnancyPlus
         internal static bool debugLog = false;
 #endif        
 
+        //The last non zero belly shape slider values that were applied to any character
+        public static PregnancyPlusData lastBellyState =  new PregnancyPlusData();
+
 
         private void Start()
         {

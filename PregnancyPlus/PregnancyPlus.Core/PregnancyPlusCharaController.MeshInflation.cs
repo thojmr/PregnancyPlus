@@ -105,6 +105,11 @@ namespace KK_PregnancyPlus
                 if (appliedBodyMeshChanges) anyMeshChanges = true;                      
             }
 
+            //If any changes were applied, updated the last used shape for the Restore gui button
+            if (anyMeshChanges && infConfig.HasAnyValue()) {
+                PregnancyPlusPlugin.lastBellyState = infConfig;
+            }
+
             return anyMeshChanges;
         }
 

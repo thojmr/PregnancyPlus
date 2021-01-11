@@ -24,6 +24,20 @@ namespace KK_PregnancyPlus
 
 #region Save/Load (Thanks for the code Marco)
 
+        public bool HasAnyValue() {
+
+            foreach (var fieldInfo in _serializedFields)
+            {
+                var value = fieldInfo.GetValue(this);
+                var defaultValue = fieldInfo.GetValue(_default);
+                if (!Equals(defaultValue, value)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private static readonly PregnancyPlusData _default = new PregnancyPlusData();
         private static readonly FieldInfo[] _serializedFields = typeof(PregnancyPlusData).GetFields(BindingFlags.Public | BindingFlags.Instance);
 

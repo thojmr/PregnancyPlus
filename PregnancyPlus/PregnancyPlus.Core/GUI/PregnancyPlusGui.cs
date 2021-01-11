@@ -38,6 +38,37 @@ namespace KK_PregnancyPlus
         {
             var cat = StudioAPI.GetOrCreateCurrentStateCategory("Pregnancy +");
 
+            cat.AddControl(new CurrentStateCategorySwitch("Reset P+ Shape", c =>
+                {                     
+                    var ctrl = GetCharCtrl(c);  
+                    return false;
+                }))
+                .Value.Subscribe(f => {
+                    foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {                               
+                        //Clear current config
+                        ctrl.infConfig = new PregnancyPlusData();             
+                        ctrl.MeshInflate();  
+                    }
+                });
+            
+            cat.AddControl(new CurrentStateCategorySwitch("Restore Last P+ Shape", c =>
+                {                                         
+                    var ctrl = GetCharCtrl(c);   
+                    if (PregnancyPlusPlugin.lastBellyState.HasAnyValue()) {
+                        return true;//Just vidually show that a previous shape exists
+                    }
+                    return false;
+                }))
+                .Value.Subscribe(f => {
+                    foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {     
+                        if (PregnancyPlusPlugin.lastBellyState.HasAnyValue()) {
+                            //Update confing with last stored non zero values values
+                            ctrl.infConfig = PregnancyPlusPlugin.lastBellyState;             
+                            ctrl.MeshInflate();                 
+                        }                            
+                    }
+                 });
+
             cat.AddControl(new CurrentStateCategorySlider("Pregnancy +", c =>
                 {   
                     var ctrl = GetCharCtrl(c);                                                   
@@ -49,18 +80,6 @@ namespace KK_PregnancyPlus
                             if (ctrl.infConfig.inflationSize == f) continue;    
                             ctrl.infConfig.inflationSize = f;                
                             ctrl.MeshInflate();                             
-                        }
-                    });
-
-            cat.AddControl(new CurrentStateCategorySwitch("        Reset All", c =>
-                {                                       
-                    return false;
-                }))
-                    .Value.Subscribe(f => { 
-                        foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
-                            if (!f) return;
-                            ctrl.infConfig = new PregnancyPlusData();             
-                            ctrl.MeshInflate(true);                             
                         }
                     });
 
