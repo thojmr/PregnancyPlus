@@ -101,7 +101,7 @@
 
   <ItemGroup>
     <Compile Include="..\PregnancyPlus.Core\PregnancyPlusCharaController.cs" />
-    <Compile Include="..\PregnancyPlus.Core\PregnancyPlusCharaController.Helper.cs" />
+    <Compile Include="..\PregnancyPlus.Core\PregnancyPlusCharaController.MeshInflationB.cs" />
     <Compile Include="..\PregnancyPlus.Core\PregnancyPlusCharaController.MeshInflation.cs" />
     <Compile Include="..\PregnancyPlus.Core\GUI\PregnancyPlusGui.cs" />
     <Compile Include="..\PregnancyPlus.Core\PregnancyPlusPlugin.cs" />

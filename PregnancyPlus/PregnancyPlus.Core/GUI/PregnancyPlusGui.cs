@@ -36,7 +36,7 @@ namespace KK_PregnancyPlus
 
         private static void RegisterStudioControls()
         {
-            var cat = StudioAPI.GetOrCreateCurrentStateCategory(null);
+            var cat = StudioAPI.GetOrCreateCurrentStateCategory("Pregnancy +");
 
             cat.AddControl(new CurrentStateCategorySlider("Pregnancy +", c =>
                 {   
@@ -139,7 +139,7 @@ namespace KK_PregnancyPlus
                     var ctrl = GetCharCtrl(c);                                                   
                     return ctrl != null ? ctrl.infConfig.inflationShiftY: 0;
 
-                }, -0.15f * scaleLimits, 0.15f * scaleLimits))
+                }, -0.2f * scaleLimits, 0.2f * scaleLimits))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
                             if (ctrl.infConfig.inflationShiftY == f) continue;                    

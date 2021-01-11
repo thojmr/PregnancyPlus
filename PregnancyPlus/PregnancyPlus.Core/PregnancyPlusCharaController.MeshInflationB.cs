@@ -231,7 +231,11 @@ namespace KK_PregnancyPlus
 
                 //Then lerp the previous result based on the distance forward.  More forward is able to move more
                 var distanceForward = smoothedVectorLs.z - sphereCenterLs.z; 
-                var finalLerpPos = Vector3.Lerp(smoothedVectorLs, yLerpedsmoothedVector, Math.Abs(distanceForward/sphereRadius));
+                var forwardLerpPos = Vector3.Lerp(smoothedVectorLs, yLerpedsmoothedVector, Math.Abs(distanceForward/sphereRadius));
+
+                //Finally lerp sides slightly slower than center
+                var distanceSide = Math.Abs(smoothedVectorLs.x - sphereCenterLs.x); 
+                var finalLerpPos = Vector3.Lerp(forwardLerpPos, smoothedVectorLs, Math.Abs(distanceSide/(sphereRadius*2)));
 
                 //return the shift up/down 
                 smoothedVector = meshRootTf.TransformPoint(finalLerpPos);
