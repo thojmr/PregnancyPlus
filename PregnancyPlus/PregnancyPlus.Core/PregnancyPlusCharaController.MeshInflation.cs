@@ -46,17 +46,26 @@ namespace KK_PregnancyPlus
         /// </summary>
         /// <param name="reRunWithCurrentParams">Lets you force bypass the check for values changed</param>
         /// <returns>Will return True if the mesh was altered and False if not</returns>
-        public bool MeshInflate(bool reRunWithCurrentParams = false)
+        public bool MeshInflate(bool reRunWithCurrentParams = false, bool forceRecalcVerts = false)
         {
             if (ChaControl.objBodyBone == null) return false;//Make sure chatacter objs exists first   
 
             if (!ShouldInflate()) return false;//if outside studio, make sure StoryMode is enabled first
-
+                                           
             //Only continue if one of the config values changed
-            if (!NeedsMeshUpdate() && !reRunWithCurrentParams) {                
-                return false;            
+            if (!NeedsMeshUpdate()) {
+                //Only stop here, if no recalculation needed
+                if (!forceRecalcVerts && !reRunWithCurrentParams) {
+                    return false; 
+                }
             }
             ResetInflation();
+
+            if (forceRecalcVerts) {
+                //Resets all stored vert values, so the script will have to recalculate all from base body
+                var keyList = new List<string>(originalVertices.Keys);
+                RemoveRenderKeys(keyList);
+            }
 
             //Only continue when size above 0
             if (infConfig.inflationSize <= 0) {
@@ -145,7 +154,7 @@ namespace KK_PregnancyPlus
             waistWidth = Math.Abs(waistWidth - (waistWidth * charScale.x - waistWidth)/charScale.x);
 
             //Calculate sphere radius based on distance from waist to ribs (seems big, but lerping later will trim much of it), added Math.Min for skinny waists
-            var sphereRadius = Math.Min(waistToRibDist/1.25f, waistWidth/1.2f); 
+            var sphereRadius = Math.Min(waistToRibDist/1.25f, waistWidth/1.3f); 
             var sphereRadiusMultiplied = sphereRadius * (GetInflationMultiplier() + 1);   
 
             bellyInfo = new BellyInfo(waistWidth, waistToRibDist, sphereRadiusMultiplied, sphereRadius, charScale);
@@ -329,7 +338,7 @@ namespace KK_PregnancyPlus
         internal Vector3 SculptInflatedVerticie(Vector3 originalVertice, Vector3 inflatedVerticie, Vector3 sphereCenterPos, float waistWidth, Transform meshRootTf, Vector3 preMorphSphereCenter, float sphereRadius) 
         {
             //No smoothing modification in debug mode
-            if (debug) return inflatedVerticie;            
+            if (PregnancyPlusPlugin.MakeBalloon.Value) return inflatedVerticie;            
             
             //get the smoothing distance limits so we don't have weird polygons and shapes on the edges, and prevents morphs from shrinking past original skin boundary
             var pmSkinToCenterDist = Math.Abs(FastDistance(preMorphSphereCenter, originalVertice));
@@ -495,11 +504,11 @@ namespace KK_PregnancyPlus
                 {                    
                     //If it has a weight, and the bone is a belly bone. Weight goes (0-1f) Ignore 0 and maybe filter below 0.1 as well
                     //Include all if debug = true
-                    if ((boneWeights[i] > 0.05f && bellyBoneIndexes.Contains(boneIndicies[i]) || debug))
+                    if ((boneWeights[i] > 0.05f && bellyBoneIndexes.Contains(boneIndicies[i]) || PregnancyPlusPlugin.MakeBalloon.Value))
                     {
                         //Make sure to exclude verticies on characters back, we only want to modify the front.  No back bellies!
                         //add all vertexes in debug mode
-                        if (verticies[c].z >= 0 || debug) {
+                        if (verticies[c].z >= 0 || PregnancyPlusPlugin.MakeBalloon.Value) {
                             bellyVertIndex[c] = true;
                             hasBellyVerticies = true;
                             break;

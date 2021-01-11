@@ -57,7 +57,7 @@ namespace KK_PregnancyPlus
 #elif HS2 || AI
             var boneFilters = new string[] { "cf_J_Spine02_s", "cf_J_Kosi01_s", "cf_J_Kosi02_s" };
 #endif
-            var hasVerticies = GetFilteredVerticieIndexes(smr, debug ? null : boneFilters);        
+            var hasVerticies = GetFilteredVerticieIndexes(smr, PregnancyPlusPlugin.MakeBalloon.Value ? null : boneFilters);        
 
             //If no belly verts found, then we can skip this mesh
             if (!hasVerticies) return false; 

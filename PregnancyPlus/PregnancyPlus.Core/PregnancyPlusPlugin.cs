@@ -24,6 +24,7 @@ namespace KK_PregnancyPlus
         internal static new ManualLogSource Logger { get; private set; }
         public static ConfigEntry<bool> StoryMode { get; private set; }
         public static ConfigEntry<bool> HDSmoothing { get; private set; }
+        public static ConfigEntry<bool> MakeBalloon { get; private set; }
         public static ConfigEntry<float> MaxStoryModeBelly { get; private set; }
         public static ConfigEntry<float> StoryModeInflationShiftZ { get; private set; }
         public static ConfigEntry<float> StoryModeInflationTaperY { get; private set; }
@@ -42,6 +43,9 @@ namespace KK_PregnancyPlus
 
             HDSmoothing = Config.Bind<bool>("Character Studio", "HD Crease Smoothing (CPU heavy)", false, "This will reduce the hard edges you sometimes see along the characters body after using a slider.  Typically only noticable on HD models like in HS2 or AI.  Turn it off if you are bothered by the added CPU load, or don't mind the edges.  It basically adds a custom vector norm method that handles UV boundaries better tha Unity's solution.");
             HDSmoothing.SettingChanged += HDSmoothing_SettingsChanged;
+
+            MakeBalloon = Config.Bind<bool>("Character Studio", "Make me a balloon", false, "Try it and see what happens, disable to go back to the original style.  (AKA debug mesh mode)");
+            MakeBalloon.SettingChanged += MakeBalloon_SettingsChanged;
 
 #if KK
             StoryMode = Config.Bind<bool>("Experimental Story Mode (Requires KK_Pregnancy)", "Story mode", false, "Nothing crazy, but I figured someone out there might want to try it.  No further plans at the moment, it was just simple to implement.\r\n\r\nThis will combine the effects of KK_PregnancyPlus with KK_Pregnancy (larger max belly overall), but be aware that you will see lots of clothes clipping at large sizes.");
@@ -76,26 +80,59 @@ namespace KK_PregnancyPlus
             PregnancyPlusGui.Init(hi, this);
         }
 
-        internal void StoryMode_SettingsChanged(object sender, System.EventArgs e) 
-        {            
-            //TODO
-        }
-
         internal void HDSmoothing_SettingsChanged(object sender, System.EventArgs e) 
         {            
             if (!StudioAPI.InsideStudio) return;
 
+            //Re trigger inflation and recalculate vert positions
             foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
                 ctrl.MeshInflate(true);                             
             }
         }
 
-        internal void InflationConfig_SettingsChanged(object sender, System.EventArgs e) {
+        internal void StoryMode_SettingsChanged(object sender, System.EventArgs e) 
+        {            
             if (StudioAPI.InsideStudio) return;
 
-            // foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
-            //     ctrl.MeshInflate(true);                             
+            // var handlers = CharacterApi.GetRegisteredBehaviour(GUID);
+            // var instances = (System.Collections.Generic.IEnumerable<PregnancyPlusCharaController>)handlers.Instances;
+        
+            // if (StoryMode.Value) {
+            //     //Re trigger inflation and recalculate vert positions
+            //     foreach (var ctrl in instances) {  
+            //         ctrl.GetWeeksAndSetInflation();                            
+            //     }
+            // } else {
+            //     //Disable all infaltions
+            //     foreach (var ctrl in instances) {  
+            //         ctrl.MeshInflate(0);                             
+            //     }
+            // }
+        }
+
+        internal void InflationConfig_SettingsChanged(object sender, System.EventArgs e) 
+        {
+            if (StudioAPI.InsideStudio) return;
+
+            // var handlers = CharacterApi.GetRegisteredBehaviour(GUID);
+            // var instances = (System.Collections.Generic.IEnumerable<PregnancyPlusCharaController>)handlers.Instances;
+
+            // //Re trigger infaltion when a value changes for each controller
+            // foreach (var ctrl in instances) {  
+            //     if (PregnancyPlusPlugin.StoryMode != null) {
+            //         if (PregnancyPlusPlugin.StoryMode.Value) ctrl.GetWeeksAndSetInflation();
+            //     }                             
             // }                  
+        }
+
+        internal void MakeBalloon_SettingsChanged(object sender, System.EventArgs e) 
+        {
+            if (!StudioAPI.InsideStudio) return;
+
+            //Re trigger inflation and recalculate vert positions
+            foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
+                ctrl.MeshInflate(true, true);                             
+            }          
         }
 
         /// <summary>

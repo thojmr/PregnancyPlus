@@ -16,9 +16,7 @@ namespace KK_PregnancyPlus
 
     //This partial class contains the property declarations and override hooks
     public partial class PregnancyPlusCharaController: CharaCustomFunctionController
-    {
-        
-        internal bool debug = false;//In debug mode, all verticies are affected.  Makes it easier to see what is actually happening in studio mode.  Also creates nightmares
+    {        
         
         internal bool initialized = false;//Prevent some actions from happening before character data loads   
 
@@ -106,7 +104,7 @@ namespace KK_PregnancyPlus
 
             if (PregnancyPlusPlugin.StoryMode != null) {
                 if (PregnancyPlusPlugin.StoryMode.Value) GetWeeksAndSetInflation();
-            }            
+            }           
         }
 
 
