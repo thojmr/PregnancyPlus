@@ -222,14 +222,23 @@ namespace KK_PregnancyPlus
             }
 
             //Check for BodyTop scale to apply it to distance (cf_n_height scale doesnt matter here for some reason)
-            var bodyTopBone = GetBone(chaControl, "BodyTop");
-            if (bodyTopBone != null && bodyTopBone.localScale.y != 1) {
-                if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" applying BodyTop scale to distance: {distance} scale: {bodyTopBone.localScale.y}");
-                distance = distance * bodyTopBone.localScale.y;
+            var BodyTopScale = GetBodyTopScale(chaControl);
+            if (BodyTopScale.y != 1) {                
+                if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" applying BodyTop scale to distance: {distance} scale: {BodyTopScale.y}");
+                distance = distance * BodyTopScale.y;
             }
 
             if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" total dist {distance}");
             return distance;
+        }
+
+        /// <summary>
+        /// Just get the BodyTop bone local scale
+        /// </summary>
+        internal static Vector3 GetBodyTopScale(ChaControl chaControl)  {
+            var bodyTopBone = GetBone(chaControl, "BodyTop");
+            if (bodyTopBone == null) return Vector3.one;
+            return bodyTopBone.localScale;
         }
 
         /// <summary>

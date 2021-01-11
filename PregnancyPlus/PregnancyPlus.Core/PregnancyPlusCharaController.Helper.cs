@@ -126,7 +126,7 @@ namespace KK_PregnancyPlus
         internal Vector3 GetBellyButtonOffset(Transform fromPosition, float currentHeight) 
         {
             //Makes slight vertical adjustments to put the sphere at the correct point                  
-            return fromPosition.up * (0.15f * currentHeight);     
+            return fromPosition.up * (0.155f * currentHeight);     
         }
 
 
