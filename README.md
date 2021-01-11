@@ -87,6 +87,8 @@ If sucessfull you should see a KK_PregnancyPlus.dll file nested in .\bin\
     -  There are some clothing items in HS2 and AI that simply wont work with the sliders at all
 -  Acessories won't automatically move out of the way of the mesh as they do when you manipulate bones
 -  It has bigger impact on performance than a simple bone scale change, but doesn't affect the shape of bones which is a bonus!
+- Why not use blendShapes?
+    - Blendshapes are predefined mesh transitions that could be tied to the sliders in the same way.  However blend shapes depend on the base mesh having the same number of verticies as the original mesh it was created on.  Because this game relies heavily on Uncensor bodies and a wide verity of clothing, two meshed rarley have the same number of verticies, which limits where you can use pre made blend shapes.  Instead this plugin calculates the desired mesh position on the fly when sliders are changed, which doesn't depend on two meshes having the same vertex count/position.
 
 ## Some TODO items that may or mat not be implemented in the future (depending on interest)
 -  Make accessories move along with the belly to prevent clipping
