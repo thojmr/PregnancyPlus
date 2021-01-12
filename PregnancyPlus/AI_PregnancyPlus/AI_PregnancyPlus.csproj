@@ -105,6 +105,7 @@
     <Compile Include="..\PregnancyPlus.Core\PregnancyPlusCharaController.MeshInflation.cs" />
     <Compile Include="..\PregnancyPlus.Core\GUI\PregnancyPlusGui.cs" />
     <Compile Include="..\PregnancyPlus.Core\PregnancyPlusPlugin.cs" />
+    <Compile Include="..\PregnancyPlus.Core\PregnancyPlusPlugin.Config.cs" />
     <Compile Include="..\PregnancyPlus.Core\PregnancyPlusPlugin.Hooks.cs" />
     <Compile Include="..\PregnancyPlus.Core\PregnancyPlusHelper.cs" />
     <Compile Include="..\PregnancyPlus.Core\PregnancyPlusData.cs" />
