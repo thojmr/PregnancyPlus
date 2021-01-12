@@ -247,11 +247,12 @@ namespace KK_PregnancyPlus
         internal static Vector3 GetCharacterScale(ChaControl chaControl) 
         {
             var scaleBone2Name = "BodyTop";
-#if KK            
-            var scaleBoneName = "cf_n_height";
-#elif HS2 || AI             
-            var scaleBoneName = "cf_N_height";            
-#endif
+            
+            #if KK            
+                var scaleBoneName = "cf_n_height";
+            #elif HS2 || AI             
+                var scaleBoneName = "cf_N_height";            
+            #endif
 
             //Get the scale of the 2 scale bones
             var scaleBone = GetBone(chaControl, scaleBoneName);

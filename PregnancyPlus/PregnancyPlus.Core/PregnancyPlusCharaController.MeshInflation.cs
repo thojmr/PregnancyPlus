@@ -8,7 +8,7 @@ using System.Linq;
 using System.Reflection;
 using UniRx;
 #if HS2 || AI
-using AIChara;
+    using AIChara;
 #endif
 
 namespace KK_PregnancyPlus
@@ -123,13 +123,14 @@ namespace KK_PregnancyPlus
         {
             var charScale = PregnancyPlusHelper.GetBodyTopScale(ChaControl);
 
-#if KK
-            var ribName = "cf_s_spine02";
-            var waistName = "cf_s_waist02";
-#elif HS2 || AI
-            var ribName = "cf_J_Spine02_s";
-            var waistName = "cf_J_Kosi02";
-#endif            
+            #if KK
+                var ribName = "cf_s_spine02";
+                var waistName = "cf_s_waist02";
+            #elif HS2 || AI
+                var ribName = "cf_J_Spine02_s";
+                var waistName = "cf_J_Kosi02";
+            #endif            
+
             //Get the characters Y bones to measure from
             var ribBone = PregnancyPlusHelper.GetBone(ChaControl, ribName);
             var waistBone = PregnancyPlusHelper.GetBone(ChaControl, waistName);
@@ -138,13 +139,14 @@ namespace KK_PregnancyPlus
             var waistToRibDist = waistBone.transform.InverseTransformPoint(ribBone.position).y;
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" waistToRibDist {waistToRibDist}");
 
-#if KK
-            var thighLName = "cf_j_thigh00_L";
-            var thighRName = "cf_j_thigh00_R";                    
-#elif HS2 || AI
-            var thighLName = "cf_J_LegUp00_L";
-            var thighRName = "cf_J_LegUp00_R";
-#endif
+            #if KK
+                var thighLName = "cf_j_thigh00_L";
+                var thighRName = "cf_j_thigh00_R";                    
+            #elif HS2 || AI
+                var thighLName = "cf_J_LegUp00_L";
+                var thighRName = "cf_J_LegUp00_R";
+            #endif
+
             //Get the characters X bones to measure from, in localspace to ignore n_height scale
             var thighLBone = PregnancyPlusHelper.GetBone(ChaControl, thighLName);
             var thighRBone = PregnancyPlusHelper.GetBone(ChaControl, thighRName);
@@ -189,32 +191,32 @@ namespace KK_PregnancyPlus
             var needsPositionFix = smr.transform.position != meshRootTf.position;                        
 
 #region Fixes for different mesh localspace positions between KK and HS2/AI
-#if KK            
-            var isDefaultBody = !PregnancyPlusHelper.IsUncensorBody(ChaControl, UncensorCOMName, DefaultBodyFemaleGUID); 
-            if (isClothingMesh) 
-            {
-                //KK just has to have strange vert positions, so we have to use adjust the sphere center location for body and clothes
-                var clothesMeshRoot = PregnancyPlusHelper.GetBone(ChaControl, "cf_o_root").position;
-                //Get distance from bb to clothesMeshRoot if needs fix
-                clothSphereCenterOffset = needsPositionFix ? sphereCenter - meshRootTf.up * FastDistance(clothesMeshRoot, sphereCenter) * 1.021f : sphereCenter;//At belly button - meshRoot position (plus some tiny dumb offset that I cant find the source of)
-                sphereCenter = needsPositionFix ? clothSphereCenterOffset : sphereCenter;
-            } 
-            else if (isDefaultBody) 
-            {
-                bodySphereCenterOffset = meshRootTf.position + GetUserMoveTransform(meshRootTf) + meshRootTf.up * -0.021f;////at 0,0,0, once again what is this crazy small offset?
-                sphereCenter = meshRootTf.position + GetUserMoveTransform(meshRootTf);//at belly button - meshRoot position
-            }
-            else 
-            {
-                //For uncensor body mesh
-                clothSphereCenterOffset = bodySphereCenterOffset = sphereCenter;//at belly button
-            }
-            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" corrected sphereCenter {sphereCenter} isDefaultBody {isDefaultBody}");
+            #if KK            
+                var isDefaultBody = !PregnancyPlusHelper.IsUncensorBody(ChaControl, UncensorCOMName, DefaultBodyFemaleGUID); 
+                if (isClothingMesh) 
+                {
+                    //KK just has to have strange vert positions, so we have to use adjust the sphere center location for body and clothes
+                    var clothesMeshRoot = PregnancyPlusHelper.GetBone(ChaControl, "cf_o_root").position;
+                    //Get distance from bb to clothesMeshRoot if needs fix
+                    clothSphereCenterOffset = needsPositionFix ? sphereCenter - meshRootTf.up * FastDistance(clothesMeshRoot, sphereCenter) * 1.021f : sphereCenter;//At belly button - meshRoot position (plus some tiny dumb offset that I cant find the source of)
+                    sphereCenter = needsPositionFix ? clothSphereCenterOffset : sphereCenter;
+                } 
+                else if (isDefaultBody) 
+                {
+                    bodySphereCenterOffset = meshRootTf.position + GetUserMoveTransform(meshRootTf) + meshRootTf.up * -0.021f;////at 0,0,0, once again what is this crazy small offset?
+                    sphereCenter = meshRootTf.position + GetUserMoveTransform(meshRootTf);//at belly button - meshRoot position
+                }
+                else 
+                {
+                    //For uncensor body mesh
+                    clothSphereCenterOffset = bodySphereCenterOffset = sphereCenter;//at belly button
+                }
+                if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" corrected sphereCenter {sphereCenter} isDefaultBody {isDefaultBody}");
 
-#elif (HS2 || AI)
-            //Its so simple when its not KK default mesh :/
-            clothSphereCenterOffset = bodySphereCenterOffset = sphereCenter;
-#endif    
+            #elif (HS2 || AI)
+                //Its so simple when its not KK default mesh :/
+                clothSphereCenterOffset = bodySphereCenterOffset = sphereCenter;
+            #endif    
 #endregion        
 
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" isClothingMesh {isClothingMesh} needsPositionFix {needsPositionFix} ");
@@ -289,20 +291,20 @@ namespace KK_PregnancyPlus
         /// </summary>
         internal Transform GetMeshRoot() 
         {                                
-#if KK
-            //Get normal mesh root attachment position, and if its not near 0,0,0 fix it so that it is
-            var kkMeshRoot = PregnancyPlusHelper.GetBoneGO(ChaControl, "cf_o_root");
-            if (!kkMeshRoot) return null;
+            #if KK
+                //Get normal mesh root attachment position, and if its not near 0,0,0 fix it so that it is
+                var kkMeshRoot = PregnancyPlusHelper.GetBoneGO(ChaControl, "cf_o_root");
+                if (!kkMeshRoot) return null;
+                
+                var meshRoot = kkMeshRoot.transform;
+                meshRoot.transform.position = kkMeshRoot.transform.position + kkMeshRoot.transform.up * (-ChaControl.transform.InverseTransformPoint(kkMeshRoot.transform.position).y);
             
-            var meshRoot = kkMeshRoot.transform;
-            meshRoot.transform.position = kkMeshRoot.transform.position + kkMeshRoot.transform.up * (-ChaControl.transform.InverseTransformPoint(kkMeshRoot.transform.position).y);
-            
-#elif HS2 || AI
-            //For HS2, get the equivalent position game object (near bellybutton)
-            var meshRootGo = PregnancyPlusHelper.GetBoneGO(ChaControl, "n_o_root");
-            if (!meshRootGo) return null;
-            var meshRoot = meshRootGo.transform;
-#endif
+            #elif HS2 || AI
+                //For HS2, get the equivalent position game object (near bellybutton)
+                var meshRootGo = PregnancyPlusHelper.GetBoneGO(ChaControl, "n_o_root");
+                if (!meshRootGo) return null;
+                var meshRoot = meshRootGo.transform;
+            #endif
 
             return meshRoot;
         }

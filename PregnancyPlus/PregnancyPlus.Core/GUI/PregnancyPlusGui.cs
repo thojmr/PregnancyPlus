@@ -18,12 +18,12 @@ namespace KK_PregnancyPlus
         internal static PregnancyPlusData ppDataDefaults = new PregnancyPlusData();
         
 #region Don't change these, they would change users cards default scales
-#if KK
-        private static int scaleLimits = 1;
-#elif HS2 || AI
+        #if KK
+            private static int scaleLimits = 1;
+        #elif HS2 || AI
             //once again everything is bigger in HS2
-        private static int scaleLimits = 5;
-#endif
+            private static int scaleLimits = 5;
+        #endif
 #endregion
 
         //The allowed slider ranges for each slider type

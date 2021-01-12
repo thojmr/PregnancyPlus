@@ -54,11 +54,12 @@ namespace KK_PregnancyPlus
         internal bool ComputeMeshVerts(SkinnedMeshRenderer smr, float sphereRadius, float waistWidth, bool isClothingMesh = false) 
         {
             //The list of bones to get verticies for
-#if KK            
-            var boneFilters = new string[] { "cf_s_spine02", "cf_s_waist01", "cf_s_waist02" };//"cs_s_spine01" optionally for wider affected area
-#elif HS2 || AI
-            var boneFilters = new string[] { "cf_J_Spine02_s", "cf_J_Kosi01_s", "cf_J_Kosi02_s" };
-#endif
+            #if KK            
+                var boneFilters = new string[] { "cf_s_spine02", "cf_s_waist01", "cf_s_waist02" };//"cs_s_spine01" optionally for wider affected area
+            #elif HS2 || AI
+                var boneFilters = new string[] { "cf_J_Spine02_s", "cf_J_Kosi01_s", "cf_J_Kosi02_s" };
+            #endif
+
             var hasVerticies = GetFilteredVerticieIndexes(smr, PregnancyPlusPlugin.MakeBalloon.Value ? null : boneFilters);        
 
             //If no belly verts found, then we can skip this mesh
@@ -79,11 +80,12 @@ namespace KK_PregnancyPlus
         /// <param name="origVertWS">The original verticie's worldspace position</param>
         internal float GetClothesFixOffset(Vector3 sphereCenter, float sphereRadius, float waistWidth, Vector3 origVertWS, string meshName) 
         {
-#if KK      
-            float flattenExtent = 0.05f;//The size of the area to spread the flattened offsets over like shrinking center -> inflated distance into a small area at the sphere radius
-#elif HS2 || AI
-            float flattenExtent = 0.1f;
-#endif
+            #if KK      
+                float flattenExtent = 0.05f;//The size of the area to spread the flattened offsets over like shrinking center -> inflated distance into a small area at the sphere radius
+            #elif HS2 || AI
+                float flattenExtent = 0.1f;
+            #endif
+
             var inflatedVerWS = (origVertWS - sphereCenter).normalized * sphereRadius + sphereCenter;//Get the line we want to do measurements on            
             //We dont care about empty space at sphere center, move outwards a bit before determining vector location on the line
             float awayFromCenter = (waistWidth/3);
@@ -102,13 +104,13 @@ namespace KK_PregnancyPlus
         /// There are two cloth layers, inner and outer. I've assigned each cloth layer a default offset. layers: 1 = skin tight, 2 = above skin tight.  This way each layer will have less change of cliping through to the next
         /// </summary>
         internal float GetClothLayerOffset(string meshName) {
-#if KK      
-            float baseOffset = 0.0005f;//The mininum distance offset for each layer
-            string[] innerLayers = {"o_bra_a", "o_bra_b", "o_shorts_a", "o_shorts_b", "o_panst_garter1", "o_panst_a", "o_panst_b"};
-#elif HS2 || AI
-            float baseOffset = 0.005f;
-            string[] innerLayers = {"o_bra_a", "o_bra_b", "o_shorts_a", "o_shorts_b", "o_panst_garter1", "o_panst_a", "o_panst_b"};
-#endif            
+            #if KK      
+                float baseOffset = 0.0005f;//The mininum distance offset for each layer
+                string[] innerLayers = {"o_bra_a", "o_bra_b", "o_shorts_a", "o_shorts_b", "o_panst_garter1", "o_panst_a", "o_panst_b"};
+            #elif HS2 || AI
+                float baseOffset = 0.005f;
+                string[] innerLayers = {"o_bra_a", "o_bra_b", "o_shorts_a", "o_shorts_b", "o_panst_garter1", "o_panst_a", "o_panst_b"};
+            #endif            
 
             //If inner layer then use default offset
             if (innerLayers.Contains(meshName)) {
@@ -126,11 +128,12 @@ namespace KK_PregnancyPlus
         internal float GetBellyButtonLocalHeight(Transform boneOrMeshTf) 
         {            
             //Calculate the belly button height by getting each bone distance from foot to belly button (even during animation the height is correct!)
-#if KK
-            var bbHeight = PregnancyPlusHelper.BoneChainStraigntenedDistance(ChaControl, "cf_j_foot_L", "cf_j_waist01");
-#elif HS2 || AI            
-            var bbHeight = PregnancyPlusHelper.BoneChainStraigntenedDistance(ChaControl, "cf_J_Toes01_L", "cf_J_Kosi01");                       
-#endif                      
+            #if KK
+                var bbHeight = PregnancyPlusHelper.BoneChainStraigntenedDistance(ChaControl, "cf_j_foot_L", "cf_j_waist01");
+            #elif HS2 || AI            
+                var bbHeight = PregnancyPlusHelper.BoneChainStraigntenedDistance(ChaControl, "cf_J_Toes01_L", "cf_J_Kosi01");                       
+            #endif                      
+            
             return bbHeight;
         }
 

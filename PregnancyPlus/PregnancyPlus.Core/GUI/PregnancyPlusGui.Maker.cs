@@ -27,11 +27,12 @@ namespace KK_PregnancyPlus
             if (MakerAPI.GetMakerSex() == 0) return;
 
             // This category is inaccessible from class maker
-#if KK           
-            var cat = new MakerCategory(MakerConstants.Parameter.Character.CategoryName, "Pregnancy+");
-#elif HS2 || AI
-            var cat = new MakerCategory(MakerConstants.Parameter.Status.CategoryName, "Pregnancy+");
-#endif
+            #if KK           
+                var cat = new MakerCategory(MakerConstants.Parameter.Character.CategoryName, "Pregnancy+");
+            #elif HS2 || AI
+                var cat = new MakerCategory(MakerConstants.Parameter.Status.CategoryName, "Pregnancy+");
+            #endif
+            
             e.AddSubCategory(cat);
 
             var hintColor = new Color(0.7f, 0.7f, 0.7f);

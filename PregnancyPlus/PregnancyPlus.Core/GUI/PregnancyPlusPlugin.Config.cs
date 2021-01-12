@@ -32,33 +32,32 @@ namespace KK_PregnancyPlus
             MakeBalloon = Config.Bind<bool>("Character Studio", "Make me a balloon", false, "Try it and see what happens, disable to go back to the original style.  (AKA debug mesh mode)");
             MakeBalloon.SettingChanged += MakeBalloon_SettingsChanged;
 
-#if KK
-            var storyConfigTitle = "Story/Main-Game Mode (Requires KK_Pregnancy)";     
-            var storyConfigDescription = "Initial belly size will be loaded from character card, if enabled on the character card in Maker.\r\n\r\nIf KK_Pregnancy is also installed, this will combine the effects of KK_PregnancyPlus with KK_Pregnancy (larger max belly overall). \r\n\r\nThe below sliders can be used in tandem to adjust all characters shapes when this is enabled";
-            var additionalSliderText = " for all pregnant characters";
-
-#elif HS2 || AI
-            var storyConfigTitle = "Story/Main-Game Mode";
-            var storyConfigDescription = "Initial belly size will be loaded from character card, if enabled on the character card in Maker.\r\n\r\nThe below sliders can be used in tandem to adjust all characters shapes when this is enabled.";
-            var additionalSliderText = "";
-#endif
+            #if KK
+                var storyConfigTitle = "Story/Main-Game Mode (Requires KK_Pregnancy)";     
+                var storyConfigDescription = "Initial belly size will be loaded from character card, if enabled on the character card in Maker.\r\n\r\nIf KK_Pregnancy is also installed, this will combine the effects of KK_PregnancyPlus with KK_Pregnancy (larger max belly overall). \r\n\r\nThe below sliders can be used in tandem to adjust all characters shapes when this is enabled";
+                var additionalSliderText = " for all pregnant characters";
+            #elif HS2 || AI
+                var storyConfigTitle = "Story/Main-Game Mode";
+                var storyConfigDescription = "Initial belly size will be loaded from character card, if enabled on the character card in Maker.\r\n\r\nThe below sliders can be used in tandem to adjust all characters shapes when this is enabled.";
+                var additionalSliderText = "";
+            #endif
 
             StoryMode = Config.Bind<bool>(storyConfigTitle, "Gameplay Enabled", true, storyConfigDescription);
             StoryMode.SettingChanged += StoryMode_SettingsChanged;
 
-#if KK 
-            //This config is for KK_Pregnancy integration to set the additional size this plugin will add to KK_Pregnancy (KK only)
-            MaxStoryModeBelly = Config.Bind<float>(storyConfigTitle, "Max additional belly size", 10f, 
-                new ConfigDescription("The maximum additional belly size that this plugin will add to the original KK_Pregnancy belly. The character must be pregnant.\r\n0 will result in the original KK_Pregnancy belly, while 40 will be the original + an additional 40 added by this plugin.",
-                new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationSize[0], PregnancyPlusGui.SliderRange.inflationSize[1])));
-            MaxStoryModeBelly.SettingChanged += InflationConfig_SettingsChanged;
-#elif HS2 || AI
-            //Allow setting base size of the belly directly, since there is no KK_Pregnancy for HS2 and AI
-            StoryModeInflationSize = Config.Bind<float>(storyConfigTitle, "Global Belly Size Adjustment", 0, 
-                new ConfigDescription("Allows you to increase or decrease the 'Belly Size' in story mode" + additionalSliderText,
-                new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationSize[0], PregnancyPlusGui.SliderRange.inflationSize[1])));
-            StoryModeInflationSize.SettingChanged += InflationConfig_SettingsChanged;
-#endif
+            #if KK 
+                //This config is for KK_Pregnancy integration to set the additional size this plugin will add to KK_Pregnancy (KK only)
+                MaxStoryModeBelly = Config.Bind<float>(storyConfigTitle, "Max additional belly size", 10f, 
+                    new ConfigDescription("The maximum additional belly size that this plugin will add to the original KK_Pregnancy belly. The character must be pregnant.\r\n0 will result in the original KK_Pregnancy belly, while 40 will be the original + an additional 40 added by this plugin.",
+                    new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationSize[0], PregnancyPlusGui.SliderRange.inflationSize[1])));
+                MaxStoryModeBelly.SettingChanged += InflationConfig_SettingsChanged;
+            #elif HS2 || AI
+                //Allow setting base size of the belly directly, since there is no KK_Pregnancy for HS2 and AI
+                StoryModeInflationSize = Config.Bind<float>(storyConfigTitle, "Global Belly Size Adjustment", 0, 
+                    new ConfigDescription("Allows you to increase or decrease the 'Belly Size' in story mode" + additionalSliderText,
+                    new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationSize[0], PregnancyPlusGui.SliderRange.inflationSize[1])));
+                StoryModeInflationSize.SettingChanged += InflationConfig_SettingsChanged;
+            #endif
 
             StoryModeInflationMultiplier = Config.Bind<float>(storyConfigTitle, "Global Multiplier Adjustment", 0, 
                 new ConfigDescription("Allows you to increase or decrease the 'Multiplier' amount in story mode" + additionalSliderText,
@@ -132,12 +131,12 @@ namespace KK_PregnancyPlus
                 //Re trigger inflation and recalculate vert positions
                 foreach (PregnancyPlusCharaController charCustFunCtrl in handlers.Instances)
                 { 
-#if KK              //In kk we want to use KK_pregnancy weeks to determine the belly size
-                    charCustFunCtrl.GetWeeksAndSetInflation(true);                     
-#elif HS2 || AI     //In HS2/AI we set the belly size based on the plugin config slider
-                    charCustFunCtrl.ReadCardData();
-                    charCustFunCtrl.MeshInflate(StoryModeInflationSize.Value, true);                     
-#endif                    
+                    #if KK //In kk we want to use KK_pregnancy weeks to determine the belly size
+                        charCustFunCtrl.GetWeeksAndSetInflation(true);                     
+                    #elif HS2 || AI //In HS2/AI we set the belly size based on the plugin config slider
+                        charCustFunCtrl.ReadCardData();
+                        charCustFunCtrl.MeshInflate(StoryModeInflationSize.Value, true);                     
+                    #endif                    
                 }
             } 
             else 
@@ -162,12 +161,12 @@ namespace KK_PregnancyPlus
             {  
                 if (PregnancyPlusPlugin.StoryMode != null && PregnancyPlusPlugin.StoryMode.Value) 
                 {            
-#if KK                    
-                    charCustFunCtrl.GetWeeksAndSetInflation(true);    
-#elif HS2 || AI
-                    charCustFunCtrl.ReadCardData();
-                    charCustFunCtrl.MeshInflate(StoryModeInflationSize.Value, true);                     
-#endif             
+                    #if KK                    
+                        charCustFunCtrl.GetWeeksAndSetInflation(true);    
+                    #elif HS2 || AI
+                        charCustFunCtrl.ReadCardData();
+                        charCustFunCtrl.MeshInflate(StoryModeInflationSize.Value, true);                     
+                    #endif             
                 }                             
             }                  
         }

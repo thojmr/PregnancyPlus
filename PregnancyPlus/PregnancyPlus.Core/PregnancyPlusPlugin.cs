@@ -5,28 +5,28 @@ using KKAPI;
 using KKAPI.Studio;
 using KKAPI.Chara;
 #if AI || HS2
-using AIChara;
+    using AIChara;
 #elif KK
-using KKAPI.MainGame;
+    using KKAPI.MainGame;
 #endif
 
 namespace KK_PregnancyPlus
 {
     [BepInPlugin(GUID, GUID, Version)]
-#if KK
-    [BepInDependency(KoikatuAPI.GUID, KoikatuAPI.VersionConst)]
-#endif
+    #if KK
+        [BepInDependency(KoikatuAPI.GUID, KoikatuAPI.VersionConst)]
+    #endif
     public partial class PregnancyPlusPlugin : BaseUnityPlugin
     {
         public const string GUID = "KK_PregnancyPlus";
         public const string Version = "0.13";
         internal static new ManualLogSource Logger { get; private set; }
 
-#if DEBUG
-        internal static bool debugLog = true;
-#else
-        internal static bool debugLog = false;
-#endif        
+        #if DEBUG
+            internal static bool debugLog = true;
+        #else
+            internal static bool debugLog = false;
+        #endif        
 
         //Used to hold the last non zero belly shape slider values that were applied to any character for Restore button
         public static PregnancyPlusData lastBellyState =  new PregnancyPlusData();
