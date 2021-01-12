@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using KKAPI.Studio;
+using KKAPI.Maker;
+
 using UniRx;
 #if HS2 || AI
 using AIChara;
@@ -22,9 +24,9 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Limit where you can and cannot trigger inflation
         /// </summary>
-        public bool ShouldInflate() {
+        public bool AllowedToInflate() {
             var storyModeEnabled = PregnancyPlusPlugin.StoryMode != null ? PregnancyPlusPlugin.StoryMode.Value : false;
-            return StudioAPI.InsideStudio || storyModeEnabled;
+            return StudioAPI.InsideStudio || MakerAPI.InsideMaker || storyModeEnabled || infConfig.GameplayEnabled;
         }
 
 
@@ -35,7 +37,7 @@ namespace KK_PregnancyPlus
         /// <param name="inflationSize">Sets inflation size from 0 to 40</param>
         public bool MeshInflate(float inflationSize, bool forceInflate = false)
         {                  
-            if (!ShouldInflate() || inflationSize < 0) return false;
+            if (!AllowedToInflate() || inflationSize < 0) return false;
 
             //Allow an initial size to be passed in, and sets it to the config
             if (inflationSize > 0) {

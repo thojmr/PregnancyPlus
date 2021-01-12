@@ -6,6 +6,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using KKAPI.Maker;
+using KKAPI.Studio;
 using UniRx;
 #if HS2 || AI
 using AIChara;
@@ -49,6 +51,8 @@ namespace KK_PregnancyPlus
 #region overrides
         protected override void OnCardBeingSaved(GameMode currentGameMode)
         {
+            //only allow saving card inside maker or studio
+            if (!StudioAPI.InsideStudio && !MakerAPI.InsideMaker) return;
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnCardBeingSaved ");
             SetExtendedData(infConfig.Save());
         }
@@ -56,8 +60,8 @@ namespace KK_PregnancyPlus
 
         protected override void Awake() 
         {                    
-            if (PregnancyPlusPlugin.StoryMode != null) {
-                if (PregnancyPlusPlugin.StoryMode.Value) CharacterApi.CharacterReloaded += OnCharacterReloaded;            
+            if (PregnancyPlusPlugin.StoryMode != null && PregnancyPlusPlugin.StoryMode.Value) {
+                CharacterApi.CharacterReloaded += OnCharacterReloaded;            
             }
 
             base.Awake();
@@ -82,7 +86,7 @@ namespace KK_PregnancyPlus
 
 
 #if HS2 || AI
-        //The Hs2 way to detect clothing change in studio
+        //The Hs2 way to detect clothing change
         protected override void OnCoordinateBeingLoaded(ChaFileCoordinate coordinate) 
         {
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnCoordinateBeingLoaded {coordinate.coordinateName}");
@@ -92,25 +96,17 @@ namespace KK_PregnancyPlus
         }
 #endif
 
-        protected override void OnCoordinateBeingSaved(ChaFileCoordinate coordinate) {
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnCoordinateBeingSaved {coordinate.coordinateName}");
-        }
-
-
         protected override void OnReload(GameMode currentGameMode)
         {
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnReload {currentGameMode}");
-            ReadCardData();
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnReload {currentGameMode}");            
+            ReadCardData();      
 
             if (PregnancyPlusPlugin.StoryMode != null && PregnancyPlusPlugin.StoryMode.Value) {
 #if KK
                 GetWeeksAndSetInflation();                    
-#elif HS2 || AI        
-                //For HS2 AI, we set global belly size from plugin config
-                if (PregnancyPlusPlugin.StoryModeInflationSize != null)
-                {
-                    MeshInflate(PregnancyPlusPlugin.StoryModeInflationSize.Value);
-                }
+#elif HS2 || AI                  
+                //For HS2 AI, we set global belly size from plugin config, or character card
+                MeshInflate(PregnancyPlusPlugin.StoryModeInflationSize.Value);                
 #endif                    
             }           
         }
@@ -154,15 +150,15 @@ namespace KK_PregnancyPlus
 #if KK
             GetWeeksAndSetInflation();
 #elif HS2 || AI        
-            //For HS2 AI, we set global belly size from plugin config
-            if (PregnancyPlusPlugin.StoryModeInflationSize != null)
-            {
-               MeshInflate(PregnancyPlusPlugin.StoryModeInflationSize.Value);
-            }
+            //For HS2 AI, we set global belly size from plugin config, or from the character card
+            MeshInflate(PregnancyPlusPlugin.StoryModeInflationSize.Value);
 #endif
         } 
 
 
+        /// <summary>
+        /// When clothing changes, need to recalculate inflation on that clothing
+        /// </summary>
         internal void OnCoordinateLoaded()  
         {  
             //No loading coordinate changes before the pregnancydata values are fetched
@@ -174,7 +170,7 @@ namespace KK_PregnancyPlus
 
         
         /// <summary>
-        /// After clothes change you have to wait a second if you want shadows to calculate correctly (longer in HS2, AI)
+        /// After clothes change you have to wait a second if you want mesh shadows to calculate correctly (longer in HS2, AI)
         /// </summary>
         IEnumerator WaitForMeshToSettle(float waitTime = 0.10f, bool force = false)
         {   
@@ -196,6 +192,14 @@ namespace KK_PregnancyPlus
         /// </summary>
         internal void GetWeeksAndSetInflation(bool forceUpdate = false) 
         {
+            ReadCardData();//Get the lastst card data in case the numbers were set to 0 by StoryMode toggle
+
+            //If a card value is set for inflation size, use that first, otherwise check KK_Pregnancy for Weeks value
+            if (infConfig.inflationSize > 0 && infConfig.GameplayEnabled) {
+                MeshInflate(forceUpdate);
+                return;
+            }
+
             var week = PregnancyPlusHelper.GetWeeksFromPregnancyPluginData(ChaControl, KK_PregnancyPluginName);
             if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" Week {ChaControl.name} >  {week}");
             if (week < 0) return;

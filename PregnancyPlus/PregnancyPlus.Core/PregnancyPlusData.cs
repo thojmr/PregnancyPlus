@@ -19,6 +19,7 @@ namespace KK_PregnancyPlus
         public float inflationTaperY = 0;
         public float inflationTaperZ = 0;
         public float inflationMultiplier = 0;
+        public bool GameplayEnabled = true;
 
 #endregion
 
