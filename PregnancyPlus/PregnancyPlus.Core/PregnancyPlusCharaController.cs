@@ -102,8 +102,16 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnReload {currentGameMode}");
             ReadCardData();
 
-            if (PregnancyPlusPlugin.StoryMode != null) {
-                if (PregnancyPlusPlugin.StoryMode.Value) GetWeeksAndSetInflation();
+            if (PregnancyPlusPlugin.StoryMode != null && PregnancyPlusPlugin.StoryMode.Value) {
+#if KK
+                GetWeeksAndSetInflation();                    
+#elif HS2 || AI        
+                //For HS2 AI, we set global belly size from plugin config
+                if (PregnancyPlusPlugin.StoryModeInflationSize != null)
+                {
+                    MeshInflate(PregnancyPlusPlugin.StoryModeInflationSize.Value);
+                }
+#endif                    
             }           
         }
 
@@ -143,7 +151,15 @@ namespace KK_PregnancyPlus
             if (ChaControl == null || e.ReloadedCharacter == null || e.ReloadedCharacter.name != ChaControl.name) return;
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= OnCharacterReloaded ");
 
+#if KK
             GetWeeksAndSetInflation();
+#elif HS2 || AI        
+            //For HS2 AI, we set global belly size from plugin config
+            if (PregnancyPlusPlugin.StoryModeInflationSize != null)
+            {
+               MeshInflate(PregnancyPlusPlugin.StoryModeInflationSize.Value);
+            }
+#endif
         } 
 
 
@@ -178,7 +194,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// fetch KK_Pregnancy Data.Week value for story mode integration (It works if you don't mind the clipping)
         /// </summary>
-        internal void GetWeeksAndSetInflation() 
+        internal void GetWeeksAndSetInflation(bool forceUpdate = false) 
         {
             var week = PregnancyPlusHelper.GetWeeksFromPregnancyPluginData(ChaControl, KK_PregnancyPluginName);
             if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" Week {ChaControl.name} >  {week}");
@@ -187,7 +203,7 @@ namespace KK_PregnancyPlus
             //Compute the additonal belly size added based on user configured vallue from 0-40
             var additionalPregPlusSize = Mathf.Lerp(0, week, PregnancyPlusPlugin.MaxStoryModeBelly.Value/40);
 
-            MeshInflate(additionalPregPlusSize);
+            MeshInflate(additionalPregPlusSize, forceUpdate);
         }
         
 

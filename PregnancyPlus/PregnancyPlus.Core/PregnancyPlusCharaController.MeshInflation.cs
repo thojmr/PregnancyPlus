@@ -48,7 +48,8 @@ namespace KK_PregnancyPlus
         /// <returns>Will return True if the mesh was altered and False if not</returns>
         public bool MeshInflate(bool reRunWithCurrentParams = false, bool forceRecalcVerts = false)
         {
-            if (ChaControl.objBodyBone == null) return false;//Make sure chatacter objs exists first   
+            if (ChaControl.objBodyBone == null) return false;//Make sure chatacter objs exists first  
+            if (ChaControl.sex == 0) return false;//Only females
 
             if (!ShouldInflate()) return false;//if outside studio, make sure StoryMode is enabled first
                                            

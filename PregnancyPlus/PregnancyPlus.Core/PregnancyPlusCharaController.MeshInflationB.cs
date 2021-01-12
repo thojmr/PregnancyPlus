@@ -33,16 +33,16 @@ namespace KK_PregnancyPlus
         /// For quickly setting the size, without worrying about the other config params
         /// </summary>
         /// <param name="inflationSize">Sets inflation size from 0 to 40</param>
-        public bool MeshInflate(float inflationSize)
+        public bool MeshInflate(float inflationSize, bool forceInflate = false)
         {                  
-            if (!ShouldInflate() || inflationSize.Equals(null)) return false;
+            if (!ShouldInflate() || inflationSize < 0) return false;
 
             //Allow an initial size to be passed in, and sets it to the config
             if (inflationSize > 0) {
                 infConfig.inflationSize = inflationSize;
             }   
 
-            return MeshInflate();
+            return MeshInflate(forceInflate);
         }
 
 
