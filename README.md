@@ -1,7 +1,7 @@
 # Introduction
 This repository contains the KK_PregnancyPlus plugin, that adds additional belly sliders in Character Studio.  It is intended to compliment the [KK_Pregnancy](https://github.com/ManlyMarco/KoikatuGameplayMods) plugin, but can be used without it.   (For example: HS2 , AI)
 
-![ChaStudio GUI](https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/P%2BGUI.PNG)
+![ChaStudio GUI](https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/P%2BStudioGUI)
 
 ## Features
 - Adds a number of slider that will allow you to change the size and shape of the belly area in Character Studio
