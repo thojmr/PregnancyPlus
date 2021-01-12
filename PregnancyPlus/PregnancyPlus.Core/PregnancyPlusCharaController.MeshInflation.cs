@@ -355,17 +355,17 @@ namespace KK_PregnancyPlus
             var smoothedVector = SculptBaseShape(meshRootTf, originalVertice, inflatedVerticie, sphereCenterPos);       
 
             //Allow user adjustment of the height and width placement of the belly
-            if (infConfig.inflationShiftY != 0 || GetInflationShiftZ() != 0) {
+            if (GetInflationShiftY() != 0 || GetInflationShiftZ() != 0) {
                 smoothedVector = GetUserShiftTransform(meshRootTf, smoothedVector, sphereCenterPos, skinToCenterDist);            
             }
 
             //Allow user adjustment of the width of the belly
-            if (infConfig.inflationStretchX != 0) {   
+            if (GetInflationStretchX() != 0) {   
                 smoothedVector = GetUserStretchXTransform(meshRootTf, smoothedVector, sphereCenterPos);
             }
 
             //Allow user adjustment of the height of the belly
-            if (infConfig.inflationStretchY != 0) {   
+            if (GetInflationStretchY() != 0) {   
                 smoothedVector = GetUserStretchYTransform(meshRootTf, smoothedVector, sphereCenterPos);
             }
 
@@ -375,7 +375,7 @@ namespace KK_PregnancyPlus
             }
 
             //Allow user adjustment of the front angle of the belly
-            if (infConfig.inflationTaperZ != 0) {
+            if (GetInflationTaperZ() != 0) {
                 smoothedVector = GetUserTaperZTransform(meshRootTf, smoothedVector, sphereCenterPos, skinToCenterDist);
             }
 

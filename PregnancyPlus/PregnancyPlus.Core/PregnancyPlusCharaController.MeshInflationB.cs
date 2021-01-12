@@ -138,7 +138,7 @@ namespace KK_PregnancyPlus
         /// </summary>
         internal Vector3 GetUserMoveTransform(Transform fromPosition) 
         {
-            return fromPosition.up * infConfig.inflationMoveY + fromPosition.forward * infConfig.inflationMoveZ;
+            return fromPosition.up * GetInflationMoveY() + fromPosition.forward * GetInflationMoveZ();
         }
 
 
@@ -197,7 +197,7 @@ namespace KK_PregnancyPlus
             var isTop = distFromYCenterLs > 0; 
 
             //Increase taper amount for vecters further above or below center.  No shifting at center
-            var taperZ = Mathf.Lerp(0, infConfig.inflationTaperZ, Math.Abs(distFromYCenterLs)/sphereRadius);
+            var taperZ = Mathf.Lerp(0, GetInflationTaperZ(), Math.Abs(distFromYCenterLs)/sphereRadius);
             //Reverse the direction based on which side the vert is on
             taperZ = (isTop ? taperZ : -taperZ);
             var taperedZVert = smoothedVectorLs + meshRootTf.forward * taperZ;
@@ -223,10 +223,10 @@ namespace KK_PregnancyPlus
             var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenterPos);
 
             //IF the user has selected a y value, lerp the top and bottom slower and lerp any verts closer to z = 0 slower
-            if (infConfig.inflationShiftY != 0) {
+            if (GetInflationShiftY() != 0) {
                 var distFromYCenterLs = smoothedVectorLs.y - sphereCenterLs.y;
                 //Lerp up and down positon more when the belly is near the center Y, and less for top and bottom
-                var lerpY = Mathf.Lerp(infConfig.inflationShiftY, infConfig.inflationShiftY/4, Math.Abs(distFromYCenterLs/sphereRadius));
+                var lerpY = Mathf.Lerp(GetInflationShiftY(), GetInflationShiftY()/4, Math.Abs(distFromYCenterLs/sphereRadius));
                 var yLerpedsmoothedVector = smoothedVectorLs + meshRootTf.up * lerpY;
 
                 //Then lerp the previous result based on the distance forward.  More forward is able to move more
@@ -262,7 +262,7 @@ namespace KK_PregnancyPlus
             //local Distance left or right from sphere center
             var distFromXCenterLs = smoothedVectorLs.x - sphereCenterLs.x;                
 
-            var changeInDist = distFromXCenterLs * (infConfig.inflationStretchX + 1);  
+            var changeInDist = distFromXCenterLs * (GetInflationStretchX() + 1);  
             //Get new local space X position
             smoothedVectorLs.x = (sphereCenterLs + Vector3.right * changeInDist).x;
 
@@ -282,7 +282,7 @@ namespace KK_PregnancyPlus
             var distFromYCenterLs = smoothedVectorLs.y - sphereCenterLs.y; 
             
             //have to change growth direction above and below center line
-            var changeInDist = distFromYCenterLs * (infConfig.inflationStretchY + 1);  
+            var changeInDist = distFromYCenterLs * (GetInflationStretchY() + 1);  
             //Get new local space X position
             smoothedVectorLs.y = (sphereCenterLs + Vector3.up * changeInDist).y;
             
@@ -510,6 +510,35 @@ namespace KK_PregnancyPlus
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationMultiplier != null ? PregnancyPlusPlugin.StoryModeInflationMultiplier.Value : 0;
             return (infConfig.inflationMultiplier + globalOverrideVal);
         }
+        internal float GetInflationMoveY() {
+            if (StudioAPI.InsideStudio) return infConfig.inflationMoveY;
+            var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationMoveY != null ? PregnancyPlusPlugin.StoryModeInflationMoveY.Value : 0;
+            return (infConfig.inflationMoveY + globalOverrideVal);
+        }
+
+        internal float GetInflationMoveZ() {
+            if (StudioAPI.InsideStudio) return infConfig.inflationMoveZ;
+            var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationMoveZ != null ? PregnancyPlusPlugin.StoryModeInflationMoveZ.Value : 0;
+            return (infConfig.inflationMoveZ + globalOverrideVal);
+        }
+
+        internal float GetInflationStretchX() {
+            if (StudioAPI.InsideStudio) return infConfig.inflationStretchX;
+            var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationStretchX != null ? PregnancyPlusPlugin.StoryModeInflationStretchX.Value : 0;
+            return (infConfig.inflationStretchX + globalOverrideVal);
+        }
+
+        internal float GetInflationStretchY() {
+            if (StudioAPI.InsideStudio) return infConfig.inflationStretchY;
+            var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationStretchY != null ? PregnancyPlusPlugin.StoryModeInflationStretchY.Value : 0;
+            return (infConfig.inflationStretchY + globalOverrideVal);
+        }
+
+        internal float GetInflationShiftY() {
+            if (StudioAPI.InsideStudio) return infConfig.inflationShiftY;
+            var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationShiftY != null ? PregnancyPlusPlugin.StoryModeInflationShiftY.Value : 0;
+            return (infConfig.inflationShiftY + globalOverrideVal);
+        }
 
         internal float GetInflationShiftZ() {
             if (StudioAPI.InsideStudio) return infConfig.inflationShiftZ;
@@ -521,6 +550,12 @@ namespace KK_PregnancyPlus
             if (StudioAPI.InsideStudio) return infConfig.inflationTaperY;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationTaperY != null ? PregnancyPlusPlugin.StoryModeInflationTaperY.Value : 0;
             return (infConfig.inflationTaperY + globalOverrideVal);
+        }
+
+        internal float GetInflationTaperZ() {
+            if (StudioAPI.InsideStudio) return infConfig.inflationTaperZ;
+            var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationTaperZ != null ? PregnancyPlusPlugin.StoryModeInflationTaperZ.Value : 0;
+            return (infConfig.inflationTaperZ + globalOverrideVal);
         }
     }
 }

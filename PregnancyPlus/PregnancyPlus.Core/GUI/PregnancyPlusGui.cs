@@ -24,6 +24,20 @@ namespace KK_PregnancyPlus
 #endif
 #endregion
 
+        //The allowed slider ranges for each slider type
+        public static class SliderRange {
+            public static float[] inflationSize = {0, 40};
+            public static float[] inflationMoveY = {-0.5f, 0.5f};
+            public static float[] inflationMoveZ = {-0.2f, 0.2f};
+            public static float[] inflationStretchX = {-0.3f, 0.3f};
+            public static float[] inflationStretchY = {-0.3f, 0.3f};
+            public static float[] inflationShiftY = {-0.2f, 0.2f};
+            public static float[] inflationShiftZ = {-0.15f, 0.15f};
+            public static float[] inflationTaperY = {-0.075f, 0.075f};
+            public static float[] inflationTaperZ = {-0.075f, 0.075f};
+            public static float[] inflationMultiplier = {-2f, 2f};
+        }
+
         internal static void Init(Harmony hi, PregnancyPlusPlugin instance)
         {
             _pluginInstance = instance;
@@ -74,7 +88,7 @@ namespace KK_PregnancyPlus
                     var ctrl = GetCharCtrl(c);                                                   
                     return ctrl != null ? ctrl.infConfig.inflationSize : 0;
 
-                }, 0, 40))
+                }, SliderRange.inflationSize[0], SliderRange.inflationSize[1]))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
                             if (ctrl.infConfig.inflationSize == f) continue;    
@@ -88,7 +102,7 @@ namespace KK_PregnancyPlus
                     var ctrl = GetCharCtrl(c);                                                   
                     return ctrl != null ? ctrl.infConfig.inflationMultiplier: 0;
 
-                }, -2f, 2f))
+                }, SliderRange.inflationMultiplier[0], SliderRange.inflationMultiplier[1]))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
                             if (ctrl.infConfig.inflationMultiplier == f) continue;     
@@ -102,7 +116,7 @@ namespace KK_PregnancyPlus
                     var ctrl = GetCharCtrl(c);                                                   
                     return ctrl != null ? ctrl.infConfig.inflationMoveY: 0;
 
-                }, -0.5f * scaleLimits, 0.5f * scaleLimits))
+                }, SliderRange.inflationMoveY[0] * scaleLimits, SliderRange.inflationMoveY[1] * scaleLimits))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
                             if (ctrl.infConfig.inflationMoveY == f) continue;                    
@@ -116,7 +130,7 @@ namespace KK_PregnancyPlus
                     var ctrl = GetCharCtrl(c);                                                   
                     return ctrl != null ? ctrl.infConfig.inflationMoveZ: 0;
 
-                }, -0.2f * scaleLimits, 0.2f * scaleLimits))
+                }, SliderRange.inflationMoveZ[0] * scaleLimits, SliderRange.inflationMoveZ[1] * scaleLimits))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
                             if (ctrl.infConfig.inflationMoveZ == f) continue;   
@@ -130,7 +144,7 @@ namespace KK_PregnancyPlus
                     var ctrl = GetCharCtrl(c);                                                   
                     return ctrl != null ? ctrl.infConfig.inflationStretchX: 0;
 
-                }, -0.3f * scaleLimits, 0.3f * scaleLimits))
+                }, SliderRange.inflationStretchX[0] * scaleLimits, SliderRange.inflationStretchX[1] * scaleLimits))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
                             if (ctrl.infConfig.inflationStretchX == f) continue;                    
@@ -144,7 +158,7 @@ namespace KK_PregnancyPlus
                     var ctrl = GetCharCtrl(c);                                                   
                     return ctrl != null ? ctrl.infConfig.inflationStretchY: 0;
                     
-                }, -0.3f * scaleLimits, 0.3f * scaleLimits))
+                }, SliderRange.inflationStretchY[0] * scaleLimits, SliderRange.inflationStretchY[1] * scaleLimits))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
                             if (ctrl.infConfig.inflationStretchY == f) continue;                    
@@ -158,7 +172,7 @@ namespace KK_PregnancyPlus
                     var ctrl = GetCharCtrl(c);                                                   
                     return ctrl != null ? ctrl.infConfig.inflationShiftY: 0;
 
-                }, -0.2f * scaleLimits, 0.2f * scaleLimits))
+                }, SliderRange.inflationShiftY[0]  * scaleLimits, SliderRange.inflationShiftY[1] * scaleLimits))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
                             if (ctrl.infConfig.inflationShiftY == f) continue;                    
@@ -172,7 +186,7 @@ namespace KK_PregnancyPlus
                     var ctrl = GetCharCtrl(c);                                                   
                     return ctrl != null ? ctrl.infConfig.inflationShiftZ: 0;
 
-                }, -0.15f * scaleLimits, 0.15f * scaleLimits))
+                }, SliderRange.inflationShiftZ[0] * scaleLimits, SliderRange.inflationShiftZ[1] * scaleLimits))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
                             if (ctrl.infConfig.inflationShiftZ == f) continue;                    
@@ -186,7 +200,7 @@ namespace KK_PregnancyPlus
                     var ctrl = GetCharCtrl(c);                                                   
                     return ctrl != null ? ctrl.infConfig.inflationTaperY: 0;
                     
-                }, -0.075f * scaleLimits, 0.075f * scaleLimits))
+                }, SliderRange.inflationTaperY[0] * scaleLimits, SliderRange.inflationTaperY[1] * scaleLimits))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
                             if (ctrl.infConfig.inflationTaperY == f) continue;                    
@@ -200,7 +214,7 @@ namespace KK_PregnancyPlus
                     var ctrl = GetCharCtrl(c);                                                   
                     return ctrl != null ? ctrl.infConfig.inflationTaperZ: 0;
                     
-                }, -0.075f * scaleLimits, 0.075f * scaleLimits))
+                }, SliderRange.inflationTaperZ[0] * scaleLimits, SliderRange.inflationTaperZ[1] * scaleLimits))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
                             if (ctrl.infConfig.inflationTaperZ == f) continue;                    
