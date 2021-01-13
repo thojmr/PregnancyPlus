@@ -1,21 +1,22 @@
 # Introduction
-This repository contains the KK_PregnancyPlus plugin, that adds additional belly sliders in Studio and Maker.  It is intended to compliment the [KK_Pregnancy](https://github.com/ManlyMarco/KoikatuGameplayMods) plugin, but can be used without it.   (For example: HS2 , AI)  Now available in Main Game if you save your card in Maker!
+This repository contains the KK_PregnancyPlus plugin, that adds additional belly sliders in Studio and Maker/Creator.  It is intended to compliment the [KK_Pregnancy](https://github.com/ManlyMarco/KoikatuGameplayMods) plugin, but can be used without it.   (For example: HS2 , AI)  Now available in Main Game/Story Mode if you save your card in Maker/Creator!
 
 <img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/result.png" height="600"></img>
 <img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/P%2BMakerGUI.PNG" height="600"></img>
 <img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/P%2BStudioGUI.PNG" width="496.5"></img>
 
 ## Features
-- Adds a number of slider that will allow you to change the size and shape of the belly area in Studio and Maker.
-    - Slider values will be saved to scene or card, but anyone that you share the scene or card with must have KK_PregnancyPlus installed to see the belly shape.
-- Adds a Story Mode / Main Game mode config option.  Disable if you don't want to see the bellies in Main game mode.
-    - When KK, the inflated belly effect will be added on top of the KK_Pregnancy effect if you have that plugin installed, hence you can use the F1 config sliders to adjust the results.
+- Adds a number of slider that will allow you to change the size and shape of the belly area in Studio and Maker/Creator.
+    - Slider values can be saved to scene or card, but anyone that you share the scene or card with must have KK_PregnancyPlus installed to see the belly shape.
+- Adds a Story Mode / Main Game mode config option.  Disable if you want to turn off this plugins features temporarily.
+    - In Koikatsu the inflated belly effect will be added on top of the KK_Pregnancy effect if you have that plugin installed, hence you can use the F1 config sliders to adjust the results.
+- This plugin can be a substitute for smaller stomach buldges as well, but it's original intent is pregnancy effects.    
 
 ## Notes
 - Modding this game is new to me, so dont expect this to feel like a finished product.  More like an interesting way to learn C#
 - Clothing clips through at max size, so try it without clothing if you are experiencing issues
-- This is now available for Studio and Maker!
-- This plugin now works in both Koikatsu, Honey Select 2, and AI.  Grab the KK zip for Koikatsu, HS2 zip for Honey Select 2, and AI zip for AI [here](https://github.com/thojmr/KK_PregnancyPlus/releases)
+- This plugin works in Koikatsu, Honey Select 2, and AI.  Grab the KK zip for Koikatsu, HS2 zip for Honey Select 2, and AI zip for AI [here](https://github.com/thojmr/KK_PregnancyPlus/releases)
+    - This is now available for (KK, HS2, AI) Studio and Maker/Creator!
 
 ## How to download
 You can grab the latest plugin release [here](https://github.com/thojmr/KK_PregnancyPlus/releases), or build it yourself.  Explained further below.
@@ -24,7 +25,7 @@ You can grab the latest plugin release [here](https://github.com/thojmr/KK_Pregn
 Almost all plugins are installed in the same way. If there are any extra steps needed they will be added to the plugin descriptions below.
 1. Make sure you have at least BepInEx 5.1 and latest BepisPlugins and KKAPI.
 2. Download the latest release of the plugin you want.
-3. Extract the archive into your game directory. The plugin .dll should end up inside your BepInEx\plugins directory.
+3. Extract the archive into your game directory. The plugin .dll should end up inside your BepInEx\plugins\ directory.
 4. Check if there are no warnings on game startup, if the plugin has settings it should appear in plugin settings.
 
 ## Compiling with Visual Studio 2019 (The official way)
