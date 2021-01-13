@@ -100,7 +100,7 @@ namespace KK_PregnancyPlus
         internal float GetClothesFixOffset(Vector3 sphereCenter, float sphereRadius, float waistWidth, Vector3 origVertWS, string meshName) 
         {  
             //The size of the area to spread the flattened offsets over like shrinking center dist -> inflated dist into a small area shifted outside the radius.  So hard to explin with words...
-            float baseFlattenExtent = bellyInfo.WaistWidth/50;
+            float baseFlattenExtent = bellyInfo.WaistWidth/40 * (1 + GetInflationClothOffset());
 
             var inflatedVerWS = (origVertWS - sphereCenter).normalized * sphereRadius + sphereCenter;//Get the line we want to do measurements on            
             //We dont care about empty space at sphere center, move outwards a bit before determining vector location on the line
@@ -117,25 +117,25 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// There are two cloth layers, inner and outer. I've assigned each cloth layer a default offset. layers: 1 = skin tight, 2 = above skin tight.  This way each layer will have less change of cliping through to the next
+        /// There are two cloth layers, inner and outer. I've assigned each cloth layer a static offset. layers: 1 = skin tight, 2 = above skin tight.  This way each layer will have less chance of cliping through to the next
         /// </summary>
-        internal float GetClothLayerOffset(string meshName) {
-            //The mininum distance offset for each cloth layer
-            float baseOffset = bellyInfo.WaistWidth/120;
-
+        internal float GetClothLayerOffset(string meshName) {            
             #if KK      
                 string[] innerLayers = {"o_bra_a", "o_bra_b", "o_shorts_a", "o_shorts_b", "o_panst_garter1", "o_panst_a", "o_panst_b"};
             #elif HS2 || AI                
                 string[] innerLayers = {"o_bra_a", "o_bra_b", "o_shorts_a", "o_shorts_b", "o_panst_garter1", "o_panst_a", "o_panst_b"};
             #endif            
 
-            //If inner layer then use default offset
+            //If inner layer then it doesnt need an additional offset
             if (innerLayers.Contains(meshName)) {
-                return baseOffset;
+                return 0;
             }
 
-            //If outer layer then double the offset
-            return baseOffset * 2;
+            //The mininum distance offset for each cloth layer, adjusted by user
+            float additonalOffset = (bellyInfo.WaistWidth/100) + ((bellyInfo.WaistWidth/100) * GetInflationClothOffset()/10);
+
+            //If outer layer then add the offset
+            return additonalOffset;
         } 
 
 
@@ -385,6 +385,7 @@ namespace KK_PregnancyPlus
             if (infConfig.inflationTaperY != infConfigHistory.inflationTaperY) hasChanges = true;
             if (infConfig.inflationTaperZ != infConfigHistory.inflationTaperZ) hasChanges = true;
             if (infConfig.inflationMultiplier != infConfigHistory.inflationMultiplier) hasChanges = true;
+            if (infConfig.inflationClothOffset != infConfigHistory.inflationClothOffset) hasChanges = true;
 
             return hasChanges;
         }
@@ -579,6 +580,14 @@ namespace KK_PregnancyPlus
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationTaperZ != null ? PregnancyPlusPlugin.StoryModeInflationTaperZ.Value : 0;
             return (infConfig.inflationTaperZ + globalOverrideVal);
         }
+
+        internal float GetInflationClothOffset() {
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationClothOffset;
+            var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationClothOffset != null ? PregnancyPlusPlugin.StoryModeInflationClothOffset.Value : 0;
+            return (infConfig.inflationClothOffset + globalOverrideVal);
+        }
+
+        
     }
 }
 

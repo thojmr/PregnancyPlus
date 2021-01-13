@@ -229,6 +229,24 @@ namespace KK_PregnancyPlus
                             ctrl.MeshInflate();                             
                         }
                     });
+
+            cat.AddControl(new CurrentStateCategorySlider("        Cloth Offset", c =>
+                {                                       
+                    var ctrl = GetCharCtrl(c);                                                   
+                    return ctrl != null ? ctrl.infConfig.inflationClothOffset: 0;
+                    
+                }, 
+                    SliderRange.inflationClothOffset[0] * scaleLimits, 
+                    SliderRange.inflationClothOffset[1] * scaleLimits
+                ))
+                    .Value.Subscribe(f => { 
+                        foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {  
+                            if (ctrl.infConfig.inflationClothOffset == f) continue;                    
+                            ctrl.infConfig.inflationClothOffset = f;
+                            ctrl.MeshInflate();                             
+                        }
+                    });
+                    
         }
 
         internal static PregnancyPlusCharaController GetCharCtrl(Studio.OCIChar c) {

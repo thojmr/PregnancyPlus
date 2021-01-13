@@ -30,7 +30,7 @@ namespace KK_PregnancyPlus
             #if KK           
                 var cat = new MakerCategory(MakerConstants.Parameter.Character.CategoryName, "Pregnancy+");
             #elif HS2 || AI
-                var cat = new MakerCategory(MakerConstants.Parameter.Status.CategoryName, "Pregnancy+");
+                var cat = new MakerCategory(MakerConstants.Body.CategoryName, "Pregnancy+");
             #endif
             
             e.AddSubCategory(cat);
@@ -134,6 +134,15 @@ namespace KK_PregnancyPlus
                 if (oldVal != value) OnMakerSettingsChanged(controller);
             });
             e.AddControl(new MakerText("Taper the front of the belly in at the top and out at the bottom.  Gives the belly an angle at the front.", cat, _pluginInstance) { TextColor = hintColor });
+
+            var clothOffset = e.AddControl(new MakerSlider(cat, "Cloth Offset", SliderRange.inflationClothOffset[0], SliderRange.inflationClothOffset[1], ppDataDefaults.inflationClothOffset, _pluginInstance));
+            clothOffset.BindToFunctionController<PregnancyPlusCharaController, float>(controller => controller.infConfig.inflationClothOffset, (controller, value) => {
+                var oldVal = controller.infConfig.inflationClothOffset;
+                controller.infConfig.inflationClothOffset = value;
+                if (oldVal != value) OnMakerSettingsChanged(controller);
+            });
+            e.AddControl(new MakerText("Control the distance between each clothing layer.  Will help reduce clipping.", cat, _pluginInstance) { TextColor = hintColor });
+            
         }
 
 

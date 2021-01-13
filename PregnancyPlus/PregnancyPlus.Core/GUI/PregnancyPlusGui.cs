@@ -35,7 +35,7 @@ namespace KK_PregnancyPlus
         //The allowed slider ranges for each slider type
         public static class SliderRange {
             public static float[] inflationSize = {0, 40};
-            public static float[] inflationMultiplier = {-2f, 2f};
+            public static float[] inflationMultiplier = {-2f, 2f};            
             public static float[] inflationMoveY = {-0.5f * rm, 0.5f * rm};
             public static float[] inflationMoveZ = {-0.2f * rm, 0.2f * rm};
             public static float[] inflationStretchX = {-0.3f * rm, 0.3f * rm};
@@ -44,6 +44,7 @@ namespace KK_PregnancyPlus
             public static float[] inflationShiftZ = {-0.15f * rm, 0.15f * rm};
             public static float[] inflationTaperY = {-0.075f * rm, 0.075f * rm};
             public static float[] inflationTaperZ = {-0.075f * rm, 0.075f * rm};            
+            public static float[] inflationClothOffset = {-2, 2};
         }
 
     }

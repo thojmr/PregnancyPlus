@@ -22,6 +22,7 @@ namespace KK_PregnancyPlus
         public static ConfigEntry<float> StoryModeInflationShiftZ { get; private set; }
         public static ConfigEntry<float> StoryModeInflationTaperY { get; private set; }
         public static ConfigEntry<float> StoryModeInflationTaperZ { get; private set; }        
+        public static ConfigEntry<float> StoryModeInflationClothOffset { get; private set; }        
     
      
         internal void PluginConfig()
@@ -102,8 +103,13 @@ namespace KK_PregnancyPlus
             StoryModeInflationTaperZ = Config.Bind<float>(storyConfigTitle, "Global Taper Z Adjustment", 0, 
                 new ConfigDescription("Allows you to increase or decrease the 'Taper Z' amount in story mode for" + additionalSliderText,
                 new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationTaperZ[0], PregnancyPlusGui.SliderRange.inflationTaperZ[1])));
-            StoryModeInflationTaperZ.SettingChanged += InflationConfig_SettingsChanged;             
+            StoryModeInflationTaperZ.SettingChanged += InflationConfig_SettingsChanged; 
 
+            StoryModeInflationClothOffset = Config.Bind<float>(storyConfigTitle, "Global Cloth Offset Adjustment", 0, 
+                new ConfigDescription("Allows you to increase or decrease the cloth layer distance to reduce clipping",
+                new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationClothOffset[0], PregnancyPlusGui.SliderRange.inflationClothOffset[1])));
+            StoryModeInflationClothOffset.SettingChanged += InflationConfig_SettingsChanged;  
+                    
         }
 
         internal void HDSmoothing_SettingsChanged(object sender, System.EventArgs e) 
