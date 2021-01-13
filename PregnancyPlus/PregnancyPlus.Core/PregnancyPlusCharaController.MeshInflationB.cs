@@ -62,12 +62,31 @@ namespace KK_PregnancyPlus
 
             var hasVerticies = GetFilteredVerticieIndexes(smr, PregnancyPlusPlugin.MakeBalloon.Value ? null : boneFilters);        
 
-            //If no belly verts found, then we can skip this mesh
+            //If no belly verts found, or existing verts already exists, then we can skip this mesh
             if (!hasVerticies) return false; 
 
             if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" ");
             if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($"  SkinnedMeshRenderer > {smr.name}"); 
             return GetInflatedVerticies(smr, sphereRadius, waistWidth, isClothingMesh);
+        }
+
+
+        /// <summary>
+        /// See if we already have this mesh's indexes stored, if the slider values haven't changed then we dont need to recompute, just apply existing cumputed verts
+        /// </summary>
+        internal bool NeedsComputeVerts(SkinnedMeshRenderer smr, bool sliderHaveChanged) 
+        {
+            var renderKey = GetMeshKey(smr);
+            //Do a quick check to see if we need to fetch the bone indexes again.  ex: on second call we should allready have them
+            //This saves a lot on compute apparently!            
+            var isInitialized = bellyVerticieIndexes.TryGetValue(renderKey, out bool[] existingValues);
+            if (isInitialized)
+            {
+                //If the vertex count has not changed then we can skip this
+                if (existingValues.Length == smr.sharedMesh.vertexCount) return sliderHaveChanged;
+            }
+
+            return true;
         }
 
 
@@ -511,54 +530,54 @@ namespace KK_PregnancyPlus
 
         //Allow user config values to be added in during story mode
         internal float GetInflationMultiplier() {
-            if (StudioAPI.InsideStudio) return infConfig.inflationMultiplier;
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationMultiplier;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationMultiplier != null ? PregnancyPlusPlugin.StoryModeInflationMultiplier.Value : 0;
             return (infConfig.inflationMultiplier + globalOverrideVal);
         }
         internal float GetInflationMoveY() {
-            if (StudioAPI.InsideStudio) return infConfig.inflationMoveY;
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationMoveY;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationMoveY != null ? PregnancyPlusPlugin.StoryModeInflationMoveY.Value : 0;
             return (infConfig.inflationMoveY + globalOverrideVal);
         }
 
         internal float GetInflationMoveZ() {
-            if (StudioAPI.InsideStudio) return infConfig.inflationMoveZ;
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationMoveZ;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationMoveZ != null ? PregnancyPlusPlugin.StoryModeInflationMoveZ.Value : 0;
             return (infConfig.inflationMoveZ + globalOverrideVal);
         }
 
         internal float GetInflationStretchX() {
-            if (StudioAPI.InsideStudio) return infConfig.inflationStretchX;
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationStretchX;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationStretchX != null ? PregnancyPlusPlugin.StoryModeInflationStretchX.Value : 0;
             return (infConfig.inflationStretchX + globalOverrideVal);
         }
 
         internal float GetInflationStretchY() {
-            if (StudioAPI.InsideStudio) return infConfig.inflationStretchY;
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationStretchY;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationStretchY != null ? PregnancyPlusPlugin.StoryModeInflationStretchY.Value : 0;
             return (infConfig.inflationStretchY + globalOverrideVal);
         }
 
         internal float GetInflationShiftY() {
-            if (StudioAPI.InsideStudio) return infConfig.inflationShiftY;
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationShiftY;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationShiftY != null ? PregnancyPlusPlugin.StoryModeInflationShiftY.Value : 0;
             return (infConfig.inflationShiftY + globalOverrideVal);
         }
 
         internal float GetInflationShiftZ() {
-            if (StudioAPI.InsideStudio) return infConfig.inflationShiftZ;
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationShiftZ;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationShiftZ != null ? PregnancyPlusPlugin.StoryModeInflationShiftZ.Value : 0;
             return (infConfig.inflationShiftZ + globalOverrideVal);
         }
 
         internal float GetInflationTaperY() {
-            if (StudioAPI.InsideStudio) return infConfig.inflationTaperY;
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationTaperY;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationTaperY != null ? PregnancyPlusPlugin.StoryModeInflationTaperY.Value : 0;
             return (infConfig.inflationTaperY + globalOverrideVal);
         }
 
         internal float GetInflationTaperZ() {
-            if (StudioAPI.InsideStudio) return infConfig.inflationTaperZ;
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationTaperZ;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationTaperZ != null ? PregnancyPlusPlugin.StoryModeInflationTaperZ.Value : 0;
             return (infConfig.inflationTaperZ + globalOverrideVal);
         }

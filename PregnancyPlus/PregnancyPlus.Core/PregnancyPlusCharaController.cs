@@ -58,20 +58,18 @@ namespace KK_PregnancyPlus
         }
 
 
-        protected override void Awake() 
-        {                    
-            if (PregnancyPlusPlugin.StoryMode != null && PregnancyPlusPlugin.StoryMode.Value) {
-                CharacterApi.CharacterReloaded += OnCharacterReloaded;            
-            }
-
-            base.Awake();
-        }
+        // protected override void Awake() 
+        // {                    
+        //     base.Awake();
+        // }
 
 
         protected override void Start() 
         {
             ReadCardData();
             initialized = true;
+
+            CharacterApi.CharacterReloaded += OnCharacterReloaded;  
 
             //Set the initial belly size if the character card has data
             if (infConfig.inflationSize > 0) StartCoroutine(WaitForMeshToSettle(0.5f));
@@ -85,7 +83,7 @@ namespace KK_PregnancyPlus
         }
 
 
-        #if HS2 || AI
+        // #if HS2 || AI
         //The Hs2 way to detect clothing change
         protected override void OnCoordinateBeingLoaded(ChaFileCoordinate coordinate) 
         {
@@ -94,7 +92,7 @@ namespace KK_PregnancyPlus
 
             base.OnCoordinateBeingLoaded(coordinate);
         }
-        #endif
+        // #endif
 
         protected override void OnReload(GameMode currentGameMode)
         {
@@ -112,11 +110,11 @@ namespace KK_PregnancyPlus
         }
 
 
-        protected override void Update()
-        {
-            //just for testing, pretty compute heavy for Update()
-            // MeshInflate(true);
-        }
+        // protected override void Update()
+        // {
+        //     //just for testing, pretty compute heavy for Update()
+        //     // MeshInflate(true);
+        // }
         
 
 #endregion
@@ -131,7 +129,7 @@ namespace KK_PregnancyPlus
             if (!initialized || chaID != ChaControl.chaID) return;
 
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= ClothesStateChangeEvent {clothesKind}");
-            StartCoroutine(WaitForMeshToSettle(0.10f, true));
+            StartCoroutine(WaitForMeshToSettle(0.05f, true));
         }
 
         internal void ReadCardData()
@@ -165,14 +163,14 @@ namespace KK_PregnancyPlus
             if (!initialized) return;
 
             //When clothing changes, reload inflation state
-            StartCoroutine(WaitForMeshToSettle(0.10f, true));
+            StartCoroutine(WaitForMeshToSettle(0.05f, true));
         } 
 
         
         /// <summary>
         /// After clothes change you have to wait a second if you want mesh shadows to calculate correctly (longer in HS2, AI)
         /// </summary>
-        IEnumerator WaitForMeshToSettle(float waitTime = 0.10f, bool force = false)
+        IEnumerator WaitForMeshToSettle(float waitTime = 0.05f, bool force = false)
         {   
             //Allows us to debounce when multiple back to back request
             var guid = Guid.NewGuid();
@@ -195,7 +193,7 @@ namespace KK_PregnancyPlus
             ReadCardData();//Get the lastst card data in case the numbers were set to 0 by StoryMode toggle
 
             //If a card value is set for inflation size, use that first, otherwise check KK_Pregnancy for Weeks value
-            if (infConfig.inflationSize > 0 && infConfig.GameplayEnabled) {
+            if (infConfig.inflationSize > 0) {
                 MeshInflate(forceUpdate);
                 return;
             }

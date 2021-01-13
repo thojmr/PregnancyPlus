@@ -49,18 +49,20 @@ namespace KK_PregnancyPlus
         public bool MeshInflate(bool reRunWithCurrentParams = false, bool forceRecalcVerts = false)
         {
             if (ChaControl.objBodyBone == null) return false;//Make sure chatacter objs exists first  
-            if (ChaControl.sex == 0) return false;//Only females
-            if (!infConfig.GameplayEnabled) return false;//Only if gameplay enabled
-            if (!AllowedToInflate()) return false;//if outside studio/maker, make sure StoryMode is enabled first
-                                           
+            if (ChaControl.sex == 0) return false;//Only females            
+
+            var sliderHaveChanged = NeedsMeshUpdate();
             //Only continue if one of the config values changed
-            if (!NeedsMeshUpdate()) {
+            if (!sliderHaveChanged) {
                 //Only stop here, if no recalculation needed
                 if (!forceRecalcVerts && !reRunWithCurrentParams) {
                     return false; 
                 }
             }
             ResetInflation();
+
+            if (!AllowedToInflate()) return false;//if outside studio/maker, make sure StoryMode is enabled first
+            if (!infConfig.GameplayEnabled) return false;//Only if gameplay enabled
 
             if (forceRecalcVerts) {
                 //Resets all stored vert values, so the script will have to recalculate all from base body
@@ -87,9 +89,10 @@ namespace KK_PregnancyPlus
             var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);
             foreach(var skinnedMeshRenderer in clothRenderers) 
             {                
-                if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" skinnedMeshRenderer {skinnedMeshRenderer.name} ");
-                var foundVerts = ComputeMeshVerts(skinnedMeshRenderer, sphereRadius, waistWidth, true);
-                if (!foundVerts) continue;    
+                if (NeedsComputeVerts(skinnedMeshRenderer, sliderHaveChanged)){
+                    var didCompute = ComputeMeshVerts(skinnedMeshRenderer, sphereRadius, waistWidth, true);
+                    if (!didCompute) continue;    
+                }
 
                 var appliedClothMeshChanges = ApplyInflation(skinnedMeshRenderer, GetMeshKey(skinnedMeshRenderer));
                 if (appliedClothMeshChanges) anyMeshChanges = true;
@@ -99,8 +102,10 @@ namespace KK_PregnancyPlus
             var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody);
             foreach(var skinnedMeshRenderer in bodyRenderers) 
             {
-                var foundVerts = ComputeMeshVerts(skinnedMeshRenderer, sphereRadius, waistWidth);  
-                if (!foundVerts) continue;
+                if (NeedsComputeVerts(skinnedMeshRenderer, sliderHaveChanged)){
+                    var didCompute = ComputeMeshVerts(skinnedMeshRenderer, sphereRadius, waistWidth);  
+                    if (!didCompute) continue;
+                }
                 
                 var appliedBodyMeshChanges = ApplyInflation(skinnedMeshRenderer, GetMeshKey(skinnedMeshRenderer));
                 if (appliedBodyMeshChanges) anyMeshChanges = true;                      
@@ -110,6 +115,9 @@ namespace KK_PregnancyPlus
             if (anyMeshChanges && infConfig.HasAnyValue()) {
                 PregnancyPlusPlugin.lastBellyState = infConfig;
             }
+
+            //Update history when changes made
+            // if (anyMeshChanges) infConfigHistory = infConfig;
 
             return anyMeshChanges;
         }
@@ -450,15 +458,6 @@ namespace KK_PregnancyPlus
 
             //Don't even know if this is possible, so why not
             if (bones.Length <= 0) return false;
-
-            //Do a quick check to see if we need to fetch the bone indexes again.  ex: on second call we should allready have them
-            //This saves a lot on compute apparently!            
-            var isInitialized = bellyVerticieIndexes.TryGetValue(renderKey, out bool[] existingValues);
-            if (isInitialized)
-            {
-                //If the vertex count has not changed then we can skip this
-                if (existingValues.Length == skinnedMeshRenderer.sharedMesh.vertexCount) return true;
-            }
 
             var bonesLength = bones.Length;
 
