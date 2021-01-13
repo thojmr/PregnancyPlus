@@ -12,6 +12,8 @@ namespace KK_PregnancyPlus
     public static partial class PregnancyPlusGui
     {
 
+        internal static bool restoreBtnInit = true;
+
         internal static void InitStudio(Harmony hi, PregnancyPlusPlugin instance)
         {
 
@@ -41,12 +43,18 @@ namespace KK_PregnancyPlus
             cat.AddControl(new CurrentStateCategorySwitch("Restore Last P+ Shape", c =>
                 {                                         
                     var ctrl = GetCharCtrl(c);   
+                    restoreBtnInit = true;
                     if (PregnancyPlusPlugin.lastBellyState.HasAnyValue()) {
                         return true;//Just vidually show that a previous shape exists
                     }
                     return false;
                 }))
                 .Value.Subscribe(f => {
+                    if (restoreBtnInit) {//Dont trigger this on first init
+                        restoreBtnInit = false;
+                        return;
+                    }
+
                     foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) {     
                         if (PregnancyPlusPlugin.lastBellyState.HasAnyValue()) {
                             //Update confing with last stored non zero values values

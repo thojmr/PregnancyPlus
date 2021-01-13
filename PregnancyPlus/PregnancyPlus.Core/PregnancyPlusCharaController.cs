@@ -83,8 +83,7 @@ namespace KK_PregnancyPlus
         }
 
 
-        // #if HS2 || AI
-        //The Hs2 way to detect clothing change
+        //The HS2 / AI way to detect clothing change
         protected override void OnCoordinateBeingLoaded(ChaFileCoordinate coordinate) 
         {
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnCoordinateBeingLoaded {coordinate.coordinateName}");
@@ -92,7 +91,6 @@ namespace KK_PregnancyPlus
 
             base.OnCoordinateBeingLoaded(coordinate);
         }
-        // #endif
 
         protected override void OnReload(GameMode currentGameMode)
         {

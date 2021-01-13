@@ -26,7 +26,7 @@ namespace KK_PregnancyPlus
             // Only female characters
             if (MakerAPI.GetMakerSex() == 0) return;
 
-            // This category is inaccessible from class maker
+            //Set the menu location of the p+ sliders
             #if KK           
                 var cat = new MakerCategory(MakerConstants.Parameter.Character.CategoryName, "Pregnancy+");
             #elif HS2 || AI
@@ -43,7 +43,7 @@ namespace KK_PregnancyPlus
                 controller.infConfig.GameplayEnabled = value; 
                 if (oldVal != value) OnMakerSettingsChanged(controller);
             });
-            e.AddControl(new MakerText("If off, you won't see any pregnant effects.", cat, _pluginInstance) { TextColor = hintColor });
+            e.AddControl(new MakerText("If disabled, you won't see any pregnant effects.", cat, _pluginInstance) { TextColor = hintColor });
 
 
             var size = e.AddControl(new MakerSlider(cat, "Inflation Size", SliderRange.inflationSize[0], SliderRange.inflationSize[1], ppDataDefaults.inflationSize, _pluginInstance));
