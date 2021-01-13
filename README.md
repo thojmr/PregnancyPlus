@@ -1,9 +1,9 @@
 # Introduction
 This repository contains the KK_PregnancyPlus plugin, that adds additional belly sliders in Studio and Maker/Creator.  It is intended to compliment the [KK_Pregnancy](https://github.com/ManlyMarco/KoikatuGameplayMods) plugin, but can be used without it.   (For example: HS2 , AI)  Now available in Main Game/Story Mode if you save your card in Maker/Creator!
 
-<img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/result.png" height="600"></img>
-<img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/P%2BMakerGUI.PNG" height="600"></img>
-<img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/P%2BStudioGUI.PNG" width="496.5"></img>
+<img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/result.png" height="575"></img>
+<img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/P%2BMakerGUI.PNG" height="575"></img>
+<img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/P%2BStudioGUI.PNG" width="476.5"></img>
 
 ## Features
 - Adds a number of slider that will allow you to change the size and shape of the belly area in Studio and Maker/Creator.
