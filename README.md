@@ -18,7 +18,8 @@ This repository contains the KK_PregnancyPlus plugin, that adds additional belly
 - Q: Where do I put the KK_PregnancyPlus.dll?  
     - A: It should end up under <Root game folder>/BepinEx/Plugins/KK_PregnancyPlus.dll
 - Q: Some of the sliders are not working?
-    - A: Make sure you have the latest version.  Try a default character, if the issue persists, send me your output_log.txt, or the Character Card that is causing the issue.
+    - A: Disable "Make me a balloon" plugin config option since it disables some sliders.  Then try adjusting your 'Move Z' slider to make sure it is not outside your characters body.
+    - A2: Make sure you have the latest version.  Try a default character, if the issue persists, send me your output_log.txt, or the Character Card that is causing the issue.    
 
 ## Notes
 - Modding this game is new to me, so dont expect this to feel like a finished product.  More like an interesting way to learn C#
