@@ -100,7 +100,7 @@ namespace KK_PregnancyPlus
         internal float GetClothesFixOffset(Vector3 sphereCenter, float sphereRadius, float waistWidth, Vector3 origVertWS, string meshName) 
         {  
             //The size of the area to spread the flattened offsets over like shrinking center dist -> inflated dist into a small area shifted outside the radius.  So hard to explin with words...
-            float baseFlattenExtent = bellyInfo.WaistWidth/40 * (1 + GetInflationClothOffset());
+            float baseFlattenExtent = bellyInfo.WaistWidth/40 + (bellyInfo.WaistWidth/40 * GetInflationClothOffset());
 
             var inflatedVerWS = (origVertWS - sphereCenter).normalized * sphereRadius + sphereCenter;//Get the line we want to do measurements on            
             //We dont care about empty space at sphere center, move outwards a bit before determining vector location on the line
@@ -132,7 +132,7 @@ namespace KK_PregnancyPlus
             }
 
             //The mininum distance offset for each cloth layer, adjusted by user
-            float additonalOffset = (bellyInfo.WaistWidth/100) + ((bellyInfo.WaistWidth/100) * GetInflationClothOffset()/10);
+            float additonalOffset = (bellyInfo.WaistWidth/50) + ((bellyInfo.WaistWidth/50) * GetInflationClothOffset());
 
             //If outer layer then add the offset
             return additonalOffset;

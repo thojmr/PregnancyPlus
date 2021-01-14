@@ -121,13 +121,13 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Triggered when clothing state is changed, i.e. pulled aside or taken off.
         /// </summary>
-        internal void ClothesStateChangeEvent(int chaID, int clothesKind)
+        internal void ClothesStateChangeEvent(int chaID, int clothesKind, bool forceRecalcVerts = false)
         {
             //Wait for card data to load, and make sure this is the same character the clothes event triggered for
             if (!initialized || chaID != ChaControl.chaID) return;
 
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= ClothesStateChangeEvent {clothesKind}");
-            StartCoroutine(WaitForMeshToSettle(0.05f, true));
+            StartCoroutine(WaitForMeshToSettle(0.05f, true, forceRecalcVerts));
         }
 
         internal void ReadCardData()
@@ -168,7 +168,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// After clothes change you have to wait a second if you want mesh shadows to calculate correctly (longer in HS2, AI)
         /// </summary>
-        IEnumerator WaitForMeshToSettle(float waitTime = 0.05f, bool force = false)
+        IEnumerator WaitForMeshToSettle(float waitTime = 0.05f, bool forceUpdate = false, bool forceRecalcVerts = false)
         {   
             //Allows us to debounce when multiple back to back request
             var guid = Guid.NewGuid();
@@ -178,7 +178,7 @@ namespace KK_PregnancyPlus
             //If guid is the latest, trigger method
             if (debounceGuid == guid) {
                 if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" WaitForMeshToSettle");
-                MeshInflate(force);
+                MeshInflate(forceUpdate, forceRecalcVerts);
             }
         }
 

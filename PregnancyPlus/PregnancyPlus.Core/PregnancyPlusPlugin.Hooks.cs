@@ -51,7 +51,7 @@ namespace KK_PregnancyPlus
                     if (controller == null) return;
                 
                     //Send event to the CustomCharaFunctionController that the clothes were changed on
-                    controller.ClothesStateChangeEvent(__instance.chaID, kind);  
+                    controller.ClothesStateChangeEvent(__instance.chaID, kind, true);  
                 }
             }
 
