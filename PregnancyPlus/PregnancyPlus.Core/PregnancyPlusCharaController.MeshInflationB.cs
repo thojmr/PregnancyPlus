@@ -459,6 +459,15 @@ namespace KK_PregnancyPlus
                     return false;
             } 
 
+            //Check key exists in dict, remnove it if it does not
+            var exists = originalVertices.TryGetValue(renderKey, out var val);
+            if (!exists) {
+                if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(
+                     $"ApplyInflation > smr '{renderKey}' does not exists, skipping");
+                     RemoveRenderKey(renderKey);
+                    return false;
+            }
+
             var origVert = originalVertices[renderKey];
             var currentVert = currentVertices[renderKey];
             var bellyVertIndex = bellyVerticieIndexes[renderKey];
