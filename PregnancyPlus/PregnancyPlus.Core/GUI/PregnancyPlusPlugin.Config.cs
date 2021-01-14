@@ -1,8 +1,10 @@
-﻿using BepInEx.Configuration;
+﻿using System;
+using BepInEx.Configuration;
 using KKAPI.Studio;
 using KKAPI.Maker;
 using KKAPI.Chara;
 using System.Reflection;
+using UnityEngine;
 
 namespace KK_PregnancyPlus
 {
@@ -22,6 +24,9 @@ namespace KK_PregnancyPlus
         public static ConfigEntry<float> StoryModeInflationTaperY { get; private set; }
         public static ConfigEntry<float> StoryModeInflationTaperZ { get; private set; }        
         public static ConfigEntry<float> StoryModeInflationClothOffset { get; private set; }        
+        public static ConfigEntry<KeyboardShortcut> StoryModeInflationIncrease { get; private set; }        
+        public static ConfigEntry<KeyboardShortcut> StoryModeInflationDecrease { get; private set; }    
+        public static ConfigEntry<KeyboardShortcut> StoryModeInflationReset { get; private set; }    
     
      
         internal void PluginConfig()
@@ -106,6 +111,16 @@ namespace KK_PregnancyPlus
                 new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationClothOffset[0], PregnancyPlusGui.SliderRange.inflationClothOffset[1])));
             StoryModeInflationClothOffset.SettingChanged += InflationConfig_SettingsChanged;  
                     
+
+            //Live inflation in story mode.  Increase or decrease base inflationSize with a keybinding press
+            StoryModeInflationIncrease  = Config.Bind<KeyboardShortcut>("Live Inflation Shortcuts", "Inflation + Key", new KeyboardShortcut(),
+                new ConfigDescription("Allows you to increase the belly InflationSize in Story/Main-Game Mode\r\n\r\nCan be CPU heavy with many characters"));
+
+            StoryModeInflationDecrease = Config.Bind<KeyboardShortcut>("Live Inflation Shortcuts", "Inflation - Key", new KeyboardShortcut(),
+                new ConfigDescription("Allows you to decrease the belly InflationSize in Story/Main-Game Mode\r\n\r\nCan be CPU heavy with many characters"));
+
+            StoryModeInflationReset = Config.Bind<KeyboardShortcut>("Live Inflation Shortcuts", "Inflation reset Key", new KeyboardShortcut(),
+                new ConfigDescription("Allows you to reset the belly InflationSize in Story/Main-Game Mode\r\n\r\nCan be CPU heavy with many characters"));
         }
 
         internal void StoryMode_SettingsChanged(object sender, System.EventArgs e) 

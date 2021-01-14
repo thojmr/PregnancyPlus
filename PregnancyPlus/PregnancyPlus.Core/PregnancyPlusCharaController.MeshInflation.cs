@@ -77,6 +77,7 @@ namespace KK_PregnancyPlus
             }
             
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" ---------- ");
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" inflationSize > {infConfig.inflationSize} ");
             
             var measuerments = MeasureWaist(ChaControl);                     
             var waistWidth = measuerments.Item1; 

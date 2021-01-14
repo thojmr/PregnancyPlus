@@ -1,13 +1,4 @@
-﻿using HarmonyLib;
-using KKAPI.Chara;
-using KKAPI.Maker;
-using KKAPI.Maker.UI;
-using KKAPI.Studio;
-using KKAPI.Studio.UI;
-using KKAPI.Utilities;
-using UniRx;
-using UnityEngine;
-
+﻿
 namespace KK_PregnancyPlus
 {
     //This partial class contains all the common properties used by the other partials

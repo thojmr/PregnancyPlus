@@ -108,11 +108,30 @@ namespace KK_PregnancyPlus
         }
 
 
-        // protected override void Update()
-        // {
-        //     //just for testing, pretty compute heavy for Update()
-        //     // MeshInflate(true);
-        // }
+        protected override void Update()
+        {
+            //When the user holds down a key combo they set, it increases or decreases the belly inflation amount
+            if (!StudioAPI.InsideStudio && !MakerAPI.InsideMaker) 
+            {
+                if (PregnancyPlusPlugin.StoryModeInflationIncrease.Value.IsDown()) 
+                {
+                    var newVal = PregnancyPlusPlugin.StoryModeInflationSize.Value - 2;
+                    PregnancyPlusPlugin.StoryModeInflationSize.Value = Mathf.Clamp(newVal, 0, 40);
+                }
+                if (PregnancyPlusPlugin.StoryModeInflationDecrease.Value.IsDown()) 
+                {
+                    var newVal = PregnancyPlusPlugin.StoryModeInflationSize.Value + 2;
+                    PregnancyPlusPlugin.StoryModeInflationSize.Value = Mathf.Clamp(newVal, 0, 40);
+                }
+                if (PregnancyPlusPlugin.StoryModeInflationReset.Value.IsDown()) 
+                {
+                    PregnancyPlusPlugin.StoryModeInflationSize.Value = 0;
+                }
+            }
+
+            //just for testing, pretty compute heavy for Update()
+            // MeshInflate(true);
+        }
         
 
 #endregion
