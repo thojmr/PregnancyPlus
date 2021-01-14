@@ -24,16 +24,27 @@ namespace KK_PregnancyPlus
             public float SphereRadius;
             public float OriginalSphereRadius;
             public Vector3 CharacterScale;
+            public float CurrentMultiplier;
             public bool IsInitialized {
                 get { return WaistWidth > 0 && WaistHeight > 0; }
             }
 
-            internal BellyInfo(float waistWidth, float waistHeight, float sphereRadius, float originalSphereRadius, Vector3 characterScale) {
+            internal BellyInfo(float waistWidth, float waistHeight, float sphereRadius, float originalSphereRadius, Vector3 characterScale, float currentMultiplier) {
                 WaistWidth = waistWidth;
                 WaistHeight = waistHeight;
                 SphereRadius = sphereRadius;
                 OriginalSphereRadius = originalSphereRadius;
                 CharacterScale = characterScale;
+                CurrentMultiplier = currentMultiplier;
+            }
+
+            //Determine if we need to recalculate the waist width (hopefullt to avoid change in hip bones changing belly size)
+            internal bool NeedsWaistRecalc(Vector3 characterScale, float currentMultiplier) {
+                if (!IsInitialized) return true;
+                if (CharacterScale != characterScale) return true;
+                if (CurrentMultiplier != currentMultiplier) return true;
+
+                return false;
             }
 
         }
@@ -132,6 +143,11 @@ namespace KK_PregnancyPlus
         {
             var charScale = PregnancyPlusHelper.GetBodyTopScale(ChaControl);
 
+            if (bellyInfo != null && !bellyInfo.NeedsWaistRecalc(charScale, GetInflationMultiplier())) {
+                if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" !NeedsWaistRecalc ");
+                return Tuple.Create(bellyInfo.WaistWidth, bellyInfo.SphereRadius);
+            }
+
             #if KK
                 var ribName = "cf_s_spine02";
                 var waistName = "cf_s_waist02";
@@ -168,7 +184,7 @@ namespace KK_PregnancyPlus
             var sphereRadius = Math.Min(waistToRibDist/1.25f, waistWidth/1.3f) * charScale.y; 
             var sphereRadiusMultiplied = sphereRadius * (GetInflationMultiplier() + 1);   
 
-            bellyInfo = new BellyInfo(waistWidth, waistToRibDist, sphereRadiusMultiplied, sphereRadius, charScale);
+            bellyInfo = new BellyInfo(waistWidth, waistToRibDist, sphereRadiusMultiplied, sphereRadius, charScale, GetInflationMultiplier());
 
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" scaled waistToRibDist {waistToRibDist} scaled waistWidth {waistWidth} sphereRadiusM {sphereRadiusMultiplied}");            
 

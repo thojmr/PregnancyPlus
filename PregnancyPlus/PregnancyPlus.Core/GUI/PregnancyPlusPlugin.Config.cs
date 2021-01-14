@@ -13,7 +13,6 @@ namespace KK_PregnancyPlus
         public static ConfigEntry<bool> StoryMode { get; private set; }
         public static ConfigEntry<bool> MakeBalloon { get; private set; }
         public static ConfigEntry<float> MaxStoryModeBelly { get; private set; }
-        public static ConfigEntry<float> StoryModeInflationSize { get; private set; }
         public static ConfigEntry<float> StoryModeInflationMultiplier { get; private set; }
         public static ConfigEntry<float> StoryModeInflationMoveY { get; private set; }
         public static ConfigEntry<float> StoryModeInflationMoveZ { get; private set; }
@@ -31,7 +30,7 @@ namespace KK_PregnancyPlus
      
         internal void PluginConfig()
         {            
-            MakeBalloon = Config.Bind<bool>("Character Studio", "Make me a balloon", false, "Try it and see what happens, disable to go back to the original style.  (AKA debug mesh mode).  This will disable some sliders.");
+            MakeBalloon = Config.Bind<bool>("Character Studio", "Make me a balloon", false, "Debug mesh mode, disable to go back to the original style.  This will disable some sliders.");
             MakeBalloon.SettingChanged += MakeBalloon_SettingsChanged;
 
             #if KK
@@ -53,12 +52,6 @@ namespace KK_PregnancyPlus
                     new ConfigDescription("The maximum additional belly size that this plugin will add to the original KK_Pregnancy belly. The character must be pregnant.\r\n0 will result in the original KK_Pregnancy belly, while 40 will be the original + an additional 40 added by this plugin.",
                     new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationSize[0], PregnancyPlusGui.SliderRange.inflationSize[1])));
                 MaxStoryModeBelly.SettingChanged += InflationConfig_SettingsChanged;
-            #elif HS2 || AI
-                //Allow setting base size of the belly directly, since there is no KK_Pregnancy for HS2 and AI
-                StoryModeInflationSize = Config.Bind<float>(storyConfigTitle, "Global Belly Size Adjustment", 0, 
-                    new ConfigDescription("Allows you to increase or decrease the 'Belly Size' in story mode" + additionalSliderText,
-                    new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationSize[0], PregnancyPlusGui.SliderRange.inflationSize[1])));
-                StoryModeInflationSize.SettingChanged += InflationConfig_SettingsChanged;
             #endif
 
             StoryModeInflationMultiplier = Config.Bind<float>(storyConfigTitle, "Global Multiplier Adjustment", 0, 
@@ -125,7 +118,7 @@ namespace KK_PregnancyPlus
 
         internal void StoryMode_SettingsChanged(object sender, System.EventArgs e) 
         {            
-            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return;//Don't allow in studio
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return;//Don't allow toggle event in studio
             if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" StoryMode_SettingsChanged > {StoryMode.Value}");
             var handlers = CharacterApi.GetRegisteredBehaviour(GUID);
         
@@ -137,8 +130,7 @@ namespace KK_PregnancyPlus
                     #if KK //In kk we want to use KK_pregnancy weeks to determine the belly size
                         charCustFunCtrl.GetWeeksAndSetInflation(true);                     
                     #elif HS2 || AI //In HS2/AI we set the belly size based on the plugin config slider
-                        charCustFunCtrl.ReadCardData();
-                        charCustFunCtrl.MeshInflate(StoryModeInflationSize.Value, true);                     
+                        charCustFunCtrl.MeshInflate(true);                     
                     #endif                    
                 }
             } 
@@ -147,7 +139,6 @@ namespace KK_PregnancyPlus
                 //Disable all mesh inflations
                 foreach (PregnancyPlusCharaController charCustFunCtrl in handlers.Instances) 
                 {  
-                    charCustFunCtrl.infConfig = new PregnancyPlusData();
                     charCustFunCtrl.ResetInflation();        
                 }
             }
@@ -155,7 +146,7 @@ namespace KK_PregnancyPlus
 
         internal void InflationConfig_SettingsChanged(object sender, System.EventArgs e) 
         {
-            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return;//dont allow in studio
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return;//dont allow toggle event in studio
             if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" InflationConfig_SettingsChanged ");
             var handlers = CharacterApi.GetRegisteredBehaviour(GUID);
 
@@ -164,11 +155,10 @@ namespace KK_PregnancyPlus
             {  
                 if (PregnancyPlusPlugin.StoryMode != null && PregnancyPlusPlugin.StoryMode.Value) 
                 {            
-                    #if KK                    
+                    #if KK //custom integration with KK_Pregnancy    
                         charCustFunCtrl.GetWeeksAndSetInflation(true);    
                     #elif HS2 || AI
-                        charCustFunCtrl.ReadCardData();
-                        charCustFunCtrl.MeshInflate(StoryModeInflationSize.Value, true);                     
+                        charCustFunCtrl.MeshInflate(true);                     
                     #endif             
                 }                             
             }                  

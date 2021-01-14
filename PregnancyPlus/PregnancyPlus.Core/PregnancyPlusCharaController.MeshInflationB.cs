@@ -22,11 +22,11 @@ namespace KK_PregnancyPlus
     {
         
         /// <summary>
-        /// Limit where you can and cannot trigger inflation
+        /// Limit where you can and cannot trigger inflation.  Always in Studio and Maker. Conditionally in Story mode
         /// </summary>
         public bool AllowedToInflate() {
             var storyModeEnabled = PregnancyPlusPlugin.StoryMode != null ? PregnancyPlusPlugin.StoryMode.Value : false;
-            return StudioAPI.InsideStudio || MakerAPI.InsideMaker || storyModeEnabled || infConfig.GameplayEnabled;
+            return StudioAPI.InsideStudio || MakerAPI.InsideMaker || (storyModeEnabled && infConfig.GameplayEnabled);
         }
 
 
@@ -34,15 +34,23 @@ namespace KK_PregnancyPlus
         /// An overload for MeshInflate() that allows you to pass an initial inflationSize param
         /// For quickly setting the size, without worrying about the other config params
         /// </summary>
-        /// <param name="inflationSize">Sets inflation size from 0 to 40</param>
+        /// <param name="inflationSize">Sets inflation size from 0 to 40, clamped</param>
         public bool MeshInflate(float inflationSize, bool forceInflate = false)
         {                  
-            if (!AllowedToInflate() || inflationSize < 0) return false;
+            //Allow an initial size to be passed in, and sets it to the config           
+            infConfig.inflationSize = Mathf.Clamp(inflationSize, 0, 40);            
 
-            //Allow an initial size to be passed in, and sets it to the config
-            if (inflationSize > 0) {
-                infConfig.inflationSize = inflationSize;
-            }   
+            return MeshInflate(forceInflate);
+        }
+
+        /// <summary>
+        /// An overload for MeshInflate() that allows you to pass existing card data as the first param
+        /// </summary>
+        /// <param name="cardData">Some prexisting PregnancyPlusData that we want to activate</param>
+        public bool MeshInflate(PregnancyPlusData cardData, bool forceInflate = false)
+        {                  
+            //Allow an initial size to be passed in, and sets it to the config           
+            infConfig = cardData;           
 
             return MeshInflate(forceInflate);
         }
