@@ -10,6 +10,8 @@ This repository contains the KK_PregnancyPlus plugin, that adds additional belly
     - Slider values can be saved to scene or card, but anyone that you share the scene or card with must have KK_PregnancyPlus installed to see the belly shape.
 - Adds a Story Mode / Main Game mode config option.  Disable if you want to turn off this plugins features temporarily.
     - In Koikatsu the inflated belly effect will be added on top of the KK_Pregnancy effect if you have that plugin installed, hence you can use the F1 config sliders to adjust the results.
+    - In HS2 and AI the belly size will be whatever is defined on the character card + the F1 config slider adjustments.
+- Adds 3 configurable keybinds in plugin config that can be used to increase or decrease the belly size in Story Mode / Main Game Mode on the fly.    
 - This plugin can be a substitute for smaller stomach buldges as well, but it's original intent is pregnancy effects.    
 
 ## FAQ - Troubleshooting
