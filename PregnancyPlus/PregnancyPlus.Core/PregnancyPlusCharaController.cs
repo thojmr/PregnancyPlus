@@ -110,22 +110,23 @@ namespace KK_PregnancyPlus
 
         protected override void Update()
         {
-            //When the user holds down a key combo they set, it increases or decreases the belly inflation amount
+            //When the user presses a key combo they set, it increases or decreases the belly inflation amount
             if (!StudioAPI.InsideStudio && !MakerAPI.InsideMaker) 
             {
                 if (PregnancyPlusPlugin.StoryModeInflationIncrease.Value.IsDown()) 
                 {
-                    var newVal = PregnancyPlusPlugin.StoryModeInflationSize.Value - 2;
-                    PregnancyPlusPlugin.StoryModeInflationSize.Value = Mathf.Clamp(newVal, 0, 40);
+                    var newVal = infConfig.inflationSize + 2;
+                    MeshInflate(Mathf.Clamp(newVal, 0, 40));
+                    
                 }
                 if (PregnancyPlusPlugin.StoryModeInflationDecrease.Value.IsDown()) 
                 {
-                    var newVal = PregnancyPlusPlugin.StoryModeInflationSize.Value + 2;
-                    PregnancyPlusPlugin.StoryModeInflationSize.Value = Mathf.Clamp(newVal, 0, 40);
+                    var newVal = infConfig.inflationSize - 2;
+                    MeshInflate(Mathf.Clamp(newVal, 0, 40));
                 }
                 if (PregnancyPlusPlugin.StoryModeInflationReset.Value.IsDown()) 
                 {
-                    PregnancyPlusPlugin.StoryModeInflationSize.Value = 0;
+                    MeshInflate(0);
                 }
             }
 
