@@ -112,12 +112,12 @@ namespace KK_PregnancyPlus
             }
 
             //If any changes were applied, updated the last used shape for the Restore gui button
-            if (anyMeshChanges && infConfig.HasAnyValue()) {
-                PregnancyPlusPlugin.lastBellyState = infConfig;
+            if (infConfig.HasAnyValue()) {
+                PregnancyPlusPlugin.lastBellyState = (PregnancyPlusData)infConfig.Clone();//CLone so we don't accidently overwright the lastState
             }
 
             //Update history when changes made
-            // if (anyMeshChanges) infConfigHistory = infConfig;
+            if (anyMeshChanges) infConfigHistory = (PregnancyPlusData)infConfig.Clone();
 
             return anyMeshChanges;
         }

@@ -4,7 +4,7 @@ using ExtensibleSaveFormat;
 
 namespace KK_PregnancyPlus
 {
-    public sealed class PregnancyPlusData
+    public sealed class PregnancyPlusData : ICloneable
     {
 
 #region Names of these are important, used as dictionary keys
@@ -23,6 +23,13 @@ namespace KK_PregnancyPlus
         public bool GameplayEnabled = true;        
 
 #endregion
+
+
+        //Allows cloning, to avoid pass by ref issues when keeping history
+        public object Clone()
+        {
+            return this.MemberwiseClone();
+        }
 
 #region Save/Load (Thanks for the code Marco)
 
