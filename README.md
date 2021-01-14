@@ -12,6 +12,14 @@ This repository contains the KK_PregnancyPlus plugin, that adds additional belly
     - In Koikatsu the inflated belly effect will be added on top of the KK_Pregnancy effect if you have that plugin installed, hence you can use the F1 config sliders to adjust the results.
 - This plugin can be a substitute for smaller stomach buldges as well, but it's original intent is pregnancy effects.    
 
+## FAQ - Troubleshooting
+- Q: I'm seeing lines or creases on the characters skin after adjusting sliders.
+    A: Turn on "HD Crease Smoothing" if using below version v1.1.  Its turned on by default after v1.0.
+- Q: Where do I put the KK_PregnancyPlus.dll?  
+    A: It should end up under <Root game folder>/BepinEx/Plugins/KK_PregnancyPlus.dll
+- Q: Some of the sliders are not working?
+    A: Make sure you have the latest version.  Try a default character, if the issue persists, send me your output_log.txt, or the Character Card that is causing the issue.
+
 ## Notes
 - Modding this game is new to me, so dont expect this to feel like a finished product.  More like an interesting way to learn C#
 - Clothing clips through at max size, so try it without clothing if you are experiencing issues
