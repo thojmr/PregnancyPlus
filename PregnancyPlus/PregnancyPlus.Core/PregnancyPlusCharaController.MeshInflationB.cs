@@ -198,7 +198,7 @@ namespace KK_PregnancyPlus
             taperY = (isRight ? taperY : -taperY);
             taperY = (isTop ? taperY : -taperY);
 
-            smoothedVectorLs.x = (smoothedVectorLs + meshRootTf.right * taperY).x;
+            smoothedVectorLs.x = (smoothedVectorLs + Vector3.right * taperY).x;
 
             return meshRootTf.TransformPoint(smoothedVectorLs);
         }
@@ -222,7 +222,7 @@ namespace KK_PregnancyPlus
             var taperZ = Mathf.Lerp(0, GetInflationTaperZ(), Math.Abs(distFromYCenterLs)/sphereRadius);
             //Reverse the direction based on which side the vert is on
             taperZ = (isTop ? taperZ : -taperZ);
-            var taperedZVert = smoothedVectorLs + meshRootTf.forward * taperZ;
+            var taperedZVert = smoothedVectorLs + Vector3.forward * taperZ;
 
             //Only lerp z when pulling out, pushing in looks fine as is
             if (smoothedVectorLs.z < taperedZVert.z) {
@@ -249,7 +249,7 @@ namespace KK_PregnancyPlus
                 var distFromYCenterLs = smoothedVectorLs.y - sphereCenterLs.y;
                 //Lerp up and down positon more when the belly is near the center Y, and less for top and bottom
                 var lerpY = Mathf.Lerp(GetInflationShiftY(), GetInflationShiftY()/4, Math.Abs(distFromYCenterLs/sphereRadius));
-                var yLerpedsmoothedVector = smoothedVectorLs + meshRootTf.up * lerpY;
+                var yLerpedsmoothedVector = smoothedVectorLs + Vector3.up * lerpY;//Since its all local space here, we dont have to use meshRootTf.up
 
                 //Then lerp the previous result based on the distance forward.  More forward is able to move more
                 var distanceForward = smoothedVectorLs.z - sphereCenterLs.z; 
@@ -268,7 +268,7 @@ namespace KK_PregnancyPlus
 
                 //Move the verts closest to sphere center Z more slowly than verts at the belly button.  Otherwise you stretch the ones near the body too much
                 var lerpZ = Mathf.Lerp(0, GetInflationShiftZ(), (smoothedVectorLs.z - sphereCenterLs.z)/(sphereRadius *2));
-                var finalLerpPos = smoothedVectorLs + meshRootTf.forward * lerpZ;
+                var finalLerpPos = smoothedVectorLs + Vector3.forward * lerpZ;
 
                 smoothedVector = meshRootTf.TransformPoint(finalLerpPos);
             }
