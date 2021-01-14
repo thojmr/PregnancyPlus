@@ -9,7 +9,6 @@ namespace KK_PregnancyPlus
     public partial class PregnancyPlusPlugin
     {
         public static ConfigEntry<bool> StoryMode { get; private set; }
-        public static ConfigEntry<bool> HDSmoothing { get; private set; }
         public static ConfigEntry<bool> MakeBalloon { get; private set; }
         public static ConfigEntry<float> MaxStoryModeBelly { get; private set; }
         public static ConfigEntry<float> StoryModeInflationSize { get; private set; }
@@ -27,9 +26,6 @@ namespace KK_PregnancyPlus
      
         internal void PluginConfig()
         {            
-            HDSmoothing = Config.Bind<bool>("Character Studio", "HD Crease Smoothing (CPU heavy)", false, "This will reduce the hard edges you sometimes see along the characters body after using a slider.  Typically only noticable on HD models like in HS2 or AI.  Turn it off if you are bothered by the added CPU load, or don't mind the edges.  It basically adds a custom vector norm method that handles UV boundaries better tha Unity's solution.");
-            HDSmoothing.SettingChanged += HDSmoothing_SettingsChanged;
-
             MakeBalloon = Config.Bind<bool>("Character Studio", "Make me a balloon", false, "Try it and see what happens, disable to go back to the original style.  (AKA debug mesh mode)");
             MakeBalloon.SettingChanged += MakeBalloon_SettingsChanged;
 
@@ -110,20 +106,6 @@ namespace KK_PregnancyPlus
                 new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationClothOffset[0], PregnancyPlusGui.SliderRange.inflationClothOffset[1])));
             StoryModeInflationClothOffset.SettingChanged += InflationConfig_SettingsChanged;  
                     
-        }
-
-        internal void HDSmoothing_SettingsChanged(object sender, System.EventArgs e) 
-        {            
-            if (!StudioAPI.InsideStudio || !MakerAPI.InsideMaker) return;
-            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" HDSmoothing_SettingsChanged ");
-            var charCustFunCtrls = StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>();
-
-            //Re trigger inflation and recalculate vert positions
-            foreach (var charCustFunCtrl in charCustFunCtrls) 
-            {  
-                charCustFunCtrl.ReadCardData();
-                charCustFunCtrl.MeshInflate(true);                             
-            }
         }
 
         internal void StoryMode_SettingsChanged(object sender, System.EventArgs e) 

@@ -470,8 +470,8 @@ namespace KK_PregnancyPlus
 
             sharedMesh.vertices = currentVert;
             sharedMesh.RecalculateBounds();
-            if (PregnancyPlusPlugin.HDSmoothing.Value) NormalSolver.RecalculateNormals(sharedMesh, 35f, bellyVerticieIndexes[renderKey]);
-            if (!PregnancyPlusPlugin.HDSmoothing.Value) sharedMesh.RecalculateNormals();
+            NormalSolver.RecalculateNormals(sharedMesh, 35f, bellyVerticieIndexes[renderKey]);
+            //sharedMesh.RecalculateNormals();  old way that leaves skin seams
             sharedMesh.RecalculateTangents();
 
             return true;
@@ -519,8 +519,8 @@ namespace KK_PregnancyPlus
 
                 sharedMesh.vertices = origVerts;
                 sharedMesh.RecalculateBounds();
-                if (PregnancyPlusPlugin.HDSmoothing.Value) NormalSolver.RecalculateNormals(sharedMesh, 35f, bellyVerticieIndexes[renderKey]);
-                if (!PregnancyPlusPlugin.HDSmoothing.Value) sharedMesh.RecalculateNormals();
+                NormalSolver.RecalculateNormals(sharedMesh, 35f, bellyVerticieIndexes[renderKey]);
+                //sharedMesh.RecalculateNormals(); old way that leaves skin seams
                 sharedMesh.RecalculateTangents();
             }
         }
