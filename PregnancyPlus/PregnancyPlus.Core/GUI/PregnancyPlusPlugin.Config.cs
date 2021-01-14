@@ -158,7 +158,8 @@ namespace KK_PregnancyPlus
                     #if KK //custom integration with KK_Pregnancy    
                         charCustFunCtrl.GetWeeksAndSetInflation(true);    
                     #elif HS2 || AI
-                        charCustFunCtrl.MeshInflate(true);                     
+                        //Need to recalculate mesh position when sliders change here
+                        charCustFunCtrl.MeshInflate(false, false, true);                     
                     #endif             
                 }                             
             }                  

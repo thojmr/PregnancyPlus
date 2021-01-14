@@ -386,8 +386,10 @@ namespace KK_PregnancyPlus
         /// <summary>   
         /// Compares current to last slider values, if they havent changed it returns false
         /// </summary>        
-        internal bool NeedsMeshUpdate() 
+        internal bool NeedsMeshUpdate(bool pluginConfigSliderChanged = false) 
         {
+            if (pluginConfigSliderChanged) return true;
+            
             bool hasChanges = false;
             //TODO change to loop over all objects in preg data, so when we add a new one we dont have to add it here
             if (infConfig.inflationSize != infConfigHistory.inflationSize) hasChanges = true;              

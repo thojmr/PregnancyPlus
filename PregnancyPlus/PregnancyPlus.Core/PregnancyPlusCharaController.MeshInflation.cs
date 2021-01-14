@@ -56,17 +56,21 @@ namespace KK_PregnancyPlus
         /// This will not run twice for the same parameters, a change of config value is required
         /// </summary>
         /// <param name="reRunWithCurrentParams">Lets you force bypass the check for values changed</param>
+        /// <param name="forceRecalcVerts">Will recalculate verts like a first time run</param>
+        /// <param name="forceRecalcVerts">Will treat as if some slider values changed, which they did in global plugin config</param>
         /// <returns>Will return True if the mesh was altered and False if not</returns>
-        public bool MeshInflate(bool reRunWithCurrentParams = false, bool forceRecalcVerts = false)
+        public bool MeshInflate(bool reRunWithCurrentParams = false, bool forceRecalcVerts = false, bool pluginConfigSliderChanged = false)
         {
             if (ChaControl.objBodyBone == null) return false;//Make sure chatacter objs exists first  
             if (ChaControl.sex == 0) return false;//Only females            
 
-            var sliderHaveChanged = NeedsMeshUpdate();
+            var sliderHaveChanged = NeedsMeshUpdate(pluginConfigSliderChanged);
             //Only continue if one of the config values changed
-            if (!sliderHaveChanged) {
+            if (!sliderHaveChanged) 
+            {
                 //Only stop here, if no recalculation needed
-                if (!forceRecalcVerts && !reRunWithCurrentParams) {
+                if (!forceRecalcVerts && !reRunWithCurrentParams) 
+                {
                     return false; 
                 }
             }
@@ -75,14 +79,16 @@ namespace KK_PregnancyPlus
             if (!AllowedToInflate()) return false;//if outside studio/maker, make sure StoryMode is enabled first
             if (!infConfig.GameplayEnabled) return false;//Only if gameplay enabled
 
-            if (forceRecalcVerts) {
+            if (forceRecalcVerts) 
+            {
                 //Resets all stored vert values, so the script will have to recalculate all from base body
                 var keyList = new List<string>(originalVertices.Keys);
                 RemoveRenderKeys(keyList);
             }
 
             //Only continue when size above 0
-            if (infConfig.inflationSize <= 0) {
+            if (infConfig.inflationSize <= 0) 
+            {
                 infConfigHistory.inflationSize = 0;
                 return false;                                
             }
@@ -101,7 +107,8 @@ namespace KK_PregnancyPlus
             var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);
             foreach(var skinnedMeshRenderer in clothRenderers) 
             {                
-                if (NeedsComputeVerts(skinnedMeshRenderer, sliderHaveChanged)){
+                if (NeedsComputeVerts(skinnedMeshRenderer, sliderHaveChanged))
+                {
                     var didCompute = ComputeMeshVerts(skinnedMeshRenderer, sphereRadius, waistWidth, true);
                     if (!didCompute) continue;    
                 }
@@ -114,7 +121,8 @@ namespace KK_PregnancyPlus
             var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody);
             foreach(var skinnedMeshRenderer in bodyRenderers) 
             {
-                if (NeedsComputeVerts(skinnedMeshRenderer, sliderHaveChanged)){
+                if (NeedsComputeVerts(skinnedMeshRenderer, sliderHaveChanged))
+                {
                     var didCompute = ComputeMeshVerts(skinnedMeshRenderer, sphereRadius, waistWidth);  
                     if (!didCompute) continue;
                 }
