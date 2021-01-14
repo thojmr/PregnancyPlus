@@ -131,7 +131,7 @@ namespace KK_PregnancyPlus
             }
 
             //just for testing, pretty compute heavy for Update()
-            // MeshInflate(true);
+            // if (Time.frameCount % 10 == 0) MeshInflate(true, true);
         }
         
 

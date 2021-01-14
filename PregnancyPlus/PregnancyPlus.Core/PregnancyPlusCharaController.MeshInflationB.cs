@@ -320,20 +320,23 @@ namespace KK_PregnancyPlus
         /// This will help pvent too much XY direction change, keeping the belly more round than disk like at large sizes
         /// </summary>
         internal Vector3 SculptBaseShape(Transform meshRootTf, Vector3 originalVertice, Vector3 smoothedVector, Vector3 sphereCenter) {
+            var originalVerticeLs = meshRootTf.InverseTransformPoint(originalVertice);
+            var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
+            var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenter);
 
             //We only want to limit expansion n XY plane for this lerp
-            var sphereCenterXY = new Vector2(sphereCenter.x, sphereCenter.y);
-            var origVertXY = new Vector2(originalVertice.x, originalVertice.y);
-            var smoothedVertXY = new Vector2(smoothedVector.x, smoothedVector.y);
+            var sphereCenterXY = new Vector2(sphereCenterLs.x, sphereCenterLs.y);
+            var origVertXY = new Vector2(originalVerticeLs.x, originalVerticeLs.y);
+            var smoothedVertXY = new Vector2(smoothedVectorLs.x, smoothedVectorLs.y);
 
             //As the inflatied vert moves further than the original sphere radius lerp its movement slower
             var radiusLerpScale = Vector2.Distance(sphereCenterXY, smoothedVertXY)/(bellyInfo.OriginalSphereRadius * 7);
             var lerpXY = Vector3.Lerp(smoothedVertXY, origVertXY, radiusLerpScale);
 
             //set limited XY, but keep the new z postion
-            smoothedVector = new Vector3(lerpXY.x, lerpXY.y, smoothedVector.z);
+            smoothedVectorLs = new Vector3(lerpXY.x, lerpXY.y, smoothedVectorLs.z);
 
-            return smoothedVector;
+            return meshRootTf.TransformPoint(smoothedVectorLs);
         }
 
         /// <summary>

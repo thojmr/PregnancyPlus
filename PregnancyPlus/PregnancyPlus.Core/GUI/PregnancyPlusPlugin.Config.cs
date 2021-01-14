@@ -31,7 +31,7 @@ namespace KK_PregnancyPlus
      
         internal void PluginConfig()
         {            
-            MakeBalloon = Config.Bind<bool>("Character Studio", "Make me a balloon", false, "Try it and see what happens, disable to go back to the original style.  (AKA debug mesh mode)");
+            MakeBalloon = Config.Bind<bool>("Character Studio", "Make me a balloon", false, "Try it and see what happens, disable to go back to the original style.  (AKA debug mesh mode).  This will disable some sliders.");
             MakeBalloon.SettingChanged += MakeBalloon_SettingsChanged;
 
             #if KK

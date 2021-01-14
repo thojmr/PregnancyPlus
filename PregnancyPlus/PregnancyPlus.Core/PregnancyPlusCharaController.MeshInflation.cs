@@ -363,7 +363,7 @@ namespace KK_PregnancyPlus
             if (skinToCenterDist >= inflatedToCenterDist || pmSkinToCenterDist > pmInflatedToCenterDist) return originalVertice; 
 
             //Get the base shape with XY plane size limits
-            var smoothedVector = SculptBaseShape(meshRootTf, originalVertice, inflatedVerticie, sphereCenterPos);       
+            var smoothedVector = SculptBaseShape(meshRootTf, originalVertice, inflatedVerticie, sphereCenterPos);      
 
             //Allow user adjustment of the height and width placement of the belly
             if (GetInflationShiftY() != 0 || GetInflationShiftZ() != 0) {
