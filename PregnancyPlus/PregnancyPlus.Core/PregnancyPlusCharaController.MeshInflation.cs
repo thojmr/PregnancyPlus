@@ -38,8 +38,8 @@ namespace KK_PregnancyPlus
                 CurrentMultiplier = currentMultiplier;
             }
 
-            //Determine if we need to recalculate the waist width (hopefullt to avoid change in hip bones changing belly size)
-            internal bool NeedsWaistRecalc(Vector3 characterScale, float currentMultiplier) {
+            //Determine if we need to recalculate the sphere radius (hopefully to avoid change in hip bones causing belly size to sudenly change)
+            internal bool NeedsSphereRecalc(Vector3 characterScale, float currentMultiplier) {
                 if (!IsInitialized) return true;
                 if (CharacterScale != characterScale) return true;
                 if (CurrentMultiplier != currentMultiplier) return true;
@@ -147,14 +147,32 @@ namespace KK_PregnancyPlus
         /// Get the characters waist width and calculate the appropriate sphere radius from it
         /// </summary>
         /// <param name="chaControl">The character to measure</param>
+        /// <returns>Tuple containing the wasitWidth, and the sphere radius after applying InalfationMultiplier</returns>
         internal Tuple<float, float> MeasureWaist(ChaControl chaControl) 
         {
             var charScale = PregnancyPlusHelper.GetBodyTopScale(ChaControl);
+            var needsSphereRecalc = bellyInfo != null ? bellyInfo.NeedsSphereRecalc(charScale, GetInflationMultiplier()) : true;
 
-            if (bellyInfo != null && !bellyInfo.NeedsWaistRecalc(charScale, GetInflationMultiplier())) {
-                if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" !NeedsWaistRecalc ");
+            //We should reuse existing measurements when we can, because characters waise bone distance chan change with animation, which affects belly size.
+            if (bellyInfo != null && !needsSphereRecalc) 
+            {
+                //Measeurements are fine and can be reused
                 return Tuple.Create(bellyInfo.WaistWidth, bellyInfo.SphereRadius);
-            }
+            } 
+            else if (bellyInfo != null && needsSphereRecalc) 
+            {
+                //Measeurements need to be recalculated from saved values (Does not change waistWidth! or height)
+                var newSphereRadius = GetSphereRadius(bellyInfo.WaistHeight, bellyInfo.WaistWidth, charScale);
+                var newSphereRadiusMult = newSphereRadius * (GetInflationMultiplier() + 1); 
+
+                //Store new values for later checks
+                bellyInfo = new BellyInfo(bellyInfo.WaistWidth, bellyInfo.WaistHeight, newSphereRadiusMult, newSphereRadius, charScale, GetInflationMultiplier());
+                
+                return Tuple.Create(bellyInfo.WaistWidth, newSphereRadiusMult);
+            } 
+
+            //Measeurements need to be recalculated from scratch
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" MeasureWaist init ");                            
 
             #if KK
                 var ribName = "cf_s_spine02";
@@ -189,14 +207,23 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" waistWidth {waistWidth}");
 
             //Calculate sphere radius based on distance from waist to ribs (seems big, but lerping later will trim much of it), added Math.Min for skinny waists
-            var sphereRadius = Math.Min(waistToRibDist/1.25f, waistWidth/1.3f) * charScale.y; 
+            var sphereRadius = GetSphereRadius(waistToRibDist, waistWidth, charScale);
             var sphereRadiusMultiplied = sphereRadius * (GetInflationMultiplier() + 1);   
 
+            //Store all these values for reuse later
             bellyInfo = new BellyInfo(waistWidth, waistToRibDist, sphereRadiusMultiplied, sphereRadius, charScale, GetInflationMultiplier());
 
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" scaled waistToRibDist {waistToRibDist} scaled waistWidth {waistWidth} sphereRadiusM {sphereRadiusMultiplied}");            
 
             return Tuple.Create(waistWidth, sphereRadiusMultiplied);
+        }
+
+        /// <summary>
+        /// Calculate the initial sphere radius by taking the smaller of the wasit width or waist to rib height. This is pre InflationMultiplier
+        /// </summary>
+        internal float GetSphereRadius(float wasitToRibDist, float wasitWidth, Vector3 charScale) {
+            //The float numbers are just arbitrary numbers that ended up looking porportional
+            return Math.Min(wasitToRibDist/1.25f, wasitWidth/1.3f) * charScale.y;
         }
 
 

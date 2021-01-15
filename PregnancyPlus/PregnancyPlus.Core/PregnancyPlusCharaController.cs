@@ -58,9 +58,11 @@ namespace KK_PregnancyPlus
 
 
         protected override void Start() 
-        {
+        {            
             ReadAndSetCardData();
-            initialized = true;
+            initialized = true;            
+
+            MeasureWaist(ChaControl);
 
             CharacterApi.CharacterReloaded += OnCharacterReloaded;  
 
@@ -88,7 +90,7 @@ namespace KK_PregnancyPlus
 
         protected override void OnReload(GameMode currentGameMode)
         {
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnReload {currentGameMode}");                
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnReload {currentGameMode}");               
 
             ReloadStoryInflation();         
         }
@@ -99,7 +101,7 @@ namespace KK_PregnancyPlus
             WatchForUserKeyPress();
 
             //just for testing, pretty compute heavy for Update()
-            // if (Time.frameCount % 10 == 0) MeshInflate(true, true);
+            // if (Time.frameCount % 10 == 0 && PregnancyPlusPlugin.debugLog) MeshInflate(true, true);
         }
         
 
@@ -192,7 +194,7 @@ namespace KK_PregnancyPlus
         internal void OnCharacterReloaded(object sender, CharaReloadEventArgs e)  
         {  
             //When loading the character, if pregnant, apply the new inflated belly too
-            if (ChaControl == null || e.ReloadedCharacter == null || e.ReloadedCharacter.name != ChaControl.name) return;
+            if (ChaControl == null || e.ReloadedCharacter == null || e.ReloadedCharacter.name != ChaControl.name) return;            
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= OnCharacterReloaded ");
 
             #if KK
