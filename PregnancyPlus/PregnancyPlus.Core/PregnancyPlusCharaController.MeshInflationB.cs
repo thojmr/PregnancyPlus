@@ -259,16 +259,12 @@ namespace KK_PregnancyPlus
                 var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
                 var distFromYCenterLs = smoothedVectorLs.y - sphereCenterLs.y;
                 //Lerp up and down positon more when the belly is near the center Y, and less for top and bottom
-                var lerpY = Mathf.Lerp(GetInflationShiftY(), GetInflationShiftY()/4, Math.Abs(distFromYCenterLs/sphereRadius));
+                var lerpY = Mathf.Lerp(GetInflationShiftY(), GetInflationShiftY()/4, Math.Abs(distFromYCenterLs/(sphereRadius*1.1f)));
                 var yLerpedsmoothedVector = smoothedVectorLs + Vector3.up * lerpY;//Since its all local space here, we dont have to use meshRootTf.up
-
-                //Then lerp the previous result based on the distance forward.  More forward is able to move more
-                var distanceForward = smoothedVectorLs.z - sphereCenterLs.z; 
-                var forwardLerpPos = Vector3.Lerp(smoothedVectorLs, yLerpedsmoothedVector, Math.Abs(distanceForward/sphereRadius + sphereRadius/2));
 
                 //Finally lerp sides slightly slower than center
                 var distanceSide = Math.Abs(smoothedVectorLs.x - sphereCenterLs.x); 
-                var finalLerpPos = Vector3.Lerp(forwardLerpPos, smoothedVectorLs, Math.Abs(distanceSide/(sphereRadius*2)));
+                var finalLerpPos = Vector3.Slerp(yLerpedsmoothedVector, smoothedVectorLs, Math.Abs(distanceSide/(sphereRadius*3) + 0.1f));
 
                 //return the shift up/down 
                 smoothedVector = meshRootTf.TransformPoint(finalLerpPos);
