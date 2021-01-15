@@ -90,7 +90,8 @@ namespace KK_PregnancyPlus
 
         protected override void OnReload(GameMode currentGameMode)
         {
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnReload {currentGameMode}");               
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnReload {currentGameMode}"); 
+            ReadAndSetCardData();              
 
             ReloadStoryInflation();         
         }
@@ -178,6 +179,7 @@ namespace KK_PregnancyPlus
         internal void ReadAndSetCardData()
         {
             infConfig = GetCardData();
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" ReadAndSetCardData > {infConfig.ValuesToString()}");
         }
 
 

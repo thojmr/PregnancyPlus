@@ -31,6 +31,10 @@ namespace KK_PregnancyPlus
             return this.MemberwiseClone();
         }
 
+        public string ValuesToString() {
+            return $" inflationSize {inflationSize} inflationMultiplier {inflationMultiplier} GameplayEnabled {GameplayEnabled} ...";
+        }
+
 #region Save/Load (Thanks for the code Marco)
 
         public bool HasAnyValue() {
