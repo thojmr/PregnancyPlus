@@ -19,7 +19,7 @@ namespace KK_PregnancyPlus
     //This partial class contains the property declarations and override hooks
     public partial class PregnancyPlusCharaController: CharaCustomFunctionController
     {        
-        
+
         internal bool initialized = false;//Prevent some actions from happening before character data loads   
 
         public BellyInfo bellyInfo;
@@ -46,9 +46,8 @@ namespace KK_PregnancyPlus
         internal Guid debounceGuid;//Track multiple events with a debounce based on these id's
 
 
+#region overrides/hooks
 
-
-#region overrides
         protected override void OnCardBeingSaved(GameMode currentGameMode)
         {
             //only allow saving card inside maker or studio
@@ -60,7 +59,7 @@ namespace KK_PregnancyPlus
 
         protected override void Start() 
         {
-            ReadCardData();
+            ReadAndSetCardData();
             initialized = true;
 
             CharacterApi.CharacterReloaded += OnCharacterReloaded;  
@@ -85,51 +84,19 @@ namespace KK_PregnancyPlus
 
             base.OnCoordinateBeingLoaded(coordinate);
         }
+        
 
         protected override void OnReload(GameMode currentGameMode)
         {
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnReload {currentGameMode}");            
-            ReadCardData();      
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnReload {currentGameMode}");                
 
-            if (PregnancyPlusPlugin.StoryMode != null && PregnancyPlusPlugin.StoryMode.Value) {
-                if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) 
-                {
-                    #if KK
-                        GetWeeksAndSetInflation();                                 
-                    #elif HS2 || AI                  
-                        //For HS2 AI, we set global belly size from plugin config, or character card                    
-                        MeshInflate();                                       
-                    #endif   
-                }
-                else
-                {
-                    MeshInflate();                
-                }                 
-            }           
+            ReloadStoryInflation();         
         }
 
 
         protected override void Update()
         {
-            //When the user presses a key combo they set, it increases or decreases the belly inflation amount
-            if (!StudioAPI.InsideStudio && !MakerAPI.InsideMaker) 
-            {
-                if (PregnancyPlusPlugin.StoryModeInflationIncrease.Value.IsDown()) 
-                {
-                    var newVal = infConfig.inflationSize + 2;
-                    MeshInflate(newVal);
-                    
-                }
-                if (PregnancyPlusPlugin.StoryModeInflationDecrease.Value.IsDown()) 
-                {
-                    var newVal = infConfig.inflationSize - 2;
-                    MeshInflate(newVal);
-                }
-                if (PregnancyPlusPlugin.StoryModeInflationReset.Value.IsDown()) 
-                {
-                    MeshInflate(0);
-                }
-            }
+            WatchForUserKeyPress();
 
             //just for testing, pretty compute heavy for Update()
             // if (Time.frameCount % 10 == 0) MeshInflate(true, true);
@@ -138,6 +105,57 @@ namespace KK_PregnancyPlus
 
 #endregion
 
+
+        /// <summary>
+        /// Triggered by OnReload but only for logic in Story mode
+        /// </summary>
+        internal void ReloadStoryInflation()
+        {
+            //Only reload when in story mode.  Doesnt need to in Studio/Maker I guess
+            if (PregnancyPlusPlugin.StoryMode != null && !PregnancyPlusPlugin.StoryMode.Value) return;
+            
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) 
+            {
+                #if KK
+                    GetWeeksAndSetInflation(true);                                 
+                #elif HS2 || AI                  
+                    //For HS2 AI, we set global belly size from plugin config, or character card                    
+                    MeshInflate(true);                                       
+                #endif   
+            }
+            else
+            {
+                MeshInflate(true);                
+            }                             
+        }
+
+
+        /// <summary>
+        /// Watch for user keypressed to trigger belly infaltion + or -
+        /// </summary>
+        internal void WatchForUserKeyPress() 
+        {
+            //When the user presses a key combo they set, it increases or decreases the belly inflation amount, only for story mode
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return;
+            
+            if (PregnancyPlusPlugin.StoryModeInflationIncrease.Value.IsDown()) 
+            {
+                var newVal = infConfig.inflationSize + 2;
+                MeshInflate(newVal);
+                
+            }
+
+            if (PregnancyPlusPlugin.StoryModeInflationDecrease.Value.IsDown()) 
+            {
+                var newVal = infConfig.inflationSize - 2;
+                MeshInflate(newVal);
+            }
+
+            if (PregnancyPlusPlugin.StoryModeInflationReset.Value.IsDown()) 
+            {
+                MeshInflate(0);
+            }            
+        }
 
         /// <summary>
         /// Triggered when clothing state is changed, i.e. pulled aside or taken off.
@@ -151,13 +169,19 @@ namespace KK_PregnancyPlus
             StartCoroutine(WaitForMeshToSettle(0.05f, true, forceRecalcVerts));
         }
 
-
-        internal void ReadCardData()
+        
+        /// <summary>
+        /// Get card data and update this characters infConfig with it
+        /// </summary>
+        internal void ReadAndSetCardData()
         {
             infConfig = GetCardData();
         }
 
-        //Just get the data, dont set it to the plugin
+
+        /// <summary>
+        /// Just fetch the data for comparison
+        /// </summary>
         internal PregnancyPlusData GetCardData()
         {
             var data = GetExtendedData();
