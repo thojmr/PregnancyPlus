@@ -139,13 +139,19 @@ namespace KK_PregnancyPlus
         internal void WatchForUserKeyPress() 
         {
             //When the user presses a key combo they set, it increases or decreases the belly inflation amount, only for story mode
-            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return;
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return;        
+
+            //Only continue if body is rendered on screen  (Dont want to do every loaded char)
+            #if KK
+                if (ChaControl.rendBody == null || !ChaControl.rendBody.isVisible) return;
+            #elif HS2 || AI
+                if (ChaControl.cmpBody == null || !ChaControl.cmpBody.isVisible) return;
+            #endif
             
             if (PregnancyPlusPlugin.StoryModeInflationIncrease.Value.IsDown()) 
             {
                 var newVal = infConfig.inflationSize + 2;
-                MeshInflate(newVal);
-                
+                MeshInflate(newVal);                
             }
 
             if (PregnancyPlusPlugin.StoryModeInflationDecrease.Value.IsDown()) 
