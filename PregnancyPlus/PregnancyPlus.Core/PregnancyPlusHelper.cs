@@ -15,12 +15,14 @@ namespace KK_PregnancyPlus
     internal static class PregnancyPlusHelper
     {        
 
+
         internal static SkinnedMeshRenderer GetMeshRenderer(ChaControl chaControl, string renderKey) 
         {
             var renderers = chaControl.GetComponentsInChildren<SkinnedMeshRenderer>();
             var renderer = renderers.FirstOrDefault(x => (x.name + x.sharedMesh.vertexCount.ToString()) == renderKey);
             return renderer;
         }
+
 
         /// <summary>
         /// Will get any Mesh Renderers for the given ChaControl.objxxx passed in
@@ -45,18 +47,21 @@ namespace KK_PregnancyPlus
             return renderers;
         }
         
+
         internal static List<SkinnedMeshRenderer> GetMeshRenderers(GameObject characterObj) 
         {            
             var renderers = new List<SkinnedMeshRenderer>();
             if (characterObj == null) return renderers;
 
             var skinnedItem = characterObj.GetComponentsInChildren<SkinnedMeshRenderer>();            
-            if (skinnedItem.Length > 0) {
+            if (skinnedItem.Length > 0) 
+            {
                 renderers.AddRange(skinnedItem);
             }
 
             return renderers;
         }
+
 
         internal static Renderer GetRenderer(ChaControl chaControl, string renderKey) 
         {
@@ -64,6 +69,7 @@ namespace KK_PregnancyPlus
             var renderer = renderers.FirstOrDefault(x => x.name == renderKey);
             return renderer;
         }
+
 
         internal static List<Renderer> GetRenderers(GameObject[] chaControlObjs) 
         {            
@@ -84,18 +90,21 @@ namespace KK_PregnancyPlus
             return renderers;
         }
 
+
         internal static List<Renderer> GetRenderers(GameObject characterObj) 
         {            
             var renderers = new List<Renderer>();
             if (characterObj == null) return renderers;
 
             var skinnedItem = characterObj.GetComponentsInChildren<Renderer>(true);            
-            if (skinnedItem.Length > 0) {
+            if (skinnedItem.Length > 0) 
+            {
                 renderers.AddRange(skinnedItem);
             }
 
             return renderers;
         }
+
 
         /// <summary>   
         /// Will fetch number of weeks from KK_Pregnancy data for this character
@@ -114,6 +123,7 @@ namespace KK_PregnancyPlus
 
             return week;
         }
+
 
         /// <summary>   
         /// If the current characters mesh is set by the Uncensor plugin we need to know this to correctly shift the mesh's localspace vertex positions
@@ -135,6 +145,7 @@ namespace KK_PregnancyPlus
             return bodyGUID != defaultBodyFemaleGUID;
         }
 
+
         /// <summary>   
         /// Will fetch an active CharaCustomFunctionController for the given character and plugin GUID
         /// </summary>  
@@ -146,9 +157,11 @@ namespace KK_PregnancyPlus
             var behaviors = CharacterApi.GetBehaviours(chaControl);
             if (behaviors == null) return null;
 
-            foreach(var behavior in behaviors) {
+            foreach(var behavior in behaviors) 
+            {
                 //Find the behavior with matching id (COM name)
-                if (behavior.ExtendedDataId == targetBehaviorId) {
+                if (behavior.ExtendedDataId == targetBehaviorId) 
+                {
                     return behavior;
                 }                
             }
@@ -160,13 +173,16 @@ namespace KK_PregnancyPlus
         /// <summary>   
         /// Needed a standard way to pull bones from ChaControl obj
         /// </summary>  
-        internal static Transform GetBone(ChaControl chaControl, string boneName) {
+        internal static Transform GetBone(ChaControl chaControl, string boneName) 
+        {
             if (chaControl == null) return null;
             
             return chaControl.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == boneName);
         }
 
-        internal static GameObject GetBoneGO(ChaControl chaControl, string boneName) {
+
+        internal static GameObject GetBoneGO(ChaControl chaControl, string boneName) 
+        {
             if (chaControl == null) return null;
             
             var bone = GetBone(chaControl, boneName);
@@ -182,7 +198,8 @@ namespace KK_PregnancyPlus
         /// <param name="boneStart">The starting (bottom of tree) bone name</param>
         /// <param name="boneEnd">The optional (top level) end bone name.  If null, the entire bone tree from bottom to top will be calculated.</param>
         /// <param name="includeRootTf">(not finished) The optional flag to include the distance from the characters root (just below feet) to the boneStart (High heels are weird with height)</param>
-        internal static float BoneChainStraigntenedDistance(ChaControl chaControl, string boneStart, string boneEnd = null, Transform includeRootTf = null) {
+        internal static float BoneChainStraigntenedDistance(ChaControl chaControl, string boneStart, string boneEnd = null, Transform includeRootTf = null) 
+        {
             //loops through each bone starting bottom going up through parent to destination (or root)
             var currentBone = GetBoneGO(chaControl, boneStart);
             GameObject lastBone = currentBone;
@@ -192,15 +209,16 @@ namespace KK_PregnancyPlus
             float distance = 0;
 
             //If char root in included, append it to the total distance from includeRootTf to first boneStart
-            if (includeRootTf != null) {
+            if (includeRootTf != null) 
+            {
                 distance = includeRootTf.InverseTransformPoint(currentBone.transform.position).y;
                 // if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" initDiff {distance}  currentBone.name {currentBone.name} includeRootTf scale {includeRootTf.localScale}");
             }
             
 
             //Keep going while a parent transform exists
-            while (currentBone != null && currentBone.transform.parent) {
-                
+            while (currentBone != null && currentBone.transform.parent) 
+            {            
                 //If the bone name matches boneEnd return the total distance to this bone so far
                 if (boneEnd != null && currentBone.name.ToLower() == boneEnd.ToLower()) {
                     break;
@@ -223,7 +241,8 @@ namespace KK_PregnancyPlus
 
             //Check for BodyTop scale to apply it to distance (cf_n_height scale doesnt matter here for some reason)
             var BodyTopScale = GetBodyTopScale(chaControl);
-            if (BodyTopScale.y != 1) {                
+            if (BodyTopScale.y != 1) 
+            {                
                 if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" applying BodyTop scale to distance: {distance} scale: {BodyTopScale.y}");
                 distance = distance * BodyTopScale.y;
             }
@@ -235,41 +254,11 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Just get the BodyTop bone local scale
         /// </summary>
-        internal static Vector3 GetBodyTopScale(ChaControl chaControl)  {
+        internal static Vector3 GetBodyTopScale(ChaControl chaControl)  
+        {
             var bodyTopBone = GetBone(chaControl, "BodyTop");
             if (bodyTopBone == null) return Vector3.one;
             return bodyTopBone.localScale;
-        }
-
-        /// <summary>
-        /// Check the characters root scale bones that ABMX modifies. and return their total scales
-        /// </summary>
-        internal static Vector3 GetCharacterScale(ChaControl chaControl) 
-        {
-            var scaleBone2Name = "BodyTop";
-            
-            #if KK            
-                var scaleBoneName = "cf_n_height";
-            #elif HS2 || AI             
-                var scaleBoneName = "cf_N_height";            
-            #endif
-
-            //Get the scale of the 2 scale bones
-            var scaleBone = GetBone(chaControl, scaleBoneName);
-            if (!scaleBone) return Vector3.one;
-            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" {scaleBoneName} scale {scaleBone.localScale}"); 
-
-            var scaleBone2 = GetBone(chaControl, scaleBone2Name);
-            if (!scaleBone2) return Vector3.one;
-            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" {scaleBone2Name} scale {scaleBone2.localScale}"); 
-
-            //When calculating scale there are 2 bones I know of that commonly have scales applied to them.            
-            //Multiply both scale bones scales to get the total character scale
-            var correctedScale = new Vector3(scaleBone.localScale.x * scaleBone2.localScale.x, scaleBone.localScale.y * scaleBone2.localScale.y, scaleBone.localScale.z * scaleBone2.localScale.z);
-            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" total char scale {correctedScale.x} {correctedScale.y} {correctedScale.z}");            
-
-            //Only figuring in Y scale for now.  Might break with X or Z scaled characters
-            return correctedScale;
         }
     
     }

@@ -24,8 +24,9 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Limit where you can and cannot trigger inflation.  Always in Studio and Maker. Conditionally in Story mode
         /// </summary>
-        public bool AllowedToInflate() {
-            var storyModeEnabled = PregnancyPlusPlugin.StoryMode != null ? PregnancyPlusPlugin.StoryMode.Value : false;
+        public bool AllowedToInflate() 
+        {
+                        var storyModeEnabled = PregnancyPlusPlugin.StoryMode != null ? PregnancyPlusPlugin.StoryMode.Value : false;
             return StudioAPI.InsideStudio || MakerAPI.InsideMaker || (storyModeEnabled && infConfig.GameplayEnabled);
         }
 
@@ -135,7 +136,8 @@ namespace KK_PregnancyPlus
             #endif            
 
             //If inner layer then it doesnt need an additional offset
-            if (innerLayers.Contains(meshName)) {
+            if (innerLayers.Contains(meshName)) 
+            {
                 return 0;
             }
 
@@ -252,7 +254,8 @@ namespace KK_PregnancyPlus
             var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenterPos);
 
             //IF the user has selected a y value, lerp the top and bottom slower and lerp any verts closer to z = 0 slower
-            if (GetInflationShiftY() != 0) {
+            if (GetInflationShiftY() != 0) 
+            {
                 var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
                 var distFromYCenterLs = smoothedVectorLs.y - sphereCenterLs.y;
                 //Lerp up and down positon more when the belly is near the center Y, and less for top and bottom
@@ -270,8 +273,10 @@ namespace KK_PregnancyPlus
                 //return the shift up/down 
                 smoothedVector = meshRootTf.TransformPoint(finalLerpPos);
             }
+
             //If the user has selected a z value
-            if (GetInflationShiftZ() != 0) {
+            if (GetInflationShiftZ() != 0) 
+            {
                 var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);//In case it was changed above in Y
 
                 //Move the verts closest to sphere center Z more slowly than verts at the belly button.  Otherwise you stretch the ones near the body too much
@@ -324,10 +329,12 @@ namespace KK_PregnancyPlus
             return meshRootTf.TransformPoint(smoothedVectorLs); 
         }
 
+
         /// <summary>
         /// This will help pvent too much XY direction change, keeping the belly more round than disk like at large sizes
         /// </summary>
-        internal Vector3 SculptBaseShape(Transform meshRootTf, Vector3 originalVertice, Vector3 smoothedVector, Vector3 sphereCenter) {
+        internal Vector3 SculptBaseShape(Transform meshRootTf, Vector3 originalVertice, Vector3 smoothedVector, Vector3 sphereCenter) 
+        {
             var originalVerticeLs = meshRootTf.InverseTransformPoint(originalVertice);
             var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
             var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenter);
@@ -347,10 +354,12 @@ namespace KK_PregnancyPlus
             return meshRootTf.TransformPoint(smoothedVectorLs);
         }
 
+
         /// <summary>
         /// Dampen any mesh changed near edged of the belly (sides, top, and bottom) to prevent too much vertex stretching.false  The more forward the vertex is from Z the more it's allowd to be altered by sliders
         /// </summary>        
-        internal Vector3 RoundToSides(Transform meshRootTf, Vector3 originalVertice, Vector3 smoothedVector, Vector3 sphereCenter, float inflatedToCenterDist) {        
+        internal Vector3 RoundToSides(Transform meshRootTf, Vector3 originalVertice, Vector3 smoothedVector, Vector3 sphereCenter, float inflatedToCenterDist) 
+        {        
             var zSmoothDist = inflatedToCenterDist/3f;//Just pick a float that looks good as a z limiter
             //Get local space vectors to eliminate rotation in world space
             var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
@@ -455,7 +464,8 @@ namespace KK_PregnancyPlus
 
             var sharedMesh = smr.sharedMesh;
 
-            if (!sharedMesh.isReadable) {
+            if (!sharedMesh.isReadable) 
+            {
                 if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(
                      $"ApplyInflation > smr '{renderKey}' is not readable, skipping");
                     return false;
@@ -463,7 +473,8 @@ namespace KK_PregnancyPlus
 
             //Check key exists in dict, remnove it if it does not
             var exists = originalVertices.TryGetValue(renderKey, out var val);
-            if (!exists) {
+            if (!exists) 
+            {
                 if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(
                      $"ApplyInflation > smr '{renderKey}' does not exists, skipping");
                      RemoveRenderKey(renderKey);
@@ -553,61 +564,71 @@ namespace KK_PregnancyPlus
         
 
 
-        //Allow user config values to be added in during story mode
-        internal float GetInflationMultiplier() {
+        //Allow user plugin config values to be added in during story mode
+        internal float GetInflationMultiplier() 
+        {
             if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationMultiplier;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationMultiplier != null ? PregnancyPlusPlugin.StoryModeInflationMultiplier.Value : 0;
             return (infConfig.inflationMultiplier + globalOverrideVal);
         }
-        internal float GetInflationMoveY() {
+        internal float GetInflationMoveY() 
+        {
             if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationMoveY;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationMoveY != null ? PregnancyPlusPlugin.StoryModeInflationMoveY.Value : 0;
             return (infConfig.inflationMoveY + globalOverrideVal);
         }
 
-        internal float GetInflationMoveZ() {
+        internal float GetInflationMoveZ() 
+        {
             if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationMoveZ;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationMoveZ != null ? PregnancyPlusPlugin.StoryModeInflationMoveZ.Value : 0;
             return (infConfig.inflationMoveZ + globalOverrideVal);
         }
 
-        internal float GetInflationStretchX() {
+        internal float GetInflationStretchX() 
+        {
             if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationStretchX;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationStretchX != null ? PregnancyPlusPlugin.StoryModeInflationStretchX.Value : 0;
             return (infConfig.inflationStretchX + globalOverrideVal);
         }
 
-        internal float GetInflationStretchY() {
+        internal float GetInflationStretchY() 
+        {
             if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationStretchY;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationStretchY != null ? PregnancyPlusPlugin.StoryModeInflationStretchY.Value : 0;
             return (infConfig.inflationStretchY + globalOverrideVal);
         }
 
-        internal float GetInflationShiftY() {
+        internal float GetInflationShiftY() 
+        {
             if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationShiftY;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationShiftY != null ? PregnancyPlusPlugin.StoryModeInflationShiftY.Value : 0;
             return (infConfig.inflationShiftY + globalOverrideVal);
         }
 
-        internal float GetInflationShiftZ() {
+        internal float GetInflationShiftZ() 
+        {
             if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationShiftZ;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationShiftZ != null ? PregnancyPlusPlugin.StoryModeInflationShiftZ.Value : 0;
             return (infConfig.inflationShiftZ + globalOverrideVal);
         }
 
-        internal float GetInflationTaperY() {
+        internal float GetInflationTaperY() 
+        {
             if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationTaperY;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationTaperY != null ? PregnancyPlusPlugin.StoryModeInflationTaperY.Value : 0;
             return (infConfig.inflationTaperY + globalOverrideVal);
         }
 
-        internal float GetInflationTaperZ() {
+        internal float GetInflationTaperZ() 
+        {
             if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationTaperZ;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationTaperZ != null ? PregnancyPlusPlugin.StoryModeInflationTaperZ.Value : 0;
             return (infConfig.inflationTaperZ + globalOverrideVal);
         }
 
-        internal float GetInflationClothOffset() {
+        internal float GetInflationClothOffset() 
+        {
             if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationClothOffset;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationClothOffset != null ? PregnancyPlusPlugin.StoryModeInflationClothOffset.Value : 0;
             return (infConfig.inflationClothOffset + globalOverrideVal);

@@ -18,18 +18,22 @@ namespace KK_PregnancyPlus
     public partial class PregnancyPlusCharaController: CharaCustomFunctionController
     {           
 
-        public class BellyInfo {
+        public class BellyInfo 
+        {
             public float WaistWidth;
             public float WaistHeight;
             public float SphereRadius;
             public float OriginalSphereRadius;
             public Vector3 CharacterScale;
             public float CurrentMultiplier;
-            public bool IsInitialized {
+            
+            public bool IsInitialized 
+            {
                 get { return WaistWidth > 0 && WaistHeight > 0; }
             }
 
-            internal BellyInfo(float waistWidth, float waistHeight, float sphereRadius, float originalSphereRadius, Vector3 characterScale, float currentMultiplier) {
+            internal BellyInfo(float waistWidth, float waistHeight, float sphereRadius, float originalSphereRadius, Vector3 characterScale, float currentMultiplier) 
+            {
                 WaistWidth = waistWidth;
                 WaistHeight = waistHeight;
                 SphereRadius = sphereRadius;
@@ -39,7 +43,8 @@ namespace KK_PregnancyPlus
             }
 
             //Determine if we need to recalculate the sphere radius (hopefully to avoid change in hip bones causing belly size to sudenly change)
-            internal bool NeedsSphereRecalc(Vector3 characterScale, float currentMultiplier) {
+            internal bool NeedsSphereRecalc(Vector3 characterScale, float currentMultiplier) 
+            {
                 if (!IsInitialized) return true;
                 if (CharacterScale != characterScale) return true;
                 if (CurrentMultiplier != currentMultiplier) return true;
@@ -417,27 +422,32 @@ namespace KK_PregnancyPlus
             var smoothedVector = SculptBaseShape(meshRootTf, originalVertice, inflatedVerticie, sphereCenterPos);      
 
             //Allow user adjustment of the height and width placement of the belly
-            if (GetInflationShiftY() != 0 || GetInflationShiftZ() != 0) {
+            if (GetInflationShiftY() != 0 || GetInflationShiftZ() != 0) 
+            {
                 smoothedVector = GetUserShiftTransform(meshRootTf, smoothedVector, sphereCenterPos, skinToCenterDist);            
             }
 
             //Allow user adjustment of the width of the belly
-            if (GetInflationStretchX() != 0) {   
+            if (GetInflationStretchX() != 0) 
+            {   
                 smoothedVector = GetUserStretchXTransform(meshRootTf, smoothedVector, sphereCenterPos);
             }
 
             //Allow user adjustment of the height of the belly
-            if (GetInflationStretchY() != 0) {   
+            if (GetInflationStretchY() != 0) 
+            {   
                 smoothedVector = GetUserStretchYTransform(meshRootTf, smoothedVector, sphereCenterPos);
             }
 
             //Allow user adjustment of the egg like shape of the belly
-            if (GetInflationTaperY() != 0) {
+            if (GetInflationTaperY() != 0) 
+            {
                 smoothedVector = GetUserTaperYTransform(meshRootTf, smoothedVector, sphereCenterPos, skinToCenterDist);
             }
 
             //Allow user adjustment of the front angle of the belly
-            if (GetInflationTaperZ() != 0) {
+            if (GetInflationTaperZ() != 0) 
+            {
                 smoothedVector = GetUserTaperZTransform(meshRootTf, smoothedVector, sphereCenterPos, skinToCenterDist);
             }
 
@@ -462,17 +472,20 @@ namespace KK_PregnancyPlus
             var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
 
             //Don't allow any morphs to shrink skin smaller than its original position, only outward morphs allowed (check this after all morphs)
-            if (skinToCenterDist > currentVectorDistance || pmSkinToCenterDist > pmCurrentVectorDistance) {
+            if (skinToCenterDist > currentVectorDistance || pmSkinToCenterDist > pmCurrentVectorDistance) 
+            {
                 return originalVertice;
             }
 
             //Don't allow any morphs to move behind the character's.z = 0 position, otherwise skin sometimes pokes out the back side :/
-            if (meshRootTf.InverseTransformPoint(meshRootTf.position).z > smoothedVectorLs.z) {
+            if (meshRootTf.InverseTransformPoint(meshRootTf.position).z > smoothedVectorLs.z) 
+            {
                 return originalVertice;
             }
 
             //Don't allow any morphs to move behind the original verticie z = 0 position
-            if (meshRootTf.InverseTransformPoint(originalVertice).z > smoothedVectorLs.z) {
+            if (meshRootTf.InverseTransformPoint(originalVertice).z > smoothedVectorLs.z) 
+            {
                 //Get the average x and y change to move the new position halfway back to the oiriginal vert (hopefullt less strange triangles near belly to body edge)
                 var yChangeAvg = (smoothedVector.y - originalVertice.y)/3;
                 var xChangeAvg = (smoothedVector.x - originalVertice.x)/3;
@@ -502,7 +515,8 @@ namespace KK_PregnancyPlus
             var hasBellyVerticies = false;
             var hasBoneFilters = boneFilters != null && boneFilters.Length > 0;
 
-            if (!sharedMesh.isReadable) {
+            if (!sharedMesh.isReadable) 
+            {
                 if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(
                      $"GetFilteredVerticieIndexes > smr '{renderKey}' is not readable, skipping");
                     return false;
@@ -524,9 +538,11 @@ namespace KK_PregnancyPlus
 
                 var boneName = bones[i].name;
 
+                //If the current bone matches the current boneFilter, add it's index
                 foreach(var boneFilter in boneFilters)
                 {
-                    if (boneFilter == boneName) {
+                    if (boneFilter == boneName) 
+                    {
                         bellyBoneIndexes.Add(i);
                         break;
                     }  
@@ -540,8 +556,6 @@ namespace KK_PregnancyPlus
             bellyVerticieIndexes[renderKey] = new bool[sharedMesh.vertexCount];
             var bellyVertIndex = bellyVerticieIndexes[renderKey];
 
-            var boneWeightsLength = sharedMesh.boneWeights.Length;
-            var bbIndexCount = bellyBoneIndexes.Count;
             var verticies = sharedMesh.vertices;
             
             //For each weight, see if it has a weight above 0, meaning it is affected by a bone
@@ -561,7 +575,8 @@ namespace KK_PregnancyPlus
                     {
                         //Make sure to exclude verticies on characters back, we only want to modify the front.  No back bellies!
                         //add all vertexes in debug mode
-                        if (verticies[c].z >= 0 || PregnancyPlusPlugin.MakeBalloon.Value) {
+                        if (verticies[c].z >= 0 || PregnancyPlusPlugin.MakeBalloon.Value) 
+                        {
                             bellyVertIndex[c] = true;
                             hasBellyVerticies = true;
                             break;
@@ -572,7 +587,8 @@ namespace KK_PregnancyPlus
             }
 
             //Dont need to remember this mesh if there are no belly verts in it
-            if (!hasBellyVerticies) {
+            if (!hasBellyVerticies) 
+            {
                 // PregnancyPlusPlugin.Logger.LogInfo($"bellyVerticieIndexes > removing {renderKey}"); 
                 RemoveRenderKey(renderKey);
             }
