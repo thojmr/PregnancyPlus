@@ -145,7 +145,7 @@ namespace KK_PregnancyPlus
             
         }
 
-
+        //On any slider change, trigger mesh inflaiton update
         internal static void OnMakerSettingsChanged(PregnancyPlusCharaController controller) {
             if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" OnMakerSettingsChanged ");
             controller.MeshInflate(true);                                                                     

@@ -5,9 +5,7 @@ using KKAPI.Studio.UI;
 using KKAPI.Utilities;
 using UniRx;
 using UnityEngine;
-using System;
-using System.Collections;
-using System.Collections.Generic;
+
 
 namespace KK_PregnancyPlus
 {
@@ -31,7 +29,6 @@ namespace KK_PregnancyPlus
 
         internal static void InitStudio(Harmony hi, PregnancyPlusPlugin instance)
         {
-
             if (StudioAPI.InsideStudio)
             {
                 RegisterStudioControls();
