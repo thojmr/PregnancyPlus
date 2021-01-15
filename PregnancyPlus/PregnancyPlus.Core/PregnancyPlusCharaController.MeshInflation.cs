@@ -57,7 +57,7 @@ namespace KK_PregnancyPlus
         /// </summary>
         /// <param name="reRunWithCurrentParams">Lets you force bypass the check for values changed</param>
         /// <param name="forceRecalcVerts">Will recalculate verts like a first time run</param>
-        /// <param name="forceRecalcVerts">Will treat as if some slider values changed, which they did in global plugin config</param>
+        /// <param name="pluginConfigSliderChanged">Will treat as if some slider values changed, which they did in global plugin config</param>
         /// <returns>Will return True if the mesh was altered and False if not</returns>
         public bool MeshInflate(bool reRunWithCurrentParams = false, bool forceRecalcVerts = false, bool pluginConfigSliderChanged = false)
         {

@@ -156,7 +156,7 @@ namespace KK_PregnancyPlus
                 if (PregnancyPlusPlugin.StoryMode != null && PregnancyPlusPlugin.StoryMode.Value) 
                 {            
                     #if KK //custom integration with KK_Pregnancy    
-                        charCustFunCtrl.GetWeeksAndSetInflation(true);    
+                        charCustFunCtrl.GetWeeksAndSetInflation(true, true);    
                     #elif HS2 || AI
                         //Need to recalculate mesh position when sliders change here
                         charCustFunCtrl.MeshInflate(false, false, true);                     

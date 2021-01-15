@@ -35,24 +35,24 @@ namespace KK_PregnancyPlus
         /// For quickly setting the size, without worrying about the other config params
         /// </summary>
         /// <param name="inflationSize">Sets inflation size from 0 to 40, clamped</param>
-        public bool MeshInflate(float inflationSize, bool forceInflate = false)
+        public bool MeshInflate(float inflationSize, bool forceInflate = false, bool slidersChanged = false)
         {                  
             //Allow an initial size to be passed in, and sets it to the config           
             infConfig.inflationSize = Mathf.Clamp(inflationSize, 0, 40);            
 
-            return MeshInflate(forceInflate);
+            return MeshInflate(forceInflate, false, slidersChanged);
         }
 
         /// <summary>
         /// An overload for MeshInflate() that allows you to pass existing card data as the first param
         /// </summary>
         /// <param name="cardData">Some prexisting PregnancyPlusData that we want to activate</param>
-        public bool MeshInflate(PregnancyPlusData cardData, bool forceInflate = false)
+        public bool MeshInflate(PregnancyPlusData cardData, bool forceInflate = false, bool slidersChanged = false)
         {                  
             //Allow an initial size to be passed in, and sets it to the config           
             infConfig = cardData;           
 
-            return MeshInflate(forceInflate);
+            return MeshInflate(forceInflate, false, slidersChanged);
         }
 
 

@@ -214,14 +214,14 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// fetch KK_Pregnancy Data.Week value for KK story mode integration (It works if you don't mind the clipping)
         /// </summary>
-        internal void GetWeeksAndSetInflation(bool forceUpdate = false) 
+        internal void GetWeeksAndSetInflation(bool forceUpdate = false, bool slidersChanged = false) 
         {            
 
             //If a card value is set for inflation size, use that first, otherwise check KK_Pregnancy for Weeks value
             var cardData = GetCardData();
             if (cardData.inflationSize > 0 && cardData.GameplayEnabled) 
             {
-                MeshInflate(cardData, forceUpdate);
+                MeshInflate(cardData, forceUpdate, slidersChanged);
                 return;
             }
 
@@ -232,7 +232,7 @@ namespace KK_PregnancyPlus
             //Compute the additonal belly size added based on user configured vallue from 0-40
             var additionalPregPlusSize = Mathf.Lerp(0, week, PregnancyPlusPlugin.MaxStoryModeBelly.Value/40);
 
-            MeshInflate(additionalPregPlusSize, forceUpdate);
+            MeshInflate(additionalPregPlusSize, forceUpdate, slidersChanged);
         }
         
 
