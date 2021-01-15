@@ -61,8 +61,8 @@ public static class NormalSolver
                 }
 
                 // Calculate the normal of the triangle
-                Vector3 p1 = vertices[i2] - vertices[i1];
-                Vector3 p2 = vertices[i3] - vertices[i1];
+                Vector3 p1 = (vertices[i2] - vertices[i1]).normalized;
+                Vector3 p2 = (vertices[i3] - vertices[i1]).normalized;
                 Vector3 normal = Vector3.Cross(p1, p2).normalized;
                 int triIndex = i / 3;
                 triNormals[subMeshIndex][triIndex] = normal;
