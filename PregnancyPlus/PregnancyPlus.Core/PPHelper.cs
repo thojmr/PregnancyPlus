@@ -260,6 +260,20 @@ namespace KK_PregnancyPlus
             if (bodyTopBone == null) return Vector3.one;
             return bodyTopBone.localScale;
         }
+
+
+        internal static Mesh CopyMesh(Mesh mesh)
+        {
+            Mesh newmesh = new Mesh();
+            newmesh.vertices = mesh.vertices;
+            newmesh.triangles = mesh.triangles;
+            newmesh.uv = mesh.uv;
+            newmesh.normals = mesh.normals;
+            newmesh.colors = mesh.colors;
+            newmesh.tangents = mesh.tangents;
+
+            return newmesh;
+        }
     
     }
 }

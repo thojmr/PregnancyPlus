@@ -113,6 +113,7 @@
     <Compile Include="..\PregnancyPlus.Core\PPHelper.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPData.cs" />
     <Compile Include="..\PregnancyPlus.Core\tools\NormalsSolver.cs" />
+    <Compile Include="..\PregnancyPlus.Core\tools\BlendShapeController.cs" />
   </ItemGroup>
 
   <ItemGroup>

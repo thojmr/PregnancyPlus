@@ -256,8 +256,9 @@ namespace KK_PregnancyPlus
             //Only inflate if the value changed        
             if (infSize.Equals(null) || infSize == 0) return false;      
 
+            var origSmrMesh = PregnancyPlusHelper.CopyMesh(smr.sharedMesh); 
             //Create an instance of sharedMesh so we don't modify the mesh shared between characters
-            Mesh meshCopy = (Mesh)UnityEngine.Object.Instantiate(smr.sharedMesh);    
+            var meshCopy = (Mesh)UnityEngine.Object.Instantiate(smr.sharedMesh);    
             smr.sharedMesh = meshCopy;
 
             var sharedMesh = smr.sharedMesh;
@@ -308,6 +309,9 @@ namespace KK_PregnancyPlus
             NormalSolver.RecalculateNormals(sharedMesh, 40f, bellyVerticieIndexes[renderKey]);
             //sharedMesh.RecalculateNormals();  //old way that leaves skin seams
             sharedMesh.RecalculateTangents();
+
+            //Create one time blend shape for Timeline, for each mesh
+            new BlendShapeController(origSmrMesh, smr, $"{smr.name}_{PregnancyPlusPlugin.GUID}");
 
             return true;
         }    
