@@ -34,11 +34,8 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// This will help pvent too much XY direction change, keeping the belly more round than disk like at large sizes
         /// </summary>
-        internal Vector3 SculptBaseShape(Transform meshRootTf, Vector3 originalVerticeLs, Vector3 smoothedVector, Vector3 sphereCenter) 
+        internal Vector3 SculptBaseShape(Transform meshRootTf, Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 sphereCenterLs) 
         {
-            var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
-            var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenter);
-
             //We only want to limit expansion n XY plane for this lerp
             var sphereCenterXY = new Vector2(sphereCenterLs.x, sphereCenterLs.y);
             var origVertXY = new Vector2(originalVerticeLs.x, originalVerticeLs.y);
@@ -51,22 +48,18 @@ namespace KK_PregnancyPlus
             //set limited XY, but keep the new z postion
             smoothedVectorLs = new Vector3(lerpXY.x, lerpXY.y, smoothedVectorLs.z);
 
-            return meshRootTf.TransformPoint(smoothedVectorLs);
+            return smoothedVectorLs;
         }
 
 
         /// <summary>   
         /// This will shift the sphereCenter position *After sphereifying* on Y or Z axis (This stretches the mesh, where pre sphereifying, it would move the sphere within the mesh like Move Y)
         /// </summary>
-        internal Vector3 GetUserShiftTransform(Transform meshRootTf, Vector3 smoothedVector, Vector3 sphereCenterPos, float sphereRadius) 
-        {            
-            //Get local space equivalents            
-            var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenterPos);
-
+        internal Vector3 GetUserShiftTransform(Transform meshRootTf, Vector3 smoothedVectorLs, Vector3 sphereCenterLs, float sphereRadius) 
+        {                     
             //IF the user has selected a y value, lerp the top and bottom slower and lerp any verts closer to z = 0 slower
             if (GetInflationShiftY() != 0) 
             {
-                var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
                 var distFromYCenterLs = smoothedVectorLs.y - sphereCenterLs.y;
                 //Lerp up and down positon more when the belly is near the center Y, and less for top and bottom
                 var lerpY = Mathf.Lerp(GetInflationShiftY(), GetInflationShiftY()/4, Math.Abs(distFromYCenterLs/(sphereRadius*1.1f)));
@@ -77,33 +70,28 @@ namespace KK_PregnancyPlus
                 var finalLerpPos = Vector3.Slerp(yLerpedsmoothedVector, smoothedVectorLs, Math.Abs(distanceSide/(sphereRadius*3) + 0.1f));
 
                 //return the shift up/down 
-                smoothedVector = meshRootTf.TransformPoint(finalLerpPos);
+                smoothedVectorLs = finalLerpPos;
             }
 
             //If the user has selected a z value
             if (GetInflationShiftZ() != 0) 
             {
-                var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);//In case it was changed above in Y
-
                 //Move the verts closest to sphere center Z more slowly than verts at the belly button.  Otherwise you stretch the ones near the body too much
                 var lerpZ = Mathf.Lerp(0, GetInflationShiftZ(), (smoothedVectorLs.z - sphereCenterLs.z)/(sphereRadius *2));
                 var finalLerpPos = smoothedVectorLs + Vector3.forward * lerpZ;
 
-                smoothedVector = meshRootTf.TransformPoint(finalLerpPos);
+                smoothedVectorLs = finalLerpPos;
             }
-            return smoothedVector;
+
+            return smoothedVectorLs;
         }
 
 
         /// <summary>   
-        /// This will stretch the mesh wider
+        /// This will stretch the belly mesh wider
         /// </summary>        
-        internal Vector3 GetUserStretchXTransform(Transform meshRootTf, Vector3 smoothedVector, Vector3 sphereCenterPos) 
+        internal Vector3 GetUserStretchXTransform(Transform meshRootTf, Vector3 smoothedVectorLs, Vector3 sphereCenterLs) 
         {
-            //Allow user adjustment of the width of the belly
-            //Get local space position to eliminate rotation in world space
-            var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
-            var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenterPos);
             //local Distance left or right from sphere center
             var distFromXCenterLs = smoothedVectorLs.x - sphereCenterLs.x;                
 
@@ -111,18 +99,13 @@ namespace KK_PregnancyPlus
             //Get new local space X position
             smoothedVectorLs.x = (sphereCenterLs + Vector3.right * changeInDist).x;
 
-            //Convert back to world space
-            return meshRootTf.TransformPoint(smoothedVectorLs);  
+            return smoothedVectorLs;  
         }
 
 
-        internal Vector3 GetUserStretchYTransform(Transform meshRootTf, Vector3 smoothedVector, Vector3 sphereCenterPos) 
+        internal Vector3 GetUserStretchYTransform(Transform meshRootTf, Vector3 smoothedVectorLs, Vector3 sphereCenterLs) 
         {
             //Allow user adjustment of the height of the belly
-            //Get local space position to eliminate rotation in world space
-            var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
-            var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenterPos);
-
             //local Distance up or down from sphere center
             var distFromYCenterLs = smoothedVectorLs.y - sphereCenterLs.y; 
             
@@ -131,20 +114,15 @@ namespace KK_PregnancyPlus
             //Get new local space X position
             smoothedVectorLs.y = (sphereCenterLs + Vector3.up * changeInDist).y;
             
-            //Convert back to world space
-            return meshRootTf.TransformPoint(smoothedVectorLs); 
+            return smoothedVectorLs; 
         }
 
 
         /// <summary>   
         /// This sill taper the belly shape based on user input slider. shrinking the top width, and expanding the bottom width along the YX adis
         /// </summary>
-        internal Vector3 GetUserTaperYTransform(Transform meshRootTf, Vector3 smoothedVector, Vector3 sphereCenterPos, float sphereRadius) 
+        internal Vector3 GetUserTaperYTransform(Transform meshRootTf, Vector3 smoothedVectorLs, Vector3 sphereCenterLs, float sphereRadius) 
         {
-            //Get local space equivalents
-            var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
-            var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenterPos);
-
             //local Distance up or down from sphere center
             var distFromYCenterLs = smoothedVectorLs.y - sphereCenterLs.y; 
             var distFromXCenterLs = smoothedVectorLs.x - sphereCenterLs.x; 
@@ -162,19 +140,15 @@ namespace KK_PregnancyPlus
 
             smoothedVectorLs.x = (smoothedVectorLs + Vector3.right * taperY).x;
 
-            return meshRootTf.TransformPoint(smoothedVectorLs);
+            return smoothedVectorLs;
         }
 
 
         /// <summary>   
         /// This sill taper the belly shape based on user input slider. pulling out the bottom and pushing in the top along the XZ axis
         /// </summary>
-        internal Vector3 GetUserTaperZTransform(Transform meshRootTf, Vector3 smoothedVector, Vector3 sphereCenterPos, float sphereRadius) 
+        internal Vector3 GetUserTaperZTransform(Transform meshRootTf, Vector3 smoothedVectorLs, Vector3 sphereCenterLs, float sphereRadius) 
         {
-            //Get local space equivalents
-            var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
-            var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenterPos);
-
             //local Distance up or down from sphere center
             var distFromYCenterLs = smoothedVectorLs.y - sphereCenterLs.y; 
             var distFromZCenterLs = smoothedVectorLs.z - sphereCenterLs.z; 
@@ -195,58 +169,54 @@ namespace KK_PregnancyPlus
                 smoothedVectorLs = taperedZVert;
             }
 
-            return meshRootTf.TransformPoint(smoothedVectorLs);
+            return smoothedVectorLs;
         }
 
 
         /// <summary>   
         /// This will add a fat fold across the middle of the belly
         /// </summary>        
-        internal Vector3 GetUserFatFoldTransform(Transform meshRootTf, Vector3 originalVerticeLs, Vector3 smoothedVector, Vector3 sphereCenterPos, float sphereRadius) {
-            var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenterPos);
-            var smoothVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
-            var origSmoothVectorLs = smoothVectorLs;
+        internal Vector3 GetUserFatFoldTransform(Transform meshRootTf, Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 sphereCenterLs, float sphereRadius) {
+            var origSmoothVectorLs = smoothedVectorLs;
             var inflationFatFold = GetInflationFatFold();
 
             //Define how hight and low from center we want to pull the skin inward
             var distFromCenter = sphereRadius;                
-            var svDistFromCenter = Math.Abs(smoothVectorLs.y - sphereCenterLs.y);
+            var svDistFromCenter = Math.Abs(smoothedVectorLs.y - sphereCenterLs.y);
 
-            var resultVert = smoothVectorLs;
+            var resultVert = smoothedVectorLs;
             //Make V shape in the middle of the belly horizontally
             if (svDistFromCenter <= distFromCenter) {        
                 //The closer to Y = 0 the more inwards the pull            
-                smoothVectorLs = Vector3.Slerp(originalVerticeLs, smoothVectorLs, svDistFromCenter/distFromCenter + (inflationFatFold -1));
+                smoothedVectorLs = Vector3.Slerp(originalVerticeLs, smoothedVectorLs, svDistFromCenter/distFromCenter + (inflationFatFold -1));
             }
 
             //Shrink skin above center line.  Want it bigger down below the line to look more realistic
-            if (smoothVectorLs.y > sphereCenterLs.y) {                    
+            if (smoothedVectorLs.y > sphereCenterLs.y) {                    
                 //As the verts get higher, move them back towards their original position
-                smoothVectorLs = Vector3.Slerp(smoothVectorLs, originalVerticeLs, (smoothVectorLs.y - sphereCenterLs.y)/(sphereRadius*1.5f));
+                smoothedVectorLs = Vector3.Slerp(smoothedVectorLs, originalVerticeLs, (smoothedVectorLs.y - sphereCenterLs.y)/(sphereRadius*1.5f));
             }
 
-            return meshRootTf.TransformPoint(smoothVectorLs);
+            return smoothedVectorLs;
         }
 
 
         /// <summary>
         /// Dampen any mesh changed near edged of the belly (sides, top, and bottom) to prevent too much vertex stretching.false  The more forward the vertex is from Z the more it's allowd to be altered by sliders
         /// </summary>        
-        internal Vector3 RoundToSides(Transform meshRootTf, Vector3 originalVerticeLs, Vector3 smoothedVector, Vector3 sphereCenter, float inflatedToCenterDist) 
+        internal Vector3 RoundToSides(Transform meshRootTf, Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 sphereCenterLs, float inflatedToCenterDist) 
         {        
             var zSmoothDist = inflatedToCenterDist/3f;//Just pick a float that looks good as a z limiter
-            //Get local space vectors to eliminate rotation in world space
-            var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
 
             // To calculate vectors z difference, we need to do it from local space to eliminate any character rotation in world space
-            var forwardFromCenter = smoothedVectorLs.z - meshRootTf.InverseTransformPoint(sphereCenter).z;            
+            var forwardFromCenter = smoothedVectorLs.z - sphereCenterLs.z;            
             if (forwardFromCenter <= zSmoothDist) {                                
                 var lerpScale = Mathf.Abs(forwardFromCenter/zSmoothDist);//As vert.z approaches our z limit, allow it to move more
-                //Back to world space
-                smoothedVector = meshRootTf.TransformPoint(Vector3.Lerp(originalVerticeLs, smoothedVectorLs, lerpScale));
+
+                smoothedVectorLs = Vector3.Lerp(originalVerticeLs, smoothedVectorLs, lerpScale);
             }
 
-            return smoothedVector;
+            return smoothedVectorLs;
         }
         
 

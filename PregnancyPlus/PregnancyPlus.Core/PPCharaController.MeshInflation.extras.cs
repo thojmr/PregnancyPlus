@@ -106,23 +106,25 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Tried to correct cloth flattening when inflation is at max, by offsetting each vert based on the distance it is from the sphere center to the max sphere radius
         /// </summary>
-        /// <param name="sphereCenter">The center position of the inflation sphere</param>
+        /// <param name="meshRootTf">The transform used to convert a mesh vector from local space to worldspace and back</param>
+        /// <param name="sphereCenterWs">The center position of the inflation sphere</param>
         /// <param name="sphereRadius">The desired sphere radius</param>
         /// <param name="waistWidth">The average width of the characters waist</param>
         /// <param name="origVertWS">The original verticie's worldspace position</param>
-        internal float GetClothesFixOffset(Vector3 sphereCenter, float sphereRadius, float waistWidth, Vector3 origVertWS, string meshName) 
+        internal float GetClothesFixOffset(Transform meshRootTf, Vector3 sphereCenterWs, float sphereRadius, float waistWidth, Vector3 origVertWS, string meshName) 
         {  
             //The size of the area to spread the flattened offsets over like shrinking center dist -> inflated dist into a small area shifted outside the radius.  So hard to explin with words...
-            float baseFlattenExtent = bellyInfo.WaistWidth/40 + (bellyInfo.WaistWidth/40 * GetInflationClothOffset());
+            float shrinkBy = bellyInfo.WaistWidth/40 + (bellyInfo.WaistWidth/40 * GetInflationClothOffset());
 
-            var inflatedVerWS = (origVertWS - sphereCenter).normalized * sphereRadius + sphereCenter;//Get the line we want to do measurements on            
+            var inflatedVerWS = (origVertWS - sphereCenterWs).normalized * sphereRadius + sphereCenterWs;//Get the line we want to do measurements on            
             //We dont care about empty space at sphere center, move outwards a bit before determining vector location on the line
             float awayFromCenter = (waistWidth/3);
 
+            //The total radial distance after removing the distance we want to ignore
             var totatDist = (sphereRadius - awayFromCenter);
-            var originToEndDist = FastDistance(origVertWS, inflatedVerWS);
-            //Get the positon on a line that this vector exists between flattenExtensStartAt -> to sphereRadius.  Shrink it to scale
-            var offset = Math.Abs((totatDist - originToEndDist)) * baseFlattenExtent;
+            var originToEndDist = FastDistance(meshRootTf.InverseTransformPoint(origVertWS), meshRootTf.InverseTransformPoint(inflatedVerWS));
+            //Get the positon on a line that this vector exists between flattenExtensStartAt -> to sphereRadius. Then shrink it to scale
+            var offset = Math.Abs((totatDist - originToEndDist)) * shrinkBy;
 
             //This is the total additional distance we want to move this vert away from sphere center
             return offset + GetClothLayerOffset(meshName);

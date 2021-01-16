@@ -112,7 +112,7 @@ namespace KK_PregnancyPlus
 
             //do the same for body meshs
             var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody);
-            anyMeshChanges = LoopAndApplyMeshChanges(clothRenderers, sliderHaveChanged, anyMeshChanges);
+            anyMeshChanges = LoopAndApplyMeshChanges(bodyRenderers, sliderHaveChanged, anyMeshChanges);
 
             //If any changes were applied, updated the last used shape for the Restore GUI button
             if (infConfig.HasAnyValue()) 
@@ -324,7 +324,7 @@ namespace KK_PregnancyPlus
                         else 
                         {   
                             //Reduce cloth flattening at largest inflation values                     
-                            float reduceClothFlattenOffset = GetClothesFixOffset(clothSphereCenterOffset, sphereRadius, waistWidth, origVertWs, smr.name);
+                            float reduceClothFlattenOffset = GetClothesFixOffset(meshRootTf, clothSphereCenterOffset, sphereRadius, waistWidth, origVertWs, smr.name);
                             verticieToSpherePos = (origVertWs - clothSphereCenterOffset).normalized * (sphereRadius + reduceClothFlattenOffset) + clothSphereCenterOffset;
                         }     
 
@@ -402,66 +402,69 @@ namespace KK_PregnancyPlus
         /// <param name="sphereCenterPos">The center of the imaginary sphere</param>
         /// <param name="waistWidth">The characters waist width that limits the width of the belly (future implementation)</param>
         /// <param name="meshRootTf">The transform used to convert a mesh vector from local space to worldspace and back, also servers as the point where we want to stop making mesh changes when Z < 0</param>
-        internal Vector3 SculptInflatedVerticie(Vector3 originalVerticeWs, Vector3 inflatedVerticieWs, Vector3 sphereCenterPos, float waistWidth, Transform meshRootTf, Vector3 preMorphSphereCenter, float sphereRadius) 
+        internal Vector3 SculptInflatedVerticie(Vector3 originalVerticeWs, Vector3 inflatedVerticieWs, Vector3 sphereCenterWs, float waistWidth, Transform meshRootTf, Vector3 preMorphSphereCenterWs, float sphereRadius) 
         {
             //No smoothing modification in debug mode
             if (PregnancyPlusPlugin.MakeBalloon.Value) return inflatedVerticieWs;            
             
             //get the smoothing distance limits so we don't have weird polygons and shapes on the edges, and prevents morphs from shrinking past original skin boundary
-            var pmSkinToCenterDist = Math.Abs(FastDistance(preMorphSphereCenter, originalVerticeWs));
-            var pmInflatedToCenterDist = Math.Abs(FastDistance(preMorphSphereCenter, inflatedVerticieWs));
-            var skinToCenterDist = Math.Abs(FastDistance(sphereCenterPos, originalVerticeWs));
-            var inflatedToCenterDist = Math.Abs(FastDistance(sphereCenterPos, inflatedVerticieWs));
+            var pmSkinToCenterDist = Math.Abs(FastDistance(preMorphSphereCenterWs, originalVerticeWs));
+            var pmInflatedToCenterDist = Math.Abs(FastDistance(preMorphSphereCenterWs, inflatedVerticieWs));
+            var skinToCenterDist = Math.Abs(FastDistance(sphereCenterWs, originalVerticeWs));
+            var inflatedToCenterDist = Math.Abs(FastDistance(sphereCenterWs, inflatedVerticieWs));
             
-            // PregnancyPlusPlugin.Logger.LogInfo($" preMorphSphereCenter {preMorphSphereCenter} sphereCenterPos {sphereCenterPos} meshRootTf.pos {meshRootTf.position}");
+            // PregnancyPlusPlugin.Logger.LogInfo($" preMorphSphereCenter {preMorphSphereCenter} sphereCenterWs {sphereCenterWs} meshRootTf.pos {meshRootTf.position}");
 
             //Only apply morphs if the imaginary sphere is outside of the skins boundary (Don't want to shrink anything inwards, only out)
             if (skinToCenterDist >= inflatedToCenterDist || pmSkinToCenterDist > pmInflatedToCenterDist) return originalVerticeWs; 
 
             //Pre compute some constant Vert values so we dont have to do it for each transform
+            //Most all of the measurements below are done in local space to ignore character rotation and position
             var originalVerticeLs = meshRootTf.InverseTransformPoint(originalVerticeWs);
+            var inflatedVerticieLs = meshRootTf.InverseTransformPoint(inflatedVerticieWs);
+            var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenterWs);
 
             //Get the base shape with XY plane size limits
-            var smoothedVector = SculptBaseShape(meshRootTf, originalVerticeLs, inflatedVerticieWs, sphereCenterPos);      
+            var smoothedVectorLs = SculptBaseShape(meshRootTf, originalVerticeLs, inflatedVerticieLs, sphereCenterLs);      
 
             //Allow user adjustment of the height and width placement of the belly
             if (GetInflationShiftY() != 0 || GetInflationShiftZ() != 0) 
             {
-                smoothedVector = GetUserShiftTransform(meshRootTf, smoothedVector, sphereCenterPos, skinToCenterDist);            
+                smoothedVectorLs = GetUserShiftTransform(meshRootTf, smoothedVectorLs, sphereCenterLs, skinToCenterDist);            
             }
 
             //Allow user adjustment of the width of the belly
             if (GetInflationStretchX() != 0) 
             {   
-                smoothedVector = GetUserStretchXTransform(meshRootTf, smoothedVector, sphereCenterPos);
+                smoothedVectorLs = GetUserStretchXTransform(meshRootTf, smoothedVectorLs, sphereCenterLs);
             }
 
             //Allow user adjustment of the height of the belly
             if (GetInflationStretchY() != 0) 
             {   
-                smoothedVector = GetUserStretchYTransform(meshRootTf, smoothedVector, sphereCenterPos);
+                smoothedVectorLs = GetUserStretchYTransform(meshRootTf, smoothedVectorLs, sphereCenterLs);
             }
 
             //Allow user adjustment of the egg like shape of the belly
             if (GetInflationTaperY() != 0) 
             {
-                smoothedVector = GetUserTaperYTransform(meshRootTf, smoothedVector, sphereCenterPos, skinToCenterDist);
+                smoothedVectorLs = GetUserTaperYTransform(meshRootTf, smoothedVectorLs, sphereCenterLs, skinToCenterDist);
             }
 
             //Allow user adjustment of the front angle of the belly
             if (GetInflationTaperZ() != 0) 
             {
-                smoothedVector = GetUserTaperZTransform(meshRootTf, smoothedVector, sphereCenterPos, skinToCenterDist);
+                smoothedVectorLs = GetUserTaperZTransform(meshRootTf, smoothedVectorLs, sphereCenterLs, skinToCenterDist);
             }
 
             //Allow user adjustment of the fat fold line through the middle of the belly
             if (GetInflationFatFold() > 0) 
             {
-                smoothedVector = GetUserFatFoldTransform(meshRootTf, originalVerticeLs, smoothedVector, sphereCenterPos, sphereRadius);
+                smoothedVectorLs = GetUserFatFoldTransform(meshRootTf, originalVerticeLs, smoothedVectorLs, sphereCenterLs, sphereRadius);
             }
 
             //After all user transforms are applied, remove the edges from the sides/top of the belly
-            smoothedVector = RoundToSides(meshRootTf, originalVerticeLs, smoothedVector, sphereCenterPos, inflatedToCenterDist);
+            smoothedVectorLs = RoundToSides(meshRootTf, originalVerticeLs, smoothedVectorLs, sphereCenterLs, inflatedToCenterDist);
 
             // //Experimental, move more polygons to the front of the belly at max, Measured by trying to keep belly button size the same at 0 and max inflation size
             // var bellyTipZ = (center.z + maxSphereRadius);
@@ -476,9 +479,10 @@ namespace KK_PregnancyPlus
 
             //**** All of the below are post mesh change checks to make sure the vertex position don't go outside of bounds
 
-            var currentVectorDistance = Math.Abs(FastDistance(sphereCenterPos, smoothedVector));
-            var pmCurrentVectorDistance = Math.Abs(FastDistance(preMorphSphereCenter, smoothedVector));
-            var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
+            //Smoothed back to workdspace
+            var smoothedVectorWs = meshRootTf.TransformPoint(smoothedVectorLs);
+            var currentVectorDistance = Math.Abs(FastDistance(sphereCenterWs, smoothedVectorWs));
+            var pmCurrentVectorDistance = Math.Abs(FastDistance(preMorphSphereCenterWs, smoothedVectorWs));            
 
             //Don't allow any morphs to shrink skin smaller than its original position, only outward morphs allowed (check this after all morphs)
             if (skinToCenterDist > currentVectorDistance || pmSkinToCenterDist > pmCurrentVectorDistance) 
@@ -496,15 +500,15 @@ namespace KK_PregnancyPlus
             if (originalVerticeLs.z > smoothedVectorLs.z) 
             {
                 //Get the average(not really average) x and y change to move the new position halfway back to the oiriginal vert (hopefullt less strange triangles near belly to body edge)
-                var yChangeAvg = (smoothedVector.y - originalVerticeWs.y)/3;
-                var xChangeAvg = (smoothedVector.x - originalVerticeWs.x)/3;
-                smoothedVector = new Vector3(smoothedVector.x - xChangeAvg, smoothedVector.y - yChangeAvg, originalVerticeWs.z);
+                var yChangeAvg = (smoothedVectorWs.y - originalVerticeWs.y)/3;
+                var xChangeAvg = (smoothedVectorWs.x - originalVerticeWs.x)/3;
+                smoothedVectorWs = new Vector3(smoothedVectorWs.x - xChangeAvg, smoothedVectorWs.y - yChangeAvg, originalVerticeWs.z);
             }
 
             //TODO at this point we really need some form of final mesh smoothing pass for where the belly meets the body to remove the sharp edges that the transforms above create.
             //Just don't want to make the sliders any slower than they already are
 
-            return smoothedVector;             
+            return smoothedVectorWs;             
         }
     
 
