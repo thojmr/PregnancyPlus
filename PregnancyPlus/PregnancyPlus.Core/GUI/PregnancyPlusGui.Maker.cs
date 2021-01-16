@@ -143,6 +143,14 @@ namespace KK_PregnancyPlus
             });
             e.AddControl(new MakerText("Control the distance between each clothing layer.  Will help reduce clipping.", cat, _pluginInstance) { TextColor = hintColor });
             
+            var fatFold = e.AddControl(new MakerSlider(cat, "Fat Fold", SliderRange.inflationFatFold[0], SliderRange.inflationFatFold[1], ppDataDefaults.inflationFatFold, _pluginInstance));
+            fatFold.BindToFunctionController<PregnancyPlusCharaController, float>(controller => controller.infConfig.inflationFatFold, (controller, value) => {
+                var oldVal = controller.infConfig.inflationFatFold;
+                controller.infConfig.inflationFatFold = value;
+                if (oldVal != value) OnMakerSettingsChanged(controller);
+            });
+            e.AddControl(new MakerText("Control the size of the fat fold on the characters belly.  0 for none.  Use the 'Inflation Size' slider first.", cat, _pluginInstance) { TextColor = hintColor });
+            
         }
 
         //On any slider change, trigger mesh inflaiton update

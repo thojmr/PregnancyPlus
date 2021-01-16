@@ -451,6 +451,12 @@ namespace KK_PregnancyPlus
                 smoothedVector = GetUserTaperZTransform(meshRootTf, smoothedVector, sphereCenterPos, skinToCenterDist);
             }
 
+            //Allow user adjustment of the fat fold line through the middle of the belly
+            if (GetInflationFatFold() > 0) 
+            {
+                smoothedVector = GetUserFatFoldTransform(meshRootTf, originalVertice, smoothedVector, sphereCenterPos, sphereRadius);
+            }
+
             //After all user transforms are applied, remove the edges from the sides/top of the belly
             smoothedVector = RoundToSides(meshRootTf, originalVertice, smoothedVector, sphereCenterPos, inflatedToCenterDist);
 

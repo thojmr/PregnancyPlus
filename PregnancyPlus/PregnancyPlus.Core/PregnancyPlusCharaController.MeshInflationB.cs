@@ -286,6 +286,37 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>   
+        /// This will add a fat fold across the middle of the belly
+        /// </summary>        
+        internal Vector3 GetUserFatFoldTransform(Transform meshRootTf, Vector3 originalVertice, Vector3 smoothedVector, Vector3 sphereCenterPos, float sphereRadius) {
+            var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenterPos);
+            var originalVerticeLs = meshRootTf.InverseTransformPoint(originalVertice);
+            var smoothVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
+            var origSmoothVectorLs = smoothVectorLs;
+            var inflationFatFold = GetInflationFatFold();
+
+            //Define how hight and low from center we want to pull the skin inward
+            var distFromCenter = sphereRadius;                
+            var svDistFromCenter = Math.Abs(smoothVectorLs.y - sphereCenterLs.y);
+
+            var resultVert = smoothVectorLs;
+            //Make V shape in the middle of the belly horizontally
+            if (svDistFromCenter <= distFromCenter) {        
+                //The closer to Y = 0 the more inwards the pull            
+                smoothVectorLs = Vector3.Slerp(originalVerticeLs, smoothVectorLs, svDistFromCenter/distFromCenter + (inflationFatFold -1));
+            }
+
+            //Shrink skin above center line.  Want it bigger down below the line to look more realistic
+            if (smoothVectorLs.y > sphereCenterLs.y) {                    
+                //As the verts get higher, move them back towards their original position
+                smoothVectorLs = Vector3.Slerp(smoothVectorLs, originalVerticeLs, (smoothVectorLs.y - sphereCenterLs.y)/(sphereRadius*1.5f));
+            }
+
+            return meshRootTf.TransformPoint(smoothVectorLs);
+        }
+
+
+        /// <summary>   
         /// This will stretch the mesh wider
         /// </summary>        
         internal Vector3 GetUserStretchXTransform(Transform meshRootTf, Vector3 smoothedVector, Vector3 sphereCenterPos) 
@@ -408,6 +439,7 @@ namespace KK_PregnancyPlus
             if (infConfig.inflationTaperZ != infConfigHistory.inflationTaperZ) hasChanges = true;
             if (infConfig.inflationMultiplier != infConfigHistory.inflationMultiplier) hasChanges = true;
             if (infConfig.inflationClothOffset != infConfigHistory.inflationClothOffset) hasChanges = true;
+            if (infConfig.inflationFatFold != infConfigHistory.inflationFatFold) hasChanges = true;
 
             return hasChanges;
         }
@@ -628,6 +660,13 @@ namespace KK_PregnancyPlus
             if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationClothOffset;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationClothOffset != null ? PregnancyPlusPlugin.StoryModeInflationClothOffset.Value : 0;
             return (infConfig.inflationClothOffset + globalOverrideVal);
+        }
+
+        internal float GetInflationFatFold() 
+        {
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationFatFold;
+            var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationFatFold != null ? PregnancyPlusPlugin.StoryModeInflationFatFold.Value : 0;
+            return (infConfig.inflationFatFold + globalOverrideVal);
         }
 
         

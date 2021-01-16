@@ -22,7 +22,11 @@ namespace KK_PregnancyPlus
         public static ConfigEntry<float> StoryModeInflationShiftZ { get; private set; }
         public static ConfigEntry<float> StoryModeInflationTaperY { get; private set; }
         public static ConfigEntry<float> StoryModeInflationTaperZ { get; private set; }        
-        public static ConfigEntry<float> StoryModeInflationClothOffset { get; private set; }        
+        public static ConfigEntry<float> StoryModeInflationClothOffset { get; private set; }    
+        public static ConfigEntry<float> StoryModeInflationFatFold { get; private set; }    
+
+
+        //Keyboard shortcuts for inflation on the fly!    
         public static ConfigEntry<KeyboardShortcut> StoryModeInflationIncrease { get; private set; }        
         public static ConfigEntry<KeyboardShortcut> StoryModeInflationDecrease { get; private set; }    
         public static ConfigEntry<KeyboardShortcut> StoryModeInflationReset { get; private set; }    
@@ -102,7 +106,13 @@ namespace KK_PregnancyPlus
             StoryModeInflationClothOffset = Config.Bind<float>(storyConfigTitle, "Global Cloth Offset Adjustment", 0, 
                 new ConfigDescription("Allows you to increase or decrease the cloth layer distance to reduce clipping",
                 new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationClothOffset[0], PregnancyPlusGui.SliderRange.inflationClothOffset[1])));
-            StoryModeInflationClothOffset.SettingChanged += InflationConfig_SettingsChanged;  
+            StoryModeInflationClothOffset.SettingChanged += InflationConfig_SettingsChanged; 
+
+            StoryModeInflationFatFold = Config.Bind<float>(storyConfigTitle, "Global Fat Fold Adjustment", 0, 
+                new ConfigDescription("Allows you to increase or decrease the fat fold size, 0 for none",
+                new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationFatFold[0], PregnancyPlusGui.SliderRange.inflationFatFold[1])));
+            StoryModeInflationFatFold.SettingChanged += InflationConfig_SettingsChanged;  
+                    
                     
 
             //Live inflation in story mode.  Increase or decrease base inflationSize with a keybinding press

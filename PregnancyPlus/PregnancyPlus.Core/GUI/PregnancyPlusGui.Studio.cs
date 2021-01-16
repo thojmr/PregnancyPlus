@@ -26,6 +26,7 @@ namespace KK_PregnancyPlus
         private const string inflationTaperY = "        Taper Y";
         private const string inflationTaperZ = "        Taper Z";
         private const string inflationClothOffset = "        Cloth Offset";
+        private const string inflationFatFold = "        Fat Fold";
 
         internal static void InitStudio(Harmony hi, PregnancyPlusPlugin instance)
         {
@@ -257,6 +258,24 @@ namespace KK_PregnancyPlus
                         }
                     });
                     
+            cat.AddControl(new CurrentStateCategorySlider(inflationFatFold, c =>
+                {                                       
+                    var ctrl = GetCharCtrl(c);                                                   
+                    return ctrl != null ? ctrl.infConfig.inflationFatFold: 0;
+                    
+                }, 
+                    SliderRange.inflationFatFold[0], 
+                    SliderRange.inflationFatFold[1]
+                ))
+                    .Value.Subscribe(f => { 
+                        foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) 
+                        {  
+                            if (ctrl.infConfig.inflationFatFold == f) continue;                    
+                            ctrl.infConfig.inflationFatFold = f;
+                            ctrl.MeshInflate();                             
+                        }
+                    });
+                    
         }
 
         //Reduce, reuse, recycle methods
@@ -349,6 +368,10 @@ namespace KK_PregnancyPlus
 
                         case "Slider " + inflationClothOffset:
                             slider.value = _infConfig.inflationClothOffset;
+                            continue;
+
+                        case "Slider " + inflationFatFold:
+                            slider.value = _infConfig.inflationFatFold;
                             continue;
 
                         default:
