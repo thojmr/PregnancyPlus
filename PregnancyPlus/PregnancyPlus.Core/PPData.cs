@@ -36,6 +36,48 @@ namespace KK_PregnancyPlus
             return $" inflationSize {inflationSize} inflationMultiplier {inflationMultiplier} GameplayEnabled {GameplayEnabled} ...";
         }
 
+        //Allow comparison between all public properties of two PregnancyPlusData objects
+        public override bool Equals(Object obj)
+        {
+            var otherData = obj as PregnancyPlusData;
+            if (otherData == null) return false;
+            var hasChanges = false;
+
+            //Compare this class instance values to another
+            if (inflationSize != otherData.inflationSize) hasChanges = true;              
+            if (inflationMoveY != otherData.inflationMoveY) hasChanges = true;
+            if (inflationMoveZ != otherData.inflationMoveZ) hasChanges = true;
+            if (inflationStretchX != otherData.inflationStretchX) hasChanges = true;
+            if (inflationStretchY != otherData.inflationStretchY) hasChanges = true;
+            if (inflationShiftY != otherData.inflationShiftY) hasChanges = true;
+            if (inflationShiftZ != otherData.inflationShiftZ) hasChanges = true;
+            if (inflationTaperY != otherData.inflationTaperY) hasChanges = true;
+            if (inflationTaperZ != otherData.inflationTaperZ) hasChanges = true;
+            if (inflationMultiplier != otherData.inflationMultiplier) hasChanges = true;
+            if (inflationClothOffset != otherData.inflationClothOffset) hasChanges = true;
+            if (inflationFatFold != otherData.inflationFatFold) hasChanges = true;           
+
+            return hasChanges;
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = inflationSize.GetHashCode() +
+                inflationMoveY.GetHashCode() +
+                inflationMoveZ.GetHashCode() +
+                inflationStretchX.GetHashCode() +
+                inflationStretchY.GetHashCode() +
+                inflationShiftY.GetHashCode() +
+                inflationShiftZ.GetHashCode() +
+                inflationTaperY.GetHashCode() +
+                inflationTaperZ.GetHashCode() +
+                inflationMultiplier.GetHashCode() +
+                inflationClothOffset.GetHashCode() +
+                inflationFatFold.GetHashCode();
+
+            return hashCode;            
+        }
+
 #region Save/Load (Thanks for the code Marco)
 
         public bool HasAnyValue() {

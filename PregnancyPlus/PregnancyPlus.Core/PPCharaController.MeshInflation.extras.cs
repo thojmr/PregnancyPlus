@@ -211,23 +211,7 @@ namespace KK_PregnancyPlus
         internal bool NeedsMeshUpdate(bool pluginConfigSliderChanged = false) 
         {
             if (pluginConfigSliderChanged) return true;
-            
-            bool hasChanges = false;
-            //TODO change to loop over all objects in preg data, so when we add a new one we dont have to add it here
-            if (infConfig.inflationSize != infConfigHistory.inflationSize) hasChanges = true;              
-            if (infConfig.inflationMoveY != infConfigHistory.inflationMoveY) hasChanges = true;
-            if (infConfig.inflationMoveZ != infConfigHistory.inflationMoveZ) hasChanges = true;
-            if (infConfig.inflationStretchX != infConfigHistory.inflationStretchX) hasChanges = true;
-            if (infConfig.inflationStretchY != infConfigHistory.inflationStretchY) hasChanges = true;
-            if (infConfig.inflationShiftY != infConfigHistory.inflationShiftY) hasChanges = true;
-            if (infConfig.inflationShiftZ != infConfigHistory.inflationShiftZ) hasChanges = true;
-            if (infConfig.inflationTaperY != infConfigHistory.inflationTaperY) hasChanges = true;
-            if (infConfig.inflationTaperZ != infConfigHistory.inflationTaperZ) hasChanges = true;
-            if (infConfig.inflationMultiplier != infConfigHistory.inflationMultiplier) hasChanges = true;
-            if (infConfig.inflationClothOffset != infConfigHistory.inflationClothOffset) hasChanges = true;
-            if (infConfig.inflationFatFold != infConfigHistory.inflationFatFold) hasChanges = true;
-
-            return hasChanges;
+            return infConfig.Equals(infConfigHistory);
         }
         
 
