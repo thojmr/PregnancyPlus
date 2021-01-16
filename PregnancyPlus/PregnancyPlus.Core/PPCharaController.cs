@@ -117,7 +117,7 @@ namespace KK_PregnancyPlus
             //Only reload when in story mode.  Doesnt need to in Studio/Maker I guess
             if (PregnancyPlusPlugin.StoryMode != null && !PregnancyPlusPlugin.StoryMode.Value) return;
             
-            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) 
+            if (!StudioAPI.InsideStudio && !MakerAPI.InsideMaker) 
             {
                 #if KK
                     GetWeeksAndSetInflation(true);                                 
