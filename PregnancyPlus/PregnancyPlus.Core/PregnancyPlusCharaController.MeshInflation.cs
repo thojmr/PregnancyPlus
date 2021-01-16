@@ -161,6 +161,8 @@ namespace KK_PregnancyPlus
             //We should reuse existing measurements when we can, because characters waise bone distance chan change with animation, which affects belly size.
             if (bellyInfo != null && !needsSphereRecalc) 
             {
+                if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" waistToRibDist {bellyInfo.WaistHeight} waistWidth {bellyInfo.WaistWidth} sphereRadiusM {bellyInfo.SphereRadius}");
+
                 //Measeurements are fine and can be reused
                 return Tuple.Create(bellyInfo.WaistWidth, bellyInfo.SphereRadius);
             } 
@@ -172,6 +174,8 @@ namespace KK_PregnancyPlus
 
                 //Store new values for later checks
                 bellyInfo = new BellyInfo(bellyInfo.WaistWidth, bellyInfo.WaistHeight, newSphereRadiusMult, newSphereRadius, charScale, GetInflationMultiplier());
+
+                if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" waistToRibDist {bellyInfo.WaistHeight} waistWidth {bellyInfo.WaistWidth} sphereRadiusM {newSphereRadiusMult}");           
                 
                 return Tuple.Create(bellyInfo.WaistWidth, newSphereRadiusMult);
             } 
@@ -208,7 +212,7 @@ namespace KK_PregnancyPlus
             var thighRBone = PregnancyPlusHelper.GetBone(ChaControl, thighRName);
             if (thighLBone == null || thighRBone == null) return Tuple.Create<float, float>(0, 0);
             
-            var waistWidth = Math.Abs(thighLBone.transform.InverseTransformPoint(thighLBone.position).x - thighLBone.transform.InverseTransformPoint(thighRBone.position).x); 
+            var waistWidth = Vector3.Distance(thighLBone.transform.InverseTransformPoint(thighLBone.position), thighLBone.transform.InverseTransformPoint(thighRBone.position)); 
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" waistWidth {waistWidth}");
 
             //Calculate sphere radius based on distance from waist to ribs (seems big, but lerping later will trim much of it), added Math.Min for skinny waists
@@ -221,14 +225,6 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" scaled waistToRibDist {waistToRibDist} scaled waistWidth {waistWidth} sphereRadiusM {sphereRadiusMultiplied}");            
 
             return Tuple.Create(waistWidth, sphereRadiusMultiplied);
-        }
-
-        /// <summary>
-        /// Calculate the initial sphere radius by taking the smaller of the wasit width or waist to rib height. This is pre InflationMultiplier
-        /// </summary>
-        internal float GetSphereRadius(float wasitToRibDist, float wasitWidth, Vector3 charScale) {
-            //The float numbers are just arbitrary numbers that ended up looking porportional
-            return Math.Min(wasitToRibDist/1.25f, wasitWidth/1.3f) * charScale.y;
         }
 
 
