@@ -36,24 +36,28 @@ namespace KK_PregnancyPlus
         /// For quickly setting the size, without worrying about the other config params
         /// </summary>
         /// <param name="inflationSize">Sets inflation size from 0 to 40, clamped</param>
-        public bool MeshInflate(float inflationSize, bool forceInflate = false, bool slidersChanged = false)
+        /// <param name="checkForNewMesh">Lets you force bypass the check for values changed to check for new meshes</param>
+        /// <param name="pluginConfigSliderChanged">Will treat as if some slider values changed, which they did in global plugin config</param>
+        public bool MeshInflate(float inflationSize, bool checkForNewMesh = false, bool pluginConfigSliderChanged = false)
         {                  
             //Allow an initial size to be passed in, and sets it to the config           
             infConfig.inflationSize = Mathf.Clamp(inflationSize, 0, 40);            
 
-            return MeshInflate(forceInflate, false, slidersChanged);
+            return MeshInflate(checkForNewMesh, false, pluginConfigSliderChanged);
         }
 
         /// <summary>
         /// An overload for MeshInflate() that allows you to pass existing card data as the first param
         /// </summary>
         /// <param name="cardData">Some prexisting PregnancyPlusData that we want to activate</param>
-        public bool MeshInflate(PregnancyPlusData cardData, bool forceInflate = false, bool slidersChanged = false)
+        /// <param name="checkForNewMesh">Lets you force bypass the check for values changed to check for new meshes</param>
+        /// <param name="pluginConfigSliderChanged">Will treat as if some slider values changed, which they did in global plugin config</param>
+        public bool MeshInflate(PregnancyPlusData cardData, bool checkForNewMesh = false, bool pluginConfigSliderChanged = false)
         {                  
             //Allow an initial size to be passed in, and sets it to the config           
             infConfig = cardData;           
 
-            return MeshInflate(forceInflate, false, slidersChanged);
+            return MeshInflate(checkForNewMesh, false, pluginConfigSliderChanged);
         }
 
 
@@ -316,7 +320,7 @@ namespace KK_PregnancyPlus
             sharedMesh.vertices = currentVert;
             sharedMesh.RecalculateBounds();
             NormalSolver.RecalculateNormals(sharedMesh, 40f, bellyVerticieIndexes[renderKey]);
-            //sharedMesh.RecalculateNormals();  old way that leaves skin seams
+            //sharedMesh.RecalculateNormals();  //old way that leaves skin seams
             sharedMesh.RecalculateTangents();
 
             return true;
@@ -365,7 +369,7 @@ namespace KK_PregnancyPlus
                 sharedMesh.vertices = origVerts;
                 sharedMesh.RecalculateBounds();
                 NormalSolver.RecalculateNormals(sharedMesh, 40f, bellyVerticieIndexes[renderKey]);
-                //sharedMesh.RecalculateNormals(); old way that leaves skin seams
+                //sharedMesh.RecalculateNormals(); //old way that leaves skin seams
                 sharedMesh.RecalculateTangents();
             }
         }

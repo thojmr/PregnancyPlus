@@ -48,13 +48,6 @@ namespace KK_PregnancyPlus
             PregnancyPlusGui.InitStudio(hi, this);
             PregnancyPlusGui.InitMaker(hi, this);
         }
-
-        /// <summary>
-        /// Provides access to methods for getting and setting clothes state changes to a specific CharCustomFunctionController.
-        /// </summary>
-        /// <param name="chaControl"></param>
-        /// <returns>KKAPI character controller</returns>
-        public static PregnancyPlusCharaController GetCharaController(ChaControl chaControl) => chaControl == null ? null : chaControl.gameObject.GetComponent<PregnancyPlusCharaController>();
     
     }
 }

@@ -11,6 +11,15 @@ namespace KK_PregnancyPlus
 {
     public partial class PregnancyPlusPlugin
     {
+        /// <summary>
+        /// Provides access to methods for getting and setting clothes state changes to a specific CharCustomFunctionController.
+        /// </summary>
+        /// <param name="chaControl"></param>
+        /// <returns>KKAPI character controller</returns>
+        public static PregnancyPlusCharaController GetCharaController(ChaControl chaControl) => chaControl == null ? null : chaControl.gameObject.GetComponent<PregnancyPlusCharaController>();
+
+
+
         private static class Hooks
         {
             public static void InitHooks(Harmony harmonyInstance)

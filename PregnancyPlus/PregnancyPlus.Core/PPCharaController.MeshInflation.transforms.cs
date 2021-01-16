@@ -34,9 +34,8 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// This will help pvent too much XY direction change, keeping the belly more round than disk like at large sizes
         /// </summary>
-        internal Vector3 SculptBaseShape(Transform meshRootTf, Vector3 originalVertice, Vector3 smoothedVector, Vector3 sphereCenter) 
+        internal Vector3 SculptBaseShape(Transform meshRootTf, Vector3 originalVerticeLs, Vector3 smoothedVector, Vector3 sphereCenter) 
         {
-            var originalVerticeLs = meshRootTf.InverseTransformPoint(originalVertice);
             var smoothedVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
             var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenter);
 
@@ -203,9 +202,8 @@ namespace KK_PregnancyPlus
         /// <summary>   
         /// This will add a fat fold across the middle of the belly
         /// </summary>        
-        internal Vector3 GetUserFatFoldTransform(Transform meshRootTf, Vector3 originalVertice, Vector3 smoothedVector, Vector3 sphereCenterPos, float sphereRadius) {
+        internal Vector3 GetUserFatFoldTransform(Transform meshRootTf, Vector3 originalVerticeLs, Vector3 smoothedVector, Vector3 sphereCenterPos, float sphereRadius) {
             var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenterPos);
-            var originalVerticeLs = meshRootTf.InverseTransformPoint(originalVertice);
             var smoothVectorLs = meshRootTf.InverseTransformPoint(smoothedVector);
             var origSmoothVectorLs = smoothVectorLs;
             var inflationFatFold = GetInflationFatFold();
@@ -234,7 +232,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Dampen any mesh changed near edged of the belly (sides, top, and bottom) to prevent too much vertex stretching.false  The more forward the vertex is from Z the more it's allowd to be altered by sliders
         /// </summary>        
-        internal Vector3 RoundToSides(Transform meshRootTf, Vector3 originalVertice, Vector3 smoothedVector, Vector3 sphereCenter, float inflatedToCenterDist) 
+        internal Vector3 RoundToSides(Transform meshRootTf, Vector3 originalVerticeLs, Vector3 smoothedVector, Vector3 sphereCenter, float inflatedToCenterDist) 
         {        
             var zSmoothDist = inflatedToCenterDist/3f;//Just pick a float that looks good as a z limiter
             //Get local space vectors to eliminate rotation in world space
@@ -243,7 +241,6 @@ namespace KK_PregnancyPlus
             // To calculate vectors z difference, we need to do it from local space to eliminate any character rotation in world space
             var forwardFromCenter = smoothedVectorLs.z - meshRootTf.InverseTransformPoint(sphereCenter).z;            
             if (forwardFromCenter <= zSmoothDist) {                                
-                var originalVerticeLs = meshRootTf.InverseTransformPoint(originalVertice);
                 var lerpScale = Mathf.Abs(forwardFromCenter/zSmoothDist);//As vert.z approaches our z limit, allow it to move more
                 //Back to world space
                 smoothedVector = meshRootTf.TransformPoint(Vector3.Lerp(originalVerticeLs, smoothedVectorLs, lerpScale));
