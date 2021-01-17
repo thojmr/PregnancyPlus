@@ -1,4 +1,7 @@
 using UnityEngine;
+using System;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace KK_PregnancyPlus
 {
@@ -58,10 +61,23 @@ namespace KK_PregnancyPlus
         {
             if (!blendShape.isInitilized) return;
             var shapeIndex = smr.sharedMesh.GetBlendShapeIndex(blendShape.name);
+            //If the shape exists then overwrite it
             if (shapeIndex >= 0) 
             {
-                //Blend shape already exists //TODO overwright it?
-                if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" AddBlendShape > blend shape exists {shapeIndex}");
+                //Blend shape already exists overwright it the hard way
+                if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" AddBlendShape > overwriting {blendShape.name}");
+
+                var newBs = new BlendShape();
+                newBs.name = blendShape.name;
+                newBs.verticies = blendShape.verticies;
+                newBs.normals = blendShape.normals;            
+                newBs.weight = blendShape.weight;            
+                newBs.tangents = blendShape.tangents;         
+                
+                OverwriteBlendShape(smr.sharedMesh, newBs);
+
+                //Fix for some shared mesh properties not updating after AddBlendShapeFrame
+                smr.sharedMesh = smr.sharedMesh; 
                 return;
             }
 
@@ -70,6 +86,71 @@ namespace KK_PregnancyPlus
             smr.sharedMesh = smr.sharedMesh;    
 
             if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" AddBlendShape > {blendShape.name}");
+        }
+
+        /// <summary>
+        /// This will replace an existing blendshape of the same name.  Only works when the new blend shape is single frame
+        /// </summary>
+        /// <param name="smrMesh">Target skinned mesh renderer to attche the blend shape</param>
+        /// <param name="newBs">The new blend shape</param>
+        private void OverwriteBlendShape(Mesh smrMesh, BlendShape newBs) 
+        {
+            var existingBlendShapes = new Dictionary<int, BlendShape[]>();
+            var bsCount = smrMesh.blendShapeCount;
+
+            // if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" OverwriteBlendShape > bsCount {bsCount} newBs.name {newBs.name}");
+
+            //For each shape index that exists
+            for (var i = 0; i < bsCount; i++) 
+            {
+                int frameCount = smrMesh.GetBlendShapeFrameCount(i);
+
+                Vector3[] deltaVertices = new Vector3 [smrMesh.vertexCount];
+                Vector3[] deltaNormals = new Vector3 [smrMesh.vertexCount];
+                Vector3[] deltaTangents = new Vector3 [smrMesh.tangents.Length];
+
+                existingBlendShapes[i] = new BlendShape[frameCount];
+
+                //For each frame of the shape index
+                for (var f = 0; f < frameCount; f++) 
+                {
+                    //Get the blendshape details
+                    smrMesh.GetBlendShapeFrameVertices(i, f, deltaVertices, deltaNormals, deltaTangents);
+                    var name = smrMesh.GetBlendShapeName(i);
+                    var weight = smrMesh.GetBlendShapeFrameWeight(i, f);
+
+                    //Copy the blendshape data
+                    var bsMesh = new BlendShape();
+                    bsMesh.verticies = deltaVertices;
+                    bsMesh.normals = deltaNormals;
+                    bsMesh.tangents = deltaTangents;
+                    bsMesh.weight = weight;
+                    bsMesh.name = name;
+                
+                    existingBlendShapes[i][f] = bsMesh;
+                }
+            }
+
+            //Clear all blend shapes (because we cant just delete one.  Thanks unity!)
+            smrMesh.ClearBlendShapes();
+
+            //Add all of the copies back (excluding the one we are overriding)
+            for (var i = 0; i < bsCount; i++)
+            {
+                //For each frame add it back in
+                for (var f = 0; f < existingBlendShapes[i].Length; f++) 
+                {
+                    //If this is the BS we want to replace, add it, but keep the current weight
+                    if (existingBlendShapes[i][f].name == newBs.name) 
+                    {
+                        smrMesh.AddBlendShapeFrame(newBs.name, existingBlendShapes[i][f].weight, newBs.verticies, newBs.normals, newBs.tangents);    
+                        continue;
+                    }
+                    //Otherwise just add back the old blend shapes, and weights
+                    smrMesh.AddBlendShapeFrame(existingBlendShapes[i][f].name, existingBlendShapes[i][f].weight, existingBlendShapes[i][f].verticies, existingBlendShapes[i][f].normals, existingBlendShapes[i][f].tangents);
+                }
+            }
+
         }
 
 
