@@ -64,7 +64,7 @@ namespace KK_PregnancyPlus
             e.AddControl(new MakerText("Multiplies the base inflation size by this value.", cat, _pluginInstance) { TextColor = hintColor });
 
 
-            var moveY = e.AddControl(new MakerSlider(cat, "Move Y", SliderRange.inflationMoveY[0], SliderRange.inflationMoveY[1], ppDataDefaults.inflationMoveY, _pluginInstance));
+            var moveY = e.AddControl(new MakerSlider(cat, "Move Y", SliderRange.inflationMoveY[0] * scaleLimits, SliderRange.inflationMoveY[1] * scaleLimits, ppDataDefaults.inflationMoveY, _pluginInstance));
             moveY.BindToFunctionController<PregnancyPlusCharaController, float>(controller => controller.infConfig.inflationMoveY, (controller, value) => {
                 var oldVal = controller.infConfig.inflationMoveY;
                 controller.infConfig.inflationMoveY = value;
@@ -73,7 +73,7 @@ namespace KK_PregnancyPlus
             e.AddControl(new MakerText("Moves the belly sphere up and down.", cat, _pluginInstance) { TextColor = hintColor });
 
 
-            var moveZ = e.AddControl(new MakerSlider(cat, "Move Z", SliderRange.inflationMoveZ[0], SliderRange.inflationMoveZ[1], ppDataDefaults.inflationMoveZ, _pluginInstance));
+            var moveZ = e.AddControl(new MakerSlider(cat, "Move Z", SliderRange.inflationMoveZ[0] * scaleLimits, SliderRange.inflationMoveZ[1] * scaleLimits, ppDataDefaults.inflationMoveZ, _pluginInstance));
             moveZ.BindToFunctionController<PregnancyPlusCharaController, float>(controller => controller.infConfig.inflationMoveZ, (controller, value) => {
                 var oldVal = controller.infConfig.inflationMoveZ;
                 controller.infConfig.inflationMoveZ = value;
@@ -82,7 +82,7 @@ namespace KK_PregnancyPlus
             e.AddControl(new MakerText("Moves the belly sphere forward and back.", cat, _pluginInstance) { TextColor = hintColor });
 
 
-            var stretchX = e.AddControl(new MakerSlider(cat, "Stretch X", SliderRange.inflationStretchX[0], SliderRange.inflationStretchX[1], ppDataDefaults.inflationStretchX, _pluginInstance));
+            var stretchX = e.AddControl(new MakerSlider(cat, "Stretch X", SliderRange.inflationStretchX[0] * scaleLimits, SliderRange.inflationStretchX[1] * scaleLimits, ppDataDefaults.inflationStretchX, _pluginInstance));
             stretchX.BindToFunctionController<PregnancyPlusCharaController, float>(controller => controller.infConfig.inflationStretchX, (controller, value) => {
                 var oldVal = controller.infConfig.inflationStretchX;
                 controller.infConfig.inflationStretchX = value;
@@ -91,7 +91,7 @@ namespace KK_PregnancyPlus
             e.AddControl(new MakerText("Stretch the belly wider in the X direction.", cat, _pluginInstance) { TextColor = hintColor });
 
 
-            var stretchY = e.AddControl(new MakerSlider(cat, "Stretch Y", SliderRange.inflationStretchY[0], SliderRange.inflationStretchY[1], ppDataDefaults.inflationStretchY, _pluginInstance));
+            var stretchY = e.AddControl(new MakerSlider(cat, "Stretch Y", SliderRange.inflationStretchY[0] * scaleLimits, SliderRange.inflationStretchY[1] * scaleLimits, ppDataDefaults.inflationStretchY, _pluginInstance));
             stretchY.BindToFunctionController<PregnancyPlusCharaController, float>(controller => controller.infConfig.inflationStretchY, (controller, value) => {
                 var oldVal = controller.infConfig.inflationStretchY;
                 controller.infConfig.inflationStretchY = value;
@@ -100,7 +100,7 @@ namespace KK_PregnancyPlus
             e.AddControl(new MakerText("Stretch the belly taller in the Y direction.", cat, _pluginInstance) { TextColor = hintColor });
 
 
-            var shiftY = e.AddControl(new MakerSlider(cat, "Shift Y", SliderRange.inflationShiftY[0], SliderRange.inflationShiftY[1], ppDataDefaults.inflationShiftY, _pluginInstance));
+            var shiftY = e.AddControl(new MakerSlider(cat, "Shift Y", SliderRange.inflationShiftY[0] * scaleLimits, SliderRange.inflationShiftY[1] * scaleLimits, ppDataDefaults.inflationShiftY, _pluginInstance));
             shiftY.BindToFunctionController<PregnancyPlusCharaController, float>(controller => controller.infConfig.inflationShiftY, (controller, value) => {
                 var oldVal = controller.infConfig.inflationShiftY;
                 controller.infConfig.inflationShiftY = value;
@@ -109,7 +109,7 @@ namespace KK_PregnancyPlus
             e.AddControl(new MakerText("Shift the front of the belly up and down.", cat, _pluginInstance) { TextColor = hintColor });
 
 
-            var shiftZ = e.AddControl(new MakerSlider(cat, "Shift Z", SliderRange.inflationShiftZ[0], SliderRange.inflationShiftZ[1], ppDataDefaults.inflationShiftZ, _pluginInstance));
+            var shiftZ = e.AddControl(new MakerSlider(cat, "Shift Z", SliderRange.inflationShiftZ[0] * scaleLimits, SliderRange.inflationShiftZ[1] * scaleLimits, ppDataDefaults.inflationShiftZ, _pluginInstance));
             shiftZ.BindToFunctionController<PregnancyPlusCharaController, float>(controller => controller.infConfig.inflationShiftZ, (controller, value) => {
                 var oldVal = controller.infConfig.inflationShiftZ;
                 controller.infConfig.inflationShiftZ = value;
@@ -118,7 +118,7 @@ namespace KK_PregnancyPlus
             e.AddControl(new MakerText("Shift the front of the belly forward and back.", cat, _pluginInstance) { TextColor = hintColor });
 
 
-            var taperY = e.AddControl(new MakerSlider(cat, "Taper Y", SliderRange.inflationTaperY[0], SliderRange.inflationTaperY[1], ppDataDefaults.inflationTaperY, _pluginInstance));
+            var taperY = e.AddControl(new MakerSlider(cat, "Taper Y", SliderRange.inflationTaperY[0] * scaleLimits, SliderRange.inflationTaperY[1] * scaleLimits, ppDataDefaults.inflationTaperY, _pluginInstance));
             taperY.BindToFunctionController<PregnancyPlusCharaController, float>(controller => controller.infConfig.inflationTaperY, (controller, value) => {
                 var oldVal = controller.infConfig.inflationTaperY;
                 controller.infConfig.inflationTaperY = value;
@@ -127,7 +127,7 @@ namespace KK_PregnancyPlus
             e.AddControl(new MakerText("Taper the sides of the belly in at the top and out at the bottom.  Makes an egg like shape.", cat, _pluginInstance) { TextColor = hintColor });
 
 
-            var taperZ = e.AddControl(new MakerSlider(cat, "Taper Z", SliderRange.inflationTaperZ[0], SliderRange.inflationTaperZ[1], ppDataDefaults.inflationTaperZ, _pluginInstance));
+            var taperZ = e.AddControl(new MakerSlider(cat, "Taper Z", SliderRange.inflationTaperZ[0] * scaleLimits, SliderRange.inflationTaperZ[1] * scaleLimits, ppDataDefaults.inflationTaperZ, _pluginInstance));
             taperZ.BindToFunctionController<PregnancyPlusCharaController, float>(controller => controller.infConfig.inflationTaperZ, (controller, value) => {
                 var oldVal = controller.infConfig.inflationTaperZ;
                 controller.infConfig.inflationTaperZ = value;
@@ -135,7 +135,7 @@ namespace KK_PregnancyPlus
             });
             e.AddControl(new MakerText("Taper the front of the belly in at the top and out at the bottom.  Gives the belly an angle at the front.", cat, _pluginInstance) { TextColor = hintColor });
 
-            var clothOffset = e.AddControl(new MakerSlider(cat, "Cloth Offset", SliderRange.inflationClothOffset[0], SliderRange.inflationClothOffset[1], ppDataDefaults.inflationClothOffset, _pluginInstance));
+            var clothOffset = e.AddControl(new MakerSlider(cat, "Cloth Offset", SliderRange.inflationClothOffset[0] * scaleLimits, SliderRange.inflationClothOffset[1] * scaleLimits, ppDataDefaults.inflationClothOffset, _pluginInstance));
             clothOffset.BindToFunctionController<PregnancyPlusCharaController, float>(controller => controller.infConfig.inflationClothOffset, (controller, value) => {
                 var oldVal = controller.infConfig.inflationClothOffset;
                 controller.infConfig.inflationClothOffset = value;
