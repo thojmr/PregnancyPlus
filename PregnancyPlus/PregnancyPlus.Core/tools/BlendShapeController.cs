@@ -29,9 +29,10 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Constructor that takes in a target skinned mesh renderer with verts and creates a blend shape object from it.  This blend shape will then be assigned to the mesh
         /// </summary>
-        /// <param name="originalSmr">Target skinned mesh renderer</param>
+        /// <param name="originalSmr">Original vert mesh</param>
         /// <param name="blendShapeName">Desired name of the blend shape, should be unique</param>
         /// <param name="newSmr">The smr containing the new mesh vert positions</param>
+        /// <param name="targetMesh">Optional target mesh that is calculated outside of the newSmr, but should be used like its mesh</param>
         public BlendShapeController(Mesh originalSmrMesh, SkinnedMeshRenderer newSmr, string blendShapeName) 
         {
             if (!blendShape.isInitilized) 

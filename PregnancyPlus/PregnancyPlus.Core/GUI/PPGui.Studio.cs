@@ -42,7 +42,6 @@ namespace KK_PregnancyPlus
 
             cat.AddControl(new CurrentStateCategorySwitch("Reset P+ Shape", c =>
                 {                     
-                    var ctrl = GetCharCtrl(c);  
                     return false;
                 }))
                 .Value.Subscribe(f => {
@@ -52,13 +51,30 @@ namespace KK_PregnancyPlus
             
             cat.AddControl(new CurrentStateCategorySwitch("Restore Last P+ Shape", c =>
                 {                                         
-                    var ctrl = GetCharCtrl(c);   
                     return false;
                 }))
                 .Value.Subscribe(f => {
                     if (f == false) return;
                     if (PregnancyPlusPlugin.lastBellyState.HasAnyValue()) RestoreSliders(PregnancyPlusPlugin.lastBellyState);
                  });
+            
+            #if KK  //Timeline only exists in KK for now
+                cat.AddControl(new CurrentStateCategorySwitch("Create Timeline BlendShape", c =>
+                    {                                         
+                        return false;
+                    }))
+                    .Value.Subscribe(f => {
+                        if (f == false) return;
+                        //Create blendshape for current selected character if the mesh is inflated
+                        foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) 
+                        {   
+                            if (ctrl.infConfig.HasAnyValue()) 
+                            {              
+                                ctrl.OnCreateBlendShapeSelected();                             
+                            }
+                        }
+                    });
+            #endif
 
             cat.AddControl(new CurrentStateCategorySlider(inflationSize, c =>
                 {   

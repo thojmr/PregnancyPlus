@@ -135,7 +135,8 @@ namespace KK_PregnancyPlus
         /// <param name="anyMeshChanges">If any mesh changes have happened so far</param>
         /// <param name="isClothingMesh">If this smr is a cloth mesh</param>
         /// <returns>boolean true if any meshes were changed</returns>
-        internal bool LoopAndApplyMeshChanges(List<SkinnedMeshRenderer> smrs, bool sliderHaveChanged, bool anyMeshChanges, bool isClothingMesh = false) {
+        internal bool LoopAndApplyMeshChanges(List<SkinnedMeshRenderer> smrs, bool sliderHaveChanged, bool anyMeshChanges, bool isClothingMesh = false) 
+        {
             foreach(var smr in smrs) 
             {                
                 //Dont recompute verts if no sliders have changed
@@ -150,6 +151,54 @@ namespace KK_PregnancyPlus
             }  
 
             return anyMeshChanges;
+        }
+
+
+        /// <summary>
+        /// Will loop through each mesh and as long as it has some inflation value, it will append a blendshape to the smr
+        ///  Only needed in KK for now
+        /// </summary>
+        /// <returns>boolean true if any blendshapes were created</returns>
+        internal bool OnCreateBlendShapeSelected() 
+        {
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" ");
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" OnCreateBlendShapeSelected ");
+            var anyBlendShapesCreated = false;
+
+            //Get all cloth renderes and attemp to create blendshapes from preset inflatedVerticies
+            var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);
+            anyBlendShapesCreated = LoopAndCreateBlendShape(clothRenderers, anyBlendShapesCreated, true);
+
+            //do the same for body meshs
+            var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody);
+            anyBlendShapesCreated = LoopAndCreateBlendShape(bodyRenderers, anyBlendShapesCreated);
+
+            return anyBlendShapesCreated;
+        }
+
+
+        /// <summary>
+        /// Loop through each skinned mesh rendere and if it has inflated verts, create a blendshape from them
+        /// </summary>
+        /// <param name="smrs">List of skinnedMeshRenderes</param>
+        /// <param name="anyBlendShapesCreated">If any mesh changes have happened so far</param>
+        /// <param name="isClothingMesh">If this smr is a cloth mesh</param>
+        /// <returns>boolean true if any meshes were changed</returns>
+        internal bool LoopAndCreateBlendShape(List<SkinnedMeshRenderer> smrs, bool anyBlendShapesCreated, bool isClothingMesh = false) 
+        {
+            foreach(var smr in smrs) 
+            {                
+                var renderKey = GetMeshKey(smr);
+                var exists = inflatedVertices.ContainsKey(renderKey);
+
+                //Dont create blend shape if no inflated verts exists
+                if (!exists || inflatedVertices[renderKey].Length < 0) continue;
+
+                var appliedClothBSChanges = CreateBlendShape(smr, renderKey);
+                if (appliedClothBSChanges) anyBlendShapesCreated = true;
+            }  
+
+            return anyBlendShapesCreated;
         }
 
 
