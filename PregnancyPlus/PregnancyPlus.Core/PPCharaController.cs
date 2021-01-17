@@ -186,6 +186,10 @@ namespace KK_PregnancyPlus
         {
             infConfig = GetCardData();
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" ReadAndSetCardData > {infConfig.ValuesToString()}");
+            
+            #if KK  //Blendshapes for timeline only in KK
+                LoadBlendShapes(infConfig);
+            #endif
         }
 
 

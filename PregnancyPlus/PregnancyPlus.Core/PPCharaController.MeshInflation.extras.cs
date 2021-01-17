@@ -360,54 +360,6 @@ namespace KK_PregnancyPlus
             }
         }
 
-        
-        /// <summary>
-        /// This will create a blendshape frame for a mesh, that can be used in timeline, required there be a renderKey for inflatedVertices for this smr
-        ///  Only needed in KK for now
-        /// </summary>
-        /// <param name="mesh">Target mesh to update</param>
-        /// <param name="renderKey">The Shared Mesh render name, used in dictionary keys to get the current verticie values</param>
-        /// <returns>Will return True if any the blendshape was created</returns>
-        internal bool CreateBlendShape(SkinnedMeshRenderer smr, string renderKey) 
-        {     
-            var meshCopyOrig = PregnancyPlusHelper.CopyMesh(smr.sharedMesh);   
-            if (!meshCopyOrig.isReadable) 
-            {
-                if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(
-                     $"CreateBlendShape > smr '{renderKey}' is not readable, skipping");
-                return false;
-            } 
-
-            //Check key exists in dict, remnove it if it does not
-            var exists = originalVertices.TryGetValue(renderKey, out var val);
-            if (!exists) 
-            {
-                if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(
-                     $"CreateBlendShape > smr '{renderKey}' does not exists, skipping");
-                return false;
-            }
-
-            var bellyVertIndex = bellyVerticieIndexes[renderKey];
-            if (bellyVertIndex.Length == 0) return false;
-
-            if (originalVertices[renderKey].Length != meshCopyOrig.vertexCount) 
-            {
-                PregnancyPlusPlugin.Logger.LogInfo(
-                            $"CreateBlendShape > smr.sharedMesh '{renderKey}' has incorrect vert count {originalVertices[renderKey].Length}|{meshCopyOrig.vertexCount}");
-                return false;
-            }
-
-            //Calculate new normals
-            meshCopyOrig.vertices = originalVertices[renderKey];
-            meshCopyOrig.RecalculateBounds();
-            NormalSolver.RecalculateNormals(meshCopyOrig, 40f, bellyVerticieIndexes[renderKey]);
-            meshCopyOrig.RecalculateTangents();
-
-            //Create one time blend shape for Timeline
-            new BlendShapeController(meshCopyOrig, smr, $"{renderKey}_{PregnancyPlusPlugin.GUID}");
-
-            return true;
-        }   
     }
 }
 

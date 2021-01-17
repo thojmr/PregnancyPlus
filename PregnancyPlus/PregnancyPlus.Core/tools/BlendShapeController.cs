@@ -24,6 +24,9 @@ namespace KK_PregnancyPlus
             public bool isInitilized {
                 get { return name != null; }
             }
+            public int vertexCount {
+                get { return verticies.Length; }
+            }
         }
 
         /// <summary>
@@ -51,6 +54,15 @@ namespace KK_PregnancyPlus
             }
 
             AddBlendShapeToMesh(newSmr);
+        }
+
+        /// <summary>
+        /// Constructor overload that just takes a saved blendshape and sets it to the correct mesh
+        /// </summary>
+        public BlendShapeController(SkinnedMeshRenderer smr, BlendShape _blendShape)         
+        {
+            blendShape = _blendShape;
+            smr.sharedMesh.AddBlendShapeFrame(_blendShape.name, _blendShape.weight, _blendShape.verticies, _blendShape.normals, _blendShape.tangents); 
         }
 
 
