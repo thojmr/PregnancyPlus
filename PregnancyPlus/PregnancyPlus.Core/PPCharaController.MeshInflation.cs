@@ -67,7 +67,7 @@ namespace KK_PregnancyPlus
         public bool MeshInflate(bool checkForNewMesh = false, bool freshStart = false, bool pluginConfigSliderChanged = false)
         {
             if (ChaControl.objBodyBone == null) return false;//Make sure chatacter objs exists first  
-            if (ChaControl.sex == 0) return false;//Only females            
+            if (!PregnancyPlusPlugin.AllowMale.Value && ChaControl.sex == 0) return false;// Only female characters, unless plugin config says otherwise          
 
             var sliderHaveChanged = NeedsMeshUpdate(pluginConfigSliderChanged);
             //Only continue if one of the config values changed
@@ -255,7 +255,7 @@ namespace KK_PregnancyPlus
 
 #region Fixes for different mesh localspace positions between KK and HS2/AI
             #if KK            
-                var isDefaultBody = !PregnancyPlusHelper.IsUncensorBody(ChaControl, UncensorCOMName, DefaultBodyFemaleGUID); 
+                var isDefaultBody = !PregnancyPlusHelper.IsUncensorBody(ChaControl, UncensorCOMName); 
                 if (isClothingMesh) 
                 {
                     //KK just has to have strange vert positions, so we have to use adjust the sphere center location for body and clothes

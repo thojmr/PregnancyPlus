@@ -129,7 +129,7 @@ namespace KK_PregnancyPlus
         /// If the current characters mesh is set by the Uncensor plugin we need to know this to correctly shift the mesh's localspace vertex positions
         /// The LS positions for uncensor match that of HS2 and AI, but not the defulat KK body mesh (This took forever to track down!)
         /// </summary>  
-        internal static bool IsUncensorBody(ChaControl chaControl, string UncensorCOMName, string defaultBodyFemaleGUID) 
+        internal static bool IsUncensorBody(ChaControl chaControl, string UncensorCOMName) 
         {
             //grab the active uncensor controller of it exists
             var uncensorController = PregnancyPlusHelper.GetCharacterBehaviorController(chaControl, UncensorCOMName);
@@ -142,7 +142,7 @@ namespace KK_PregnancyPlus
             var bodyGUID = Traverse.Create(bodyData).Field("BodyGUID").GetValue<string>();
             if (bodyGUID == null) return false;
 
-            return bodyGUID != defaultBodyFemaleGUID;
+            return bodyGUID != PregnancyPlusCharaController.DefaultBodyFemaleGUID && bodyGUID != PregnancyPlusCharaController.DefaultBodyMaleGUID;
         }
 
 

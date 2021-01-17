@@ -40,6 +40,7 @@ namespace KK_PregnancyPlus
         //For fetching uncensor body guid data (bugfix for uncensor body vertex positions)
         public const string UncensorCOMName = "com.deathweasel.bepinex.uncensorselector";
         public const string DefaultBodyFemaleGUID = "Default.Body.Female";
+        public const string DefaultBodyMaleGUID = "Default.Body.Male";
 
         public const string KK_PregnancyPluginName = "KK_Pregnancy";//key that allows us to pull KK_pregnancy data values
 

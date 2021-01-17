@@ -23,8 +23,8 @@ namespace KK_PregnancyPlus
 
         internal static void MakerAPI_MakerBaseLoaded(object sender, RegisterSubCategoriesEvent e)
         {
-            // Only female characters
-            if (MakerAPI.GetMakerSex() == 0) return;
+            // Only female characters, unless plugin config says otherwise
+            if (!PregnancyPlusPlugin.AllowMale.Value && MakerAPI.GetMakerSex() == 0) return;
 
             //Set the menu location of the p+ sliders
             #if KK           

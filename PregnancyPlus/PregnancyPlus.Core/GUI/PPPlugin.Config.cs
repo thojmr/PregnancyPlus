@@ -11,6 +11,7 @@ namespace KK_PregnancyPlus
     public partial class PregnancyPlusPlugin
     {
         public static ConfigEntry<bool> StoryMode { get; private set; }
+        public static ConfigEntry<bool> AllowMale { get; private set; }
         public static ConfigEntry<bool> MakeBalloon { get; private set; }
         public static ConfigEntry<float> MaxStoryModeBelly { get; private set; }
         public static ConfigEntry<float> StoryModeInflationMultiplier { get; private set; }
@@ -34,6 +35,8 @@ namespace KK_PregnancyPlus
      
         internal void PluginConfig()
         {            
+            AllowMale = Config.Bind<bool>("General", "Allow male", false, "When enabled, the sliders will work on male characters as well.");
+
             MakeBalloon = Config.Bind<bool>("Character Studio", "Balloon mode (Debug mode)", false, "Debug mesh mode, disable to go back to the original style.  This will disable some sliders.");
             MakeBalloon.SettingChanged += MakeBalloon_SettingsChanged;
 
