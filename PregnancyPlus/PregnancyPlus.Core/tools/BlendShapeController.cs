@@ -14,9 +14,7 @@ namespace KK_PregnancyPlus
         public class BlendShape 
         {
             public string name;
-            private float _weight;
-
-            [IgnoreMember]
+            private float _weight = 100;
             public float weight 
             {
                 set { _weight = Mathf.Clamp(value, 0, 100); }
@@ -36,6 +34,12 @@ namespace KK_PregnancyPlus
             public int vertexCount 
             {
                 get { return verticies.Length; }
+            }
+
+            [IgnoreMember]
+            public string log 
+            {
+                get { return $"name {name} weight {_weight} vertexCount {vertexCount} isInitilized {isInitilized}"; }
             }
         }
 
@@ -88,16 +92,8 @@ namespace KK_PregnancyPlus
             if (shapeIndex >= 0) 
             {
                 //Blend shape already exists overwright it the hard way
-                if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" AddBlendShape > overwriting {blendShape.name}");
-
-                var newBs = new BlendShape();
-                newBs.name = blendShape.name;
-                newBs.verticies = blendShape.verticies;
-                newBs.normals = blendShape.normals;            
-                newBs.weight = blendShape.weight;            
-                newBs.tangents = blendShape.tangents;         
-                
-                OverwriteBlendShape(smr.sharedMesh, newBs);
+                if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" AddBlendShape > overwriting {blendShape.log}");                       
+                OverwriteBlendShape(smr, blendShape);
 
                 //Fix for some shared mesh properties not updating after AddBlendShapeFrame
                 smr.sharedMesh = smr.sharedMesh; 
@@ -108,7 +104,7 @@ namespace KK_PregnancyPlus
             //Fix for some shared mesh properties not updating after AddBlendShapeFrame
             smr.sharedMesh = smr.sharedMesh;    
 
-            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" AddBlendShape > {blendShape.name}");
+            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" AddBlendShape > {blendShape.log}");
         }
 
         /// <summary>
@@ -116,12 +112,11 @@ namespace KK_PregnancyPlus
         /// </summary>
         /// <param name="smrMesh">Target skinned mesh renderer to attche the blend shape</param>
         /// <param name="newBs">The new blend shape</param>
-        private void OverwriteBlendShape(Mesh smrMesh, BlendShape newBs) 
+        private void OverwriteBlendShape(SkinnedMeshRenderer smr, BlendShape newBs) 
         {
+            var smrMesh = smr.sharedMesh;
             var existingBlendShapes = new Dictionary<int, BlendShape[]>();
-            var bsCount = smrMesh.blendShapeCount;
-
-            // if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" OverwriteBlendShape > bsCount {bsCount} newBs.name {newBs.name}");
+            var bsCount = smrMesh.blendShapeCount;            
 
             //For each shape index that exists
             for (var i = 0; i < bsCount; i++) 
@@ -143,19 +138,21 @@ namespace KK_PregnancyPlus
                     var weight = smrMesh.GetBlendShapeFrameWeight(i, f);
 
                     //Copy the blendshape data
-                    var bsMesh = new BlendShape();
-                    bsMesh.verticies = deltaVertices;
-                    bsMesh.normals = deltaNormals;
-                    bsMesh.tangents = deltaTangents;
-                    bsMesh.weight = weight;
-                    bsMesh.name = name;
+                    var bsFrame = new BlendShape();
+                    bsFrame.verticies = deltaVertices;
+                    bsFrame.normals = deltaNormals;
+                    bsFrame.tangents = deltaTangents;
+                    bsFrame.weight = weight;
+                    bsFrame.name = name;
                 
-                    existingBlendShapes[i][f] = bsMesh;
+                    existingBlendShapes[i][f] = bsFrame;
                 }
             }
 
             //Clear all blend shapes (because we cant just delete one.  Thanks unity!)
-            smrMesh.ClearBlendShapes();
+            smr.sharedMesh.ClearBlendShapes();
+            //Fix for some shared mesh properties not updating after AddBlendShapeFrame
+            smr.sharedMesh = smr.sharedMesh;
 
             //Add all of the copies back (excluding the one we are overriding)
             for (var i = 0; i < bsCount; i++)
@@ -173,7 +170,6 @@ namespace KK_PregnancyPlus
                     smrMesh.AddBlendShapeFrame(existingBlendShapes[i][f].name, existingBlendShapes[i][f].weight, existingBlendShapes[i][f].verticies, existingBlendShapes[i][f].normals, existingBlendShapes[i][f].tangents);
                 }
             }
-
         }
 
 

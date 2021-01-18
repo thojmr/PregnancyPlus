@@ -163,11 +163,10 @@ namespace KK_PregnancyPlus
         internal void LoadBlendShapes(PregnancyPlusData data) 
         {
             if (data.meshBlendShape == null) return;
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" meshBlendShape size > {data.meshBlendShape.Length/1024}KB ");
             //Unserialize the blendshape from characters card
             var meshBlendShapes = MessagePack.LZ4MessagePackSerializer.Deserialize<List<MeshBlendShape>>(data.meshBlendShape);
             if (meshBlendShapes == null || meshBlendShapes.Count <= 0) return;
-
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" LoadBlendShapes ");
 
             //For each stores meshBlendShape
             foreach(var meshBlendShape in meshBlendShapes)
@@ -179,7 +178,7 @@ namespace KK_PregnancyPlus
                 //do the same for body meshs
                 var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, true);
                 LoopMeshForBlendShape(bodyRenderers, meshBlendShape);
-            }
+            }            
         }
 
 
@@ -192,19 +191,21 @@ namespace KK_PregnancyPlus
             var vertexCount = meshBlendShape.VertCount;
             var blendShape = meshBlendShape.BlendShape; 
             
-            foreach(var smr in smrs) 
+            foreach (var smr in smrs) 
             {              
                 //If mesh matches, append the blend shape
                 if (smr.name == meshName && smr.sharedMesh.vertexCount == vertexCount) 
                 {
                     //Make sure the blendshape does not already exists
                     if (BlendShapeAlreadyExists(smr, meshBlendShape.BlendShape)) continue;
-                    if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" LoopMeshForBlendShape > match {smr.name} ");
+                    if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" Adding BlendShape > {blendShape.log} ");
 
                     //Add the blendshape to the mesh
                     new BlendShapeController(smr, blendShape);
                 }
-            }  
+
+                // LogMeshBlendShapes(smr);
+            }              
         }
                 
 
@@ -216,6 +217,26 @@ namespace KK_PregnancyPlus
             var shapeIndex = smr.sharedMesh.GetBlendShapeIndex(blendShape.name);
             //If the shape exists then true
             return (shapeIndex >= 0);
+        }
+
+
+        public void LogMeshBlendShapes(SkinnedMeshRenderer smr) {
+            var bsCount = smr.sharedMesh.blendShapeCount;
+
+            //For each existing blend shape
+            for (var i = 0; i < bsCount; i++)
+            {
+                Vector3[] deltaVertices = new Vector3 [smr.sharedMesh.vertexCount];
+                Vector3[] deltaNormals = new Vector3 [smr.sharedMesh.vertexCount];
+                Vector3[] deltaTangents = new Vector3 [smr.sharedMesh.tangents.Length];
+
+                var name = smr.sharedMesh.GetBlendShapeName(i);
+                var weight = smr.sharedMesh.GetBlendShapeFrameWeight(i, 0);
+                var frameCount = smr.sharedMesh.GetBlendShapeFrameCount(i);
+                smr.sharedMesh.GetBlendShapeFrameVertices(i, 0, deltaVertices, deltaNormals, deltaTangents);
+
+                if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" LogMeshBlendShapes > {name} weight {weight} frameCount {frameCount} deltaVertices {deltaVertices.Length}");            
+            }
         }
     }
 }
