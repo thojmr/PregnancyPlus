@@ -38,8 +38,7 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Will loop through each mesh and as long as it has some inflation value, it will append a blendshape to the smr
-        ///  Only needed in KK for now, triggered by studio button
+        /// On user button click. Create blendshape from current belly state.  Add it to infConfig so it will be saved to char card if the user chooses save scene
         /// </summary>
         /// <returns>boolean true if any blendshapes were created</returns>
         internal bool OnCreateBlendShapeSelected() 
@@ -68,9 +67,8 @@ namespace KK_PregnancyPlus
         /// Loop through each skinned mesh rendere and if it has inflated verts, create a blendshape from them
         /// </summary>
         /// <param name="smrs">List of skinnedMeshRenderes</param>
-        /// <param name="anyBlendShapesCreated">If any mesh changes have happened so far</param>
-        /// <param name="isClothingMesh">If this smr is a cloth mesh</param>
-        /// <returns>boolean true if any meshes were changed</returns>
+        /// <param name="meshBlendShapes">the current list of MeshBlendShapes collected so far</param>
+        /// <returns>Returns final list of MeshBlendShapes we want to store in char card</returns>
         internal List<MeshBlendShape> LoopAndCreateBlendShape(List<SkinnedMeshRenderer> smrs, List<MeshBlendShape> meshBlendShapes, bool isClothingMesh = false) 
         {
             foreach(var smr in smrs) 
@@ -83,60 +81,17 @@ namespace KK_PregnancyPlus
 
                 var meshBlendShape = CreateBlendShape(smr, renderKey);
                 if (meshBlendShape != null) meshBlendShapes.Add(meshBlendShape);
+
+                // LogMeshBlendShapes(smr);
             }  
 
             return meshBlendShapes;
         }
-    
+     
 
         /// <summary>
-        /// This will create a blendshape frame for a mesh, that can be used in timeline, required there be a renderKey for inflatedVertices for this smr
-        ///  Only needed in KK for now
+        /// Convert a BlendShape to MeshBlendShape, used for storing to character card data
         /// </summary>
-        /// <param name="mesh">Target mesh to update</param>
-        /// <param name="renderKey">The Shared Mesh render name, used in dictionary keys to get the current verticie values</param>
-        /// <returns>Will return True if any the blendshape was created</returns>
-        internal MeshBlendShape CreateBlendShape(SkinnedMeshRenderer smr, string renderKey) 
-        {     
-            var meshCopyOrig = PregnancyPlusHelper.CopyMesh(smr.sharedMesh);   
-            if (!meshCopyOrig.isReadable) 
-            {
-                if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(
-                     $"CreateBlendShape > smr '{renderKey}' is not readable, skipping");
-                return null;
-            } 
-
-            //Check key exists in dict, remnove it if it does not
-            var exists = originalVertices.TryGetValue(renderKey, out var val);
-            if (!exists) 
-            {
-                if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(
-                     $"CreateBlendShape > smr '{renderKey}' does not exists, skipping");
-                return null;
-            }
-
-            var bellyVertIndex = bellyVerticieIndexes[renderKey];
-            if (bellyVertIndex.Length == 0) return null;
-
-            if (originalVertices[renderKey].Length != meshCopyOrig.vertexCount) 
-            {
-                PregnancyPlusPlugin.Logger.LogInfo(
-                            $"CreateBlendShape > smr.sharedMesh '{renderKey}' has incorrect vert count {originalVertices[renderKey].Length}|{meshCopyOrig.vertexCount}");
-                return null;
-            }
-
-            //Calculate new normals
-            meshCopyOrig.vertices = originalVertices[renderKey];
-            meshCopyOrig.RecalculateBounds();
-            NormalSolver.RecalculateNormals(meshCopyOrig, 40f, bellyVerticieIndexes[renderKey]);
-            meshCopyOrig.RecalculateTangents();
-
-            //Create blend shape for Timeline
-            var bsc = new BlendShapeController(meshCopyOrig, smr, $"{renderKey}_{PregnancyPlusPlugin.GUID}");
-
-            return ConvertToMeshBlendShape(smr.name, bsc.blendShape);
-        }   
-
         internal MeshBlendShape ConvertToMeshBlendShape(string smrName, BlendShapeController.BlendShape blendShape) 
         {            
             if (blendShape == null) return null;
@@ -146,9 +101,9 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Allows new blendshapes to be added to character data so it can be saved with the character card
+        /// Sets a custom meshBlendShape object to character data
         /// </summary>
-        /// <param name="blendShape">The blendshape we just created</param>
+        /// <param name="meshBlendShapes">the list of MeshBlendShapes we want to save</param>
         internal void AddBlendShapesToData(List<MeshBlendShape> meshBlendShapes) 
         {            
             infConfig.meshBlendShape = MessagePack.LZ4MessagePackSerializer.Serialize(meshBlendShapes);
@@ -158,12 +113,11 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Loads a blendshape from character card and sets it to the correct mesh
         /// </summary>
-        /// <param name="smrName">The mesh name</param>
-        /// <param name="blendShape">The blendshape we just created</param>
+        /// <param name="data">The characters card data for this plugin</param>
         internal void LoadBlendShapes(PregnancyPlusData data) 
         {
             if (data.meshBlendShape == null) return;
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" meshBlendShape size > {data.meshBlendShape.Length/1024}KB ");
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" MeshBlendShape size > {data.meshBlendShape.Length/1024}KB ");
             //Unserialize the blendshape from characters card
             var meshBlendShapes = MessagePack.LZ4MessagePackSerializer.Deserialize<List<MeshBlendShape>>(data.meshBlendShape);
             if (meshBlendShapes == null || meshBlendShapes.Count <= 0) return;
@@ -173,11 +127,11 @@ namespace KK_PregnancyPlus
             {
                 //Loop through all meshes and find matching name
                 var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes, true);
-                LoopMeshForBlendShape(clothRenderers, meshBlendShape);
+                LoopMeshAndAddExistingBlendShape(clothRenderers, meshBlendShape, true);
 
                 //do the same for body meshs
                 var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, true);
-                LoopMeshForBlendShape(bodyRenderers, meshBlendShape);
+                LoopMeshAndAddExistingBlendShape(bodyRenderers, meshBlendShape);
             }            
         }
 
@@ -185,7 +139,9 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Loop through each mesh, and if the name/vertexcount matches, append the blendshape
         /// </summary>
-        internal void LoopMeshForBlendShape(List<SkinnedMeshRenderer> smrs, MeshBlendShape meshBlendShape) 
+        /// <param name="smrs">List of skinnedMeshRenderers to check for matching mesh name</param>
+        /// <param name="meshBlendShape">The MeshBlendShape loaded from character card</param>
+        internal void LoopMeshAndAddExistingBlendShape(List<SkinnedMeshRenderer> smrs, MeshBlendShape meshBlendShape, bool isClothingMesh = false) 
         {
             var meshName = meshBlendShape.MeshName;
             var vertexCount = meshBlendShape.VertCount;
@@ -198,13 +154,13 @@ namespace KK_PregnancyPlus
                 {
                     //Make sure the blendshape does not already exists
                     if (BlendShapeAlreadyExists(smr, meshBlendShape.BlendShape)) continue;
-                    if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" Adding BlendShape > {blendShape.log} ");
 
                     //Add the blendshape to the mesh
                     new BlendShapeController(smr, blendShape);
-                }
 
-                // LogMeshBlendShapes(smr);
+                    // LogMeshBlendShapes(smr);
+                }
+                
             }              
         }
                 
@@ -220,7 +176,9 @@ namespace KK_PregnancyPlus
         }
 
 
-        public void LogMeshBlendShapes(SkinnedMeshRenderer smr) {
+        //just for debugging
+        public void LogMeshBlendShapes(SkinnedMeshRenderer smr) 
+        {
             var bsCount = smr.sharedMesh.blendShapeCount;
 
             //For each existing blend shape
@@ -235,9 +193,58 @@ namespace KK_PregnancyPlus
                 var frameCount = smr.sharedMesh.GetBlendShapeFrameCount(i);
                 smr.sharedMesh.GetBlendShapeFrameVertices(i, 0, deltaVertices, deltaNormals, deltaTangents);
 
-                if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" LogMeshBlendShapes > {name} weight {weight} frameCount {frameCount} deltaVertices {deltaVertices.Length}");            
+                if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" LogMeshBlendShapes > {name} shapeIndex {i} weight {weight} frameCount {frameCount} deltaVertices {deltaVertices.Length}");            
             }
         }
+
+
+        
+        /// <summary>
+        /// This will create a blendshape frame for a mesh, that can be used in timeline, required there be a renderKey for inflatedVertices for this smr
+        ///  Only needed in KK for now
+        /// </summary>
+        /// <param name="smr">Target mesh renderer to update</param>
+        /// <param name="renderKey">The Shared Mesh render name, used in dictionary keys to get the current verticie values</param>
+        /// <returns>Returns the MeshBlendShape that is created. Can be null</returns>
+        internal MeshBlendShape CreateBlendShape(SkinnedMeshRenderer smr, string renderKey) 
+        {     
+            //Make a copy of the mesh. We dont want to affect the existing for this
+            var meshCopyOrig = PregnancyPlusHelper.CopyMesh(smr.sharedMesh);   
+            if (!meshCopyOrig.isReadable) 
+            {
+                if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(
+                     $"CreateBlendShape > smr '{renderKey}' is not readable, skipping");
+                return null;
+            } 
+
+            //Make sure we have an existing belly shape to work with (can be null if user hasnt used sliders yet)
+            var exists = originalVertices.TryGetValue(renderKey, out var val);
+            if (!exists) 
+            {
+                if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(
+                     $"CreateBlendShape > smr '{renderKey}' does not exists, skipping");
+                return null;
+            }
+
+            if (originalVertices[renderKey].Length != meshCopyOrig.vertexCount) 
+            {
+                PregnancyPlusPlugin.Logger.LogInfo(
+                            $"CreateBlendShape > smr.sharedMesh '{renderKey}' has incorrect vert count {originalVertices[renderKey].Length}|{meshCopyOrig.vertexCount}");
+                return null;
+            }
+
+            //Calculate new normals, but don't show them.  We just want it for the destination blendshape shape
+            meshCopyOrig.vertices = originalVertices[renderKey];
+            meshCopyOrig.RecalculateBounds();
+            NormalSolver.RecalculateNormals(meshCopyOrig, 40f, bellyVerticieIndexes[renderKey]);
+            meshCopyOrig.RecalculateTangents();
+
+            //Create blend shape that will be available to timeline
+            var bsc = new BlendShapeController(meshCopyOrig, smr, $"{renderKey}_{PregnancyPlusPlugin.GUID}");
+
+            //Return the blendshape format that can be saved to character card
+            return ConvertToMeshBlendShape(smr.name, bsc.blendShape);
+        }  
     }
 }
 

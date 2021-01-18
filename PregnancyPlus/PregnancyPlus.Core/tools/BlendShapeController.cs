@@ -76,7 +76,7 @@ namespace KK_PregnancyPlus
         public BlendShapeController(SkinnedMeshRenderer smr, BlendShape _blendShape)         
         {
             blendShape = _blendShape;
-            smr.sharedMesh.AddBlendShapeFrame(_blendShape.name, _blendShape.weight, _blendShape.verticies, _blendShape.normals, _blendShape.tangents); 
+            AddBlendShapeToMesh(smr);
         }
 
 
@@ -102,7 +102,7 @@ namespace KK_PregnancyPlus
 
             smr.sharedMesh.AddBlendShapeFrame(blendShape.name, blendShape.weight, blendShape.verticies, blendShape.normals, blendShape.tangents);    
             //Fix for some shared mesh properties not updating after AddBlendShapeFrame
-            smr.sharedMesh = smr.sharedMesh;    
+            smr.sharedMesh = smr.sharedMesh;//I hate this line of code  
 
             if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" AddBlendShape > {blendShape.log}");
         }
@@ -150,9 +150,7 @@ namespace KK_PregnancyPlus
             }
 
             //Clear all blend shapes (because we cant just delete one.  Thanks unity!)
-            smr.sharedMesh.ClearBlendShapes();
-            //Fix for some shared mesh properties not updating after AddBlendShapeFrame
-            smr.sharedMesh = smr.sharedMesh;
+            smrMesh.ClearBlendShapes();
 
             //Add all of the copies back (excluding the one we are overriding)
             for (var i = 0; i < bsCount; i++)
