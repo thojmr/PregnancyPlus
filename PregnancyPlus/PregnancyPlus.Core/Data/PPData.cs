@@ -23,7 +23,7 @@ namespace KK_PregnancyPlus
         public float inflationClothOffset = 0;
         public float inflationFatFold = 0;
         public bool GameplayEnabled = true;
-        public List<PregnancyPlusCharaController.MeshBlendShape> meshBlendShape = new List<PregnancyPlusCharaController.MeshBlendShape>();
+        public byte[] meshBlendShape;//Type: List<MeshBlendShape> once Deserialized
 
 #endregion
 

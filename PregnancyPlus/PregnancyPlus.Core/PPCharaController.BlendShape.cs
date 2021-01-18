@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UniRx;
+using MessagePack;
+
 #if HS2 || AI
     using AIChara;
 #endif
@@ -19,17 +21,18 @@ namespace KK_PregnancyPlus
     {           
 
         //Allows us to identify which mesh a blendshape belongs to when loading character cards
+        [MessagePackObject(keyAsPropertyName: true)]
         public class MeshBlendShape
         {
             public string MeshName;//like smr.name
-            public int VertexCount;//To differentiate 2 meshes with the same names use vertex count comparison
-            public BlendShapeController.BlendShape BlendShape;
+            public int VertCount;//To differentiate 2 meshes with the same names use vertex count comparison
+            public BlendShapeController.BlendShape BlendShape;//Just a single Frame for now, though its possible to have multiple frames
 
-            public MeshBlendShape(string meshName, BlendShapeController.BlendShape blendShape, int vertexCount) 
+            public MeshBlendShape(string meshName, BlendShapeController.BlendShape blendShape, int vertCount) 
             {
                 MeshName = meshName;
                 BlendShape = blendShape;
-                VertexCount = vertexCount;
+                VertCount = vertCount;
             }
         }
 
@@ -43,17 +46,21 @@ namespace KK_PregnancyPlus
         {
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" ");
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" OnCreateBlendShapeSelected ");
-            var anyBlendShapesCreated = false;
+
+            var meshBlendShapes = new List<MeshBlendShape>();
 
             //Get all cloth renderes and attemp to create blendshapes from preset inflatedVerticies
             var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);
-            anyBlendShapesCreated = LoopAndCreateBlendShape(clothRenderers, anyBlendShapesCreated, true);
+            meshBlendShapes = LoopAndCreateBlendShape(clothRenderers, meshBlendShapes, true);
 
             //do the same for body meshs
             var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody);
-            anyBlendShapesCreated = LoopAndCreateBlendShape(bodyRenderers, anyBlendShapesCreated);
+            meshBlendShapes = LoopAndCreateBlendShape(bodyRenderers, meshBlendShapes);
 
-            return anyBlendShapesCreated;
+            //Save any meshBlendShapes to card
+            AddBlendShapesToData(meshBlendShapes);
+
+            return meshBlendShapes.Count > 0;
         }
 
 
@@ -64,7 +71,7 @@ namespace KK_PregnancyPlus
         /// <param name="anyBlendShapesCreated">If any mesh changes have happened so far</param>
         /// <param name="isClothingMesh">If this smr is a cloth mesh</param>
         /// <returns>boolean true if any meshes were changed</returns>
-        internal bool LoopAndCreateBlendShape(List<SkinnedMeshRenderer> smrs, bool anyBlendShapesCreated, bool isClothingMesh = false) 
+        internal List<MeshBlendShape> LoopAndCreateBlendShape(List<SkinnedMeshRenderer> smrs, List<MeshBlendShape> meshBlendShapes, bool isClothingMesh = false) 
         {
             foreach(var smr in smrs) 
             {                
@@ -74,11 +81,11 @@ namespace KK_PregnancyPlus
                 //Dont create blend shape if no inflated verts exists
                 if (!exists || inflatedVertices[renderKey].Length < 0) continue;
 
-                var appliedClothBSChanges = CreateBlendShape(smr, renderKey);
-                if (appliedClothBSChanges) anyBlendShapesCreated = true;
+                var meshBlendShape = CreateBlendShape(smr, renderKey);
+                if (meshBlendShape != null) meshBlendShapes.Add(meshBlendShape);
             }  
 
-            return anyBlendShapesCreated;
+            return meshBlendShapes;
         }
     
 
@@ -89,14 +96,14 @@ namespace KK_PregnancyPlus
         /// <param name="mesh">Target mesh to update</param>
         /// <param name="renderKey">The Shared Mesh render name, used in dictionary keys to get the current verticie values</param>
         /// <returns>Will return True if any the blendshape was created</returns>
-        internal bool CreateBlendShape(SkinnedMeshRenderer smr, string renderKey) 
+        internal MeshBlendShape CreateBlendShape(SkinnedMeshRenderer smr, string renderKey) 
         {     
             var meshCopyOrig = PregnancyPlusHelper.CopyMesh(smr.sharedMesh);   
             if (!meshCopyOrig.isReadable) 
             {
                 if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(
                      $"CreateBlendShape > smr '{renderKey}' is not readable, skipping");
-                return false;
+                return null;
             } 
 
             //Check key exists in dict, remnove it if it does not
@@ -105,17 +112,17 @@ namespace KK_PregnancyPlus
             {
                 if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(
                      $"CreateBlendShape > smr '{renderKey}' does not exists, skipping");
-                return false;
+                return null;
             }
 
             var bellyVertIndex = bellyVerticieIndexes[renderKey];
-            if (bellyVertIndex.Length == 0) return false;
+            if (bellyVertIndex.Length == 0) return null;
 
             if (originalVertices[renderKey].Length != meshCopyOrig.vertexCount) 
             {
                 PregnancyPlusPlugin.Logger.LogInfo(
                             $"CreateBlendShape > smr.sharedMesh '{renderKey}' has incorrect vert count {originalVertices[renderKey].Length}|{meshCopyOrig.vertexCount}");
-                return false;
+                return null;
             }
 
             //Calculate new normals
@@ -125,27 +132,26 @@ namespace KK_PregnancyPlus
             meshCopyOrig.RecalculateTangents();
 
             //Create blend shape for Timeline
-            var blendShapeController = new BlendShapeController(meshCopyOrig, smr, $"{renderKey}_{PregnancyPlusPlugin.GUID}");
+            var bsc = new BlendShapeController(meshCopyOrig, smr, $"{renderKey}_{PregnancyPlusPlugin.GUID}");
 
-            //Add it to character data so it can be saved if needed
-            if (blendShapeController != null && blendShapeController.blendShape.isInitilized) 
-            {
-                AddBlendShapeToData(smr.name, blendShapeController.blendShape);
-            } 
-
-            return true;
+            return ConvertToMeshBlendShape(smr.name, bsc.blendShape);
         }   
+
+        internal MeshBlendShape ConvertToMeshBlendShape(string smrName, BlendShapeController.BlendShape blendShape) 
+        {            
+            if (blendShape == null) return null;
+            var meshBlendShape = new MeshBlendShape(smrName, blendShape, blendShape.vertexCount);
+            return meshBlendShape;
+        }
 
 
         /// <summary>
-        /// Allows a new  blendshape to be added to character data so it can be saved with the character card
+        /// Allows new blendshapes to be added to character data so it can be saved with the character card
         /// </summary>
-        /// <param name="smrName">The mesh name</param>
         /// <param name="blendShape">The blendshape we just created</param>
-        internal void AddBlendShapeToData(string smrName, BlendShapeController.BlendShape blendShape) 
-        {
-            var meshBlendShape = new MeshBlendShape(smrName, blendShape, blendShape.vertexCount);
-            infConfig.meshBlendShape.Add(meshBlendShape);
+        internal void AddBlendShapesToData(List<MeshBlendShape> meshBlendShapes) 
+        {            
+            infConfig.meshBlendShape = MessagePack.LZ4MessagePackSerializer.Serialize(meshBlendShapes);
         }
 
 
@@ -156,11 +162,15 @@ namespace KK_PregnancyPlus
         /// <param name="blendShape">The blendshape we just created</param>
         internal void LoadBlendShapes(PregnancyPlusData data) 
         {
-            if (data.meshBlendShape == null || data.meshBlendShape.Count <= 0) return;
+            if (data.meshBlendShape == null) return;
+            //Unserialize the blendshape from characters card
+            var meshBlendShapes = MessagePack.LZ4MessagePackSerializer.Deserialize<List<MeshBlendShape>>(data.meshBlendShape);
+            if (meshBlendShapes == null || meshBlendShapes.Count <= 0) return;
+
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" LoadBlendShapes ");
 
             //For each stores meshBlendShape
-            foreach(var meshBlendShape in data.meshBlendShape)
+            foreach(var meshBlendShape in meshBlendShapes)
             {
                 //Loop through all meshes and find matching name
                 var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes, true);
@@ -179,7 +189,7 @@ namespace KK_PregnancyPlus
         internal void LoopMeshForBlendShape(List<SkinnedMeshRenderer> smrs, MeshBlendShape meshBlendShape) 
         {
             var meshName = meshBlendShape.MeshName;
-            var vertexCount = meshBlendShape.VertexCount;
+            var vertexCount = meshBlendShape.VertCount;
             var blendShape = meshBlendShape.BlendShape; 
             
             foreach(var smr in smrs) 

@@ -2,6 +2,7 @@ using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using MessagePack;
 
 namespace KK_PregnancyPlus
 {
@@ -9,10 +10,13 @@ namespace KK_PregnancyPlus
     {
         public BlendShape blendShape = new BlendShape();
 
+        [MessagePackObject(keyAsPropertyName: true)]
         public class BlendShape 
         {
             public string name;
             private float _weight;
+
+            [IgnoreMember]
             public float weight 
             {
                 set { _weight = Mathf.Clamp(value, 0, 100); }
@@ -21,10 +25,16 @@ namespace KK_PregnancyPlus
             public Vector3[] verticies;
             public Vector3[] normals;
             public Vector3[] tangents;
-            public bool isInitilized {
+
+            [IgnoreMember]
+            public bool isInitilized
+            {
                 get { return name != null; }
             }
-            public int vertexCount {
+
+            [IgnoreMember]
+            public int vertexCount 
+            {
                 get { return verticies.Length; }
             }
         }
