@@ -60,20 +60,10 @@ namespace KK_PregnancyPlus
 
         protected override void Start() 
         {            
-            ReadAndSetCardData();
-            initialized = true;            
+            ReadAndSetCardData();                       
 
-            MeasureWaist(ChaControl);
-
-            CharacterApi.CharacterReloaded += OnCharacterReloaded;  
-
-            //Set the initial belly size if the character card has data
-            if (infConfig.inflationSize > 0 && infConfig.GameplayEnabled) StartCoroutine(WaitForMeshToSettle(0.5f));
-
-            #if KK            
-                //Detect clothing change in KK
-                CurrentCoordinate.Subscribe(value => { OnCoordinateLoaded(); });
-            #endif
+            //Get the char measurements before they have a chance to move
+            MeasureWaist(ChaControl); 
 
             base.Start();
         }
@@ -94,7 +84,8 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnReload {currentGameMode}"); 
             ReadAndSetCardData();              
 
-            ReloadStoryInflation();         
+            ReloadStoryInflation();     
+            ReloadStudioMakerInflation();    
         }
 
 
@@ -115,22 +106,27 @@ namespace KK_PregnancyPlus
         /// </summary>
         internal void ReloadStoryInflation()
         {
-            //Only reload when in story mode.  Doesnt need to in Studio/Maker I guess
+            //Only reload when story mode enabled.
             if (PregnancyPlusPlugin.StoryMode != null && !PregnancyPlusPlugin.StoryMode.Value) return;
             
-            if (!StudioAPI.InsideStudio && !MakerAPI.InsideMaker) 
-            {
-                #if KK
-                    GetWeeksAndSetInflation(true);                                 
-                #elif HS2 || AI                  
-                    //For HS2 AI, we set global belly size from plugin config, or character card                    
-                    MeshInflate(true);                                       
-                #endif   
-            }
-            else
-            {
-                MeshInflate(true);                
-            }                             
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return;
+            
+            #if KK
+                GetWeeksAndSetInflation(true);                                 
+            #elif HS2 || AI                  
+                //For HS2 AI, we set global belly size from plugin config, or character card                    
+                MeshInflate(true);                                       
+            #endif                                           
+        }
+
+
+        /// <summary>
+        /// Triggered by OnReload but only for logic in Studio or Maker
+        /// </summary>
+        internal void ReloadStudioMakerInflation()
+        {            
+            if (!StudioAPI.InsideStudio && !MakerAPI.InsideMaker) return;                                           
+            MeshInflate(true, true);                                                            
         }
 
 
@@ -176,7 +172,7 @@ namespace KK_PregnancyPlus
             if (!initialized || chaID != ChaControl.chaID) return;
 
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= ClothesStateChangeEvent {clothesKind}");
-            StartCoroutine(WaitForMeshToSettle(0.05f, true, forceRecalcVerts));
+            StartCoroutine(WaitForMeshToSettle(0.05f, true, forceRecalcVerts));//Force recalc because of some cloth items in HS2 Maker
         }
 
         
@@ -190,6 +186,7 @@ namespace KK_PregnancyPlus
             
             //Load any blendshapes from card
             LoadBlendShapes(infConfig);
+            initialized = true; 
         }
 
 
@@ -201,21 +198,6 @@ namespace KK_PregnancyPlus
             var data = GetExtendedData();
             return PregnancyPlusData.Load(data) ?? new PregnancyPlusData();
         }
-
-
-        internal void OnCharacterReloaded(object sender, CharaReloadEventArgs e)  
-        {  
-            //When loading the character, if pregnant, apply the new inflated belly too
-            if (ChaControl == null || e.ReloadedCharacter == null || e.ReloadedCharacter.name != ChaControl.name) return;            
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= OnCharacterReloaded ");
-
-            #if KK
-                GetWeeksAndSetInflation();
-            #elif HS2 || AI        
-                //For HS2 AI, we set global belly size from plugin config, or from the character card
-                MeshInflate();
-            #endif
-        } 
 
 
         /// <summary>
@@ -234,7 +216,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// After clothes change you have to wait a second if you want mesh shadows to calculate correctly (longer in HS2, AI)
         /// </summary>
-        IEnumerator WaitForMeshToSettle(float waitTime = 0.05f, bool forceUpdate = false, bool forceRecalcVerts = false)
+        IEnumerator WaitForMeshToSettle(float waitTime = 0.05f, bool checkNewMesh = false, bool forceRecalcVerts = false)
         {   
             //Allows us to debounce when multiple back to back request
             var guid = Guid.NewGuid();
@@ -244,7 +226,7 @@ namespace KK_PregnancyPlus
             //If guid is the latest, trigger method
             if (debounceGuid == guid) {
                 if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" WaitForMeshToSettle");
-                MeshInflate(forceUpdate, forceRecalcVerts);
+                MeshInflate(checkNewMesh, forceRecalcVerts);
             }
         }
 
@@ -252,14 +234,14 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// fetch KK_Pregnancy Data.Week value for KK story mode integration (It works if you don't mind the clipping)
         /// </summary>
-        internal void GetWeeksAndSetInflation(bool forceUpdate = false, bool slidersChanged = false) 
+        internal void GetWeeksAndSetInflation(bool checkNewMesh = false, bool slidersChanged = false) 
         {            
 
             //If a card value is set for inflation size, use that first, otherwise check KK_Pregnancy for Weeks value
             var cardData = GetCardData();
             if (cardData.inflationSize > 0 && cardData.GameplayEnabled) 
             {
-                MeshInflate(cardData, forceUpdate, slidersChanged);
+                MeshInflate(cardData, checkNewMesh, slidersChanged);
                 return;
             }
 
@@ -270,7 +252,7 @@ namespace KK_PregnancyPlus
             //Compute the additonal belly size added based on user configured vallue from 0-40
             var additionalPregPlusSize = Mathf.Lerp(0, week, PregnancyPlusPlugin.MaxStoryModeBelly.Value/40);
 
-            MeshInflate(additionalPregPlusSize, forceUpdate, slidersChanged);
+            MeshInflate(additionalPregPlusSize, checkNewMesh, slidersChanged);
         }
         
 

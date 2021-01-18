@@ -250,6 +250,16 @@ namespace KK_PregnancyPlus
             if (pluginConfigSliderChanged) return true;
             return infConfig.Equals(infConfigHistory);
         }
+
+
+        /// <summary>   
+        /// Clear all inflations and remove the known mesh verts
+        /// </summary>   
+        public void CleanSlate() {
+            ResetInflation();
+            var keyList = new List<string>(originalVertices.Keys);
+            RemoveRenderKeys(keyList);
+        }
         
 
         internal void RemoveRenderKeys(List<string> keysToRemove) 

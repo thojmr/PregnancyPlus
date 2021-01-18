@@ -46,11 +46,7 @@ namespace KK_PregnancyPlus
             if (!infConfig.GameplayEnabled) return false;//Only if gameplay enabled
 
             //Resets all stored vert values, so the script will have to recalculate all from base body
-            if (freshStart) 
-            {                
-                var keyList = new List<string>(originalVertices.Keys);
-                RemoveRenderKeys(keyList);
-            }
+            if (freshStart) CleanSlate();
 
             //Only continue when size above 0
             if (infConfig.inflationSize <= 0) 
@@ -85,7 +81,7 @@ namespace KK_PregnancyPlus
             }
 
             //Update config history when mesh changes were made
-            if (anyMeshChanges) infConfigHistory = (PregnancyPlusData)infConfig.Clone();
+            if (anyMeshChanges) infConfigHistory = (PregnancyPlusData)infConfig.Clone();            
 
             return anyMeshChanges;
         }
@@ -110,8 +106,10 @@ namespace KK_PregnancyPlus
                     if (!didCompute) continue;    
                 }
 
-                var appliedClothMeshChanges = ApplyInflation(smr, GetMeshKey(smr));
-                if (appliedClothMeshChanges) anyMeshChanges = true;
+                var appliedMeshChanges = ApplyInflation(smr, GetMeshKey(smr));            
+                if (appliedMeshChanges) anyMeshChanges = true;
+
+                if (PregnancyPlusPlugin.debugLog && appliedMeshChanges)  PregnancyPlusPlugin.Logger.LogInfo($" mesh did change > {smr.name}");
             }  
 
             return anyMeshChanges;
