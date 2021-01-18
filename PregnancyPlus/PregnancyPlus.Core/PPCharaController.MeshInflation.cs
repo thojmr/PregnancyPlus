@@ -18,44 +18,8 @@ namespace KK_PregnancyPlus
     public partial class PregnancyPlusCharaController: CharaCustomFunctionController
     {           
 
-        public class BellyInfo 
-        {
-            public float WaistWidth;
-            public float WaistHeight;
-            public float SphereRadius;
-            public float OriginalSphereRadius;
-            public Vector3 CharacterScale;
-            public float CurrentMultiplier;
-            
-            public bool IsInitialized 
-            {
-                get { return WaistWidth > 0 && WaistHeight > 0; }
-            }
-
-            internal BellyInfo(float waistWidth, float waistHeight, float sphereRadius, float originalSphereRadius, Vector3 characterScale, float currentMultiplier) 
-            {
-                WaistWidth = waistWidth;
-                WaistHeight = waistHeight;
-                SphereRadius = sphereRadius;
-                OriginalSphereRadius = originalSphereRadius;
-                CharacterScale = characterScale;
-                CurrentMultiplier = currentMultiplier;
-            }
-
-            //Determine if we need to recalculate the sphere radius (hopefully to avoid change in hip bones causing belly size to sudenly change)
-            internal bool NeedsSphereRecalc(Vector3 characterScale, float currentMultiplier) 
-            {
-                if (!IsInitialized) return true;
-                if (CharacterScale != characterScale) return true;
-                if (CurrentMultiplier != currentMultiplier) return true;
-
-                return false;
-            }
-
-        }
-
         /// <summary>
-        /// Triggers belly mesh inflation for the current ChaControl.  
+        /// Triggers belly mesh inflation for the current ChaControl for any active meshs (not hidden clothes)
         /// It will check the inflationSize dictionary for a valid value (last set via config slider or MeshInflate(value))
         /// If size 0 is used it will clear all active mesh inflations
         /// This will not run twice for the same parameters, a change of config value is required

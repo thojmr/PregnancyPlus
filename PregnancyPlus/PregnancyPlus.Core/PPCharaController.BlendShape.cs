@@ -16,7 +16,7 @@ using MessagePack;
 namespace KK_PregnancyPlus
 {
 
-    //This partial class contains the blendshape logic
+    //This partial class contains the blendshape logic for KK Timelines (and VNGE in future)
     public partial class PregnancyPlusCharaController: CharaCustomFunctionController
     {           
 
@@ -201,7 +201,6 @@ namespace KK_PregnancyPlus
         
         /// <summary>
         /// This will create a blendshape frame for a mesh, that can be used in timeline, required there be a renderKey for inflatedVertices for this smr
-        ///  Only needed in KK for now
         /// </summary>
         /// <param name="smr">Target mesh renderer to update</param>
         /// <param name="renderKey">The Shared Mesh render name, used in dictionary keys to get the current verticie values</param>

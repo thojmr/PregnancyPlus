@@ -20,16 +20,43 @@ namespace KK_PregnancyPlus
     //This partial class contains all the less critical mesh inflation methods
     public partial class PregnancyPlusCharaController: CharaCustomFunctionController
     {
-        
-        /// <summary>
-        /// Limit where you can and cannot trigger inflation.  Always in Studio and Maker. Conditionally in Story mode
-        /// </summary>
-        public bool AllowedToInflate() 
-        {
-            var storyModeEnabled = PregnancyPlusPlugin.StoryMode != null ? PregnancyPlusPlugin.StoryMode.Value : false;
-            return StudioAPI.InsideStudio || MakerAPI.InsideMaker || (storyModeEnabled && infConfig.GameplayEnabled);
-        }
 
+        public class BellyInfo 
+        {
+            public float WaistWidth;
+            public float WaistHeight;
+            public float SphereRadius;
+            public float OriginalSphereRadius;
+            public Vector3 CharacterScale;
+            public float CurrentMultiplier;
+            
+            public bool IsInitialized 
+            {
+                get { return WaistWidth > 0 && WaistHeight > 0; }
+            }
+
+            internal BellyInfo(float waistWidth, float waistHeight, float sphereRadius, float originalSphereRadius, Vector3 characterScale, float currentMultiplier) 
+            {
+                WaistWidth = waistWidth;
+                WaistHeight = waistHeight;
+                SphereRadius = sphereRadius;
+                OriginalSphereRadius = originalSphereRadius;
+                CharacterScale = characterScale;
+                CurrentMultiplier = currentMultiplier;
+            }
+
+            //Determine if we need to recalculate the sphere radius (hopefully to avoid change in hip bones causing belly size to sudenly change)
+            internal bool NeedsSphereRecalc(Vector3 characterScale, float currentMultiplier) 
+            {
+                if (!IsInitialized) return true;
+                if (CharacterScale != characterScale) return true;
+                if (CurrentMultiplier != currentMultiplier) return true;
+
+                return false;
+            }
+
+        }
+        
 
         /// <summary>
         /// An overload for MeshInflate() that allows you to pass an initial inflationSize param
@@ -58,6 +85,16 @@ namespace KK_PregnancyPlus
             infConfig = cardData;           
 
             return MeshInflate(checkForNewMesh, false, pluginConfigSliderChanged);
+        }
+
+
+        /// <summary>
+        /// Limit where you can and cannot trigger inflation.  Always in Studio and Maker. Conditionally in Story mode
+        /// </summary>
+        public bool AllowedToInflate() 
+        {
+            var storyModeEnabled = PregnancyPlusPlugin.StoryMode != null ? PregnancyPlusPlugin.StoryMode.Value : false;
+            return StudioAPI.InsideStudio || MakerAPI.InsideMaker || (storyModeEnabled && infConfig.GameplayEnabled);
         }
 
 
@@ -239,7 +276,7 @@ namespace KK_PregnancyPlus
         /// </summary>    
         internal string GetMeshKey(SkinnedMeshRenderer smr) 
         {
-            return smr.name + smr.sharedMesh.vertexCount.ToString();
+            return PregnancyPlusHelper.KeyFromNameAndVerts(smr.name, smr.sharedMesh.vertexCount);
         }
 
 

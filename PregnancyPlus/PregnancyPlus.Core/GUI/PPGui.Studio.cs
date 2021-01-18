@@ -28,6 +28,12 @@ namespace KK_PregnancyPlus
         private const string inflationClothOffset = "        Cloth Offset";
         private const string inflationFatFold = "        Fat Fold";
 
+        #if KK
+            private const string blendshapeText = "Create Timeline BlendShape";
+        #elif HS2 || AI
+            private const string blendshapeText = "Create BlendShape";
+        #endif
+
         internal static void InitStudio(Harmony hi, PregnancyPlusPlugin instance)
         {
             if (StudioAPI.InsideStudio)
@@ -58,23 +64,21 @@ namespace KK_PregnancyPlus
                     if (PregnancyPlusPlugin.lastBellyState.HasAnyValue()) RestoreSliders(PregnancyPlusPlugin.lastBellyState);
                  });
             
-            #if KK  //Timeline only exists in KK for now
-                cat.AddControl(new CurrentStateCategorySwitch("Create Timeline BlendShape", c =>
-                    {                                         
-                        return false;
-                    }))
-                    .Value.Subscribe(f => {
-                        if (f == false) return;
-                        //Create blendshape for current selected character if the mesh is inflated
-                        foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) 
-                        {   
-                            if (ctrl.infConfig.HasAnyValue()) 
-                            {              
-                                ctrl.OnCreateBlendShapeSelected();                             
-                            }
+            cat.AddControl(new CurrentStateCategorySwitch(blendshapeText, c =>
+                {                                         
+                    return false;
+                }))
+                .Value.Subscribe(f => {
+                    if (f == false) return;
+                    //Create blendshape for current selected character if the mesh is inflated
+                    foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) 
+                    {   
+                        if (ctrl.infConfig.HasAnyValue()) 
+                        {              
+                            ctrl.OnCreateBlendShapeSelected();                             
                         }
-                    });
-            #endif
+                    }
+                });
 
             cat.AddControl(new CurrentStateCategorySlider(inflationSize, c =>
                 {   
