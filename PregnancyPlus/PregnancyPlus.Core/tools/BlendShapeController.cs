@@ -10,6 +10,7 @@ namespace KK_PregnancyPlus
     {
         public BlendShape blendShape = new BlendShape();
 
+
         [MessagePackObject(keyAsPropertyName: true)]
         public class BlendShape 
         {
@@ -43,20 +44,20 @@ namespace KK_PregnancyPlus
             }
         }
 
+
         /// <summary>
         /// Constructor that takes in a target skinned mesh renderer with verts and creates a blend shape object from it.  This blend shape will then be assigned to the mesh
         /// </summary>
-        /// <param name="originalSmr">Original vert mesh</param>
+        /// <param name="originalSmr">Original untouched mesh</param>
         /// <param name="blendShapeName">Desired name of the blend shape, should be unique</param>
-        /// <param name="newSmr">The smr containing the new mesh vert positions</param>
-        /// <param name="targetMesh">Optional target mesh that is calculated outside of the newSmr, but should be used like its mesh</param>
+        /// <param name="newSmr">The smr containing the target mesh shape</param>
         public BlendShapeController(Mesh originalSmrMesh, SkinnedMeshRenderer newSmr, string blendShapeName) 
         {
             if (!blendShape.isInitilized) 
             {
                 var maxShapeSize = 100f;
 
-                //Create blend shape object to be reused on other meshes (maybe)
+                //Create blend shape deltas from both meshes
                 blendShape = new BlendShape();
                 blendShape.name = blendShapeName;
                 blendShape.weight = maxShapeSize;
@@ -70,9 +71,12 @@ namespace KK_PregnancyPlus
             AddBlendShapeToMesh(newSmr);
         }
 
+
         /// <summary>
         /// Constructor overload that just takes a saved blendshape and sets it to the correct mesh
         /// </summary>
+        /// <param name="smr">The current active mesh</param>
+        /// <param name="_blendShape">The blendshape we loaded from character card</param>
         public BlendShapeController(SkinnedMeshRenderer smr, BlendShape _blendShape)         
         {
             blendShape = _blendShape;
@@ -83,7 +87,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// This will apply the previously created BlendShape object to an existing skinned mesh renderer
         /// </summary>
-        /// <param name="smr">Target skinned mesh renderer to attche the blend shape</param>
+        /// <param name="smr">The skinned mesh renderer to attach the blend shape</param>
         public void AddBlendShapeToMesh(SkinnedMeshRenderer smr) 
         {
             if (!blendShape.isInitilized) return;
@@ -107,11 +111,12 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" AddBlendShape > {blendShape.log}");
         }
 
+
         /// <summary>
         /// This will replace an existing blendshape of the same name.  Only works when the new blend shape is single frame
         /// </summary>
-        /// <param name="smrMesh">Target skinned mesh renderer to attche the blend shape</param>
-        /// <param name="newBs">The new blend shape</param>
+        /// <param name="smrMesh">The skinned mesh renderer to attche the blend shape</param>
+        /// <param name="newBs">The new blend shape, to overwrite the existing one (must have same name)</param>
         private void OverwriteBlendShape(SkinnedMeshRenderer smr, BlendShape newBs) 
         {
             var smrMesh = smr.sharedMesh;
@@ -174,7 +179,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// This will change the weight (apperance) of an existing BlendShape attached to a skinned mesh renderer. Weight 0 will reset to the default shape
         /// </summary>
-        /// <param name="smr">Target skinned mesh renderer to attche the blend shape</param>
+        /// <param name="smr">The skinned mesh renderer to attach the blend shape</param>
         /// <param name="weight">Float value from 0-100 that will increase the blend to the target shape as the number grows</param>
         /// <returns>boolean true if the blend shape exists</returns>
         public bool ApplyBlendShapeWeight(SkinnedMeshRenderer smr, float weight) 

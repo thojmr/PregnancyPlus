@@ -202,7 +202,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// This will create a blendshape frame for a mesh, that can be used in timeline, required there be a renderKey for inflatedVertices for this smr
         /// </summary>
-        /// <param name="smr">Target mesh renderer to update</param>
+        /// <param name="smr">Target mesh renderer to update (original shape)</param>
         /// <param name="renderKey">The Shared Mesh render name, used in dictionary keys to get the current verticie values</param>
         /// <returns>Returns the MeshBlendShape that is created. Can be null</returns>
         internal MeshBlendShape CreateBlendShape(SkinnedMeshRenderer smr, string renderKey) 
@@ -232,13 +232,13 @@ namespace KK_PregnancyPlus
                 return null;
             }
 
-            //Calculate new normals, but don't show them.  We just want it for the destination blendshape shape
+            //Calculate the original normals, but don't show them.  We just want it for the blendshape shape origin
             meshCopyOrig.vertices = originalVertices[renderKey];
             meshCopyOrig.RecalculateBounds();
             NormalSolver.RecalculateNormals(meshCopyOrig, 40f, bellyVerticieIndexes[renderKey]);
             meshCopyOrig.RecalculateTangents();
 
-            //Create blend shape that will be available to timeline
+            //Create blend shape object on the mesh
             var bsc = new BlendShapeController(meshCopyOrig, smr, $"{renderKey}_{PregnancyPlusPlugin.GUID}");
 
             //Return the blendshape format that can be saved to character card
