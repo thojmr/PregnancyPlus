@@ -135,7 +135,8 @@ namespace KK_PregnancyPlus
         /// <param name="anyMeshChanges">If any mesh changes have happened so far</param>
         /// <param name="isClothingMesh">If this smr is a cloth mesh</param>
         /// <returns>boolean true if any meshes were changed</returns>
-        internal bool LoopAndApplyMeshChanges(List<SkinnedMeshRenderer> smrs, bool sliderHaveChanged, bool anyMeshChanges, bool isClothingMesh = false) {
+        internal bool LoopAndApplyMeshChanges(List<SkinnedMeshRenderer> smrs, bool sliderHaveChanged, bool anyMeshChanges, bool isClothingMesh = false) 
+        {
             foreach(var smr in smrs) 
             {                
                 //Dont recompute verts if no sliders have changed
@@ -151,7 +152,6 @@ namespace KK_PregnancyPlus
 
             return anyMeshChanges;
         }
-
 
         /// <summary>
         /// Get the characters waist width and calculate the appropriate belly sphere radius from it

@@ -16,9 +16,9 @@ namespace KK_PregnancyPlus
     {        
 
 
-        internal static SkinnedMeshRenderer GetMeshRenderer(ChaControl chaControl, string renderKey) 
+        internal static SkinnedMeshRenderer GetMeshRenderer(ChaControl chaControl, string renderKey, bool findAll = false) 
         {
-            var renderers = chaControl.GetComponentsInChildren<SkinnedMeshRenderer>();
+            var renderers = chaControl.GetComponentsInChildren<SkinnedMeshRenderer>(findAll);
             var renderer = renderers.FirstOrDefault(x => (x.name + x.sharedMesh.vertexCount.ToString()) == renderKey);
             return renderer;
         }
@@ -28,7 +28,7 @@ namespace KK_PregnancyPlus
         /// Will get any Mesh Renderers for the given ChaControl.objxxx passed in
         /// </summary>
         /// <param name="chaControlObjs">The ChaControl.objxxx to fetch mesh renderers from  Might work for other GameObjects as well</param>
-        internal static List<SkinnedMeshRenderer> GetMeshRenderers(GameObject[] chaControlObjs) 
+        internal static List<SkinnedMeshRenderer> GetMeshRenderers(GameObject[] chaControlObjs, bool findAll = false) 
         {            
             var renderers = new List<SkinnedMeshRenderer>();
             if (chaControlObjs == null) return renderers;
@@ -37,7 +37,7 @@ namespace KK_PregnancyPlus
             {
                 if (chaControlObj == null) continue;
 
-                var skinnedItems = GetMeshRenderers(chaControlObj);
+                var skinnedItems = GetMeshRenderers(chaControlObj, findAll);
                 if (skinnedItems != null && skinnedItems.Count > 0) {
                     renderers.AddRange(skinnedItems);
                 }
@@ -48,12 +48,12 @@ namespace KK_PregnancyPlus
         }
         
 
-        internal static List<SkinnedMeshRenderer> GetMeshRenderers(GameObject characterObj) 
+        internal static List<SkinnedMeshRenderer> GetMeshRenderers(GameObject characterObj, bool findAll = false) 
         {            
             var renderers = new List<SkinnedMeshRenderer>();
             if (characterObj == null) return renderers;
 
-            var skinnedItem = characterObj.GetComponentsInChildren<SkinnedMeshRenderer>();            
+            var skinnedItem = characterObj.GetComponentsInChildren<SkinnedMeshRenderer>(findAll);            
             if (skinnedItem.Length > 0) 
             {
                 renderers.AddRange(skinnedItem);
@@ -259,6 +259,20 @@ namespace KK_PregnancyPlus
             var bodyTopBone = GetBone(chaControl, "BodyTop");
             if (bodyTopBone == null) return Vector3.one;
             return bodyTopBone.localScale;
+        }
+
+
+        internal static Mesh CopyMesh(Mesh mesh)
+        {
+            Mesh newmesh = new Mesh();
+            newmesh.vertices = mesh.vertices;
+            newmesh.triangles = mesh.triangles;
+            newmesh.uv = mesh.uv;
+            newmesh.normals = mesh.normals;
+            newmesh.colors = mesh.colors;
+            newmesh.tangents = mesh.tangents;
+
+            return newmesh;
         }
     
     }

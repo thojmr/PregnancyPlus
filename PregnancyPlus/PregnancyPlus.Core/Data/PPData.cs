@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using System.Collections.Generic;
 using ExtensibleSaveFormat;
 
 namespace KK_PregnancyPlus
@@ -21,7 +22,8 @@ namespace KK_PregnancyPlus
         public float inflationMultiplier = 0;
         public float inflationClothOffset = 0;
         public float inflationFatFold = 0;
-        public bool GameplayEnabled = true;        
+        public bool GameplayEnabled = true;
+        public byte[] meshBlendShape;//Type: List<MeshBlendShape> once Deserialized
 
 #endregion
 

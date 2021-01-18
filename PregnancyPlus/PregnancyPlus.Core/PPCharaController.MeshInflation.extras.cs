@@ -253,11 +253,11 @@ namespace KK_PregnancyPlus
         internal bool ApplyInflation(SkinnedMeshRenderer smr, string renderKey) 
         {
             var infSize = infConfig.inflationSize;
-            //Only inflate if the value changed        
+            //Only inflate if the value is above 0  
             if (infSize.Equals(null) || infSize == 0) return false;      
 
             //Create an instance of sharedMesh so we don't modify the mesh shared between characters
-            Mesh meshCopy = (Mesh)UnityEngine.Object.Instantiate(smr.sharedMesh);    
+            var meshCopy = (Mesh)UnityEngine.Object.Instantiate(smr.sharedMesh);    
             smr.sharedMesh = meshCopy;
 
             var sharedMesh = smr.sharedMesh;
@@ -266,7 +266,7 @@ namespace KK_PregnancyPlus
             {
                 if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(
                      $"ApplyInflation > smr '{renderKey}' is not readable, skipping");
-                    return false;
+                return false;
             } 
 
             //Check key exists in dict, remnove it if it does not
@@ -275,8 +275,8 @@ namespace KK_PregnancyPlus
             {
                 if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(
                      $"ApplyInflation > smr '{renderKey}' does not exists, skipping");
-                     RemoveRenderKey(renderKey);
-                    return false;
+                RemoveRenderKey(renderKey);
+                return false;
             }
 
             var origVert = originalVertices[renderKey];
@@ -360,7 +360,6 @@ namespace KK_PregnancyPlus
             }
         }
 
-        
     }
 }
 
