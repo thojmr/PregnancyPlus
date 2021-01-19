@@ -48,10 +48,6 @@
       <HintPath>..\..\packages\IllusionLibs.HoneySelect2.Assembly-CSharp.2020.5.29.2\lib\net46\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Assembly-CSharp-firstpass,  Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\IllusionLibs.HoneySelect2.Assembly-CSharp-firstpass.2020.5.29.2\lib\net46\Assembly-CSharp-firstpass.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="BepInEx,  Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\IllusionLibs.BepInEx.5.4.4\lib\net35\BepInEx.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
@@ -97,6 +93,10 @@
       <HintPath>..\..\packages\IllusionLibs.AIGirl.UnityEngine.UI.2018.2.21.3\lib\net46\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="MessagePack, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IllusionLibs.AIGirl.MessagePack.2020.5.29.2\lib\net46\MessagePack.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
@@ -104,7 +104,7 @@
     <Compile Include="..\PregnancyPlus.Core\PPCharaController.MeshInflation.extras.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPCharaController.MeshInflation.transforms.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPCharaController.MeshInflation.cs" />
-    <!-- <Compile Include="..\PregnancyPlus.Core\PPCharaController.BlendShape.cs" /> -->
+    <Compile Include="..\PregnancyPlus.Core\PPCharaController.BlendShape.cs" />
     <Compile Include="..\PregnancyPlus.Core\GUI\PPGui.cs" />
     <Compile Include="..\PregnancyPlus.Core\GUI\PPGui.Studio.cs" />
     <Compile Include="..\PregnancyPlus.Core\GUI\PPGui.Maker.cs" />

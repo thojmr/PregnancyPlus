@@ -185,9 +185,7 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" ReadAndSetCardData > {infConfig.ValuesToString()}");
             
             //Load any blendshapes from card
-            #if KK || HS2
-                LoadBlendShapes(infConfig);
-            #endif
+            LoadBlendShapes(infConfig);
             initialized = true; 
         }
 
