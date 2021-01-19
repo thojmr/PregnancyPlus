@@ -104,7 +104,7 @@
     <Compile Include="..\PregnancyPlus.Core\PPCharaController.MeshInflation.extras.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPCharaController.MeshInflation.transforms.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPCharaController.MeshInflation.cs" />
-    <Compile Include="..\PregnancyPlus.Core\PPCharaController.BlendShape.cs" />
+    <!-- <Compile Include="..\PregnancyPlus.Core\PPCharaController.BlendShape.cs" /> -->
     <Compile Include="..\PregnancyPlus.Core\GUI\PPGui.cs" />
     <Compile Include="..\PregnancyPlus.Core\GUI\PPGui.Studio.cs" />
     <Compile Include="..\PregnancyPlus.Core\GUI\PPGui.Maker.cs" />

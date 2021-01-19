@@ -63,7 +63,8 @@ namespace KK_PregnancyPlus
                     if (f == false) return;
                     if (PregnancyPlusPlugin.lastBellyState.HasAnyValue()) RestoreSliders(PregnancyPlusPlugin.lastBellyState);
                  });
-            
+
+            #if KK || HS2
             cat.AddControl(new CurrentStateCategorySwitch(blendshapeText, c =>
                 {                                         
                     return false;
@@ -79,6 +80,7 @@ namespace KK_PregnancyPlus
                         }
                     }
                 });
+            #endif
 
             cat.AddControl(new CurrentStateCategorySlider(inflationSize, c =>
                 {   
