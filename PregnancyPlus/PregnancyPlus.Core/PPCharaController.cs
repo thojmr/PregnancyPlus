@@ -84,8 +84,8 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnReload {currentGameMode}"); 
             ReadAndSetCardData();              
 
-            ReloadStoryInflation();     
-            ReloadStudioMakerInflation();    
+            StartCoroutine(ReloadStoryInflation());     
+            StartCoroutine(ReloadStudioMakerInflation());    
         }
 
 
@@ -104,12 +104,13 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Triggered by OnReload but only for logic in Story mode
         /// </summary>
-        internal void ReloadStoryInflation()
+        internal IEnumerator ReloadStoryInflation()
         {
+            yield return new WaitForSeconds(0.5f);
+
             //Only reload when story mode enabled.
-            if (PregnancyPlusPlugin.StoryMode != null && !PregnancyPlusPlugin.StoryMode.Value) return;
-            
-            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return;
+            if (PregnancyPlusPlugin.StoryMode != null && !PregnancyPlusPlugin.StoryMode.Value) yield break;            
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) yield break;
             
             #if KK
                 GetWeeksAndSetInflation(true);                                 
@@ -123,9 +124,10 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Triggered by OnReload but only for logic in Studio or Maker
         /// </summary>
-        internal void ReloadStudioMakerInflation()
-        {            
-            if (!StudioAPI.InsideStudio && !MakerAPI.InsideMaker) return;                                           
+        internal IEnumerator ReloadStudioMakerInflation()
+        {                        
+            yield return new WaitForSeconds(0.5f);
+            if (!StudioAPI.InsideStudio && !MakerAPI.InsideMaker) yield break;                                                       
             MeshInflate(true, true);                                                            
         }
 
@@ -216,7 +218,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// After clothes change you have to wait a second if you want mesh shadows to calculate correctly (longer in HS2, AI)
         /// </summary>
-        IEnumerator WaitForMeshToSettle(float waitTime = 0.05f, bool checkNewMesh = false, bool forceRecalcVerts = false)
+        internal IEnumerator WaitForMeshToSettle(float waitTime = 0.05f, bool checkNewMesh = false, bool forceRecalcVerts = false)
         {   
             //Allows us to debounce when multiple back to back request
             var guid = Guid.NewGuid();
