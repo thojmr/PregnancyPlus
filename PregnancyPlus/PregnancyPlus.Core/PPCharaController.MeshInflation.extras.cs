@@ -25,17 +25,25 @@ namespace KK_PregnancyPlus
         {
             public float WaistWidth;
             public float WaistHeight;
+            public float WaistThick;
             public float SphereRadius;
             public float OriginalSphereRadius;
             public Vector3 CharacterScale;
             public float CurrentMultiplier;
+
+            //From char z=0 position
+            public float ZLimit
+            {
+                //Get the distance from center back that the belly is allowd to be modified (total distance from 0 to back bone /some scale that looks good)
+                get { return WaistThick/1.8f; }
+            }
             
             public bool IsInitialized 
             {
                 get { return WaistWidth > 0 && WaistHeight > 0; }
             }
 
-            internal BellyInfo(float waistWidth, float waistHeight, float sphereRadius, float originalSphereRadius, Vector3 characterScale, float currentMultiplier) 
+            internal BellyInfo(float waistWidth, float waistHeight, float sphereRadius, float originalSphereRadius, Vector3 characterScale, float currentMultiplier, float waistThick) 
             {
                 WaistWidth = waistWidth;
                 WaistHeight = waistHeight;
@@ -43,6 +51,7 @@ namespace KK_PregnancyPlus
                 OriginalSphereRadius = originalSphereRadius;
                 CharacterScale = characterScale;
                 CurrentMultiplier = currentMultiplier;
+                WaistThick = waistThick;
             }
 
             //Determine if we need to recalculate the sphere radius (hopefully to avoid change in hip bones causing belly size to sudenly change)
@@ -101,7 +110,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Just a helper function to combine searching for verts in a mesh, and then applying the transforms
         /// </summary>
-        internal bool ComputeMeshVerts(SkinnedMeshRenderer smr, float sphereRadius, float waistWidth, bool isClothingMesh = false) 
+        internal bool ComputeMeshVerts(SkinnedMeshRenderer smr, bool isClothingMesh = false) 
         {
             //The list of bones to get verticies for
             #if KK            
@@ -117,7 +126,7 @@ namespace KK_PregnancyPlus
 
             if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" ");
             if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($"  SkinnedMeshRenderer > {smr.name}"); 
-            return GetInflatedVerticies(smr, sphereRadius, waistWidth, isClothingMesh);
+            return GetInflatedVerticies(smr, bellyInfo.SphereRadius, bellyInfo.WaistWidth, isClothingMesh);
         }
 
 
