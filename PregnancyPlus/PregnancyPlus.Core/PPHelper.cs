@@ -117,7 +117,7 @@ namespace KK_PregnancyPlus
         /// </summary>  
         internal static int GetWeeksFromPregnancyPluginData(ChaControl chaControl, string targetBehaviorId)
         {
-            var kkPregCtrlInst = PregnancyPlusHelper.GetCharacterBehaviorController(chaControl, targetBehaviorId);
+            var kkPregCtrlInst = PregnancyPlusHelper.GetCharacterBehaviorController<CharaCustomFunctionController>(chaControl, targetBehaviorId);
             if (kkPregCtrlInst == null) return -1;
 
             //Get the pregnancy data object
@@ -138,7 +138,7 @@ namespace KK_PregnancyPlus
         internal static bool IsUncensorBody(ChaControl chaControl, string UncensorCOMName) 
         {
             //grab the active uncensor controller of it exists
-            var uncensorController = PregnancyPlusHelper.GetCharacterBehaviorController(chaControl, UncensorCOMName);
+            var uncensorController = PregnancyPlusHelper.GetCharacterBehaviorController<CharaCustomFunctionController>(chaControl, UncensorCOMName);
             if (uncensorController == null) return false;
 
             //Get the body type name, and see if it is the default mesh name
@@ -155,7 +155,7 @@ namespace KK_PregnancyPlus
         /// <summary>   
         /// Will fetch an active CharaCustomFunctionController for the given character and plugin GUID
         /// </summary>  
-        internal static CharaCustomFunctionController GetCharacterBehaviorController(ChaControl chaControl, string targetBehaviorId) 
+        internal static T GetCharacterBehaviorController<T>(ChaControl chaControl, string targetBehaviorId)  where T : CharaCustomFunctionController
         {
             if (chaControl == null) return null;
 
@@ -168,7 +168,8 @@ namespace KK_PregnancyPlus
                 //Find the behavior with matching id (COM name)
                 if (behavior.ExtendedDataId == targetBehaviorId) 
                 {
-                    return behavior;
+                    //If we know the type cast it, otherwise use CharaCustomFunctionController
+                    return (T)behavior;
                 }                
             }
 

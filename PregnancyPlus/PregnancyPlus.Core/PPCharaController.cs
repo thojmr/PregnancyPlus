@@ -84,8 +84,8 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnReload {currentGameMode}"); 
             ReadAndSetCardData();              
 
-            StartCoroutine(ReloadStoryInflation());     
-            StartCoroutine(ReloadStudioMakerInflation());    
+            StartCoroutine(ReloadStoryInflation(0.5f));     
+            StartCoroutine(ReloadStudioMakerInflation(0.5f));    
         }
 
 
@@ -104,9 +104,9 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Triggered by OnReload but only for logic in Story mode
         /// </summary>
-        internal IEnumerator ReloadStoryInflation()
+        internal IEnumerator ReloadStoryInflation(float time)
         {
-            yield return new WaitForSeconds(0.5f);
+            yield return new WaitForSeconds(time);
 
             //Only reload when story mode enabled.
             if (PregnancyPlusPlugin.StoryMode != null && !PregnancyPlusPlugin.StoryMode.Value) yield break;            
@@ -124,9 +124,9 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Triggered by OnReload but only for logic in Studio or Maker
         /// </summary>
-        internal IEnumerator ReloadStudioMakerInflation()
+        internal IEnumerator ReloadStudioMakerInflation(float time)
         {                        
-            yield return new WaitForSeconds(0.5f);
+            yield return new WaitForSeconds(time);
             if (!StudioAPI.InsideStudio && !MakerAPI.InsideMaker) yield break;                                                       
             MeshInflate(true, true);                                                            
         }
