@@ -1,5 +1,5 @@
 # Introduction
-This repository contains the KK_PregnancyPlus plugin, that adds additional belly sliders in Studio and Maker/Creator.  It is intended to compliment the [KK_Pregnancy](https://github.com/ManlyMarco/KoikatuGameplayMods) plugin, but can be used without it.   (For example: HS2 , AI)  Now available in Main Game/Story Mode if you save your card in Maker/Creator!
+This repository contains the KK_PregnancyPlus plugin, that adds additional belly sliders in Studio and Maker/Creator.  It is intended to compliment the [KK_Pregnancy](https://github.com/ManlyMarco/KoikatuGameplayMods) plugin, but can be used without it.   (For example: HS2 , AI)  Can be used in any game mode when the slider vales are saved to a character card.
 
 <img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/result.png" height="575"></img>
 <img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/P%2BMakerGUI.PNG" height="575"></img>
@@ -15,21 +15,17 @@ This repository contains the KK_PregnancyPlus plugin, that adds additional belly
 - This plugin can be a substitute for smaller stomach buldges as well, but it's original intent is pregnancy effects.    
 
 ## FAQ - Troubleshooting
-- Q: I'm seeing lines or creases on the characters skin after adjusting sliders.
-    - A: Turn on "HD Crease Smoothing" if using below version v1.1.  Its turned on by default after v1.0.
 - Q: Where do I put the KK_PregnancyPlus.dll?  
     - A: It should end up under <Root game folder>/BepinEx/Plugins/KK_PregnancyPlus.dll
 - Q: Some of the sliders are not working?
-    - A: Disable "Make me a balloon" plugin config option since it disables some sliders.  Then try adjusting your 'Move Z' slider to make sure it is not outside your characters body.
-    - A2: Make sure you have the latest version.  Try a default character, if the issue persists, send me your output_log.txt, or the Character Card that is causing the issue.
+    - A: Disable "Balloon" plugin config option since it disables some sliders.  Then try adjusting your 'Move Z' slider to make sure it is not outside your characters body.
 - Q: The belly size is changing when the character moves, or I slightly adjust a slider.
-    - A: The default belly size is calculated based on the hip and rib bone width.  It turns out that sometimes this changes in certain positions/animations.  Im working on a diffent way to measure this.
+    - A: The default belly size is calculated based on the hip and rib bone width.  In rare cases It can be due to strange character porportions.
 
 ## Notes
 - Modding this game is new to me, so dont expect this to feel like a finished product.  More like an interesting way to learn C#
-- Clothing clips through at max size, so try it without clothing if you are experiencing issues
+- There will be cloth clipping.  You can use the Cloth Offset slider to help with it
 - This plugin works in Koikatsu, Honey Select 2, and AI.  Grab the KK zip for Koikatsu, HS2 zip for Honey Select 2, and AI zip for AI [here](https://github.com/thojmr/KK_PregnancyPlus/releases)
-    - This is now available for (KK, HS2, AI) Studio and Maker/Creator!
 
 ## How to download
 You can grab the latest plugin release [here](https://github.com/thojmr/KK_PregnancyPlus/releases), or build it yourself.  Explained further below.
@@ -109,4 +105,3 @@ If sucessfull you should see a KK_PregnancyPlus.dll file nested in .\bin\
 -  Make accessories move along with the belly to prevent clipping
 -  Fix clothing flattening at the largest belly sizes (Has been improved already)
 -  There are certain clothing items that do not work in the current state
--  Improve some of the sliders to help prevent skin stretching, and improve overall base shape
