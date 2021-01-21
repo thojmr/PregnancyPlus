@@ -182,7 +182,7 @@ namespace KK_PregnancyPlus
 
             //Define how hight and low from center we want to pull the skin inward
             var distFromCenter = sphereRadius;                
-            var svDistFromCenter = Math.Abs(smoothedVectorLs.y - sphereCenterLs.y);
+            var svDistFromCenter = Math.Abs(smoothedVectorLs.y - sphereCenterLs.y)*bellyInfo.CharacterScale.y;
 
             var resultVert = smoothedVectorLs;
             //Make V shape in the middle of the belly horizontally
@@ -194,7 +194,7 @@ namespace KK_PregnancyPlus
             //Shrink skin above center line.  Want it bigger down below the line to look more realistic
             if (smoothedVectorLs.y > sphereCenterLs.y) {                    
                 //As the verts get higher, move them back towards their original position
-                smoothedVectorLs = Vector3.Slerp(smoothedVectorLs, originalVerticeLs, (smoothedVectorLs.y - sphereCenterLs.y)/(sphereRadius*1.5f));
+                smoothedVectorLs = Vector3.Slerp(smoothedVectorLs, originalVerticeLs, svDistFromCenter/(distFromCenter*1.5f));
             }
 
             return smoothedVectorLs;
