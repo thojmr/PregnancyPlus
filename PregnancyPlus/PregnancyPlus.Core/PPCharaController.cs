@@ -23,6 +23,7 @@ namespace KK_PregnancyPlus
         internal bool initialized = false;//Prevent some actions from happening before character data loads   
 
         public BellyInfo bellyInfo;
+        public string charaFileName = null;
 
         //Holds the user entered slider values
         public PregnancyPlusData infConfig = new PregnancyPlusData();
@@ -59,7 +60,8 @@ namespace KK_PregnancyPlus
 
 
         protected override void Start() 
-        {            
+        {                
+            charaFileName = ChaFileControl.parameter.fullname;        
             ReadAndSetCardData();                       
 
             //Get the char measurements before they have a chance to move
@@ -82,7 +84,15 @@ namespace KK_PregnancyPlus
         protected override void OnReload(GameMode currentGameMode)
         {
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnReload {currentGameMode}"); 
-            ReadAndSetCardData();              
+
+            //Check for swapping out character GO with new character, because we want to keep the current slider values
+            var isNewCharFile = IsNewChar(ChaFileControl);
+            charaFileName = ChaFileControl.parameter.fullname;
+
+            if (!isNewCharFile) 
+            {
+                ReadAndSetCardData();              
+            }
 
             StartCoroutine(ReloadStoryInflation(0.5f));     
             StartCoroutine(ReloadStudioMakerInflation(0.5f));    
@@ -100,6 +110,15 @@ namespace KK_PregnancyPlus
 
 #endregion
 
+        /// <summary>
+        /// True when OnReload was triggerd by replacing the current character GameObject with another character file
+        ///  We want to keep current slider settings when this happens
+        /// </summary>
+        internal bool IsNewChar(ChaFileControl chaFileControl) 
+        {   var isNew = (charaFileName != chaFileControl.parameter.fullname);
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" IsNewChar {charaFileName} -> {chaFileControl.parameter.fullname}"); 
+            return isNew;
+        }
 
         /// <summary>
         /// Triggered by OnReload but only for logic in Story mode
