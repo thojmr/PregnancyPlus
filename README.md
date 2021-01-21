@@ -15,7 +15,7 @@ This repository contains the KK_PregnancyPlus plugin, that adds additional belly
 - KK Timeline integration via blendshapes.  How to:
     - Set Sliders to the desired shape you want
     - Click "Create Timeline Blendshape" button
-    - Open KKPE > Adv.mode > blendshape > select bone/cloth blendshape (Make sure itt exists)
+    - Open KKPE > Adv.mode > blendshape > select bone/cloth blendshape (Make sure one exists for each coordinate, and o_body_a.  Named like <mesh name>_x_KK_PregnancyPlus)
     - Open Timeline with Ctrl+T, search for "Blendshape" and middle click to add
     - From here treat it like any normal blendshape.  Also, once added to a timeline you can re-adjust the sliders at any time and click "Create Timeline Blendshape" again to update the timelines final shape.
 - This plugin can be a substitute for stomach bulges as well, but it's original intent is pregnancy effects.    
