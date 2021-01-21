@@ -93,7 +93,9 @@ namespace KK_PregnancyPlus
 				_sliderValues = BuildSliderListValues(bodySkinnedMeshRenderers);
 				allBsSliderValue = -1;
 				guiInit = false;
-			}						
+			}		
+
+			var lastAllBsSliderValue = allBsSliderValue;
 
 			GUILayout.Box("", new GUILayoutOption[]
 			{
@@ -133,7 +135,7 @@ namespace KK_PregnancyPlus
 			GUILayout.EndHorizontal();		
 
 			//When selected update all sliders to the same value
-			if (allBsSliderValue >= 0) 
+			if (allBsSliderValue >= 0 && lastAllBsSliderValue != allBsSliderValue) 
 			{
 				for (int i = 0; i < bodySkinnedMeshRenderers.Count; i++)
 				{
