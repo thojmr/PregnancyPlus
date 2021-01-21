@@ -20,6 +20,10 @@ namespace KK_PregnancyPlus
     public partial class PregnancyPlusCharaController: CharaCustomFunctionController
     {           
 
+        //Keep track of which meshes are given blendshapes for the GUI to make the slider list
+        internal List<SkinnedMeshRenderer> meshWithBlendShapes = new List<SkinnedMeshRenderer>();
+
+
         //Allows us to identify which mesh a blendshape belongs to when loading character cards
         [MessagePackObject(keyAsPropertyName: true)]
         public class MeshBlendShape
@@ -47,6 +51,7 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" OnCreateBlendShapeSelected ");
 
             var meshBlendShapes = new List<MeshBlendShape>();
+            meshWithBlendShapes = new List<SkinnedMeshRenderer>();
 
             //Get all cloth renderes and attemp to create blendshapes from preset inflatedVerticies
             var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);
@@ -58,6 +63,11 @@ namespace KK_PregnancyPlus
 
             //Save any meshBlendShapes to card
             AddBlendShapesToData(meshBlendShapes);
+
+            //Reset belly size to 0 so the blendshape can be used with out interference
+            MeshInflate(0);
+
+            PregnancyPlusPlugin.OpenBlendShapeGui(meshWithBlendShapes);
 
             return meshBlendShapes.Count > 0;
         }
@@ -81,6 +91,7 @@ namespace KK_PregnancyPlus
 
                 var meshBlendShape = CreateBlendShape(smr, renderKey);
                 if (meshBlendShape != null) meshBlendShapes.Add(meshBlendShape);
+                meshWithBlendShapes.Add(smr);
 
                 // LogMeshBlendShapes(smr);
             }  
