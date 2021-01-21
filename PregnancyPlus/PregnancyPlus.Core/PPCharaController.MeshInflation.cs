@@ -136,7 +136,8 @@ namespace KK_PregnancyPlus
             #endif   
 
             var charScale = PregnancyPlusHelper.GetBodyTopScale(ChaControl);
-            var needsSphereRecalc = bellyInfo != null ? bellyInfo.NeedsSphereRecalc(charScale, GetInflationMultiplier()) : true;
+            var nHeightScale = PregnancyPlusHelper.GetN_HeightScale(ChaControl);
+            var needsSphereRecalc = bellyInfo != null ? bellyInfo.NeedsSphereRecalc(charScale, nHeightScale, GetInflationMultiplier()) : true;
 
             //We should reuse existing measurements when we can, because characters waise bone distance chan change with animation, which affects belly size.
             if (bellyInfo != null && !needsSphereRecalc) 
@@ -153,7 +154,7 @@ namespace KK_PregnancyPlus
                 var newSphereRadiusMult = newSphereRadius * (GetInflationMultiplier() + 1); 
 
                 //Store new values for later checks
-                bellyInfo = new BellyInfo(bellyInfo.WaistWidth, bellyInfo.WaistHeight, newSphereRadiusMult, newSphereRadius, charScale, GetInflationMultiplier(), bellyInfo.WaistThick, PregnancyPlusHelper.GetN_HeightScale(ChaControl));
+                bellyInfo = new BellyInfo(bellyInfo.WaistWidth, bellyInfo.WaistHeight, newSphereRadiusMult, newSphereRadius, charScale, GetInflationMultiplier(), bellyInfo.WaistThick, nHeightScale);
 
                 if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" waistToRibDist {bellyInfo.WaistHeight} waistWidth {bellyInfo.WaistWidth} sphereRadiusM {newSphereRadiusMult}");           
                 
@@ -190,7 +191,7 @@ namespace KK_PregnancyPlus
             var sphereRadiusMultiplied = sphereRadius * (GetInflationMultiplier() + 1);   
 
             //Store all these values for reuse later
-            bellyInfo = new BellyInfo(waistWidth, waistToRibDist, sphereRadiusMultiplied, sphereRadius, charScale, GetInflationMultiplier(), waistToBackThickness, PregnancyPlusHelper.GetN_HeightScale(ChaControl));
+            bellyInfo = new BellyInfo(waistWidth, waistToRibDist, sphereRadiusMultiplied, sphereRadius, charScale, GetInflationMultiplier(), waistToBackThickness, nHeightScale);
 
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" waistToRibDist {waistToRibDist} waistWidth {waistWidth} waistThick {waistToBackThickness} sphereRadiusM {sphereRadiusMultiplied}");            
 

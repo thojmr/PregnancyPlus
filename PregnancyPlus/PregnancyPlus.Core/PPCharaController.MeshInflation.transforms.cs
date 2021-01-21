@@ -210,7 +210,7 @@ namespace KK_PregnancyPlus
             var zForwardSmoothDist = pmShpereRadius/2;
 
             // Get the disnce the original vector is forward from characters back (use originial and not inflated to exclude multiplier interference)
-            var forwardFromBack = (originalVerticeLs.z - backExtentPosLs.z * bellyInfo.TotalScale.z);
+            var forwardFromBack = (originalVerticeLs.z - backExtentPosLs.z * bellyInfo.TotalCharScale.z);//TODO this scale is almost but not quite correct, probably another issue at play here
             //As the vert.z approaches the front lerp it less
             var lerpScale = forwardFromBack/zForwardSmoothDist;
 

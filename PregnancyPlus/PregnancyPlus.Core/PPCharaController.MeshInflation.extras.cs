@@ -41,11 +41,11 @@ namespace KK_PregnancyPlus
                 get { return WaistThick * CharacterScale.z; }
             }
 
-            public Vector3 CharacterScale;
-            public Vector3 NHeightScale;
-            public Vector3 TotalScale
+            public Vector3 CharacterScale;//BodyTop bone scale
+            public Vector3 NHeightScale;//n_height bone scale
+            public Vector3 TotalCharScale
             {
-                //Multiply x*x, y*x etc to get the toal character scale (Normally CharacterScale above is all you need), this is for special cases
+                //Multiply x*x, y*y etc to get the toal character scale (Normally CharacterScale above is all you need), this is for special cases where character uses both scales
                 get { return new Vector3(CharacterScale.x * NHeightScale.x, CharacterScale.y * NHeightScale.y, CharacterScale.z * NHeightScale.z); }
             }
 
@@ -56,7 +56,7 @@ namespace KK_PregnancyPlus
             //From char z=0 position
             public float ZLimit
             {
-                //Get the distance from center back that the belly is allowd to be modified (total distance from 0 to back bone /some scale that looks good)
+                //Get the distance from center -> spine, where the belly is allowed to wrap around to (total distance from 0 to back bone /some scale that looks good)
                 get { return WaistThick/1.8f; }
             }
             
@@ -78,10 +78,11 @@ namespace KK_PregnancyPlus
             }
 
             //Determine if we need to recalculate the sphere radius (hopefully to avoid change in hip bones causing belly size to sudenly change)
-            internal bool NeedsSphereRecalc(Vector3 characterScale, float currentMultiplier) 
+            internal bool NeedsSphereRecalc(Vector3 characterScale, Vector3 nHeightScale, float currentMultiplier) 
             {
                 if (!IsInitialized) return true;
                 if (CharacterScale != characterScale) return true;
+                if (NHeightScale != nHeightScale) return true;
                 if (CurrentMultiplier != currentMultiplier) return true;
 
                 return false;
