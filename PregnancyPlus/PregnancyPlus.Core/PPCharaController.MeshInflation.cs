@@ -381,6 +381,8 @@ namespace KK_PregnancyPlus
             var pmInflatedToCenterDist = Math.Abs(FastDistance(preMorphSphereCenterWs, inflatedVerticieWs));
             var skinToCenterDist = Math.Abs(FastDistance(sphereCenterWs, originalVerticeWs));
             var inflatedToCenterDist = Math.Abs(FastDistance(sphereCenterWs, inflatedVerticieWs));
+            var coreLineVertWs = meshRootTf.position + meshRootTf.up * (originalVerticeWs.y - meshRootTf.position.y);
+            var origCoreDist = Math.Abs(FastDistance(originalVerticeWs, coreLineVertWs));//Get line from feet to head that verts must respect distance from
             
             // PregnancyPlusPlugin.Logger.LogInfo($" preMorphSphereCenter {preMorphSphereCenter} sphereCenterWs {sphereCenterWs} meshRootTf.pos {meshRootTf.position}");
 
@@ -435,7 +437,7 @@ namespace KK_PregnancyPlus
             }
 
             //After all user transforms are applied, remove the edges from the sides/top of the belly
-            smoothedVectorLs = RoundToSides(meshRootTf, originalVerticeLs, smoothedVectorLs, inflatedToCenterDist, backExtentPosLs, pmSphereCenterLs);
+            smoothedVectorLs = RoundToSides(meshRootTf, originalVerticeLs, smoothedVectorLs, bellyInfo.OriginalSphereRadius, backExtentPosLs, pmSphereCenterLs);
 
             // //Experimental, move more polygons to the front of the belly at max, Measured by trying to keep belly button size the same at 0 and max inflation size
             // var bellyTipZ = (center.z + maxSphereRadius);
@@ -453,12 +455,21 @@ namespace KK_PregnancyPlus
             //Smoothed back to workdspace
             var smoothedVectorWs = meshRootTf.TransformPoint(smoothedVectorLs);
             var currentVectorDistance = Math.Abs(FastDistance(sphereCenterWs, smoothedVectorWs));
-            var pmCurrentVectorDistance = Math.Abs(FastDistance(preMorphSphereCenterWs, smoothedVectorWs));            
+            var pmCurrentVectorDistance = Math.Abs(FastDistance(preMorphSphereCenterWs, smoothedVectorWs));     
+            var coreLineSmoothedVertWs = meshRootTf.position + meshRootTf.up * (smoothedVectorWs.y - meshRootTf.position.y);       
+            var currentCoreDist = Math.Abs(FastDistance(smoothedVectorWs, coreLineSmoothedVertWs)); 
 
-            //Don't allow any morphs to shrink skin smaller than its original position, only outward morphs allowed (check this after all morphs)
+            //Don't allow any morphs to shrink towards the sphere center more than its original distance, only outward morphs allowed
             if (skinToCenterDist > currentVectorDistance || pmSkinToCenterDist > pmCurrentVectorDistance) 
             {
                 return originalVerticeWs;
+            }
+
+            //Don't allow any morphs to shrink towards the characters core any more than the original distance
+            if (currentCoreDist < origCoreDist) 
+            {
+                //Since this is just an XZ distance plane check, don't modify the new y value
+                return new Vector3(originalVerticeWs.x, smoothedVectorWs.y, originalVerticeWs.z);
             }
 
             //Don't allow any morphs to move behind the character's.z = 0 + extentOffset position, otherwise skin sometimes pokes out the back side :/
@@ -467,14 +478,14 @@ namespace KK_PregnancyPlus
                 return originalVerticeWs;
             }
 
-            //Don't allow any morphs to move behind the original verticie z = 0 position (ignoring ones already behind sphere center)
-            // if (originalVerticeLs.z > smoothedVectorLs.z && originalVerticeLs.z > meshRootTf.InverseTransformPoint(preMorphSphereCenterWs).z) 
-            // {
-            //     //Get the average(not really average) x and y change to move the new position halfway back to the oiriginal vert (hopefullt less strange triangles near belly to body edge)
-            //     var yChangeAvg = (smoothedVectorWs.y - originalVerticeWs.y)/3;
-            //     var xChangeAvg = (smoothedVectorWs.x - originalVerticeWs.x)/3;
-            //     smoothedVectorWs = new Vector3(smoothedVectorWs.x - xChangeAvg, smoothedVectorWs.y - yChangeAvg, originalVerticeWs.z);
-            // }
+            //Don't allow any morphs to move behind the original verticie z position (ignoring ones already behind sphere center)
+            if (originalVerticeLs.z > smoothedVectorLs.z && originalVerticeLs.z > pmSphereCenterLs.z) 
+            {
+                //Get the average(not really average) x and y change to move the new position halfway back to the oiriginal vert (hopefullt less strange triangles near belly to body edge)
+                var yChangeAvg = (smoothedVectorWs.y - originalVerticeWs.y)/3;
+                var xChangeAvg = (smoothedVectorWs.x - originalVerticeWs.x)/3;
+                smoothedVectorWs = new Vector3(smoothedVectorWs.x - xChangeAvg, smoothedVectorWs.y - yChangeAvg, originalVerticeWs.z);
+            }
 
             //TODO at this point we really need some form of final mesh smoothing pass for where the belly meets the body to remove the sharp edges that the transforms above create.
             //Just don't want to make the sliders any slower than they already are
