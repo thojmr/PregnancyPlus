@@ -26,6 +26,10 @@ namespace KK_PregnancyPlus
 				//Show GUI when true
 				GUI.backgroundColor = Color.black;
 				windowRect = GUILayout.Window(windowId, windowRect, new GUI.WindowFunction(WindowFunc), "Pregnancy+ Blendshapes", new GUILayoutOption[0]);
+
+				// Prevent clicks from going through
+            	if (windowRect.Contains(new Vector2(Input.mousePosition.x, Screen.height - Input.mousePosition.y)))
+                	Input.ResetInputAxes();
 			}
 		}
 
