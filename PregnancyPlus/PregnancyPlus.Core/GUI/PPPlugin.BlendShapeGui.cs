@@ -14,6 +14,8 @@ namespace KK_PregnancyPlus
 		public static bool blendShapeWindowShow = false;
 		internal static bool guiInit = true;
 		internal Dictionary<string, float> _sliderValues = new Dictionary<string, float>();//Tracks user modified blendshape slider values
+		//When not -1, sets the value of all the sliders
+		internal float allBsSliderValue = -1f;
 
 
 		internal void OnGUI()
@@ -49,6 +51,17 @@ namespace KK_PregnancyPlus
         };
 
 
+		internal GUIStyle _labelAllTitleStyle = new GUIStyle
+        {
+            fixedWidth = 275f,
+            alignment = TextAnchor.MiddleRight,
+            normal = new GUIStyleState
+            {
+                textColor = Color.green
+            }
+        };
+
+
         internal GUIStyle _labelValueStyle = new GUIStyle
         {
             fixedWidth = 25f,
@@ -78,17 +91,18 @@ namespace KK_PregnancyPlus
 			{
 				//Initilize slider values
 				_sliderValues = BuildSliderListValues(bodySkinnedMeshRenderers);
+				allBsSliderValue = -1;
 				guiInit = false;
-			}			
+			}						
 
 			GUILayout.Box("", new GUILayoutOption[]
 			{
 				GUILayout.Width(450f),
-				GUILayout.Height((float)(15 * (bodySkinnedMeshRenderers.Count + 3)))
+				GUILayout.Height((float)(15 * (bodySkinnedMeshRenderers.Count + 4)))
 			});
 
 			//Set the size of the interactable area
-			Rect screenRect = new Rect(10f, 25f, 450f, (float)(15 * (bodySkinnedMeshRenderers.Count + 3)));
+			Rect screenRect = new Rect(10f, 25f, 450f, (float)(15 * (bodySkinnedMeshRenderers.Count + 4)));
 			GUILayout.BeginArea(screenRect);
 
 			//For each SMR we want to sear for Preg+ blendshapes
@@ -106,15 +120,63 @@ namespace KK_PregnancyPlus
 				GUILayout.Label(_sliderValues[smrName].ToString("#0"), _labelValueStyle, new GUILayoutOption[0]);
 				GUILayout.EndHorizontal();
 				bodySkinnedMeshRenderers[i].SetBlendShapeWeight(kkBsIndex, _sliderValues[smrName]);
-			}			
+			}	
+
+			//Reset back to normal, when any single slider changes value
+			if (BlendShapeSliderValuesChanged(_sliderValues)) allBsSliderValue = -1;
+
+			//Set the All sliders slider
+			GUILayout.BeginHorizontal(new GUILayoutOption[0]);
+			GUILayout.Label("All Pregnancy+ BlendShapes", _labelAllTitleStyle, new GUILayoutOption[0]);
+			allBsSliderValue = GUILayout.HorizontalSlider(allBsSliderValue, 0f, 100f, new GUILayoutOption[0]);
+			GUILayout.Label(allBsSliderValue.ToString("#0"), _labelValueStyle, new GUILayoutOption[0]);
+			GUILayout.EndHorizontal();		
+
+			//When selected update all sliders to the same value
+			if (allBsSliderValue >= 0) 
+			{
+				for (int i = 0; i < bodySkinnedMeshRenderers.Count; i++)
+				{
+					var smrName = bodySkinnedMeshRenderers[i].name;
+					//Find the index of the Preg+ blendshape
+					var kkBsIndex = GetBlendShapeIndexFromName(bodySkinnedMeshRenderers[i].sharedMesh);
+					if (kkBsIndex < 0) continue;
+					bodySkinnedMeshRenderers[i].SetBlendShapeWeight(kkBsIndex, allBsSliderValue);
+					//Update indivisual values to the same number
+					_sliderValues[smrName] = allBsSliderValue;
+				}
+			}
 
 			var btnCLicked = GUILayout.Button("Close", new GUILayoutOption[0]);
 			GUILayout.EndArea();			
 			GUI.DragWindow();
-
+			
 			if (btnCLicked) blendShapeWindowShow = false;
 		}
 
+
+        /// <summary>
+        /// If any slider value is not equal to another they have differing values, so one changed
+        /// </summary>
+		internal bool BlendShapeSliderValuesChanged(Dictionary<string, float> sliderValues) 
+		{
+			float lastSliderValue = -1;
+			var keyList = new List<string>(sliderValues.Keys);
+
+			//For each slider value see if it is the same as the previous value
+			foreach (var key in keyList)
+			{
+				if (lastSliderValue == -1) lastSliderValue = sliderValues[key];
+				if (sliderValues[key] != lastSliderValue) return true;
+			}
+
+			return false;
+		}
+
+
+        /// <summary>
+        /// set the default sliderValue dictionary values
+        /// </summary>
 		internal Dictionary<string, float> BuildSliderListValues(List<SkinnedMeshRenderer> smrs) 
 		{
 			//For each smr get the smr key and the starting slider value
@@ -126,6 +188,10 @@ namespace KK_PregnancyPlus
 			return _sliderValues;
 		}
 
+
+        /// <summary>
+        /// Find a blendshape index by partial matching blendshape name
+        /// </summary>
 		internal int GetBlendShapeIndexFromName(Mesh sharedMesh, string searchName = "KK_PregnancyPlus") 
 		{
 			var count = sharedMesh.blendShapeCount;
