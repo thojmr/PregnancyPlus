@@ -268,6 +268,23 @@ namespace KK_PregnancyPlus
         }
 
 
+        /// <summary>
+        /// Just get the N_geight bone local scale (Needed in some local to world scale translations)
+        /// </summary>
+        internal static Vector3 GetN_HeightScale(ChaControl chaControl)  
+        {
+            #if KK
+                var boneName = "cf_n_height";
+            #elif HS2 || AI
+                var boneName = "cf_N_height";
+            #endif
+
+            var bodyTopBone = GetBone(chaControl, boneName);
+            if (bodyTopBone == null) return Vector3.one;
+            return bodyTopBone.localScale;
+        }
+
+
         internal static Mesh CopyMesh(Mesh mesh)
         {
             Mesh newmesh = new Mesh();

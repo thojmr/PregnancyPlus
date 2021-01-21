@@ -153,7 +153,7 @@ namespace KK_PregnancyPlus
                 var newSphereRadiusMult = newSphereRadius * (GetInflationMultiplier() + 1); 
 
                 //Store new values for later checks
-                bellyInfo = new BellyInfo(bellyInfo.WaistWidth, bellyInfo.WaistHeight, newSphereRadiusMult, newSphereRadius, charScale, GetInflationMultiplier(), bellyInfo.WaistThick);
+                bellyInfo = new BellyInfo(bellyInfo.WaistWidth, bellyInfo.WaistHeight, newSphereRadiusMult, newSphereRadius, charScale, GetInflationMultiplier(), bellyInfo.WaistThick, PregnancyPlusHelper.GetN_HeightScale(ChaControl));
 
                 if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" waistToRibDist {bellyInfo.WaistHeight} waistWidth {bellyInfo.WaistWidth} sphereRadiusM {newSphereRadiusMult}");           
                 
@@ -190,7 +190,7 @@ namespace KK_PregnancyPlus
             var sphereRadiusMultiplied = sphereRadius * (GetInflationMultiplier() + 1);   
 
             //Store all these values for reuse later
-            bellyInfo = new BellyInfo(waistWidth, waistToRibDist, sphereRadiusMultiplied, sphereRadius, charScale, GetInflationMultiplier(), waistToBackThickness);
+            bellyInfo = new BellyInfo(waistWidth, waistToRibDist, sphereRadiusMultiplied, sphereRadius, charScale, GetInflationMultiplier(), waistToBackThickness, PregnancyPlusHelper.GetN_HeightScale(ChaControl));
 
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" waistToRibDist {waistToRibDist} waistWidth {waistWidth} waistThick {waistToBackThickness} sphereRadiusM {sphereRadiusMultiplied}");            
 
@@ -264,7 +264,6 @@ namespace KK_PregnancyPlus
             //Pre compute some values needed by SculptInflatedVerticie
             var preMorphSphereCenter = sphereCenter - GetUserMoveTransform(meshRootTf);
             var backExtentPos = new Vector3(preMorphSphereCenter.x, preMorphSphereCenter.y, preMorphSphereCenter.z - bellyInfo.ZLimit);
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" backExtentPos {backExtentPos} ");
             var vertsLength = origVerts.Length;
 
             //Set each verticies inflated postion, with some constraints (SculptInflatedVerticie) to make it look more natural

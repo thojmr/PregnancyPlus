@@ -41,9 +41,16 @@ namespace KK_PregnancyPlus
                 get { return WaistThick * CharacterScale.z; }
             }
 
+            public Vector3 CharacterScale;
+            public Vector3 NHeightScale;
+            public Vector3 TotalScale
+            {
+                //Multiply x*x, y*x etc to get the toal character scale (Normally CharacterScale above is all you need), this is for special cases
+                get { return new Vector3(CharacterScale.x * NHeightScale.x, CharacterScale.y * NHeightScale.y, CharacterScale.z * NHeightScale.z); }
+            }
+
             public float SphereRadius;
             public float OriginalSphereRadius;
-            public Vector3 CharacterScale;
             public float CurrentMultiplier;
 
             //From char z=0 position
@@ -58,7 +65,7 @@ namespace KK_PregnancyPlus
                 get { return WaistWidth > 0 && WaistHeight > 0; }
             }
 
-            internal BellyInfo(float waistWidth, float waistHeight, float sphereRadius, float originalSphereRadius, Vector3 characterScale, float currentMultiplier, float waistThick) 
+            internal BellyInfo(float waistWidth, float waistHeight, float sphereRadius, float originalSphereRadius, Vector3 characterScale, float currentMultiplier, float waistThick, Vector3 nHeightScale) 
             {
                 WaistWidth = waistWidth;
                 WaistHeight = waistHeight;
@@ -67,6 +74,7 @@ namespace KK_PregnancyPlus
                 CharacterScale = characterScale;
                 CurrentMultiplier = currentMultiplier;
                 WaistThick = waistThick;
+                NHeightScale = nHeightScale;
             }
 
             //Determine if we need to recalculate the sphere radius (hopefully to avoid change in hip bones causing belly size to sudenly change)

@@ -210,9 +210,16 @@ namespace KK_PregnancyPlus
             var zForwardSmoothDist = pmShpereRadius/2;
 
             // Get the disnce the original vector is forward from characters back (use originial and not inflated to exclude multiplier interference)
-            var forwardFromBack = originalVerticeLs.z - backExtentPosLs.z;                              
+            var forwardFromBack = (originalVerticeLs.z - backExtentPosLs.z * bellyInfo.TotalScale.z);
             //As the vert.z approaches the front lerp it less
             var lerpScale = forwardFromBack/zForwardSmoothDist;
+
+            // if (PregnancyPlusPlugin.debugLog && smoothedVectorLs.z < -0.2)  
+            // {
+            //     PregnancyPlusPlugin.Logger.LogInfo($" ");
+            //     PregnancyPlusPlugin.Logger.LogInfo($" smoothedVectorLs {smoothedVectorLs} pmSphereCenterLs {pmSphereCenterLs} backExtentPosLs {backExtentPosLs}");
+            //     PregnancyPlusPlugin.Logger.LogInfo($" zForwardSmoothDist {zForwardSmoothDist} forwardFromBack {forwardFromBack} lerpScale {lerpScale}");
+            // }
 
             smoothedVectorLs = Vector3.Lerp(originalVerticeLs, smoothedVectorLs, lerpScale);
             
