@@ -193,7 +193,14 @@ namespace KK_PregnancyPlus
             if (!initialized || chaID != ChaControl.chaID) return;
 
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= ClothesStateChangeEvent {clothesKind}");
-            StartCoroutine(WaitForMeshToSettle(0.05f, true, forceRecalcVerts));//Force recalc because of some cloth items in HS2 Maker
+
+            #if KK
+                var debounceTime = 0.1f;
+            #elif HS2 || AI
+                var debounceTime = 0.2f;
+            #endif
+            //Force recalc because of some cloth items in HS2 Maker that don't seem to want to follow the rules
+            StartCoroutine(WaitForMeshToSettle(debounceTime, true, forceRecalcVerts));
         }
 
         
