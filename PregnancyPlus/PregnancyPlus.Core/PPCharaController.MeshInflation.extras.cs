@@ -24,8 +24,23 @@ namespace KK_PregnancyPlus
         public class BellyInfo 
         {
             public float WaistWidth;
+            public float ScaledWaistWidth
+            {
+                get { return WaistWidth * CharacterScale.x; }
+            }
+            
             public float WaistHeight;
+            public float ScaledWaistHeight
+            {
+                get { return WaistHeight * CharacterScale.y; }
+            }
+
             public float WaistThick;
+            public float ScaledWaistThick
+            {
+                get { return WaistThick * CharacterScale.z; }
+            }
+
             public float SphereRadius;
             public float OriginalSphereRadius;
             public Vector3 CharacterScale;
@@ -160,7 +175,7 @@ namespace KK_PregnancyPlus
         internal float GetClothesFixOffset(Transform meshRootTf, Vector3 sphereCenterWs, float sphereRadius, float waistWidth, Vector3 origVertWS, string meshName) 
         {  
             //The size of the area to spread the flattened offsets over like shrinking center dist -> inflated dist into a small area shifted outside the radius.  So hard to explin with words...
-            float shrinkBy = bellyInfo.WaistWidth/40 + (bellyInfo.WaistWidth/40 * GetInflationClothOffset());
+            float shrinkBy = bellyInfo.ScaledWaistWidth/40 + (bellyInfo.ScaledWaistWidth/40 * GetInflationClothOffset());
 
             var inflatedVerWS = (origVertWS - sphereCenterWs).normalized * sphereRadius + sphereCenterWs;//Get the line we want to do measurements on            
             //We dont care about empty space at sphere center, move outwards a bit before determining vector location on the line
@@ -194,7 +209,7 @@ namespace KK_PregnancyPlus
             }
 
             //The mininum distance offset for each cloth layer, adjusted by user
-            float additonalOffset = (bellyInfo.WaistWidth/50) + ((bellyInfo.WaistWidth/50) * GetInflationClothOffset());
+            float additonalOffset = (bellyInfo.ScaledWaistWidth/60) + ((bellyInfo.ScaledWaistWidth/60) * GetInflationClothOffset());
 
             //If outer layer then add the offset
             return additonalOffset;
