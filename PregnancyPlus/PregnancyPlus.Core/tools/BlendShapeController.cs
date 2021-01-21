@@ -161,6 +161,7 @@ namespace KK_PregnancyPlus
 
             //Clear all blend shapes (because we cant just delete one.  Thanks unity!)
             smrMesh.ClearBlendShapes();
+            var found = false;
 
             //Add all of the copies back (excluding the one we are overriding)
             for (var i = 0; i < bsCount; i++)
@@ -171,12 +172,19 @@ namespace KK_PregnancyPlus
                     //If this is the BS we want to replace, add it, but keep the current weight
                     if (existingBlendShapes[i][f].name == newBs.name) 
                     {
+                        found = true;
                         smrMesh.AddBlendShapeFrame(newBs.name, existingBlendShapes[i][f].weight, newBs.verticies, newBs.normals, newBs.tangents);    
                         continue;
                     }
                     //Otherwise just add back the old blend shapes, and weights
                     smrMesh.AddBlendShapeFrame(existingBlendShapes[i][f].name, existingBlendShapes[i][f].weight, existingBlendShapes[i][f].verticies, existingBlendShapes[i][f].normals, existingBlendShapes[i][f].tangents);
                 }
+            }
+
+            //If not found then just add it as per normal
+            if (!found) 
+            {
+                smrMesh.AddBlendShapeFrame(newBs.name, newBs.weight, newBs.verticies, newBs.normals, newBs.tangents);    
             }
         }
 
