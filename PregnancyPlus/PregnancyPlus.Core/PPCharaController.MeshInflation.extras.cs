@@ -24,18 +24,48 @@ namespace KK_PregnancyPlus
         public class BellyInfo 
         {
             public float WaistWidth;
+            public float ScaledWaistWidth
+            {
+                get { return WaistWidth * CharacterScale.x; }
+            }
+            
             public float WaistHeight;
+            public float ScaledWaistHeight
+            {
+                get { return WaistHeight * CharacterScale.y; }
+            }
+
+            public float WaistThick;
+            public float ScaledWaistThick
+            {
+                get { return WaistThick * CharacterScale.z; }
+            }
+
+            public Vector3 CharacterScale;//BodyTop bone scale
+            public Vector3 NHeightScale;//n_height bone scale
+            public Vector3 TotalCharScale
+            {
+                //Multiply x*x, y*y etc to get the toal character scale (Normally CharacterScale above is all you need), this is for special cases where character uses both scales
+                get { return new Vector3(CharacterScale.x * NHeightScale.x, CharacterScale.y * NHeightScale.y, CharacterScale.z * NHeightScale.z); }
+            }
+
             public float SphereRadius;
             public float OriginalSphereRadius;
-            public Vector3 CharacterScale;
             public float CurrentMultiplier;
+
+            //From char z=0 position
+            public float ZLimit
+            {
+                //Get the distance from center -> spine, where the belly is allowed to wrap around to (total distance from 0 to back bone /some scale that looks good)
+                get { return WaistThick/1.8f; }
+            }
             
             public bool IsInitialized 
             {
                 get { return WaistWidth > 0 && WaistHeight > 0; }
             }
 
-            internal BellyInfo(float waistWidth, float waistHeight, float sphereRadius, float originalSphereRadius, Vector3 characterScale, float currentMultiplier) 
+            internal BellyInfo(float waistWidth, float waistHeight, float sphereRadius, float originalSphereRadius, Vector3 characterScale, float currentMultiplier, float waistThick, Vector3 nHeightScale) 
             {
                 WaistWidth = waistWidth;
                 WaistHeight = waistHeight;
@@ -43,13 +73,16 @@ namespace KK_PregnancyPlus
                 OriginalSphereRadius = originalSphereRadius;
                 CharacterScale = characterScale;
                 CurrentMultiplier = currentMultiplier;
+                WaistThick = waistThick;
+                NHeightScale = nHeightScale;
             }
 
             //Determine if we need to recalculate the sphere radius (hopefully to avoid change in hip bones causing belly size to sudenly change)
-            internal bool NeedsSphereRecalc(Vector3 characterScale, float currentMultiplier) 
+            internal bool NeedsSphereRecalc(Vector3 characterScale, Vector3 nHeightScale, float currentMultiplier) 
             {
                 if (!IsInitialized) return true;
                 if (CharacterScale != characterScale) return true;
+                if (NHeightScale != nHeightScale) return true;
                 if (CurrentMultiplier != currentMultiplier) return true;
 
                 return false;
@@ -101,7 +134,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Just a helper function to combine searching for verts in a mesh, and then applying the transforms
         /// </summary>
-        internal bool ComputeMeshVerts(SkinnedMeshRenderer smr, float sphereRadius, float waistWidth, bool isClothingMesh = false) 
+        internal bool ComputeMeshVerts(SkinnedMeshRenderer smr, bool isClothingMesh = false) 
         {
             //The list of bones to get verticies for
             #if KK            
@@ -117,7 +150,7 @@ namespace KK_PregnancyPlus
 
             if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" ");
             if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($"  SkinnedMeshRenderer > {smr.name}"); 
-            return GetInflatedVerticies(smr, sphereRadius, waistWidth, isClothingMesh);
+            return GetInflatedVerticies(smr, bellyInfo.SphereRadius, bellyInfo.WaistWidth, isClothingMesh);
         }
 
 
@@ -151,7 +184,7 @@ namespace KK_PregnancyPlus
         internal float GetClothesFixOffset(Transform meshRootTf, Vector3 sphereCenterWs, float sphereRadius, float waistWidth, Vector3 origVertWS, string meshName) 
         {  
             //The size of the area to spread the flattened offsets over like shrinking center dist -> inflated dist into a small area shifted outside the radius.  So hard to explin with words...
-            float shrinkBy = bellyInfo.WaistWidth/40 + (bellyInfo.WaistWidth/40 * GetInflationClothOffset());
+            float shrinkBy = bellyInfo.ScaledWaistWidth/40 + (bellyInfo.ScaledWaistWidth/40 * GetInflationClothOffset());
 
             var inflatedVerWS = (origVertWS - sphereCenterWs).normalized * sphereRadius + sphereCenterWs;//Get the line we want to do measurements on            
             //We dont care about empty space at sphere center, move outwards a bit before determining vector location on the line
@@ -185,7 +218,7 @@ namespace KK_PregnancyPlus
             }
 
             //The mininum distance offset for each cloth layer, adjusted by user
-            float additonalOffset = (bellyInfo.WaistWidth/50) + ((bellyInfo.WaistWidth/50) * GetInflationClothOffset());
+            float additonalOffset = (bellyInfo.ScaledWaistWidth/60) + ((bellyInfo.ScaledWaistWidth/60) * GetInflationClothOffset());
 
             //If outer layer then add the offset
             return additonalOffset;
@@ -352,7 +385,7 @@ namespace KK_PregnancyPlus
 
             sharedMesh.vertices = currentVert;
             sharedMesh.RecalculateBounds();
-            NormalSolver.RecalculateNormals(sharedMesh, 40f, bellyVerticieIndexes[renderKey]);
+            NormalSolver.RecalculateNormals(sharedMesh, 100f, bellyVerticieIndexes[renderKey]);
             //sharedMesh.RecalculateNormals();  //old way that leaves skin seams
             sharedMesh.RecalculateTangents();
 
@@ -401,7 +434,7 @@ namespace KK_PregnancyPlus
 
                 sharedMesh.vertices = origVerts;
                 sharedMesh.RecalculateBounds();
-                NormalSolver.RecalculateNormals(sharedMesh, 40f, bellyVerticieIndexes[renderKey]);
+                NormalSolver.RecalculateNormals(sharedMesh, 100f, bellyVerticieIndexes[renderKey]);
                 //sharedMesh.RecalculateNormals(); //old way that leaves skin seams
                 sharedMesh.RecalculateTangents();
             }
