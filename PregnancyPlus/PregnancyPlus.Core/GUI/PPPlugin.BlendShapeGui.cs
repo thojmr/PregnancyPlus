@@ -11,14 +11,14 @@ namespace KK_PregnancyPlus
 		public static List<SkinnedMeshRenderer> bodySkinnedMeshRenderers;
 		internal int windowId = 7639;
 		internal Rect windowRect = new Rect((float)(Screen.width - 450), (float)(Screen.height / 2 - 50), 250f, 15f);
-		public static bool windowShow = false;
+		public static bool blendShapeWindowShow = false;
 		internal static bool guiInit = true;
 		internal Dictionary<string, float> _sliderValues = new Dictionary<string, float>();//Tracks user modified blendshape slider values
 
 
 		internal void OnGUI()
 		{
-			bool flag = windowShow;
+			bool flag = blendShapeWindowShow;
 			if (flag)
 			{
 				//Show GUI when true
@@ -33,8 +33,8 @@ namespace KK_PregnancyPlus
 		{
 			bodySkinnedMeshRenderers = smrs;
 			guiInit = true;
-			windowShow = !windowShow;//Trigger gui to show
-			if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" windowShow {windowShow}");
+			blendShapeWindowShow = !blendShapeWindowShow;//Trigger gui to show
+			if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" blendShapeWindowShow {blendShapeWindowShow}");
 		}
 
 
@@ -67,12 +67,20 @@ namespace KK_PregnancyPlus
 
 		internal void WindowFunc(int id)
 		{
+			//Exit when mesh becomes null (probably deleted character)
+			if (bodySkinnedMeshRenderers == null || bodySkinnedMeshRenderers[0] == null) 
+			{
+				blendShapeWindowShow = false;
+				return;
+			}
+
 			if (guiInit)
 			{
 				//Initilize slider values
 				_sliderValues = BuildSliderListValues(bodySkinnedMeshRenderers);
 				guiInit = false;
-			}
+			}			
+
 			GUILayout.Box("", new GUILayoutOption[]
 			{
 				GUILayout.Width(450f),
@@ -104,7 +112,7 @@ namespace KK_PregnancyPlus
 			GUILayout.EndArea();			
 			GUI.DragWindow();
 
-			if (btnCLicked) windowShow = false;
+			if (btnCLicked) blendShapeWindowShow = false;
 		}
 
 		internal Dictionary<string, float> BuildSliderListValues(List<SkinnedMeshRenderer> smrs) 

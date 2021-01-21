@@ -92,6 +92,8 @@ namespace KK_PregnancyPlus
         {
             if (!blendShape.isInitilized) return;
             var shapeIndex = smr.sharedMesh.GetBlendShapeIndex(blendShape.name);
+            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" AddBlendShape > shapeIndex {shapeIndex} smr {smr.name}");  
+
             //If the shape exists then overwrite it
             if (shapeIndex >= 0) 
             {
@@ -104,11 +106,10 @@ namespace KK_PregnancyPlus
                 return;
             }
 
+            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" AddBlendShape > {blendShape.log}");
             smr.sharedMesh.AddBlendShapeFrame(blendShape.name, blendShape.weight, blendShape.verticies, blendShape.normals, blendShape.tangents);    
             //Fix for some shared mesh properties not updating after AddBlendShapeFrame
-            smr.sharedMesh = smr.sharedMesh;//I hate this line of code  
-
-            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" AddBlendShape > {blendShape.log}");
+            smr.sharedMesh = smr.sharedMesh;//I hate this line of code              
         }
 
 

@@ -15,18 +15,18 @@ namespace KK_PregnancyPlus
         internal static CurrentStateCategory cat;
 
         //String constants for the slider names
-        private const string inflationSize = "Pregnancy +";
-        private const string inflationMultiplier = "        Multiplier";
-        private const string inflationMoveY = "        Move Y";
-        private const string inflationMoveZ = "        Move Z";
-        private const string inflationStretchX = "        Stretch X";
-        private const string inflationStretchY = "        Stretch Y";
-        private const string inflationShiftY = "        Shift Y";
-        private const string inflationShiftZ = "        Shift Z";
-        private const string inflationTaperY = "        Taper Y";
-        private const string inflationTaperZ = "        Taper Z";
-        private const string inflationClothOffset = "        Cloth Offset";
-        private const string inflationFatFold = "        Fat Fold";
+        internal const string inflationSize = "Pregnancy +";
+        internal const string inflationMultiplier = "        Multiplier";
+        internal const string inflationMoveY = "        Move Y";
+        internal const string inflationMoveZ = "        Move Z";
+        internal const string inflationStretchX = "        Stretch X";
+        internal const string inflationStretchY = "        Stretch Y";
+        internal const string inflationShiftY = "        Shift Y";
+        internal const string inflationShiftZ = "        Shift Z";
+        internal const string inflationTaperY = "        Taper Y";
+        internal const string inflationTaperZ = "        Taper Z";
+        internal const string inflationClothOffset = "        Cloth Offset";
+        internal const string inflationFatFold = "        Fat Fold";
 
         #if KK
             private const string blendshapeText = "Create Timeline BlendShape";
@@ -322,6 +322,25 @@ namespace KK_PregnancyPlus
                 //For each slider component (should just be one per subItem) set to 0
                 foreach(var slider in sliders) {
                     slider.value = resetTo;
+                }
+            }
+        }
+
+        //Reset a single slider
+        internal static void ResetSlider(string sliderName, float resetTo = 0) 
+        {
+            if (cat == null) return;
+
+            //For each ui item check if its a slider
+            foreach(CurrentStateCategorySubItemBase subItem in cat.SubItems) 
+            {
+                if (!subItem.Created) continue;
+                var itemGo = subItem.RootGameObject;
+                var sliders = itemGo.GetComponentsInChildren<UnityEngine.UI.Slider>();
+
+                //For each slider component (should just be one per subItem) set to 0
+                foreach(var slider in sliders) {
+                    if (slider.name == "Slider " + sliderName) slider.value = resetTo;
                 }
             }
         }

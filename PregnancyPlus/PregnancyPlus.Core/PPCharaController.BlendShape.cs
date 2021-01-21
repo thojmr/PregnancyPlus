@@ -52,6 +52,7 @@ namespace KK_PregnancyPlus
 
             var meshBlendShapes = new List<MeshBlendShape>();
             meshWithBlendShapes = new List<SkinnedMeshRenderer>();
+            PregnancyPlusPlugin.blendShapeWindowShow = false;//Close GUI if open
 
             //Get all cloth renderes and attemp to create blendshapes from preset inflatedVerticies
             var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);
@@ -65,8 +66,9 @@ namespace KK_PregnancyPlus
             AddBlendShapesToData(meshBlendShapes);
 
             //Reset belly size to 0 so the blendshape can be used with out interference
-            MeshInflate(0);
+            PregnancyPlusGui.ResetSlider(PregnancyPlusGui.inflationSize, 0);
 
+            //GUI blendshape popup
             PregnancyPlusPlugin.OpenBlendShapeGui(meshWithBlendShapes);
 
             return meshBlendShapes.Count > 0;
@@ -248,6 +250,8 @@ namespace KK_PregnancyPlus
             meshCopyOrig.RecalculateBounds();
             NormalSolver.RecalculateNormals(meshCopyOrig, 40f, bellyVerticieIndexes[renderKey]);
             meshCopyOrig.RecalculateTangents();
+
+            LogMeshBlendShapes(smr);
 
             //Create blend shape object on the mesh
             var bsc = new BlendShapeController(meshCopyOrig, smr, $"{renderKey}_{PregnancyPlusPlugin.GUID}");
