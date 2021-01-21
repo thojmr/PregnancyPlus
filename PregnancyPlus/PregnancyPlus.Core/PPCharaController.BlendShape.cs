@@ -251,7 +251,7 @@ namespace KK_PregnancyPlus
             NormalSolver.RecalculateNormals(meshCopyOrig, 40f, bellyVerticieIndexes[renderKey]);
             meshCopyOrig.RecalculateTangents();
 
-            LogMeshBlendShapes(smr);
+            // LogMeshBlendShapes(smr);
 
             //Create blend shape object on the mesh
             var bsc = new BlendShapeController(meshCopyOrig, smr, $"{renderKey}_{PregnancyPlusPlugin.GUID}");

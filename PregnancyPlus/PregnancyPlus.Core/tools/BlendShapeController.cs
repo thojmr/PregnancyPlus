@@ -91,11 +91,15 @@ namespace KK_PregnancyPlus
         public void AddBlendShapeToMesh(SkinnedMeshRenderer smr) 
         {
             if (!blendShape.isInitilized) return;
-            var shapeIndex = smr.sharedMesh.GetBlendShapeIndex(blendShape.name);
-            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" AddBlendShape > shapeIndex {shapeIndex} smr {smr.name}");  
+
+            //Not going to try to debug this unity problem with blendshapes not being found by name, just always overwright the existing blendshape...
+
+            // var shapeIndex = smr.sharedMesh.GetBlendShapeIndex(blendShape.name);
+            // if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" AddBlendShape > shapeIndex {shapeIndex} smr {smr.name}");  
 
             //If the shape exists then overwrite it
-            if (shapeIndex >= 0) 
+            // if (shapeIndex >= 0) 
+            if (smr.sharedMesh.blendShapeCount > 0) 
             {
                 //Blend shape already exists overwright it the hard way
                 if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" AddBlendShape > overwriting {blendShape.log}");                       
