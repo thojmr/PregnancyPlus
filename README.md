@@ -14,8 +14,8 @@ This repository contains the KK_PregnancyPlus plugin, that adds additional belly
 - Adds 3 configurable keybinds in plugin config that can be used to increase or decrease the belly size in Story Mode / Main Game Mode on the fly.   
 - KK Timeline integration via blendshapes.  How to:
     - Set Sliders to the desired shape you want
-    - Click "Create Timeline Blendshape" button
-    - Open KKPE > Adv.mode > blendshape > select bone/cloth blendshape (Make sure one exists for each coordinate, and o_body_a.  Named like {mesh name}_x_KK_PregnancyPlus)
+    - Click "Create Timeline Blendshape" button. You will see a popup that will controll the blend shape amount for each mesh.
+    - You must open KKPE > Adv.mode > blendshape > select bone/cloth blendshape, for timeline to register the blendshape (Timeline bug?)
     - Open Timeline with Ctrl+T, search for "Blendshape" and middle click to add
     - From here treat it like any normal blendshape.  Also, once added to a timeline you can re-adjust the sliders at any time and click "Create Timeline Blendshape" again to update the timelines final shape.
 - This plugin can be a substitute for stomach bulges as well, but it's original intent is pregnancy effects.    
