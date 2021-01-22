@@ -13,9 +13,7 @@ using KKAPI.Chara;
 namespace KK_PregnancyPlus
 {
     [BepInPlugin(GUID, GUID, Version)]
-    #if KK
-        [BepInDependency(KoikatuAPI.GUID, KoikatuAPI.VersionConst)]
-    #endif
+    [BepInDependency(KoikatuAPI.GUID, "1.12")]
     public partial class PregnancyPlusPlugin : BaseUnityPlugin
     {
         public const string GUID = "KK_PregnancyPlus";
