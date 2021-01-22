@@ -89,10 +89,7 @@ namespace KK_PregnancyPlus
             var isNewCharFile = IsNewChar(ChaFileControl);
             charaFileName = ChaFileControl.parameter.fullname;
 
-            if (!isNewCharFile) 
-            {
-                ReadAndSetCardData();              
-            }
+            ReadAndSetCardData();
 
             StartCoroutine(ReloadStoryInflation(0.5f));     
             StartCoroutine(ReloadStudioMakerInflation(0.5f));    
