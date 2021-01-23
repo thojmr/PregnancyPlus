@@ -11,7 +11,7 @@ namespace KK_PregnancyPlus
 {
     public partial class PregnancyPlusPlugin
     {
-		public static List<SkinnedMeshRenderer> guiSkinnedMeshRenderers;
+		public static List<SkinnedMeshRenderer> guiSkinnedMeshRenderers = new List<SkinnedMeshRenderer>();
 		public const int guiWindowId = 7639;
 		public Rect windowRect = new Rect((float)(Screen.width - 450), (float)(Screen.height / 2 - 50), 250f, 15f);
 		public static bool blendShapeWindowShow = false;
@@ -22,8 +22,7 @@ namespace KK_PregnancyPlus
 
 		internal void OnGUI()
 		{
-			bool flag = blendShapeWindowShow;
-			if (flag)
+			if (blendShapeWindowShow)
 			{
 				//Show GUI when true
 				GUI.backgroundColor = Color.black;
@@ -34,6 +33,11 @@ namespace KK_PregnancyPlus
 				{
                 	Input.ResetInputAxes();
 				}
+			}
+			else if (!blendShapeWindowShow && guiSkinnedMeshRenderers.Count > 0)
+			{
+				//When the window was just closed, clear HSPE values and the current smrs
+				CloseWindow();
 			}
 		}
 
@@ -58,6 +62,19 @@ namespace KK_PregnancyPlus
         {
             fixedWidth = 275f,
             alignment = TextAnchor.MiddleRight,
+			padding = new RectOffset(0, 0, 3, 3),
+            normal = new GUIStyleState
+            {
+                textColor = Color.white
+            }
+        };
+
+
+		internal GUIStyle _labelTextStyle = new GUIStyle
+        {
+            alignment = TextAnchor.MiddleLeft,
+			padding = new RectOffset(5, 5, 20, 20),
+			wordWrap = true,
             normal = new GUIStyleState
             {
                 textColor = Color.white
@@ -96,9 +113,9 @@ namespace KK_PregnancyPlus
 		internal void WindowFunc(int id)
 		{
 			//Exit when mesh becomes null (probably deleted character)
-			if (guiSkinnedMeshRenderers == null || guiSkinnedMeshRenderers[0] == null) 
+			if (!blendShapeWindowShow || guiSkinnedMeshRenderers == null || guiSkinnedMeshRenderers[0] == null || guiSkinnedMeshRenderers.Count <= 0) 
 			{
-				blendShapeWindowShow = false;
+				CloseWindow();
 				return;
 			}
 
@@ -111,11 +128,11 @@ namespace KK_PregnancyPlus
 			GUILayout.Box("", new GUILayoutOption[]
 			{
 				GUILayout.Width(450f),
-				GUILayout.Height((float)(15 * (guiSkinnedMeshRenderers.Count + 5)))
+				GUILayout.Height(GetGuiHeight())
 			});
 
 			//Set the size of the interactable area
-			Rect screenRect = new Rect(10f, 25f, 450f, (float)(15 * (guiSkinnedMeshRenderers.Count + 5)));
+			Rect screenRect = new Rect(10f, 25f, 450f, GetGuiHeight());
 			GUILayout.BeginArea(screenRect);
 
 			//For each SMR we want a slider for
@@ -125,13 +142,35 @@ namespace KK_PregnancyPlus
 				GuiSliderControlls(i);
 			}	
 
+			GUILayout.Label("The sliders above can be adjusted and then saved to Timeline (Ctrl+T) or VNGE > Clip Manager.  They blendshapes will persist on the character card when the scene is saved.", _labelTextStyle, new GUILayoutOption[0]);
+
 			var clearBtnCLicked = GUILayout.Button("Clear", new GUILayoutOption[0]);
 			var closeBtnCLicked = GUILayout.Button("Close", new GUILayoutOption[0]);
 			GUILayout.EndArea();			
 			GUI.DragWindow();
 			
-			if (closeBtnCLicked) blendShapeWindowShow = false;
+			if (closeBtnCLicked) CloseWindow();
 			if (clearBtnCLicked) ClearAllSliderValues();
+		}
+
+
+
+		/// <summary>
+        /// Closes the window and resets HSPE blendshapes
+        /// </summary>
+		internal void CloseWindow()
+		{
+			blendShapeWindowShow = false;
+			ResetHspeBlendShape(guiSkinnedMeshRenderers);
+			guiSkinnedMeshRenderers = new List<SkinnedMeshRenderer>();
+		}
+
+		public float GetGuiHeight()
+		{			
+			var sliderTotals = ((15 + (_labelTitleStyle.padding.bottom * 2)) * guiSkinnedMeshRenderers.Count);
+			var textsTotals = _labelTextStyle.padding.bottom * 2 + (30 * 3);
+			var btnTotals = 40;
+			return (sliderTotals +  textsTotals + btnTotals);
 		}
 
 
@@ -235,20 +274,7 @@ namespace KK_PregnancyPlus
         /// </summary>
 		internal void SetHspeBlendShapeWeight(SkinnedMeshRenderer smr, int index, float weight) 
         {
-			//Get main HSPE window reference
-			var hspeMainWindow = this.gameObject.GetComponent<MainWindow>();
-			if (hspeMainWindow == null) return;
-
-			//Pose target contains the character main window buttons
-			var poseCtrl = Traverse.Create(hspeMainWindow).Field("_poseTarget").GetValue<PoseController>();
-			if (poseCtrl == null) return;
-
-			//The modules are indivisual popups originating from the pose target window
-			var advModules = Traverse.Create(poseCtrl).Field("_modules").GetValue<List<HSPE.AMModules.AdvancedModeModule>>();
-			if (advModules == null || advModules.Count <= 0) return;
-
-			//Get the blendShape module  (4 == blendshape.type, or just use the string name)
-			var bsModule = (HSPE.AMModules.BlendShapesEditor)advModules.FirstOrDefault(x => x.displayName.Contains("Blend Shape"));
+			var bsModule = GetHspeBlenShapeModule();
 			if (bsModule == null) return;
 
 			//Set the following values as if the HSPE blendshape tab was clicked
@@ -277,6 +303,55 @@ namespace KK_PregnancyPlus
 			// var dynMethod = bsModule.GetType().GetMethod("SetBlendShapeWeight", BindingFlags.NonPublic | BindingFlags.Instance);
 			// dynMethod.Invoke(this, new object[] { smr , index, weight });
         }
+
+		/// <summary>
+        /// Reset HSPE blendshape when character changes
+        /// </summary>
+		internal void ResetHspeBlendShape(List<SkinnedMeshRenderer> smrs) 
+        {
+			if (smrs == null || smrs.Count <= 0) return;
+
+			var bsModule = GetHspeBlenShapeModule();
+			if (bsModule == null) return;
+
+			//Set the following values as if the HSPE blendshape tab was clicked
+			Traverse.Create(bsModule).Field("_lastEditedBlendShape").SetValue(-1);
+
+			//Set the blend shape weight in HSPE for a specific smr, (Finally working............)
+			var SetMeshRendererNotDirty = bsModule.GetType().GetMethod("SetMeshRendererNotDirty", BindingFlags.NonPublic | BindingFlags.Instance);
+			if (SetMeshRendererNotDirty == null) return;
+
+			//reset all active smrs in HSPE
+			foreach(var smr in smrs)
+			{	
+				if (smr == null) continue;
+				SetMeshRendererNotDirty.Invoke(bsModule, new object[] { smr } );	
+			}
+        }
+
+		/// <summary>
+        /// Get the active HSPE blend shape module, that we want to make alterations to
+        /// </summary>
+		internal HSPE.AMModules.BlendShapesEditor GetHspeBlenShapeModule()
+		{
+			//Get main HSPE window reference
+			var hspeMainWindow = this.gameObject.GetComponent<HSPE.MainWindow>();
+			if (hspeMainWindow == null) return null;
+
+			//Pose target contains the character main window buttons
+			var poseCtrl = Traverse.Create(hspeMainWindow).Field("_poseTarget").GetValue<HSPE.PoseController>();
+			if (poseCtrl == null) return null;
+
+			//The modules are indivisual popups originating from the pose target window
+			var advModules = Traverse.Create(poseCtrl).Field("_modules").GetValue<List<HSPE.AMModules.AdvancedModeModule>>();
+			if (advModules == null || advModules.Count <= 0) return null;
+
+			//Get the blendShape module  (4 == blendshape.type, or just use the string name)
+			var bsModule = (HSPE.AMModules.BlendShapesEditor)advModules.FirstOrDefault(x => x.displayName.Contains("Blend Shape"));
+			if (bsModule == null) return null;
+
+			return bsModule;
+		}
 
     }
 
