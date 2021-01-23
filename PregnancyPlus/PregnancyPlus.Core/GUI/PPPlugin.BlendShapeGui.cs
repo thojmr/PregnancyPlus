@@ -18,8 +18,6 @@ namespace KK_PregnancyPlus
 		public static bool guiInit = true;
 		public Dictionary<string, float> _sliderValues = new Dictionary<string, float>();//Tracks user modified blendshape slider values
 		public Dictionary<string, float> _sliderValuesHistory = new Dictionary<string, float>();//Tracks user modified blendshape slider values
-		//When not -1, sets the value of all the sliders
-		public float allBsSliderValue = -1f;
 
 
 		internal void OnGUI()
@@ -88,6 +86,7 @@ namespace KK_PregnancyPlus
             }
         };
 
+
 		internal GUIStyle _btnValueStyle = new GUIStyle
         {
 			margin=new RectOffset(10,100,20,50)
@@ -109,8 +108,6 @@ namespace KK_PregnancyPlus
 				OnGuiInit();
 			}		
 
-			var lastAllBsSliderValue = allBsSliderValue;
-
 			GUILayout.Box("", new GUILayoutOption[]
 			{
 				GUILayout.Width(450f),
@@ -124,56 +121,9 @@ namespace KK_PregnancyPlus
 			//For each SMR we want a slider for
 			for (int i = 0; i < guiSkinnedMeshRenderers.Count; i++)
 			{				
-				var smrName = guiSkinnedMeshRenderers[i].name;
-				//Find the index of the Preg+ blendshape
-				var kkBsIndex = GetBlendShapeIndexFromName(guiSkinnedMeshRenderers[i].sharedMesh);
-				if (kkBsIndex < 0) continue;
-
-				//Create a slider for the matching Preg+ blendshape
-				GUILayout.BeginHorizontal(new GUILayoutOption[0]);
-				GUILayout.Label(guiSkinnedMeshRenderers[i].sharedMesh.GetBlendShapeName(kkBsIndex), _labelTitleStyle, new GUILayoutOption[0]);
-				_sliderValues[smrName] = GUILayout.HorizontalSlider(_sliderValues[smrName], 0f, 100f, new GUILayoutOption[0]);
-				GUILayout.Label(_sliderValues[smrName].ToString("#0"), _labelValueStyle, new GUILayoutOption[0]);
-				GUILayout.EndHorizontal();
-
-				//Only update slider on changes
-				if (_sliderValues[smrName] != _sliderValuesHistory[smrName]) 
-				{					
-					// guiSkinnedMeshRenderers[i].SetBlendShapeWeight(kkBsIndex, _sliderValues[smrName]);
-					SetHspeBlendShapeWeight(guiSkinnedMeshRenderers[i], kkBsIndex, _sliderValues[smrName]);					
-				}
-				_sliderValuesHistory[smrName] = _sliderValues[smrName];
+				//Create and watch each blendshape sliders
+				GuiSliderControlls(i);
 			}	
-
-			// //Reset back to normal, when any single slider changes value
-			// if (BlendShapeSliderValuesChanged(_sliderValues)) allBsSliderValue = -1;
-
-			// //Set the All sliders slider
-			// GUILayout.BeginHorizontal(new GUILayoutOption[0]);
-			// GUILayout.Label("All Pregnancy+ BlendShapes", _labelAllTitleStyle, new GUILayoutOption[0]);
-			// allBsSliderValue = GUILayout.HorizontalSlider(allBsSliderValue, 0f, 100f, new GUILayoutOption[0]);
-			// GUILayout.Label(allBsSliderValue.ToString("#0"), _labelValueStyle, new GUILayoutOption[0]);
-			// GUILayout.EndHorizontal();		
-
-			// //When selected update all sliders to the same value
-			// if (allBsSliderValue >= 0 && lastAllBsSliderValue != allBsSliderValue) 
-			// {
-			// 	for (int i = 0; i < guiSkinnedMeshRenderers.Count; i++)
-			// 	{
-			// 		var smrName = guiSkinnedMeshRenderers[i].name;
-			// 		//Find the index of the Preg+ blendshape
-			// 		var kkBsIndex = GetBlendShapeIndexFromName(guiSkinnedMeshRenderers[i].sharedMesh);
-			// 		if (kkBsIndex < 0) continue;
-					
-			// 		// guiSkinnedMeshRenderers[i].SetBlendShapeWeight(kkBsIndex, allBsSliderValue);
-			// 		SetHspeBlendShapeWeight(guiSkinnedMeshRenderers[i], kkBsIndex, _sliderValues[smrName]);					
-
-			// 		//Update indivisual values to the same number
-			// 		_sliderValues[smrName] = allBsSliderValue;
-			// 		_sliderValuesHistory[smrName] = allBsSliderValue;
-			// 	}
-			// }
-
 
 			var clearBtnCLicked = GUILayout.Button("Clear", new GUILayoutOption[0]);
 			var closeBtnCLicked = GUILayout.Button("Close", new GUILayoutOption[0]);
@@ -186,13 +136,39 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
+        /// Define each blendshape slider, and watch for changes
+        /// </summary>
+		internal void GuiSliderControlls(int i)
+		{
+			var smrName = guiSkinnedMeshRenderers[i].name;
+			//Find the index of the Preg+ blendshape
+			var kkBsIndex = GetBlendShapeIndexFromName(guiSkinnedMeshRenderers[i].sharedMesh);
+			if (kkBsIndex < 0) return;
+
+			//Create a slider for the matching Preg+ blendshape
+			GUILayout.BeginHorizontal(new GUILayoutOption[0]);
+			GUILayout.Label(guiSkinnedMeshRenderers[i].sharedMesh.GetBlendShapeName(kkBsIndex), _labelTitleStyle, new GUILayoutOption[0]);
+			_sliderValues[smrName] = GUILayout.HorizontalSlider(_sliderValues[smrName], 0f, 100f, new GUILayoutOption[0]);
+			GUILayout.Label(_sliderValues[smrName].ToString("#0"), _labelValueStyle, new GUILayoutOption[0]);
+			GUILayout.EndHorizontal();
+
+			//Only update slider on changes
+			if (_sliderValues[smrName] != _sliderValuesHistory[smrName]) 
+			{					
+				// guiSkinnedMeshRenderers[i].SetBlendShapeWeight(kkBsIndex, _sliderValues[smrName]);
+				SetHspeBlendShapeWeight(guiSkinnedMeshRenderers[i], kkBsIndex, _sliderValues[smrName]);					
+			}
+			_sliderValuesHistory[smrName] = _sliderValues[smrName];
+		}
+
+
+        /// <summary>
         /// Initilize sliders on first window open
         /// </summary>
 		public void OnGuiInit() 
 		{
 			_sliderValues = BuildSliderListValues(guiSkinnedMeshRenderers, _sliderValues);
 			_sliderValuesHistory = BuildSliderListValues(guiSkinnedMeshRenderers, _sliderValuesHistory);
-			allBsSliderValue = -1;
 			guiInit = false;
 		}
 
@@ -251,23 +227,6 @@ namespace KK_PregnancyPlus
 
 			return -1;
 		}
-
-
-		// public void OpenHspeBlendShapeGui()
-		// {
-		// 	var hspeMainWindow = this.gameObject.GetComponent<MainWindow>();
-		// 	if (hspeMainWindow == null) return;
-
-		// 	var poseCtrl = Traverse.Create(hspeMainWindow).Field("_poseTarget").GetValue<PoseController>();
-		// 	if (poseCtrl == null) return;
-
-		// 	var advModules = Traverse.Create(poseCtrl).Field("_modules").GetValue<List<HSPE.AMModules.AdvancedModeModule>>();
-		// 	if (advModules == null || advModules.Count <= 0) return;
-
-		// 	//Get the blendShape module  (4 == blendshape)
-		// 	var bsModule = (HSPE.AMModules.BlendShapesEditor)advModules.FirstOrDefault(x => x.displayName.Contains("Blend Shape"));
-		// 	if (bsModule != null) return;
-		// }
 
 
         /// <summary>
