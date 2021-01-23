@@ -84,6 +84,7 @@ namespace KK_PregnancyPlus
         protected override void OnReload(GameMode currentGameMode)
         {
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnReload {currentGameMode}"); 
+            PregnancyPlusPlugin.CloseBlendShapeGui();
 
             //Check for swapping out character GO with new character, because we want to keep the current slider values
             var isNewCharFile = IsNewChar(ChaFileControl);

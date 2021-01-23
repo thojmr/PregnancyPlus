@@ -70,6 +70,7 @@ namespace KK_PregnancyPlus
 
             //GUI blendshape popup
             PregnancyPlusPlugin.OpenBlendShapeGui(meshWithBlendShapes);
+            // PregnancyPlusPlugin.OpenHspeBlendShapeGui();
 
             return meshBlendShapes.Count > 0;
         }

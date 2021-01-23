@@ -4,6 +4,7 @@ using HarmonyLib;
 using KKAPI;
 using KKAPI.Studio;
 using KKAPI.Chara;
+using HSPE;
 #if AI || HS2
     using AIChara;
 #elif KK
@@ -14,6 +15,15 @@ namespace KK_PregnancyPlus
 {
     [BepInPlugin(GUID, GUID, Version)]
     [BepInDependency(KoikatuAPI.GUID, "1.12")]
+    [BepInDependency("com.deathweasel.bepinex.uncensorselector", BepInDependency.DependencyFlags.SoftDependency)]
+    #if KK
+        [BepInDependency("KKPE", BepInDependency.DependencyFlags.SoftDependency)]
+        [BepInDependency("KK_Pregnancy", BepInDependency.DependencyFlags.SoftDependency)]
+    #elif HS2
+        [BepInDependency("HS2PE", BepInDependency.DependencyFlags.SoftDependency)]
+    #elif AI
+        [BepInDependency("AIPE", BepInDependency.DependencyFlags.SoftDependency)]
+    #endif
     public partial class PregnancyPlusPlugin : BaseUnityPlugin
     {
         public const string GUID = "KK_PregnancyPlus";

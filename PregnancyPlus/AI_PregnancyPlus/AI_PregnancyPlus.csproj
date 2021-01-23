@@ -105,6 +105,10 @@
       <HintPath>..\..\packages\IllusionLibs.AIGirl.MessagePack.2020.5.29.2\lib\net46\MessagePack.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="AIPE, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\AIPE.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
