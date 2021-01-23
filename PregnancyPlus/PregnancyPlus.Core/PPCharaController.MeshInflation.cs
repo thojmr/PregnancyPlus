@@ -56,7 +56,7 @@ namespace KK_PregnancyPlus
             }
             
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" ---------- ");
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" inflationSize > {infConfig.inflationSize} ");
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" inflationSize > {infConfig.inflationSize} for {charaFileName} ");
             
             //Get the measurements that determine the base belly size
             var hasMeasuerments = MeasureWaist(ChaControl);                     

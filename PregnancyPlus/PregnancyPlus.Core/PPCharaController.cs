@@ -250,7 +250,7 @@ namespace KK_PregnancyPlus
             yield return new WaitForSeconds(waitTime);
             //If guid is the latest, trigger method
             if (debounceGuid == guid) {
-                if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" WaitForMeshToSettle");
+                if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" WaitForMeshToSettle checkNewMesh:{checkNewMesh} forceRecalcVerts:{forceRecalcVerts}");
                 MeshInflate(checkNewMesh, forceRecalcVerts);
             }
         }
@@ -271,7 +271,7 @@ namespace KK_PregnancyPlus
             }
 
             var week = PregnancyPlusHelper.GetWeeksFromPregnancyPluginData(ChaControl, KK_PregnancyPluginName);
-            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" Week {ChaControl.name} >  {week}");
+            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" GetWeeksAndSetInflation {ChaControl.name} >  Week:{week} checkNewMesh:{checkNewMesh} slidersChanged:{slidersChanged}");
             if (week < 0) return;
 
             //Compute the additonal belly size added based on user configured vallue from 0-40
