@@ -27,12 +27,7 @@ namespace KK_PregnancyPlus
         internal const string inflationTaperZ = "        Taper Z";
         internal const string inflationClothOffset = "        Cloth Offset";
         internal const string inflationFatFold = "        Fat Fold";
-
-        #if KK
-            private const string blendshapeText = "Create Timeline BlendShape";
-        #elif HS2 || AI
-            private const string blendshapeText = "Create BlendShape";
-        #endif
+        private const string blendshapeText = "Open BlendShapes";
 
         internal static void InitStudio(Harmony hi, PregnancyPlusPlugin instance)
         {
@@ -75,7 +70,7 @@ namespace KK_PregnancyPlus
                     {   
                         if (ctrl.infConfig.HasAnyValue()) 
                         {              
-                            ctrl.OnCreateBlendShapeSelected();                             
+                            ctrl.OnOpenBlendShapeSelected();                             
                         }
                     }
                 });

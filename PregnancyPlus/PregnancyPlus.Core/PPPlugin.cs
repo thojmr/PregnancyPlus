@@ -40,7 +40,7 @@ namespace KK_PregnancyPlus
         public static PregnancyPlusData lastBellyState =  new PregnancyPlusData();
 
 
-        private void Start()
+        internal void Start()
         {
             Logger = base.Logger;    
             //Initilize the plugin config options 
@@ -55,6 +55,21 @@ namespace KK_PregnancyPlus
             //Set up studio/malker GUI sliders
             PregnancyPlusGui.InitStudio(hi, this);
             PregnancyPlusGui.InitMaker(hi, this);
+        }
+
+    
+        internal void OnGUI()
+        {                
+            if (!StudioAPI.InsideStudio) return;
+
+            //Need to trigger all children GUI that should be active. 
+            var handlers = CharacterApi.GetRegisteredBehaviour(GUID);
+
+            //I guess this is how its suppposed to be done?
+            foreach (PregnancyPlusCharaController charCustFunCtrl in handlers.Instances)
+            { 
+                charCustFunCtrl.blendShapeGui.OnGUI(this);                                    
+            }
         }
     
     }

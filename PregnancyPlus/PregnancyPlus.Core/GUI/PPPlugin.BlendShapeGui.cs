@@ -9,19 +9,25 @@ using HSPE;
 
 namespace KK_PregnancyPlus
 {
-    public partial class PregnancyPlusPlugin
+    public class PregnancyPlusBlendShapeGui: MonoBehaviour
     {
-		public static List<SkinnedMeshRenderer> guiSkinnedMeshRenderers = new List<SkinnedMeshRenderer>();
+		public List<SkinnedMeshRenderer> guiSkinnedMeshRenderers = new List<SkinnedMeshRenderer>();
 		public const int guiWindowId = 7639;
 		public Rect windowRect = new Rect((float)(Screen.width - 450), (float)(Screen.height / 2 - 50), 250f, 15f);
-		public static bool blendShapeWindowShow = false;
-		public static bool guiInit = true;
+		public bool blendShapeWindowShow = false;
 		public Dictionary<string, float> _sliderValues = new Dictionary<string, float>();//Tracks user modified blendshape slider values
 		public Dictionary<string, float> _sliderValuesHistory = new Dictionary<string, float>();//Tracks user modified blendshape slider values
+		internal PregnancyPlusPlugin _pluginInstance = null;
+		internal PregnancyPlusCharaController _charaInstance = null;
 
 
-		internal void OnGUI()
+		internal void OnGUI(PregnancyPlusPlugin instance)
 		{
+			if (_pluginInstance == null)
+			{
+				_pluginInstance = instance;
+			}
+
 			if (blendShapeWindowShow)
 			{
 				//Show GUI when true
@@ -34,27 +40,39 @@ namespace KK_PregnancyPlus
                 	Input.ResetInputAxes();
 				}
 			}
-			else if (!blendShapeWindowShow && guiSkinnedMeshRenderers.Count > 0)
-			{
-				//When the window was just closed, clear HSPE values and the current smrs
-				CloseWindow();
-			}
 		}
 
 
 		//On constructor call, show the blendshape GUI
-		internal static void OpenBlendShapeGui(List<SkinnedMeshRenderer> smrs) 
+		internal void OpenBlendShapeGui(List<SkinnedMeshRenderer> smrs, PregnancyPlusCharaController charaInstance) 
 		{
+			if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" blendShapeWindowShow {blendShapeWindowShow}");		
+
+			_charaInstance = charaInstance;				
+			OnGuiInit(smrs);
 			guiSkinnedMeshRenderers = smrs;
-			guiInit = true;
-			blendShapeWindowShow = !blendShapeWindowShow;//Trigger gui to show
-			if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" blendShapeWindowShow {blendShapeWindowShow}");
+			blendShapeWindowShow = true;//Trigger gui to show			
 		}
 
 
-		internal static void CloseBlendShapeGui() 
+		internal void OnSkinnedMeshRendererBlendShapesCreated(List<SkinnedMeshRenderer> smrs)
 		{
-			blendShapeWindowShow = false;
+			OnGuiInit(smrs);
+			guiSkinnedMeshRenderers = smrs;			
+		}
+		
+		internal void OnRemoveAllBlendShapes()
+		{
+			ResetHspeBlendShape(guiSkinnedMeshRenderers);
+			_charaInstance.OnRemoveAllBlendShapes();
+			guiSkinnedMeshRenderers = new List<SkinnedMeshRenderer>();
+		}
+
+
+		internal void CloseBlendShapeGui() 
+		{
+			if (!blendShapeWindowShow) return;
+			CloseWindow();
 		}
 
 
@@ -110,67 +128,67 @@ namespace KK_PregnancyPlus
         };
 
 
+		/// <summary>
+        /// The main blendshape GUI
+        /// </summary>
 		internal void WindowFunc(int id)
 		{
-			//Exit when mesh becomes null (probably deleted character)
-			if (!blendShapeWindowShow || guiSkinnedMeshRenderers == null || guiSkinnedMeshRenderers[0] == null || guiSkinnedMeshRenderers.Count <= 0) 
-			{
-				CloseWindow();
-				return;
-			}
+			var hasBlendShapes = guiSkinnedMeshRenderers != null && guiSkinnedMeshRenderers.Count > 0 && guiSkinnedMeshRenderers[0] != null;
 
-			//Initilize slider values
-			if (guiInit)
-			{				
-				OnGuiInit();
-			}		
+			//Exit when mesh becomes null (probably deleted character)
+			if (!blendShapeWindowShow || (guiSkinnedMeshRenderers != null && guiSkinnedMeshRenderers.Count > 0 && guiSkinnedMeshRenderers[0] == null)) 
+			{
+				CloseBlendShapeGui();
+				return;
+			}	
 
 			GUILayout.Box("", new GUILayoutOption[]
 			{
 				GUILayout.Width(450f),
-				GUILayout.Height(GetGuiHeight())
+				GUILayout.Height(GetGuiHeight(hasBlendShapes))
 			});
 
 			//Set the size of the interactable area
-			Rect screenRect = new Rect(10f, 25f, 450f, GetGuiHeight());
+			Rect screenRect = new Rect(10f, 25f, 450f, GetGuiHeight(hasBlendShapes));
 			GUILayout.BeginArea(screenRect);
 
-			//For each SMR we want a slider for
-			for (int i = 0; i < guiSkinnedMeshRenderers.Count; i++)
+			var clearBtnCLicked = false;
+			var createBtnCLicked = false;
+			var removeBtnCLicked = false;
+
+			//Show sliders if we have blendshapes set already
+			if (hasBlendShapes)
 			{				
-				//Create and watch each blendshape sliders
-				GuiSliderControlls(i);
-			}	
+				//For each SMR we want a slider for
+				for (int i = 0; i < guiSkinnedMeshRenderers.Count; i++)
+				{				
+					//Create and watch each blendshape sliders
+					GuiSliderControlls(i);
+				}	
 
-			GUILayout.Label("The sliders above can be adjusted and then saved to Timeline (Ctrl+T) or VNGE > Clip Manager.  They blendshapes will persist on the character card when the scene is saved.", _labelTextStyle, new GUILayoutOption[0]);
+				GUILayout.Label("The sliders above can be adjusted and then saved to Timeline (Ctrl+T) or VNGE > Clip Manager.  They blendshapes will persist on the character card when the scene is saved.", _labelTextStyle, new GUILayoutOption[0]);
+				GUILayout.Label("You can 'Create New' blendshapes with the current belly sliders (Overwrites existing).", _labelTextStyle, new GUILayoutOption[0]);
 
-			var clearBtnCLicked = GUILayout.Button("Clear", new GUILayoutOption[0]);
+				createBtnCLicked = GUILayout.Button("Create New", new GUILayoutOption[0]);
+				clearBtnCLicked = GUILayout.Button("Reset Sliders", new GUILayoutOption[0]);
+				removeBtnCLicked = GUILayout.Button("Remove P+ BlendShapes", new GUILayoutOption[0]);
+			}
+			//If no blendshapes, then all the user to set them with a create button
+			else 
+			{
+				GUILayout.Label("No P+ blendshapes found.  Use the 'Create' button to capture a snapshot of the current P+ slider values as blendshapes.  Make sure the values are not all 0.", _labelTextStyle, new GUILayoutOption[0]);
+				createBtnCLicked = GUILayout.Button("Create", new GUILayoutOption[0]);
+			}
+
 			var closeBtnCLicked = GUILayout.Button("Close", new GUILayoutOption[0]);
 			GUILayout.EndArea();			
 			GUI.DragWindow();
 			
+			//Button click events from above
 			if (closeBtnCLicked) CloseWindow();
 			if (clearBtnCLicked) ClearAllSliderValues();
-		}
-
-
-
-		/// <summary>
-        /// Closes the window and resets HSPE blendshapes
-        /// </summary>
-		internal void CloseWindow()
-		{
-			blendShapeWindowShow = false;
-			ResetHspeBlendShape(guiSkinnedMeshRenderers);
-			guiSkinnedMeshRenderers = new List<SkinnedMeshRenderer>();
-		}
-
-		public float GetGuiHeight()
-		{			
-			var sliderTotals = ((15 + (_labelTitleStyle.padding.bottom * 2)) * guiSkinnedMeshRenderers.Count);
-			var textsTotals = _labelTextStyle.padding.bottom * 2 + (30 * 3);
-			var btnTotals = 40;
-			return (sliderTotals +  textsTotals + btnTotals);
+			if (createBtnCLicked) _charaInstance.OnCreateBlendShapeSelected();
+			if (removeBtnCLicked) OnRemoveAllBlendShapes();
 		}
 
 
@@ -201,14 +219,43 @@ namespace KK_PregnancyPlus
 		}
 
 
-        /// <summary>
-        /// Initilize sliders on first window open
+		/// <summary>
+        /// Closes the window and resets HSPE blendshapes
         /// </summary>
-		public void OnGuiInit() 
+		internal void CloseWindow()
 		{
-			_sliderValues = BuildSliderListValues(guiSkinnedMeshRenderers, _sliderValues);
-			_sliderValuesHistory = BuildSliderListValues(guiSkinnedMeshRenderers, _sliderValuesHistory);
-			guiInit = false;
+			blendShapeWindowShow = false;
+			ResetHspeBlendShape(guiSkinnedMeshRenderers);
+			guiSkinnedMeshRenderers = new List<SkinnedMeshRenderer>();
+		}
+
+		public float GetGuiHeight(bool hasBlendShapes)
+		{			
+			//When blendshapes are set, include sliders height
+			if (hasBlendShapes)
+			{
+				var sliderTotals = ((15 + (_labelTitleStyle.padding.bottom * 2)) * guiSkinnedMeshRenderers.Count);
+				var textsTotals = (_labelTextStyle.padding.bottom * 2) + (30 * 4);
+				var btnTotals = (40 * 3);
+				return (sliderTotals +  textsTotals + btnTotals);
+			}
+			//Otherwise, its just text and buttons
+			else 
+			{
+				var textsTotals = (_labelTextStyle.padding.bottom * 2) + (30 * 2);
+				var btnTotals = (40 * 2);
+				return (textsTotals + btnTotals); 
+			}
+		}
+
+
+        /// <summary>
+        /// Initilize sliders on first window open, or smrs appended
+        /// </summary>
+		public void OnGuiInit(List<SkinnedMeshRenderer> smrs) 
+		{
+			_sliderValues = BuildSliderListValues(smrs, _sliderValues);
+			_sliderValuesHistory = BuildSliderListValues(smrs, _sliderValuesHistory);
 		}
 
 
@@ -335,7 +382,7 @@ namespace KK_PregnancyPlus
 		internal HSPE.AMModules.BlendShapesEditor GetHspeBlenShapeModule()
 		{
 			//Get main HSPE window reference
-			var hspeMainWindow = this.gameObject.GetComponent<HSPE.MainWindow>();
+			var hspeMainWindow = _pluginInstance.gameObject.GetComponent<HSPE.MainWindow>();
 			if (hspeMainWindow == null) return null;
 
 			//Pose target contains the character main window buttons
