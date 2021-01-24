@@ -7,22 +7,24 @@ This repository contains the KK_PregnancyPlus plugin, that adds additional belly
 
 ## Features
 - Adds a number of slider that will allow you to change the size and shape of the belly area in Studio and Maker/Creator.
-    - Slider values can be saved to scene or card, but anyone that you share the scene or card with must have KK_PregnancyPlus installed to see the belly shape.
-- Adds a Story Mode / Main Game mode config option.  Disable if you want to turn off this plugins features temporarily.
-    - In Koikatsu the inflated belly effect will be added on top of the KK_Pregnancy effect if you have that plugin installed, hence you can use the F1 config sliders to adjust the results.
+    - Slider values will save to scene or card, so you can share it with others that have the plugin.
     - In HS2 and AI the belly size will be whatever is defined on the character card + the F1 config slider adjustments.
 - Adds 3 configurable keybinds in plugin config that can be used to increase or decrease the belly size in Story Mode / Main Game Mode on the fly.   
-- KK Timeline integration via blendshapes.  How to:
+- This plugin can be a substitute for stomach bulges as well, but it's original intent is pregnancy.    
+
+## Koikatsu Only Features
+- Adds a Story Mode / Main Game mode config option.  Disable if you want to turn off this plugins features temporarily.
+    - In Koikatsu the "Inflation Size" belly slider will be added in addition to the KK_Pregnancy when both mods are installed.  You can use the F1 config sliders to adjust the results.  Ex: If the character is 40 weeks pregnant.  They will have the deafult KK_Pregnancy 40 week belly + ("Max Additional Belly Size" * 40) Inflation Size from KK_Pregnancy Plus.  If "Max Additional Belly Size" is set to a low number, the final result will be a slightly larger belly, if it's set high, it will be much much larger.
+- KK Timeline integration via blendshapes.  Here's how to:
     - Set Sliders to the desired shape you want
     - Click "Create Timeline Blendshape" button. You will see a popup that will controll the blend shape amount for each mesh.
     - You must open KKPE > Adv.mode > blendshape > select bone/cloth blendshape, for timeline to register the blendshape (Timeline bug?)
     - Open Timeline with Ctrl+T, search for "Blendshape" and middle click to add
     - From here treat it like any normal blendshape.  Also, once added to a timeline you can re-adjust the sliders at any time and click "Create Timeline Blendshape" again to update the timelines final shape.
-- This plugin can be a substitute for stomach bulges as well, but it's original intent is pregnancy effects.    
 
 ## FAQ - Troubleshooting
-- Q: Where do I put the KK_PregnancyPlus.dll?  
-    - A: It should end up under <Root game folder>/BepinEx/Plugins/KK_PregnancyPlus.dll
+- Q: Where do I put the PregnancyPlus.dll?
+    - A: It should end up under <Root game folder>/BepinEx/Plugins/xx_PregnancyPlus.dll
 - Q: Some of the sliders are not working?
     - A: Disable "Balloon" plugin config option since it disables some sliders.  Then try adjusting your 'Move Z' slider to make sure it is not outside your characters body.
 - Q: The belly size is changing when the character moves, or I slightly adjust a slider.
@@ -31,10 +33,10 @@ This repository contains the KK_PregnancyPlus plugin, that adds additional belly
 ## Notes
 - Modding this game is new to me, so dont expect this to feel like a finished product.  More like an interesting way to learn C#
 - There will be cloth clipping.  You can use the Cloth Offset slider to help with it
-- This plugin works in Koikatsu, Honey Select 2, and AI.  Grab the KK zip for Koikatsu, HS2 zip for Honey Select 2, and AI zip for AI [here](https://github.com/thojmr/KK_PregnancyPlus/releases)
 
 ## How to download
 You can grab the latest plugin release [here](https://github.com/thojmr/KK_PregnancyPlus/releases), or build it yourself.  Explained further below.
+This plugin works in Koikatsu, Honey Select 2, and AI.  Grab the KK zip for Koikatsu, HS2 zip for Honey Select 2, and AI zip for AI [here](https://github.com/thojmr/KK_PregnancyPlus/releases)
 
 ## How to install
 Almost all plugins are installed in the same way. If there are any extra steps needed they will be added to the plugin descriptions below.
