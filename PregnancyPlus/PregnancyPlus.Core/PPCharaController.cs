@@ -25,6 +25,8 @@ namespace KK_PregnancyPlus
         public BellyInfo bellyInfo;
         public string charaFileName = null;
 
+        public PregnancyPlusBlendShapeGui blendShapeGui = new PregnancyPlusBlendShapeGui();
+
         //Holds the user entered slider values
         public PregnancyPlusData infConfig = new PregnancyPlusData();
         internal PregnancyPlusData infConfigHistory = new PregnancyPlusData();        
@@ -84,6 +86,7 @@ namespace KK_PregnancyPlus
         protected override void OnReload(GameMode currentGameMode)
         {
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnReload {currentGameMode}"); 
+            ClearOnReload();
 
             //Check for swapping out character GO with new character, because we want to keep the current slider values
             var isNewCharFile = IsNewChar(ChaFileControl);
@@ -106,6 +109,17 @@ namespace KK_PregnancyPlus
         
 
 #endregion
+
+
+        /// <summary>
+        /// Some additional props that need to be cleared when laoding new character
+        /// </summary>
+        public void ClearOnReload()
+        {
+            meshWithBlendShapes = new List<SkinnedMeshRenderer>();
+            blendShapeGui.CloseBlendShapeGui();
+        }
+
 
         /// <summary>
         /// True when OnReload was triggerd by replacing the current character GameObject with another character file

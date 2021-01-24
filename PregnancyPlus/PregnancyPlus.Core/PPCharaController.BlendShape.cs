@@ -52,7 +52,6 @@ namespace KK_PregnancyPlus
 
             var meshBlendShapes = new List<MeshBlendShape>();
             meshWithBlendShapes = new List<SkinnedMeshRenderer>();
-            PregnancyPlusPlugin.blendShapeWindowShow = false;//Close GUI if open
 
             //Get all cloth renderes and attemp to create blendshapes from preset inflatedVerticies
             var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);
@@ -68,10 +67,26 @@ namespace KK_PregnancyPlus
             //Reset belly size to 0 so the blendshape can be used with out interference
             PregnancyPlusGui.ResetSlider(PregnancyPlusGui.inflationSize, 0);
 
-            //GUI blendshape popup
-            PregnancyPlusPlugin.OpenBlendShapeGui(meshWithBlendShapes);
+            //Append the smrs that have new blendspahes to the GUI to be seen
+            blendShapeGui.OnSkinnedMeshRendererBlendShapesCreated(meshWithBlendShapes);
 
             return meshBlendShapes.Count > 0;
+        }
+
+        internal void OnOpenBlendShapeSelected()
+        {
+            //GUI blendshape popup, with existing blendshapes if any exists
+            blendShapeGui.OpenBlendShapeGui(meshWithBlendShapes, this);
+        }
+
+
+        /// <summary>
+        /// When the user wants to remove all existing PregnancyPlus blendshapes
+        /// </summary>
+        internal void OnRemoveAllBlendShapes()
+        {
+            meshWithBlendShapes = new List<SkinnedMeshRenderer>();
+            ClearBlendShapesFromData();
         }
 
 
@@ -92,8 +107,11 @@ namespace KK_PregnancyPlus
                 if (!exists || inflatedVertices[renderKey].Length < 0) continue;
 
                 var meshBlendShape = CreateBlendShape(smr, renderKey);
-                if (meshBlendShape != null) meshBlendShapes.Add(meshBlendShape);
-                meshWithBlendShapes.Add(smr);
+                if (meshBlendShape != null) 
+                {
+                    meshBlendShapes.Add(meshBlendShape);                
+                    meshWithBlendShapes.Add(smr);
+                }
 
                 // LogMeshBlendShapes(smr);
             }  
@@ -124,6 +142,15 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
+        /// Clears any card data blendshapes
+        /// </summary>
+        internal void ClearBlendShapesFromData() 
+        {            
+            infConfig.meshBlendShape = null;
+        }
+
+
+        /// <summary>
         /// Loads a blendshape from character card and sets it to the correct mesh
         /// </summary>
         /// <param name="data">The characters card data for this plugin</param>
@@ -131,6 +158,9 @@ namespace KK_PregnancyPlus
         {
             if (data.meshBlendShape == null) return;
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" MeshBlendShape size > {data.meshBlendShape.Length/1024}KB ");
+
+            meshWithBlendShapes = new List<SkinnedMeshRenderer>();
+
             //Unserialize the blendshape from characters card
             var meshBlendShapes = MessagePack.LZ4MessagePackSerializer.Deserialize<List<MeshBlendShape>>(data.meshBlendShape);
             if (meshBlendShapes == null || meshBlendShapes.Count <= 0) return;
@@ -165,6 +195,8 @@ namespace KK_PregnancyPlus
                 //If mesh matches, append the blend shape
                 if (smr.name == meshName && smr.sharedMesh.vertexCount == vertexCount) 
                 {
+                    meshWithBlendShapes.Add(smr);
+
                     //Make sure the blendshape does not already exists
                     if (BlendShapeAlreadyExists(smr, meshBlendShape.BlendShape)) continue;
 
@@ -172,8 +204,7 @@ namespace KK_PregnancyPlus
                     new BlendShapeController(smr, blendShape);
 
                     // LogMeshBlendShapes(smr);
-                }
-                
+                }                
             }              
         }
                 

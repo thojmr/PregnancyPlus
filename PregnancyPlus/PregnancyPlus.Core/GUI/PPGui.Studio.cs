@@ -27,12 +27,7 @@ namespace KK_PregnancyPlus
         internal const string inflationTaperZ = "        Taper Z";
         internal const string inflationClothOffset = "        Cloth Offset";
         internal const string inflationFatFold = "        Fat Fold";
-
-        #if KK
-            private const string blendshapeText = "Create Timeline BlendShape";
-        #elif HS2 || AI
-            private const string blendshapeText = "Create BlendShape";
-        #endif
+        private const string blendshapeText = "Open BlendShapes";
 
         internal static void InitStudio(Harmony hi, PregnancyPlusPlugin instance)
         {
@@ -70,13 +65,10 @@ namespace KK_PregnancyPlus
                 }))
                 .Value.Subscribe(f => {
                     if (f == false) return;
-                    //Create blendshape for current selected character if the mesh is inflated
+                    //Open blendshape GUI on click
                     foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) 
-                    {   
-                        if (ctrl.infConfig.HasAnyValue()) 
-                        {              
-                            ctrl.OnCreateBlendShapeSelected();                             
-                        }
+                    {             
+                        ctrl.OnOpenBlendShapeSelected();                                                   
                     }
                 });
 

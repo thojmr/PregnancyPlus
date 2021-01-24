@@ -14,6 +14,15 @@ namespace KK_PregnancyPlus
 {
     [BepInPlugin(GUID, GUID, Version)]
     [BepInDependency(KoikatuAPI.GUID, "1.12")]
+    [BepInDependency("com.deathweasel.bepinex.uncensorselector", BepInDependency.DependencyFlags.SoftDependency)]
+    #if KK
+        [BepInDependency("KKPE", BepInDependency.DependencyFlags.SoftDependency)]
+        [BepInDependency("KK_Pregnancy", BepInDependency.DependencyFlags.SoftDependency)]
+    #elif HS2
+        [BepInDependency("HS2PE", BepInDependency.DependencyFlags.SoftDependency)]
+    #elif AI
+        [BepInDependency("AIPE", BepInDependency.DependencyFlags.SoftDependency)]
+    #endif
     public partial class PregnancyPlusPlugin : BaseUnityPlugin
     {
         public const string GUID = "KK_PregnancyPlus";
@@ -30,7 +39,7 @@ namespace KK_PregnancyPlus
         public static PregnancyPlusData lastBellyState =  new PregnancyPlusData();
 
 
-        private void Start()
+        internal void Start()
         {
             Logger = base.Logger;    
             //Initilize the plugin config options 
@@ -45,6 +54,24 @@ namespace KK_PregnancyPlus
             //Set up studio/malker GUI sliders
             PregnancyPlusGui.InitStudio(hi, this);
             PregnancyPlusGui.InitMaker(hi, this);
+        }
+
+    
+        /// <summary>
+        /// Triggers all charCustFunCtrl GUI components when needed in studio
+        /// </summary>
+        internal void OnGUI()
+        {                
+            if (!StudioAPI.InsideStudio) return;
+
+            //Need to trigger all children GUI that should be active. 
+            var handlers = CharacterApi.GetRegisteredBehaviour(GUID);
+
+            //I guess this is how its suppposed to be done?
+            foreach (PregnancyPlusCharaController charCustFunCtrl in handlers.Instances)
+            { 
+                charCustFunCtrl.blendShapeGui.OnGUI(this);                                    
+            }
         }
     
     }
