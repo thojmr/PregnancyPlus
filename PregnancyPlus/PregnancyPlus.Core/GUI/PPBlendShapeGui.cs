@@ -196,6 +196,8 @@ namespace KK_PregnancyPlus
 			if (_sliderValues[smrName] != _sliderValuesHistory[smrName]) 
 			{					
 				lastTouched = i;
+				// if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" BlendShapeSlider changed {smrName} > kkBsIndex {kkBsIndex}  val {_sliderValues[smrName]}");
+
 				try 
 				{					
 					HSPEExists = SetHspeBlendShapeWeight(guiSkinnedMeshRenderers[i], kkBsIndex, _sliderValues[smrName]);
