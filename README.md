@@ -11,16 +11,25 @@ This repository contains the KK_PregnancyPlus plugin, that adds additional belly
     - In HS2 and AI the belly size will be whatever is defined on the character card + the F1 config slider adjustments.
 - Adds 3 configurable keybinds in plugin config that can be used to increase or decrease the belly size in Story Mode / Main Game Mode on the fly.   
 - This plugin can be a substitute for stomach bulges as well, but it's original intent is pregnancy.    
+- Adds a "Story Mode / Main Game" mode config option.  Disable if you want to turn off this plugins features temporarily while playing.
 
 ## Koikatsu Only Features
-- Adds a Story Mode / Main Game mode config option.  Disable if you want to turn off this plugins features temporarily.
-    - In Koikatsu the "Inflation Size" belly slider will be added in addition to the KK_Pregnancy when both mods are installed.  You can use the F1 config sliders to adjust the results.  Ex: If the character is 40 weeks pregnant.  They will have the deafult KK_Pregnancy 40 week belly + ("Max Additional Belly Size" * 40) Inflation Size from KK_Pregnancy Plus.  If "Max Additional Belly Size" is set to a low number, the final result will be a slightly larger belly, if it's set high, it will be much much larger.
-- KK Timeline integration via blendshapes.  Here's how to:
-    - Set Sliders to the desired shape you want
-    - Click "Create Timeline Blendshape" button. You will see a popup that will controll the blend shape amount for each mesh.
-    - You must open KKPE > Adv.mode > blendshape > select bone/cloth blendshape, for timeline to register the blendshape (Timeline bug?)
-    - Open Timeline with Ctrl+T, search for "Blendshape" and middle click to add
-    - From here treat it like any normal blendshape.  Also, once added to a timeline you can re-adjust the sliders at any time and click "Create Timeline Blendshape" again to update the timelines final shape.
+- In Koikatsu the "Inflation Size" belly slider will be added in addition to the KK_Pregnancy when both mods are installed.  You can use the F1 config sliders to adjust the results.  Ex: If the character is 40 weeks pregnant.  They will have the deafult KK_Pregnancy 40 week belly + ("Max Additional Belly Size" * 40) Inflation Size from KK_Pregnancy Plus.  If "Max Additional Belly Size" is set to a low number, the final result will be a slightly larger belly, if it's set high, it will be much much larger.
+- Studio Timeline integration via blendshapes.  Here's how to:
+    - Set the P+ character sliders to the desired shape you want.
+    - Click "Open Blendshapes" button. You will see a popup that will show you any existing P+ blendshapes.  If none are found, then use the "Create New" button.
+    - Move your blendshape sliders to the desired position (At least one blendshape slider must be green (touched) before the next step)
+    - Open Timeline with Ctrl+T, search for "Blendshape" and middle click to add.
+    - Follow Timeline guides for further info
+
+## Honey Select 2 and AI Only Features
+- Studio VNGE integration via blendshapes.  Here's how to:
+    - Set the P+ character sliders to the desired shape you want.
+    - Click "Open Blendshapes" button. You will see a popup that will show you any existing P+ blendshapes.  If none are found, then use the "Create New" button.
+    - Move your blendshape sliders to the desired position (At least one blendshape slider must be green (touched) before the next step)
+    - Open VNGE, and add it under "Clip Manager" 
+     - To use BlendShapes in VNGE set ExportChara_XXPE_BlendShapes=1 in vnactor.ini everywhere it is found
+    - Follow VNGE guides for further info
 
 ## FAQ - Troubleshooting
 - Q: Where do I put the PregnancyPlus.dll?
