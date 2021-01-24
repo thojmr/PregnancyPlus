@@ -4,7 +4,6 @@ using HarmonyLib;
 using KKAPI;
 using KKAPI.Studio;
 using KKAPI.Chara;
-using HSPE;
 #if AI || HS2
     using AIChara;
 #elif KK
@@ -58,6 +57,9 @@ namespace KK_PregnancyPlus
         }
 
     
+        /// <summary>
+        /// Triggers all charCustFunCtrl GUI components when needed in studio
+        /// </summary>
         internal void OnGUI()
         {                
             if (!StudioAPI.InsideStudio) return;

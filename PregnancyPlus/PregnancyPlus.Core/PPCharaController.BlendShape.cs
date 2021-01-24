@@ -107,8 +107,11 @@ namespace KK_PregnancyPlus
                 if (!exists || inflatedVertices[renderKey].Length < 0) continue;
 
                 var meshBlendShape = CreateBlendShape(smr, renderKey);
-                if (meshBlendShape != null) meshBlendShapes.Add(meshBlendShape);
-                meshWithBlendShapes.Add(smr);
+                if (meshBlendShape != null) 
+                {
+                    meshBlendShapes.Add(meshBlendShape);                
+                    meshWithBlendShapes.Add(smr);
+                }
 
                 // LogMeshBlendShapes(smr);
             }  
@@ -192,16 +195,16 @@ namespace KK_PregnancyPlus
                 //If mesh matches, append the blend shape
                 if (smr.name == meshName && smr.sharedMesh.vertexCount == vertexCount) 
                 {
+                    meshWithBlendShapes.Add(smr);
+
                     //Make sure the blendshape does not already exists
                     if (BlendShapeAlreadyExists(smr, meshBlendShape.BlendShape)) continue;
 
                     //Add the blendshape to the mesh
                     new BlendShapeController(smr, blendShape);
 
-                    meshWithBlendShapes.Add(smr);
                     // LogMeshBlendShapes(smr);
-                }
-                
+                }                
             }              
         }
                 

@@ -9,18 +9,32 @@ using HSPE;
 
 namespace KK_PregnancyPlus
 {
-    public class PregnancyPlusBlendShapeGui: MonoBehaviour
+    public partial class PregnancyPlusBlendShapeGui
     {
-		public List<SkinnedMeshRenderer> guiSkinnedMeshRenderers = new List<SkinnedMeshRenderer>();
+		public List<SkinnedMeshRenderer> guiSkinnedMeshRenderers = new List<SkinnedMeshRenderer>();//All SMR's that have P+ blend shapes
 		public const int guiWindowId = 7639;
 		public Rect windowRect = new Rect((float)(Screen.width - 450), (float)(Screen.height / 2 - 50), 250f, 15f);
-		public bool blendShapeWindowShow = false;
+		public bool blendShapeWindowShow = false;//Shows/hides the GUI
 		public Dictionary<string, float> _sliderValues = new Dictionary<string, float>();//Tracks user modified blendshape slider values
 		public Dictionary<string, float> _sliderValuesHistory = new Dictionary<string, float>();//Tracks user modified blendshape slider values
 		internal PregnancyPlusPlugin _pluginInstance = null;
 		internal PregnancyPlusCharaController _charaInstance = null;
+		internal bool HSPEExists = true;//Warn user when the HSPE plugin is not found
+		internal int lastTouched = -1;//Last touched slider index, for coloring it green
+
+		#if KK
+			internal const string HspeNotFoundMessage = "KKPE was not found";
+		#elif HS2
+			internal const string HspeNotFoundMessage = "HS2PE was not found";
+		#elif AI
+			internal const string HspeNotFoundMessage = "AIPE was not found";
+		#endif
 
 
+
+		/// <summary>
+        /// Triggered each tick by PPPlugin.OnGUI, will show the gui when blendShapeWindowShow = true
+        /// </summary>
 		internal void OnGUI(PregnancyPlusPlugin instance)
 		{
 			if (_pluginInstance == null)
@@ -43,10 +57,12 @@ namespace KK_PregnancyPlus
 		}
 
 
-		//On constructor call, show the blendshape GUI
+		/// <summary>
+        /// Open the GUI and set the default init state
+        /// </summary>
 		internal void OpenBlendShapeGui(List<SkinnedMeshRenderer> smrs, PregnancyPlusCharaController charaInstance) 
 		{
-			if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" blendShapeWindowShow {blendShapeWindowShow}");		
+			if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" OpenBlendShapeGui ");		
 
 			_charaInstance = charaInstance;				
 			OnGuiInit(smrs);
@@ -55,77 +71,42 @@ namespace KK_PregnancyPlus
 		}
 
 
+		/// <summary>
+        /// When a new mesh is added and the blendshape created, update the list here
+        /// </summary>
 		internal void OnSkinnedMeshRendererBlendShapesCreated(List<SkinnedMeshRenderer> smrs)
 		{
 			OnGuiInit(smrs);
 			guiSkinnedMeshRenderers = smrs;			
 		}
 		
+
+		/// <summary>
+        /// Removed all blendshape sliders, and blendshapes from the character
+        /// </summary>
 		internal void OnRemoveAllBlendShapes()
 		{
-			ResetHspeBlendShape(guiSkinnedMeshRenderers);
+			try 
+			{
+				ResetHspeBlendShape(guiSkinnedMeshRenderers);
+			}	
+			catch (Exception e)
+			{
+				if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" ResetHspeBlendShape > HSPE not found {e.Message} ");
+			}	
 			_charaInstance.OnRemoveAllBlendShapes();
 			guiSkinnedMeshRenderers = new List<SkinnedMeshRenderer>();
+			lastTouched = -1;
 		}
 
 
+		/// <summary>
+        /// Close and reset any necessary GUI properties
+        /// </summary>
 		internal void CloseBlendShapeGui() 
 		{
-			if (!blendShapeWindowShow) return;
 			CloseWindow();
 		}
-
-
-        internal GUIStyle _labelTitleStyle = new GUIStyle
-        {
-            fixedWidth = 275f,
-            alignment = TextAnchor.MiddleRight,
-			padding = new RectOffset(0, 0, 3, 3),
-            normal = new GUIStyleState
-            {
-                textColor = Color.white
-            }
-        };
-
-
-		internal GUIStyle _labelTextStyle = new GUIStyle
-        {
-            alignment = TextAnchor.MiddleLeft,
-			padding = new RectOffset(5, 5, 20, 20),
-			wordWrap = true,
-            normal = new GUIStyleState
-            {
-                textColor = Color.white
-            }
-        };
-
-
-		internal GUIStyle _labelAllTitleStyle = new GUIStyle
-        {
-            fixedWidth = 275f,
-            alignment = TextAnchor.MiddleRight,
-            normal = new GUIStyleState
-            {
-                textColor = Color.green
-            }
-        };
-
-
-        internal GUIStyle _labelValueStyle = new GUIStyle
-        {
-            fixedWidth = 25f,
-            alignment = TextAnchor.MiddleRight,
-            normal = new GUIStyleState
-            {
-                textColor = Color.white
-            }
-        };
-
-
-		internal GUIStyle _btnValueStyle = new GUIStyle
-        {
-			margin=new RectOffset(10,100,20,50)
-        };
 
 
 		/// <summary>
@@ -166,8 +147,10 @@ namespace KK_PregnancyPlus
 					GuiSliderControlls(i);
 				}	
 
-				GUILayout.Label("The sliders above can be adjusted and then saved to Timeline (Ctrl+T) or VNGE > Clip Manager.  They blendshapes will persist on the character card when the scene is saved.", _labelTextStyle, new GUILayoutOption[0]);
-				GUILayout.Label("You can 'Create New' blendshapes with the current belly sliders (Overwrites existing).", _labelTextStyle, new GUILayoutOption[0]);
+				GUILayout.Label("The blendshape sliders above can be adjusted and then saved to Timeline (Ctrl+T) or VNGE > Clip Manager.  The blendshapes will persist to the character card after the scene is saved.", _labelTextStyle, new GUILayoutOption[0]);
+				GUILayout.Label("You can 'Create New' blendshapes with the current P+ character sliders (Overwrites existing).", _labelTextStyle, new GUILayoutOption[0]);
+
+				if (!HSPEExists) GUILayout.Label(HspeNotFoundMessage, _labelErrorTextStyle, new GUILayoutOption[0]);
 
 				createBtnCLicked = GUILayout.Button("Create New", new GUILayoutOption[0]);
 				clearBtnCLicked = GUILayout.Button("Reset Sliders", new GUILayoutOption[0]);
@@ -176,7 +159,7 @@ namespace KK_PregnancyPlus
 			//If no blendshapes, then all the user to set them with a create button
 			else 
 			{
-				GUILayout.Label("No P+ blendshapes found.  Use the 'Create' button to capture a snapshot of the current P+ slider values as blendshapes.  Make sure the values are not all 0.", _labelTextStyle, new GUILayoutOption[0]);
+				GUILayout.Label("No P+ blendshapes found.  Use the 'Create' button to capture a snapshot of the current P+ slider values as blendshapes.  Make sure Inflation Size is not 0.", _labelTextStyle, new GUILayoutOption[0]);
 				createBtnCLicked = GUILayout.Button("Create", new GUILayoutOption[0]);
 			}
 
@@ -204,7 +187,7 @@ namespace KK_PregnancyPlus
 
 			//Create a slider for the matching Preg+ blendshape
 			GUILayout.BeginHorizontal(new GUILayoutOption[0]);
-			GUILayout.Label(guiSkinnedMeshRenderers[i].sharedMesh.GetBlendShapeName(kkBsIndex), _labelTitleStyle, new GUILayoutOption[0]);
+			GUILayout.Label(guiSkinnedMeshRenderers[i].sharedMesh.GetBlendShapeName(kkBsIndex), lastTouched == i ? _labelTitleActiveStyle : _labelTitleStyle, new GUILayoutOption[0]);
 			_sliderValues[smrName] = GUILayout.HorizontalSlider(_sliderValues[smrName], 0f, 100f, new GUILayoutOption[0]);
 			GUILayout.Label(_sliderValues[smrName].ToString("#0"), _labelValueStyle, new GUILayoutOption[0]);
 			GUILayout.EndHorizontal();
@@ -212,8 +195,23 @@ namespace KK_PregnancyPlus
 			//Only update slider on changes
 			if (_sliderValues[smrName] != _sliderValuesHistory[smrName]) 
 			{					
-				// guiSkinnedMeshRenderers[i].SetBlendShapeWeight(kkBsIndex, _sliderValues[smrName]);
-				SetHspeBlendShapeWeight(guiSkinnedMeshRenderers[i], kkBsIndex, _sliderValues[smrName]);					
+				lastTouched = i;
+				try 
+				{					
+					HSPEExists = SetHspeBlendShapeWeight(guiSkinnedMeshRenderers[i], kkBsIndex, _sliderValues[smrName]);
+				}	
+				catch (Exception e)
+				{
+					//If KKPE does not exists catch the error
+					if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" SetHspeBlendShapeWeight > HSPE not found {e.Message} ");
+					HSPEExists = false;
+				}
+
+				if (!HSPEExists) 
+				{
+					//If not found adjust the weight the normal way, that won't integrate with VNGE, or Timeline
+					guiSkinnedMeshRenderers[i].SetBlendShapeWeight(kkBsIndex, _sliderValues[smrName]);
+				}				
 			}
 			_sliderValuesHistory[smrName] = _sliderValues[smrName];
 		}
@@ -225,27 +223,16 @@ namespace KK_PregnancyPlus
 		internal void CloseWindow()
 		{
 			blendShapeWindowShow = false;
-			ResetHspeBlendShape(guiSkinnedMeshRenderers);
+			try 
+			{
+				ResetHspeBlendShape(guiSkinnedMeshRenderers);
+			}	
+			catch (Exception e)
+			{
+				if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" ResetHspeBlendShape > HSPE not found {e.Message} ");
+			}
 			guiSkinnedMeshRenderers = new List<SkinnedMeshRenderer>();
-		}
-
-		public float GetGuiHeight(bool hasBlendShapes)
-		{			
-			//When blendshapes are set, include sliders height
-			if (hasBlendShapes)
-			{
-				var sliderTotals = ((15 + (_labelTitleStyle.padding.bottom * 2)) * guiSkinnedMeshRenderers.Count);
-				var textsTotals = (_labelTextStyle.padding.bottom * 2) + (30 * 4);
-				var btnTotals = (40 * 3);
-				return (sliderTotals +  textsTotals + btnTotals);
-			}
-			//Otherwise, its just text and buttons
-			else 
-			{
-				var textsTotals = (_labelTextStyle.padding.bottom * 2) + (30 * 2);
-				var btnTotals = (40 * 2);
-				return (textsTotals + btnTotals); 
-			}
+			lastTouched = -1;
 		}
 
 
@@ -289,6 +276,9 @@ namespace KK_PregnancyPlus
         /// </summary>
 		internal Dictionary<string, float> BuildSliderListValues(List<SkinnedMeshRenderer> smrs, Dictionary<string, float> sliderValues) 
 		{
+			if (smrs == null || smrs.Count <= 0 ) return new Dictionary<string, float>();
+			if (sliderValues == null) sliderValues = new Dictionary<string, float>();
+
 			//For each smr get the smr key and the starting slider value
 			foreach (var smr in smrs)
 			{
@@ -302,6 +292,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Find a blendshape index by partial matching blendshape name
         /// </summary>
+        /// <param name="searchName">The string in the blendshape name to match to</param>
 		internal int GetBlendShapeIndexFromName(Mesh sharedMesh, string searchName = "KK_PregnancyPlus") 
 		{
 			var count = sharedMesh.blendShapeCount;
@@ -319,10 +310,11 @@ namespace KK_PregnancyPlus
         /// Have to manually update the blendshape slider in the HSPE window in order for Timeline, or VNGE to detect the change
 		/// They don't automagically watch for mesh.blendshape changes
         /// </summary>
-		internal void SetHspeBlendShapeWeight(SkinnedMeshRenderer smr, int index, float weight) 
+		/// <returns>Will return True if HSPE was found</returns>
+		internal bool SetHspeBlendShapeWeight(SkinnedMeshRenderer smr, int index, float weight) 
         {
 			var bsModule = GetHspeBlenShapeModule();
-			if (bsModule == null) return;
+			if (bsModule == null) return false;
 
 			//Set the following values as if the HSPE blendshape tab was clicked
 			Traverse.Create(bsModule).Field("_skinnedMeshTarget").SetValue(smr);
@@ -330,13 +322,15 @@ namespace KK_PregnancyPlus
 
 			//Set the blend shape weight in HSPE for a specific smr, (Finally working............)
 			var SetBlendShapeWeight = bsModule.GetType().GetMethod("SetBlendShapeWeight", BindingFlags.NonPublic | BindingFlags.Instance);
-			if (SetBlendShapeWeight == null) return;
+			if (SetBlendShapeWeight == null) return false;
         	SetBlendShapeWeight.Invoke(bsModule, new object[] { smr, index, weight} );
 
 			//Set last changed smr slider to be visibly active in HSPE
 			var SetMeshRendererDirty = bsModule.GetType().GetMethod("SetMeshRendererDirty", BindingFlags.NonPublic | BindingFlags.Instance);
-			if (SetMeshRendererDirty == null) return;
+			if (SetMeshRendererDirty == null) return false;
         	SetMeshRendererDirty.Invoke(bsModule, new object[] { smr } );
+
+			return true;
 
 			// (Leaviung behind the pain and misery below as a memorial of what not to do)
 			// Traverse.Create(bsModule).Method("SetBlendShapeWeight", new object[] { smr, index, weight });
@@ -354,19 +348,20 @@ namespace KK_PregnancyPlus
 		/// <summary>
         /// Reset HSPE blendshape when character changes
         /// </summary>
-		internal void ResetHspeBlendShape(List<SkinnedMeshRenderer> smrs) 
+		/// <returns>Will return True if HSPE was found</returns>
+		internal bool ResetHspeBlendShape(List<SkinnedMeshRenderer> smrs) 
         {
-			if (smrs == null || smrs.Count <= 0) return;
+			if (smrs == null || smrs.Count <= 0) return true;
 
 			var bsModule = GetHspeBlenShapeModule();
-			if (bsModule == null) return;
+			if (bsModule == null) return false;
 
 			//Set the following values as if the HSPE blendshape tab was clicked
 			Traverse.Create(bsModule).Field("_lastEditedBlendShape").SetValue(-1);
 
 			//Set the blend shape weight in HSPE for a specific smr, (Finally working............)
 			var SetMeshRendererNotDirty = bsModule.GetType().GetMethod("SetMeshRendererNotDirty", BindingFlags.NonPublic | BindingFlags.Instance);
-			if (SetMeshRendererNotDirty == null) return;
+			if (SetMeshRendererNotDirty == null) return false;
 
 			//reset all active smrs in HSPE
 			foreach(var smr in smrs)
@@ -374,6 +369,8 @@ namespace KK_PregnancyPlus
 				if (smr == null) continue;
 				SetMeshRendererNotDirty.Invoke(bsModule, new object[] { smr } );	
 			}
+
+			return true;
         }
 
 		/// <summary>
@@ -398,6 +395,7 @@ namespace KK_PregnancyPlus
 			if (bsModule == null) return null;
 
 			return bsModule;
+		
 		}
 
     }

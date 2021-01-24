@@ -65,13 +65,10 @@ namespace KK_PregnancyPlus
                 }))
                 .Value.Subscribe(f => {
                     if (f == false) return;
-                    //Create blendshape for current selected character if the mesh is inflated
+                    //Open blendshape GUI on click
                     foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) 
-                    {   
-                        if (ctrl.infConfig.HasAnyValue()) 
-                        {              
-                            ctrl.OnOpenBlendShapeSelected();                             
-                        }
+                    {             
+                        ctrl.OnOpenBlendShapeSelected();                                                   
                     }
                 });
 
