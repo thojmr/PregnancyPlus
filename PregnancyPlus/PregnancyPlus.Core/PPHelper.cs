@@ -15,6 +15,8 @@ namespace KK_PregnancyPlus
     internal static class PregnancyPlusHelper
     {        
 
+        internal const float gameSizeToCentimetersRatio = 10.3092781f;    
+
 
         internal static SkinnedMeshRenderer GetMeshRenderer(ChaControl chaControl, string renderKey, bool findAll = false) 
         {
@@ -204,37 +206,26 @@ namespace KK_PregnancyPlus
         /// <param name="chaControl">The character to fetch bones from</param>
         /// <param name="boneStart">The starting (bottom of tree) bone name</param>
         /// <param name="boneEnd">The optional (top level) end bone name.  If null, the entire bone tree from bottom to top will be calculated.</param>
-        /// <param name="includeRootTf">(not finished) The optional flag to include the distance from the characters root (just below feet) to the boneStart (High heels are weird with height)</param>
-        internal static float BoneChainStraigntenedDistance(ChaControl chaControl, string boneStart, string boneEnd = null, Transform includeRootTf = null) 
+        internal static float BoneChainStraigntenedDistance(ChaControl chaControl, string boneStart, string boneEnd = null) 
         {
             //loops through each bone starting bottom going up through parent to destination (or root)
             var currentBone = GetBoneGO(chaControl, boneStart);
             GameObject lastBone = currentBone;
 
             if (currentBone == null) return 0;  
-
-            float distance = 0;
-
-            //If char root in included, append it to the total distance from includeRootTf to first boneStart
-            if (includeRootTf != null) 
-            {
-                distance = includeRootTf.InverseTransformPoint(currentBone.transform.position).y;
-                // if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" initDiff {distance}  currentBone.name {currentBone.name} includeRootTf scale {includeRootTf.localScale}");
-            }
-            
+            float distance = 0;        
 
             //Keep going while a parent transform exists
             while (currentBone != null && currentBone.transform.parent) 
             {            
                 //If the bone name matches boneEnd return the total distance to this bone so far
-                if (boneEnd != null && currentBone.name.ToLower() == boneEnd.ToLower()) {
+                if (boneEnd != null && currentBone.name.ToLower() == boneEnd.ToLower()) 
+                {
                     break;
                 }
 
                 //calculate the diatance by measuring y local distances only (we want to exclude angular distances)
                 var newDifference = (lastBone != null ? currentBone.transform.InverseTransformPoint(currentBone.transform.position).y - currentBone.transform.InverseTransformPoint(lastBone.transform.position).y : 0);
-                //include any local scales
-                newDifference = newDifference * (currentBone.transform.localScale.y);                
                 // if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" newDifference {newDifference}  currentBone.name {currentBone.name}  scale {currentBone.transform.localScale} corrected {((newDifference * currentBone.transform.localScale.y) - newDifference)}");
                 
                 //Ignore any negative bone differences (like char root bone which is at 0,0,0)
@@ -254,7 +245,7 @@ namespace KK_PregnancyPlus
                 distance = distance * BodyTopScale.y;
             }
 
-            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" total dist {distance}");
+            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" total bone dist {distance}  cm:{ConvertToCm(distance)}");
             return distance;
         }
 
@@ -297,6 +288,12 @@ namespace KK_PregnancyPlus
             newmesh.tangents = mesh.tangents;
 
             return newmesh;
+        }
+
+
+        public static string ConvertToCm(float unitySize)
+        {
+            return (unitySize * gameSizeToCentimetersRatio).ToString("F1") + "cm";
         }
     
     }
