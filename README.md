@@ -131,4 +131,4 @@ If sucessfull you should see a KK_PregnancyPlus.dll file nested in .\bin\
 ## Some TODO items that may or mat not be implemented in the future (depending on interest)
 -  Make accessories move along with the belly to prevent clipping
 -  Fix clothing flattening at the largest belly sizes (Has been improved already)
--  There are certain clothing items that do not work in the current state
+-  There are certain clothing items that do not work in the current state.  Specifically any mesh marked as isReadonly = true will not be editable.
