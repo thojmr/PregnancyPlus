@@ -48,7 +48,7 @@ namespace KK_PregnancyPlus
 			wordWrap = true,
             normal = new GUIStyleState
             {
-                textColor = Color.red
+                textColor = new Color(1, 0.2f, 0.2f, 1)
             }
         };
 
@@ -90,7 +90,9 @@ namespace KK_PregnancyPlus
 				var sliderTotals = ((15 + (_labelTitleStyle.padding.bottom * 2)) * guiSkinnedMeshRenderers.Count);
 				var textsTotals = (_labelTextStyle.padding.bottom * 2) + (30 * 4);
 				var btnTotals = (40 * 3);
-                var errorTotals = HSPEExists ? 0 : 20;
+                var errorTotals = HSPEExists ? 0 : 30;
+                errorTotals = anyMeshEmpty ? errorTotals + (30 * 3) : errorTotals;
+                
 				return (sliderTotals +  textsTotals + btnTotals + errorTotals);
 			}
 			//Otherwise, its just text and buttons

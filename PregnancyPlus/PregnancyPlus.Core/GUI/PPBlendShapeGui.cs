@@ -21,6 +21,8 @@ namespace KK_PregnancyPlus
 		internal PregnancyPlusCharaController _charaInstance = null;
 		internal bool HSPEExists = true;//Warn user when the HSPE plugin is not found
 		internal int lastTouched = -1;//Last touched slider index, for coloring it green
+		internal bool anyMeshEmpty {get; set;} = false;
+		internal bool lastAnyMeshEmpty {get; set;} = false;
 
 		#if KK
 			internal const string HspeNotFoundMessage = "KKPE was not found";
@@ -67,6 +69,7 @@ namespace KK_PregnancyPlus
 			_charaInstance = charaInstance;				
 			OnGuiInit(smrs);
 			guiSkinnedMeshRenderers = smrs;
+			anyMeshEmpty = IsAnyMeshEmpty(guiSkinnedMeshRenderers);
 			blendShapeWindowShow = true;//Trigger gui to show			
 		}
 
@@ -78,6 +81,7 @@ namespace KK_PregnancyPlus
 		{
 			OnGuiInit(smrs);
 			guiSkinnedMeshRenderers = smrs;			
+			anyMeshEmpty = IsAnyMeshEmpty(guiSkinnedMeshRenderers);
 		}
 		
 
@@ -114,10 +118,10 @@ namespace KK_PregnancyPlus
         /// </summary>
 		internal void WindowFunc(int id)
 		{
-			var hasBlendShapes = guiSkinnedMeshRenderers != null && guiSkinnedMeshRenderers.Count > 0 && guiSkinnedMeshRenderers[0] != null;
+			var hasBlendShapes = guiSkinnedMeshRenderers != null && guiSkinnedMeshRenderers.Count > 0;
 
-			//Exit when mesh becomes null (probably deleted character)
-			if (!blendShapeWindowShow || (guiSkinnedMeshRenderers != null && guiSkinnedMeshRenderers.Count > 0 && guiSkinnedMeshRenderers[0] == null)) 
+			//Exit when no smrs
+			if (!blendShapeWindowShow || guiSkinnedMeshRenderers == null && guiSkinnedMeshRenderers.Count <= 0) 
 			{
 				CloseBlendShapeGui();
 				return;
@@ -140,6 +144,14 @@ namespace KK_PregnancyPlus
 			//Show sliders if we have blendshapes set already
 			if (hasBlendShapes)
 			{				
+				anyMeshEmpty = IsAnyMeshEmpty(guiSkinnedMeshRenderers);
+				//When a mesh becomes empty, reset sliders
+				if (anyMeshEmpty && !lastAnyMeshEmpty)
+				{
+					ResetHspeBlendShape(guiSkinnedMeshRenderers);
+				}
+				lastAnyMeshEmpty = anyMeshEmpty;
+
 				//For each SMR we want a slider for
 				for (int i = 0; i < guiSkinnedMeshRenderers.Count; i++)
 				{				
@@ -151,6 +163,7 @@ namespace KK_PregnancyPlus
 				GUILayout.Label("You can 'Create New' blendshapes with the current P+ character sliders (Overwrites existing).", _labelTextStyle, new GUILayoutOption[0]);
 
 				if (!HSPEExists) GUILayout.Label(HspeNotFoundMessage, _labelErrorTextStyle, new GUILayoutOption[0]);
+				if (anyMeshEmpty) GUILayout.Label("One or more blendshapes no longer match their mesh and need to be recreated with 'Create New'.  Things like changing Uncensor, or clothing, can cause this.", _labelErrorTextStyle, new GUILayoutOption[0]);
 
 				createBtnCLicked = GUILayout.Button("Create New", new GUILayoutOption[0]);
 				clearBtnCLicked = GUILayout.Button("Reset Sliders", new GUILayoutOption[0]);
@@ -180,23 +193,73 @@ namespace KK_PregnancyPlus
         /// </summary>
 		internal void GuiSliderControlls(int i)
 		{
-			var smrName = guiSkinnedMeshRenderers[i].name;
-			//Find the index of the Preg+ blendshape
-			var kkBsIndex = GetBlendShapeIndexFromName(guiSkinnedMeshRenderers[i].sharedMesh);
-			if (kkBsIndex < 0) return;
+			string smrName = null;
+			int kkBsIndex = -1;
+			string sliderLabel = "<Empty Mesh>";
+
+			var smrIsEmpty = guiSkinnedMeshRenderers[i] == null || guiSkinnedMeshRenderers[i].sharedMesh == null || guiSkinnedMeshRenderers[i].sharedMesh.blendShapeCount == 0;
+			//Get slider details
+			if (!smrIsEmpty) 
+			{
+				smrName = guiSkinnedMeshRenderers[i].name;			
+				//Find the index of the Preg+ blendshape
+				kkBsIndex = GetBlendShapeIndexFromName(guiSkinnedMeshRenderers[i].sharedMesh);
+				if (kkBsIndex >= 0)
+				{
+					sliderLabel = guiSkinnedMeshRenderers[i].sharedMesh.GetBlendShapeName(kkBsIndex);
+				}
+			}
+
+			//Check for empty blendshapes
+			if ((kkBsIndex < 0 || sliderLabel == null) && smrName != null)
+			{							
+				smrIsEmpty = true;
+				//When blendshape becomes invalid but mesh still exists, set the value to 0, so it will be reset in HSPE too if needed
+				_sliderValues[smrName] = 0;
+				_sliderValuesHistory[smrName] = -1;//To trigger clear val				
+			}
+			else if (kkBsIndex < 0 || sliderLabel == null)
+			{
+				smrIsEmpty = true;
+			}
+
+			//Disable a single slider when the mesh is empty
+			GUI.enabled = !smrIsEmpty;
 
 			//Create a slider for the matching Preg+ blendshape
-			GUILayout.BeginHorizontal(new GUILayoutOption[0]);
-			GUILayout.Label(guiSkinnedMeshRenderers[i].sharedMesh.GetBlendShapeName(kkBsIndex), lastTouched == i ? _labelTitleActiveStyle : _labelTitleStyle, new GUILayoutOption[0]);
-			_sliderValues[smrName] = GUILayout.HorizontalSlider(_sliderValues[smrName], 0f, 100f, new GUILayoutOption[0]);
-			GUILayout.Label(_sliderValues[smrName].ToString("#0"), _labelValueStyle, new GUILayoutOption[0]);
+			GUILayout.BeginHorizontal(new GUILayoutOption[0]);			
+			if (smrName != null)
+			{
+				GUILayout.Label(sliderLabel, lastTouched == i ? _labelTitleActiveStyle : _labelTitleStyle, new GUILayoutOption[0]);
+				_sliderValues[smrName] = GUILayout.HorizontalSlider(_sliderValues[smrName], 0f, 100f, new GUILayoutOption[0]);
+				GUILayout.Label(_sliderValues[smrName].ToString("#0"), _labelValueStyle, new GUILayoutOption[0]);
+			}
+			else
+			{
+				//Dummy disabled slider
+				GUILayout.Label(sliderLabel, lastTouched == i ? _labelTitleActiveStyle : _labelTitleStyle, new GUILayoutOption[0]);
+				GUILayout.HorizontalSlider(0, 0f, 100f, new GUILayoutOption[0]);
+				GUILayout.Label(0.ToString("#0"), _labelValueStyle, new GUILayoutOption[0]);
+			}
 			GUILayout.EndHorizontal();
+
+			GUI.enabled = true;
+
+			//Don't need to check for value changes when null (The Gui will close soon anyway)
+			if (smrName == null) return;
 
 			//Only update slider on changes
 			if (_sliderValues[smrName] != _sliderValuesHistory[smrName]) 
 			{					
 				lastTouched = i;
 				// if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" BlendShapeSlider changed {smrName} > kkBsIndex {kkBsIndex}  val {_sliderValues[smrName]}");
+
+				//If there are no blendshapes for this mesh anymore just reset HSPE
+				if (kkBsIndex < 0) {
+					ResetHspeBlendShape(new List<SkinnedMeshRenderer>() { guiSkinnedMeshRenderers[i] });
+					_sliderValuesHistory[smrName] = _sliderValues[smrName];
+					return;
+				}
 
 				try 
 				{					
@@ -216,6 +279,21 @@ namespace KK_PregnancyPlus
 				}				
 			}
 			_sliderValuesHistory[smrName] = _sliderValues[smrName];
+		}
+
+
+		/// <summary>
+        /// Check to make sure at least one mesh is not null.false  (things like chaning uncensor can cause mesh to change and become null in this context)
+		/// When any are null we probably want to warn the user
+        /// </summary>
+		internal bool IsAnyMeshEmpty(List<SkinnedMeshRenderer> smrs)
+		{
+			foreach(var smr in smrs)
+			{
+				if (smr == null || smr.sharedMesh == null || smr.sharedMesh.blendShapeCount == 0) return true;
+			}
+			
+			return false;
 		}
 
 
@@ -284,8 +362,11 @@ namespace KK_PregnancyPlus
 			//For each smr get the smr key and the starting slider value
 			foreach (var smr in smrs)
 			{
+				if (smr == null) continue;
 				sliderValues[smr.name] = 0;
 			}
+
+			sliderValues["dummy"] = 0;
 
 			return sliderValues;
 		}
