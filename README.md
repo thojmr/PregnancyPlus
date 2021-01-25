@@ -31,6 +31,15 @@ This repository contains the KK_PregnancyPlus plugin, that adds additional belly
      - To use BlendShapes in VNGE set ExportChara_XXPE_BlendShapes=1 in vnactor.ini everywhere it is found
     - Follow VNGE guides for further info
 
+## Bigger!
+- For additonal effect you can mimic what KK_Pregnancy does to belly bones to make the final shape even larger/rounder
+- Here's how 
+    - In HS2 or AI: Studio > (HS2PE or AIPE) > Adv.mode > Bones
+    - Bone: cf_J_kosi01_s  Set the following: PositionZ: 0.6, ScaleZ: 1.6, RotateX: 11
+    - Bone: cf_spine01_s  Set the following: PositionZ: 0.6, ScaleZ: 1.6, RotateX: 351
+    -  Now apply any P+ sliders you want
+- This will however make slight changes to the characters spine shape, so keep that in mind.    
+
 ## FAQ - Troubleshooting
 - Q: Where do I put the PregnancyPlus.dll?
     - A: It should end up under <Root game folder>/BepinEx/Plugins/xx_PregnancyPlus.dll
