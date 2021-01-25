@@ -38,7 +38,8 @@ This repository contains the KK_PregnancyPlus plugin, that adds additional belly
     - Bone: cf_J_kosi01_s  Set the following: PositionZ: 0.6, ScaleZ: 1.6, RotateX: 11
     - Bone: cf_spine01_s  Set the following: PositionZ: 0.6, ScaleZ: 1.6, RotateX: 351
     -  Now apply any P+ sliders you want
-- This will however make slight changes to the characters spine shape, so keep that in mind.    
+- This will however make slight changes to the characters spine shape, so keep that in mind.  
+- Also since this is altering bones, you may have some unintended cosequences down the road.
 
 ## FAQ - Troubleshooting
 - Q: Where do I put the PregnancyPlus.dll?
