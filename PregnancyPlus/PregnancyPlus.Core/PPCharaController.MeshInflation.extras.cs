@@ -383,6 +383,8 @@ namespace KK_PregnancyPlus
                 return false;
             }
 
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" mesh did ApplyInflation > {smr.name}");
+
             sharedMesh.vertices = currentVert;
             sharedMesh.RecalculateBounds();
             NormalSolver.RecalculateNormals(sharedMesh, 100f, bellyVerticieIndexes[renderKey]);

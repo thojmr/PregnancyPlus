@@ -63,8 +63,9 @@ namespace KK_PregnancyPlus
 
 
         protected override void Start() 
-        {                
+        {                            
             charaFileName = ChaFileControl.parameter.fullname;        
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"Start {charaFileName}");
             ReadAndSetCardData();                       
 
             //Get the char measurements before they have a chance to move
