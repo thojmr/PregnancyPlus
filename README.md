@@ -47,8 +47,10 @@ This repository contains the KK_PregnancyPlus plugin, that adds additional belly
     - A: It should end up under <Root game folder>/BepinEx/Plugins/xx_PregnancyPlus.dll
 - Q: Some of the sliders are not working?
     - A: Disable "Balloon" plugin config option since it disables some sliders.  Then try adjusting your 'Move Z' slider to make sure it is not outside your characters body.
-- Q: The belly size is changing when the character moves, or I slightly adjust a slider.
-    - A: The default belly size is calculated based on the hip and rib bone width.  In rare cases It can be due to strange character porportions.
+- Q: The belly size is suddenly changing when the character moves, or I slightly adjust a slider.
+    - A: The default belly size is calculated based on the hip and rib bone width.  In rare cases It can be due to strange character animations.
+- Q: There is no slider effect when the character has no legs.
+    - A: The character must have a leg scale > 0 for the sliders to work correctly.
 
 ## Notes
 - Modding this game is new to me, so dont expect this to feel like a finished product.  More like an interesting way to learn C#
