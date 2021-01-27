@@ -33,7 +33,7 @@ This repository contains the KK_PregnancyPlus plugin, that adds additional belly
     - Follow VNGE guides for further info
 
 ## Bigger!
-- For additonal effect you can mimic what KK_Pregnancy does to belly bones to make the final shape even larger/rounder
+- For additonal effect in HS2/AI you can mimic what KK_Pregnancy does to belly bones to make the final shape even larger/rounder
 - Here's how 
     - In HS2 or AI: Studio > (HS2PE or AIPE) > Adv.mode > Bones
     - Bone: cf_J_kosi01_s  Set the following: PositionZ: 0.6, ScaleZ: 1.6, RotateX: 11
