@@ -12,6 +12,7 @@ This repository contains the KK_PregnancyPlus plugin, that adds additional belly
 - Adds 3 configurable keybinds in plugin config that can be used to increase or decrease the belly size in Story Mode / Main Game Mode on the fly.   
 - This plugin can be a substitute for stomach bulges as well, but it's original intent is pregnancy.    
 - Adds a "Story Mode / Main Game" mode config option.  Disable if you want to turn off this plugins features temporarily while playing.
+- This plugin is somewhat compatible with "[ddaa33] Pregnant plugin (ShapeKeyPlugin)" if you wish to combine the effects of both, you can.  But the effects applied by this other plugin will not save to the character card by default.
 
 ## Koikatsu Only Features
 - In Koikatsu the "Inflation Size" belly slider will be added in addition to the KK_Pregnancy when both mods are installed.  You can use the F1 config sliders to adjust the results.  Ex: If the character is 40 weeks pregnant.  They will have the deafult KK_Pregnancy 40 week belly + ("Max Additional Belly Size" * 40) Inflation Size from KK_Pregnancy Plus.  If "Max Additional Belly Size" is set to a low number, the final result will be a slightly larger belly, if it's set high, it will be much much larger.
