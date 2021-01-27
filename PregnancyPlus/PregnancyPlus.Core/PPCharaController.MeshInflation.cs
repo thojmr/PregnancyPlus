@@ -440,7 +440,7 @@ namespace KK_PregnancyPlus
             //Allow user adjustment of the front angle of the belly
             if (GetInflationTaperZ() != 0) 
             {
-                smoothedVectorLs = GetUserTaperZTransform(meshRootTf, smoothedVectorLs, sphereCenterLs, skinToCenterDist);
+                smoothedVectorLs = GetUserTaperZTransform(meshRootTf, originalVerticeLs, smoothedVectorLs, sphereCenterLs, skinToCenterDist, backExtentPosLs);
             }
 
             //Allow user adjustment of the fat fold line through the middle of the belly

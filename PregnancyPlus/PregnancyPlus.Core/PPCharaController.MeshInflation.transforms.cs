@@ -147,7 +147,7 @@ namespace KK_PregnancyPlus
         /// <summary>   
         /// This sill taper the belly shape based on user input slider. pulling out the bottom and pushing in the top along the XZ axis
         /// </summary>
-        internal Vector3 GetUserTaperZTransform(Transform meshRootTf, Vector3 smoothedVectorLs, Vector3 sphereCenterLs, float sphereRadius) 
+        internal Vector3 GetUserTaperZTransform(Transform meshRootTf, Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 sphereCenterLs, float sphereRadius, Vector3 backExtentPosLs) 
         {
             //local Distance up or down from sphere center
             var distFromYCenterLs = smoothedVectorLs.y - sphereCenterLs.y; 
@@ -161,12 +161,16 @@ namespace KK_PregnancyPlus
             taperZ = (isTop ? taperZ : -taperZ);
             var taperedZVert = smoothedVectorLs + Vector3.forward * taperZ;
 
+            //decrease movement speed near the back
+            var forwardFromBack = (originalVerticeLs.z - backExtentPosLs.z * bellyInfo.TotalCharScale.z);
+            var backLerp = Vector3.Lerp(originalVerticeLs, taperedZVert, forwardFromBack/sphereRadius);
+
             //Only lerp z when pulling out, pushing in looks fine as is
-            if (smoothedVectorLs.z < taperedZVert.z) {
+            if (smoothedVectorLs.z < backLerp.z) {
                 //Move verts closest to z=0 more slowly than those out front to reduce skin stretching
-                smoothedVectorLs = Vector3.Lerp(smoothedVectorLs, taperedZVert, Math.Abs(distFromZCenterLs)/sphereRadius);
+                smoothedVectorLs = Vector3.Lerp(smoothedVectorLs, backLerp, Math.Abs(distFromZCenterLs)/sphereRadius);
             } else {
-                smoothedVectorLs = taperedZVert;
+                smoothedVectorLs = backLerp;
             }
 
             return smoothedVectorLs;
