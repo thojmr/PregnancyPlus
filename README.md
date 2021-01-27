@@ -9,6 +9,7 @@ This repository contains the KK_PregnancyPlus plugin, that adds additional belly
 - Adds a number of slider that will allow you to change the size and shape of the belly area in Studio and Maker/Creator.
     - Slider values will save to scene or card, so you can share it with others that have the plugin.
     - In HS2 and AI the belly size will be whatever is defined on the character card + the F1 config slider adjustments.
+- Timeline (KK) and VNGE (HS2/AI) integration for animating the belly.
 - Adds 3 configurable keybinds in plugin config that can be used to increase or decrease the belly size in Story Mode / Main Game Mode on the fly.   
 - This plugin can be a substitute for stomach bulges as well, but it's original intent is pregnancy.    
 - Adds a "Story Mode / Main Game" mode config option.  Disable if you want to turn off this plugins features temporarily while playing.
