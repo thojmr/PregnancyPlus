@@ -6,7 +6,7 @@ using KK_PregnancyPlus;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("KK_PregnancyPlus")]
-[assembly: AssemblyDescription("Adds additional belly sliders to the game.  Works best paired with KK_Pregnancy")]
+[assembly: AssemblyDescription("Adds additional belly sliders to the game, and Timeline/VNGE integration")]
 [assembly: AssemblyProduct("KK_PregnancyPlus")]
 [assembly: AssemblyCopyright("Copyright ©  2019")]
 
