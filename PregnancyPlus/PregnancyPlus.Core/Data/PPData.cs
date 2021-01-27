@@ -96,6 +96,11 @@ namespace KK_PregnancyPlus
             return false;
         }
 
+        public bool HasBlendShape()
+        {
+            return meshBlendShape != null && meshBlendShape.Length > 0;
+        }
+
         private static readonly PregnancyPlusData _default = new PregnancyPlusData();
         private static readonly FieldInfo[] _serializedFields = typeof(PregnancyPlusData).GetFields(BindingFlags.Public | BindingFlags.Instance);
 

@@ -2,10 +2,8 @@
 using KKAPI.Chara;
 using UnityEngine;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using KKAPI.Studio;
 using KKAPI.Maker;
 
@@ -169,6 +167,7 @@ namespace KK_PregnancyPlus
                 if (existingValues.Length == smr.sharedMesh.vertexCount) return sliderHaveChanged;
             }
 
+            //When no mesh found key, or incorrect vert count, the mesh changed so we need to recompute
             return true;
         }
 
@@ -226,7 +225,7 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Get the distance from the characters feet to the belly button unfolded into a straight Y line, even when not standing straight
+        /// Get the distance from the characters feet to the belly button collapsed into a straight Y line.null  (Ignores animation and scale, gives true measurement)
         /// </summary>
         internal float GetBellyButtonLocalHeight(Transform boneOrMeshTf) 
         {            

@@ -44,8 +44,9 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// On user button click. Create blendshape from current belly state.  Add it to infConfig so it will be saved to char card if the user chooses save scene
         /// </summary>
+        /// <param name="temporary">If Temporary, the blendshape will not be saved to char card</param>
         /// <returns>boolean true if any blendshapes were created</returns>
-        internal bool OnCreateBlendShapeSelected() 
+        internal bool OnCreateBlendShapeSelected(bool temporary = false) 
         {
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" ");
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" OnCreateBlendShapeSelected ");
@@ -53,7 +54,7 @@ namespace KK_PregnancyPlus
             var meshBlendShapes = new List<MeshBlendShape>();
             meshWithBlendShapes = new List<SkinnedMeshRenderer>();
 
-            //Get all cloth renderes and attemp to create blendshapes from preset inflatedVerticies
+            //Get all cloth renderes and attempt to create blendshapes from preset inflatedVerticies
             var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);
             meshBlendShapes = LoopAndCreateBlendShape(clothRenderers, meshBlendShapes, true);
 
@@ -62,7 +63,7 @@ namespace KK_PregnancyPlus
             meshBlendShapes = LoopAndCreateBlendShape(bodyRenderers, meshBlendShapes);
 
             //Save any meshBlendShapes to card
-            AddBlendShapesToData(meshBlendShapes);
+            if (!temporary) AddBlendShapesToData(meshBlendShapes);
 
             //Reset belly size to 0 so the blendshape can be used with out interference
             PregnancyPlusGui.ResetSlider(PregnancyPlusGui.inflationSize, 0);
