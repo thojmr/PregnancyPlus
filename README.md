@@ -9,9 +9,11 @@ This repository contains the KK_PregnancyPlus plugin, that adds additional belly
 - Adds a number of slider that will allow you to change the size and shape of the belly area in Studio and Maker/Creator.
     - Slider values will save to scene or card, so you can share it with others that have the plugin.
     - In HS2 and AI the belly size will be whatever is defined on the character card + the F1 config slider adjustments.
+- Timeline (KK) and VNGE (HS2/AI) integration for animating the belly.
 - Adds 3 configurable keybinds in plugin config that can be used to increase or decrease the belly size in Story Mode / Main Game Mode on the fly.   
 - This plugin can be a substitute for stomach bulges as well, but it's original intent is pregnancy.    
 - Adds a "Story Mode / Main Game" mode config option.  Disable if you want to turn off this plugins features temporarily while playing.
+- This plugin is somewhat compatible with "[ddaa33] Pregnant plugin (ShapeKeyPlugin)" if you wish to combine the effects of both, you can.  But the effects applied by this other plugin will not save to the character card by default.
 
 ## Koikatsu Only Features
 - In Koikatsu the "Inflation Size" belly slider will be added in addition to the KK_Pregnancy when both mods are installed.  You can use the F1 config sliders to adjust the results.  Ex: If the character is 40 weeks pregnant.  They will have the deafult KK_Pregnancy 40 week belly + ("Max Additional Belly Size" * 40) Inflation Size from KK_Pregnancy Plus.  If "Max Additional Belly Size" is set to a low number, the final result will be a slightly larger belly, if it's set high, it will be much much larger.
@@ -31,13 +33,25 @@ This repository contains the KK_PregnancyPlus plugin, that adds additional belly
      - To use BlendShapes in VNGE set ExportChara_XXPE_BlendShapes=1 in vnactor.ini everywhere it is found
     - Follow VNGE guides for further info
 
+## Bigger!
+- For additonal effect in HS2/AI you can mimic what KK_Pregnancy does to belly bones to make the final shape even larger/rounder
+- Here's how 
+    - In HS2 or AI: Studio > (HS2PE or AIPE) > Adv.mode > Bones
+    - Bone: cf_J_kosi01_s  Set the following: PositionZ: 0.6, ScaleZ: 1.6, RotateX: 11
+    - Bone: cf_spine01_s  Set the following: PositionZ: 0.6, ScaleZ: 1.6, RotateX: 351
+    -  Now apply any P+ sliders you want
+- This will however make slight changes to the characters spine shape, so keep that in mind.  
+- Also since this is altering bones, you may have some unintended cosequences down the road.
+
 ## FAQ - Troubleshooting
 - Q: Where do I put the PregnancyPlus.dll?
     - A: It should end up under <Root game folder>/BepinEx/Plugins/xx_PregnancyPlus.dll
 - Q: Some of the sliders are not working?
     - A: Disable "Balloon" plugin config option since it disables some sliders.  Then try adjusting your 'Move Z' slider to make sure it is not outside your characters body.
-- Q: The belly size is changing when the character moves, or I slightly adjust a slider.
-    - A: The default belly size is calculated based on the hip and rib bone width.  In rare cases It can be due to strange character porportions.
+- Q: The belly size is suddenly changing when the character moves, or I slightly adjust a slider.
+    - A: The default belly size is calculated based on the hip and rib bone width.  In rare cases It can be due to strange character animations.
+- Q: There is no slider effect when the character has no legs.
+    - A: The character must have a leg scale > 0 for the sliders to work correctly.
 
 ## Notes
 - Modding this game is new to me, so dont expect this to feel like a finished product.  More like an interesting way to learn C#
@@ -121,4 +135,4 @@ If sucessfull you should see a KK_PregnancyPlus.dll file nested in .\bin\
 ## Some TODO items that may or mat not be implemented in the future (depending on interest)
 -  Make accessories move along with the belly to prevent clipping
 -  Fix clothing flattening at the largest belly sizes (Has been improved already)
--  There are certain clothing items that do not work in the current state
+-  There are certain clothing items that do not work in the current state.  Specifically any mesh marked as isReadable = true will not be editable.
