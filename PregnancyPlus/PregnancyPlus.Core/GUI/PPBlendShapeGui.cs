@@ -5,7 +5,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
-using HSPE;
 
 namespace KK_PregnancyPlus
 {
@@ -363,7 +362,16 @@ namespace KK_PregnancyPlus
 			foreach (var smr in smrs)
 			{
 				if (smr == null) continue;
-				sliderValues[smr.name] = 0;
+				float existingWeight = 0;
+
+				//Get existing weight value if one exists
+				var blendShapeIndex = GetBlendShapeIndexFromName(smr.sharedMesh);
+				if (blendShapeIndex >= 0)
+				{
+					existingWeight = smr.GetBlendShapeWeight(blendShapeIndex);
+				}
+
+				sliderValues[smr.name] = existingWeight;
 			}
 
 			sliderValues["dummy"] = 0;

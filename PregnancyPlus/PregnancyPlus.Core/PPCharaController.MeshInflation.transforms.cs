@@ -163,15 +163,11 @@ namespace KK_PregnancyPlus
 
             //decrease movement speed near the back
             var forwardFromBack = (originalVerticeLs.z - backExtentPosLs.z * bellyInfo.TotalCharScale.z);
-            var backLerp = Vector3.Lerp(originalVerticeLs, taperedZVert, forwardFromBack/sphereRadius);
-
-            //Only lerp z when pulling out, pushing in looks fine as is
-            if (smoothedVectorLs.z < backLerp.z) {
-                //Move verts closest to z=0 more slowly than those out front to reduce skin stretching
-                smoothedVectorLs = Vector3.Lerp(smoothedVectorLs, backLerp, Math.Abs(distFromZCenterLs)/sphereRadius);
-            } else {
-                smoothedVectorLs = backLerp;
-            }
+            //Leave a little dead zone at the back where the verts don't change.  
+            var backLerp = Vector3.Lerp(smoothedVectorLs, taperedZVert, forwardFromBack/sphereRadius - (sphereRadius/2));
+         
+            //Move verts closest to z=0 more slowly than those out front to reduce skin stretching
+            smoothedVectorLs = Vector3.Lerp(backLerp, taperedZVert, distFromZCenterLs/sphereRadius);
 
             return smoothedVectorLs;
         }

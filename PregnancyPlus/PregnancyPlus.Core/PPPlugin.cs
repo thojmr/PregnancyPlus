@@ -4,11 +4,6 @@ using HarmonyLib;
 using KKAPI;
 using KKAPI.Studio;
 using KKAPI.Chara;
-#if AI || HS2
-    using AIChara;
-#elif KK
-    using KKAPI.MainGame;
-#endif
 
 namespace KK_PregnancyPlus
 {
@@ -66,6 +61,7 @@ namespace KK_PregnancyPlus
 
             //Need to trigger all children GUI that should be active. 
             var handlers = CharacterApi.GetRegisteredBehaviour(GUID);
+            if (handlers == null || handlers.Instances == null) return;
 
             //I guess this is how its suppposed to be done?
             foreach (PregnancyPlusCharaController charCustFunCtrl in handlers.Instances)
