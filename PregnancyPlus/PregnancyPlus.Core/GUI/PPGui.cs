@@ -1,5 +1,4 @@
-﻿
-namespace KK_PregnancyPlus
+﻿namespace KK_PregnancyPlus
 {
     //This partial class contains all the common properties used by the other partials
     public static partial class PregnancyPlusGui
@@ -9,13 +8,13 @@ namespace KK_PregnancyPlus
         internal readonly static PregnancyPlusData ppDataDefaults = new PregnancyPlusData();
         
 #region Don't change these, they would change users cards default scales
+
         #if KK
             private readonly static int scaleLimits = 1;
         #elif HS2 || AI
             //once again everything is bigger in HS2
             private readonly static int scaleLimits = 5;
         #endif
-#endregion
 
         #if KK  //Range multiplier for the min max values allowed
             private readonly static float rm = 1;
@@ -38,6 +37,8 @@ namespace KK_PregnancyPlus
             public readonly static float[] inflationClothOffset = {-2, 2};
             public readonly static float[] inflationFatFold = {0, 2f};
         }
+
+#endregion Don't change these, they would change users cards default scales
 
     }
 }

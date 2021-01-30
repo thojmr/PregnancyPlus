@@ -38,7 +38,7 @@ namespace KK_PregnancyPlus
         /// </summary>
 		internal void OnGUI(PregnancyPlusPlugin instance)
 		{
-			if (_pluginInstance == null)
+			if (_pluginInstance == null && instance != null)
 			{
 				_pluginInstance = instance;
 			}
@@ -74,7 +74,7 @@ namespace KK_PregnancyPlus
 
 
 		/// <summary>
-        /// When a new mesh is added and the blendshape created, update the list here
+        /// When a new mesh is added and the blendshape created add them all here
         /// </summary>
 		internal void OnSkinnedMeshRendererBlendShapesCreated(List<SkinnedMeshRenderer> smrs)
 		{
@@ -91,12 +91,13 @@ namespace KK_PregnancyPlus
 		{
 			try 
 			{
-				ResetHspeBlendShape(guiSkinnedMeshRenderers);
+				ResetHspeBlendShapes(guiSkinnedMeshRenderers);
 			}	
 			catch (Exception e)
 			{
-				if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" ResetHspeBlendShape > HSPE not found {e.Message} ");
+				if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" OnRemoveAllBlendShapes > HSPE not found {e.Message} ");
 			}	
+
 			_charaInstance.OnRemoveAllBlendShapes();
 			guiSkinnedMeshRenderers = new List<SkinnedMeshRenderer>();
 			lastTouched = -1;
@@ -147,7 +148,7 @@ namespace KK_PregnancyPlus
 				//When a mesh becomes empty, reset sliders
 				if (anyMeshEmpty && !lastAnyMeshEmpty)
 				{
-					ResetHspeBlendShape(guiSkinnedMeshRenderers);
+					ResetHspeBlendShapes(guiSkinnedMeshRenderers);
 				}
 				lastAnyMeshEmpty = anyMeshEmpty;
 
@@ -161,16 +162,17 @@ namespace KK_PregnancyPlus
 				GUILayout.Label("The blendshape sliders above can be adjusted and then saved to Timeline (Ctrl+T) or VNGE > Clip Manager.  The blendshapes will persist to the character card after the scene is saved.", _labelTextStyle, new GUILayoutOption[0]);
 				GUILayout.Label("You can 'Create New' blendshapes with the current P+ character sliders (Overwrites existing).", _labelTextStyle, new GUILayoutOption[0]);
 
+				//Error messages for the user, when something goes wrong
 				if (!HSPEExists) GUILayout.Label(HspeNotFoundMessage, _labelErrorTextStyle, new GUILayoutOption[0]);
 				if (anyMeshEmpty) GUILayout.Label("One or more blendshapes no longer match their mesh and need to be recreated with 'Create New'.  Things like changing Uncensor, or clothing, can cause this.", _labelErrorTextStyle, new GUILayoutOption[0]);
 
 				createBtnCLicked = GUILayout.Button("Create New", new GUILayoutOption[0]);
 				clearBtnCLicked = GUILayout.Button("Reset Sliders", new GUILayoutOption[0]);
 				removeBtnCLicked = GUILayout.Button("Remove P+ BlendShapes", new GUILayoutOption[0]);
-			}
-			//If no blendshapes, then all the user to set them with a create button
+			}			
 			else 
 			{
+				//If no blendshapes, then all the user to set them with a create button
 				GUILayout.Label("No P+ blendshapes found.  Use the 'Create' button to capture a snapshot of the current P+ slider values as blendshapes.  Make sure Inflation Size is not 0.", _labelTextStyle, new GUILayoutOption[0]);
 				createBtnCLicked = GUILayout.Button("Create", new GUILayoutOption[0]);
 			}
@@ -188,7 +190,7 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Define each blendshape slider, and watch for changes
+        /// Define each blendshape slider, and update HSPE sliders on change
         /// </summary>
 		internal void GuiSliderControlls(int i)
 		{
@@ -219,6 +221,7 @@ namespace KK_PregnancyPlus
 			}
 			else if (kkBsIndex < 0 || sliderLabel == null)
 			{
+				//If the blendshape and smr dissapeared for some reason
 				smrIsEmpty = true;
 			}
 
@@ -244,7 +247,7 @@ namespace KK_PregnancyPlus
 
 			GUI.enabled = true;
 
-			//Don't need to check for value changes when null (The Gui will close soon anyway)
+			//Don't need to check for slider changes when null (The Gui will close soon anyway)
 			if (smrName == null) return;
 
 			//Only update slider on changes
@@ -255,25 +258,26 @@ namespace KK_PregnancyPlus
 
 				//If there are no blendshapes for this mesh anymore just reset HSPE
 				if (kkBsIndex < 0) {
-					ResetHspeBlendShape(new List<SkinnedMeshRenderer>() { guiSkinnedMeshRenderers[i] });
+					ResetHspeBlendShapes(new List<SkinnedMeshRenderer>() { guiSkinnedMeshRenderers[i] });
 					_sliderValuesHistory[smrName] = _sliderValues[smrName];
 					return;
 				}
 
 				try 
 				{					
+					//We want to use HSPE when we can because changes to it will integrate with Timeline and VNGE
 					HSPEExists = SetHspeBlendShapeWeight(guiSkinnedMeshRenderers[i], kkBsIndex, _sliderValues[smrName]);
 				}	
 				catch (Exception e)
 				{
-					//If KKPE does not exists catch the error
+					//If KKPE does not exists catch the error, and warn the user
 					if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" SetHspeBlendShapeWeight > HSPE not found {e.Message} ");
 					HSPEExists = false;
 				}
 
 				if (!HSPEExists) 
 				{
-					//If not found adjust the weight the normal way, that won't integrate with VNGE, or Timeline
+					//If HSPE not found adjust the weight the normal way, that won't integrate with VNGE, or Timeline, but is still visible to the user
 					guiSkinnedMeshRenderers[i].SetBlendShapeWeight(kkBsIndex, _sliderValues[smrName]);
 				}				
 			}
@@ -282,7 +286,7 @@ namespace KK_PregnancyPlus
 
 
 		/// <summary>
-        /// Check to make sure at least one mesh is not null.false  (things like chaning uncensor can cause mesh to change and become null in this context)
+        /// Check to make sure at least one mesh is not null  (things like chaning uncensor can cause mesh to change and become null in this context)
 		/// When any are null we probably want to warn the user
         /// </summary>
 		internal bool IsAnyMeshEmpty(List<SkinnedMeshRenderer> smrs)
@@ -304,11 +308,12 @@ namespace KK_PregnancyPlus
 			blendShapeWindowShow = false;
 			try 
 			{
-				ResetHspeBlendShape(guiSkinnedMeshRenderers);
+				//We need to reset the HSPE sliders to avoid potential console errors
+				ResetHspeBlendShapes(guiSkinnedMeshRenderers);
 			}	
 			catch (Exception e)
 			{
-				if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" ResetHspeBlendShape > HSPE not found {e.Message} ");
+				if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" CloseWindow > HSPE not found {e.Message} ");
 			}
 			guiSkinnedMeshRenderers = new List<SkinnedMeshRenderer>();
 			lastTouched = -1;
@@ -430,7 +435,7 @@ namespace KK_PregnancyPlus
 			// Traverse.Create(bsModule).Method("ApplyBlendShapeWeights", new object[] { });
 			// Traverse.Create(bsModule).Method("Populate", new object[] { });
 
-			// ResetHspeBlendShape(bsModule, smr, index);
+			// ResetHspeBlendShapes(bsModule, smr, index);
 
 			// var dynMethod = bsModule.GetType().GetMethod("SetBlendShapeWeight", BindingFlags.NonPublic | BindingFlags.Instance);
 			// dynMethod.Invoke(this, new object[] { smr , index, weight });
@@ -440,7 +445,7 @@ namespace KK_PregnancyPlus
         /// Reset HSPE blendshape when character changes
         /// </summary>
 		/// <returns>Will return True if HSPE was found</returns>
-		internal bool ResetHspeBlendShape(List<SkinnedMeshRenderer> smrs) 
+		internal bool ResetHspeBlendShapes(List<SkinnedMeshRenderer> smrs) 
         {
 			if (smrs == null || smrs.Count <= 0) return true;
 

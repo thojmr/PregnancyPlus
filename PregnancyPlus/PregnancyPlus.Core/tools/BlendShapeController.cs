@@ -93,12 +93,6 @@ namespace KK_PregnancyPlus
             if (!blendShape.isInitilized) return;
 
             //Not going to try to debug this unity problem with blendshapes not being found by name, just always overwright the existing blendshape...
-
-            // var shapeIndex = smr.sharedMesh.GetBlendShapeIndex(blendShape.name);
-            // if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" AddBlendShape > shapeIndex {shapeIndex} smr {smr.name}");  
-
-            //If the shape exists then overwrite it
-            // if (shapeIndex >= 0) 
             if (smr.sharedMesh.blendShapeCount > 0) 
             {
                 //Blend shape already exists overwright it the hard way
@@ -190,7 +184,7 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// This will change the weight (apperance) of an existing BlendShape attached to a skinned mesh renderer. Weight 0 will reset to the default shape
+        /// This will change the weight (apperance) of an existing BlendShape attached to a skinned mesh renderer. Weight 0 will reset to the default shape (Not used here)
         /// </summary>
         /// <param name="smr">The skinned mesh renderer to attach the blend shape</param>
         /// <param name="weight">Float value from 0-100 that will increase the blend to the target shape as the number grows</param>
@@ -200,6 +194,7 @@ namespace KK_PregnancyPlus
             if (!blendShape.isInitilized || weight < 0) return false;
 
             //Belly size goes from 0-40, but blendShapes have to be 0-100
+            //Technically unity 2018x + can go above 100 when unclamped, but not any illusion games yet
             var lerpWeight = Mathf.Lerp(0, 100, weight/40);
             var shapeIndex = smr.sharedMesh.GetBlendShapeIndex(blendShape.name);
             //If the blendshape is not found, return

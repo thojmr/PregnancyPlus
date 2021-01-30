@@ -13,6 +13,8 @@ namespace KK_PregnancyPlus
     {        
         internal static List<MakerSlider> sliders = new List<MakerSlider>();
 
+
+        //Slider input titles, and GameObject identifiers
         private static string inflationSizeMaker = "Inflation Size";
         private static string inflationMultiplierMaker = "Inflation Multiplier";
         private static string inflationMoveYMaker = "Move Y";
@@ -228,76 +230,78 @@ namespace KK_PregnancyPlus
         public static void OnRestore(List<MakerSlider> _sliders)
         {
             if (!MakerAPI.InsideAndLoaded) return;
+
             var chaControl = MakerAPI.GetCharacterControl();
             var charCustFunCtrl  = PregnancyPlusHelper.GetCharacterBehaviorController<PregnancyPlusCharaController>(chaControl, PregnancyPlusPlugin.GUID);
             if (charCustFunCtrl == null) return;
+
             var _infConfig = PregnancyPlusPlugin.lastBellyState;
 
-            //For each slider, set to default, then clear characters belly state
+            //For each slider, set to default which will reset the belly shape
             foreach (var slider in _sliders) 
             {
-                //Get the private slider object name
+                //Get the private slider object name from the game GUI
                 var settingName = Traverse.Create(slider).Field("_settingName").GetValue<string>();
                 if (settingName == null) continue;
                 
                 if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" Restoring slider > {settingName}");
 
-                    //Set the correct slider with it's old config value
-                    switch (settingName) 
-                    {
-#region Look away again! im being lazy again                   
-                        case var _ when settingName == inflationSizeMaker://Ohh boy, cant have const and static strings, thus this was created!
-                            slider.SetValue(_infConfig.inflationSize);
-                            continue;
+                //Set the correct slider with it's old config value
+                switch (settingName) 
+                {
+#region Look away! im being lazy again                   
+                    case var _ when settingName == inflationSizeMaker://Ohh boy, cant have const and static strings in switch case, thus this was created!
+                        slider.SetValue(_infConfig.inflationSize);
+                        continue;
 
-                        case var _ when settingName == inflationMultiplierMaker:
-                            slider.SetValue(_infConfig.inflationMultiplier);
-                            continue;
+                    case var _ when settingName == inflationMultiplierMaker:
+                        slider.SetValue(_infConfig.inflationMultiplier);
+                        continue;
 
-                        case var _ when settingName == inflationMoveYMaker:
-                            slider.SetValue(_infConfig.inflationMoveY);
-                            continue;
+                    case var _ when settingName == inflationMoveYMaker:
+                        slider.SetValue(_infConfig.inflationMoveY);
+                        continue;
 
-                        case var _ when settingName == inflationMoveZMaker:
-                            slider.SetValue(_infConfig.inflationMoveZ);
-                            continue;
+                    case var _ when settingName == inflationMoveZMaker:
+                        slider.SetValue(_infConfig.inflationMoveZ);
+                        continue;
 
-                        case var _ when settingName == inflationStretchXMaker:
-                            slider.SetValue(_infConfig.inflationStretchX);
-                            continue;
+                    case var _ when settingName == inflationStretchXMaker:
+                        slider.SetValue(_infConfig.inflationStretchX);
+                        continue;
 
-                        case var _ when settingName == inflationStretchYMaker:
-                            slider.SetValue(_infConfig.inflationStretchY);
-                            continue;
+                    case var _ when settingName == inflationStretchYMaker:
+                        slider.SetValue(_infConfig.inflationStretchY);
+                        continue;
 
-                        case var _ when settingName == inflationShiftYMaker:
-                            slider.SetValue(_infConfig.inflationShiftY);
-                            continue;
+                    case var _ when settingName == inflationShiftYMaker:
+                        slider.SetValue(_infConfig.inflationShiftY);
+                        continue;
 
-                        case var _ when settingName == inflationShiftZMaker:
-                            slider.SetValue(_infConfig.inflationShiftZ);
-                            continue;
+                    case var _ when settingName == inflationShiftZMaker:
+                        slider.SetValue(_infConfig.inflationShiftZ);
+                        continue;
 
-                        case var _ when settingName == inflationTaperYMaker:
-                            slider.SetValue(_infConfig.inflationTaperY);
-                            continue;
+                    case var _ when settingName == inflationTaperYMaker:
+                        slider.SetValue(_infConfig.inflationTaperY);
+                        continue;
 
-                        case var _ when settingName == inflationTaperZMaker:
-                            slider.SetValue(_infConfig.inflationTaperZ);
-                            continue;
+                    case var _ when settingName == inflationTaperZMaker:
+                        slider.SetValue(_infConfig.inflationTaperZ);
+                        continue;
 
-                        case var _ when settingName == inflationClothOffsetMaker:
-                            slider.SetValue(_infConfig.inflationClothOffset);
-                            continue;
+                    case var _ when settingName == inflationClothOffsetMaker:
+                        slider.SetValue(_infConfig.inflationClothOffset);
+                        continue;
 
-                        case var _ when settingName == inflationFatFoldMaker:
-                            slider.SetValue(_infConfig.inflationFatFold);
-                            continue;
+                    case var _ when settingName == inflationFatFoldMaker:
+                        slider.SetValue(_infConfig.inflationFatFold);
+                        continue;
 
-                        default:
-                            continue;
+                    default:
+                        continue;
 #endregion
-                    }
+                }
             }         
         }
 

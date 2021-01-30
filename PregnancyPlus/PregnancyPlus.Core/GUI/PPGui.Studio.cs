@@ -14,7 +14,8 @@ namespace KK_PregnancyPlus
     {
         internal static CurrentStateCategory cat;
 
-        //String constants for the slider names
+
+        //String constants for the slider names, and GameObject identifiers
         internal const string inflationSize = "Pregnancy +";
         internal const string inflationMultiplier = "        Multiplier";
         internal const string inflationMoveY = "        Move Y";
@@ -29,6 +30,7 @@ namespace KK_PregnancyPlus
         internal const string inflationFatFold = "        Fat Fold";
         private const string blendshapeText = "Open BlendShapes";
 
+
         internal static void InitStudio(Harmony hi, PregnancyPlusPlugin instance)
         {
             if (StudioAPI.InsideStudio)
@@ -36,6 +38,7 @@ namespace KK_PregnancyPlus
                 RegisterStudioControls();
             }
         }
+
 
         private static void RegisterStudioControls()
         {
@@ -355,7 +358,8 @@ namespace KK_PregnancyPlus
                     if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" Restoring slider > {slider.name}");
 
                     //Set the correct slider with it's old config value
-                    switch (slider.name) {
+                    switch (slider.name) 
+                    {
 #region Look away! im being lazy                        
                         case "Slider " + inflationSize:
                             slider.value = _infConfig.inflationSize;
@@ -423,6 +427,7 @@ namespace KK_PregnancyPlus
             foreach(CurrentStateCategorySubItemBase subItem in cat.SubItems) 
             {
                 if (!subItem.Created || !subItem.Name.Contains(toggleName)) continue;
+                
                 var itemGo = subItem.RootGameObject;
                 var sliders = itemGo.GetComponentsInChildren<UnityEngine.UI.Toggle>();
 

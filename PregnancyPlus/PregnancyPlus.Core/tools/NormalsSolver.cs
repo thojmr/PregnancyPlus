@@ -33,7 +33,8 @@ public static class NormalSolver
     ///     the same vertex will be smooth regardless of the angle! 
     /// </param>
     /// <param name="indexedVerts">optional list of indexes that are true when we want to include their corresponding vertex index (faster compute)</param>
-    public static void RecalculateNormals(this Mesh mesh, float angle, bool[] indexedVerts = null) {
+    public static void RecalculateNormals(this Mesh mesh, float angle, bool[] indexedVerts = null) 
+    {
         var cosineThreshold = Mathf.Cos(angle * Mathf.Deg2Rad);
 
         var vertices = mesh.vertices;
@@ -44,19 +45,22 @@ public static class NormalSolver
 
         var dictionary = new Dictionary<VertexKey, List<VertexEntry>>(vertices.Length);
 
-        for (var subMeshIndex = 0; subMeshIndex < mesh.subMeshCount; ++subMeshIndex) {
+        for (var subMeshIndex = 0; subMeshIndex < mesh.subMeshCount; ++subMeshIndex) 
+        {
             
             var triangles = mesh.GetTriangles(subMeshIndex);
 
             triNormals[subMeshIndex] = new Vector3[triangles.Length / 3];
 
-            for (var i = 0; i < triangles.Length; i += 3) {
+            for (var i = 0; i < triangles.Length; i += 3) 
+            {
                 int i1 = triangles[i];
                 int i2 = triangles[i + 1];
                 int i3 = triangles[i + 2];
 
                 //Break early if this all of these verts are not belly verts
-                if (indexedVerts != null) {
+                if (indexedVerts != null) 
+                {
                     if (!indexedVerts[i1] && !indexedVerts[i2] && !indexedVerts[i3]) continue;
                 }
 
@@ -70,19 +74,22 @@ public static class NormalSolver
                 List<VertexEntry> entry;
                 VertexKey key;
 
-                if (!dictionary.TryGetValue(key = new VertexKey(vertices[i1]), out entry)) {
+                if (!dictionary.TryGetValue(key = new VertexKey(vertices[i1]), out entry)) 
+                {
                     entry = new List<VertexEntry>(4);
                     dictionary.Add(key, entry);
                 }
                 entry.Add(new VertexEntry(subMeshIndex, triIndex, i1, indexedVerts != null ? !indexedVerts[i1] : false));
 
-                if (!dictionary.TryGetValue(key = new VertexKey(vertices[i2]), out entry)) {
+                if (!dictionary.TryGetValue(key = new VertexKey(vertices[i2]), out entry)) 
+                {
                     entry = new List<VertexEntry>();
                     dictionary.Add(key, entry);
                 }
                 entry.Add(new VertexEntry(subMeshIndex, triIndex, i2, indexedVerts != null ? !indexedVerts[i2] : false));
 
-                if (!dictionary.TryGetValue(key = new VertexKey(vertices[i3]), out entry)) {
+                if (!dictionary.TryGetValue(key = new VertexKey(vertices[i3]), out entry)) 
+                {
                     entry = new List<VertexEntry>();
                     dictionary.Add(key, entry);
                 }
@@ -92,28 +99,36 @@ public static class NormalSolver
 
         // Each entry in the dictionary represents a unique vertex position.
 
-        foreach (var vertList in dictionary.Values) {
-            for (var i = 0; i < vertList.Count; ++i) {                
+        foreach (var vertList in dictionary.Values) 
+        {
+            for (var i = 0; i < vertList.Count; ++i) 
+            {                
                 
                 var lhsEntry = vertList[i];
                 if (lhsEntry.ExcludeVertex) continue;//Skip to save on compute
 
                 var sum = new Vector3();
 
-                for (var j = 0; j < vertList.Count; ++j) {
+                for (var j = 0; j < vertList.Count; ++j) 
+                {
                     var rhsEntry = vertList[j];
 
                     if (rhsEntry.ExcludeVertex) continue;//Skip to save on compute
 
-                    if (lhsEntry.VertexIndex == rhsEntry.VertexIndex) {
+                    if (lhsEntry.VertexIndex == rhsEntry.VertexIndex) 
+                    {
                         sum += triNormals[rhsEntry.MeshIndex][rhsEntry.TriangleIndex];
-                    } else {
+                    } 
+                    else 
+                    {
                         // The dot product is the cosine of the angle between the two triangles.
                         // A larger cosine means a smaller angle.
                         var dot = Vector3.Dot(
                             triNormals[lhsEntry.MeshIndex][lhsEntry.TriangleIndex],
                             triNormals[rhsEntry.MeshIndex][rhsEntry.TriangleIndex]);
-                        if (dot >= cosineThreshold) {
+
+                        if (dot >= cosineThreshold) 
+                        {
                             sum += triNormals[rhsEntry.MeshIndex][rhsEntry.TriangleIndex];
                         }
                     }
@@ -139,18 +154,21 @@ public static class NormalSolver
         private const long FNV32Init = 0x811c9dc5;
         private const long FNV32Prime = 0x01000193;
 
-        public VertexKey(Vector3 position) {
+        public VertexKey(Vector3 position) 
+        {
             _x = (long)(Mathf.Round(position.x * Tolerance));
             _y = (long)(Mathf.Round(position.y * Tolerance));
             _z = (long)(Mathf.Round(position.z * Tolerance));
         }
 
-        public override bool Equals(object obj) {
+        public override bool Equals(object obj) 
+        {
             var key = (VertexKey)obj;
             return _x == key._x && _y == key._y && _z == key._z;
         }
 
-        public override int GetHashCode() {
+        public override int GetHashCode() 
+        {
             long rv = FNV32Init;
             rv ^= _x;
             rv *= FNV32Prime;
@@ -163,13 +181,15 @@ public static class NormalSolver
         }
     }
 
-    private struct VertexEntry {
+    private struct VertexEntry 
+    {
         public int MeshIndex;
         public int TriangleIndex;
         public int VertexIndex;
         public bool ExcludeVertex;
 
-        public VertexEntry(int meshIndex, int triIndex, int vertIndex, bool excludeVertex) {
+        public VertexEntry(int meshIndex, int triIndex, int vertIndex, bool excludeVertex) 
+        {
             MeshIndex = meshIndex;
             TriangleIndex = triIndex;
             VertexIndex = vertIndex;

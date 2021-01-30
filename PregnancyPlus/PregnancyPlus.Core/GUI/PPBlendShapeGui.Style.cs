@@ -2,6 +2,8 @@ using UnityEngine;
 
 namespace KK_PregnancyPlus
 {
+
+    //Keeping all the GUI input styling here
     public partial class PregnancyPlusBlendShapeGui
     {
 
@@ -82,6 +84,9 @@ namespace KK_PregnancyPlus
         };
 
 
+		/// <summary>
+        /// Calculate the interactable GUI height by the number of inputs and text lines (TODO Is there an auto height?)
+        /// </summary>
 		public float GetGuiHeight(bool hasBlendShapes)
 		{			
 			//When blendshapes are set, include sliders height
