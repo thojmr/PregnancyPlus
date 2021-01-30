@@ -327,7 +327,7 @@ namespace KK_PregnancyPlus
 
 		public void ClearAllSliderValues() 
 		{
-			_sliderValues = BuildSliderListValues(guiSkinnedMeshRenderers, _sliderValues);
+			_sliderValues = BuildSliderListValues(guiSkinnedMeshRenderers, _sliderValues, true);
 		}
 
 
@@ -353,7 +353,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// set the default sliderValue dictionary values
         /// </summary>
-		internal Dictionary<string, float> BuildSliderListValues(List<SkinnedMeshRenderer> smrs, Dictionary<string, float> sliderValues) 
+		internal Dictionary<string, float> BuildSliderListValues(List<SkinnedMeshRenderer> smrs, Dictionary<string, float> sliderValues, bool clearAll = false) 
 		{
 			if (smrs == null || smrs.Count <= 0 ) return new Dictionary<string, float>();
 			if (sliderValues == null) sliderValues = new Dictionary<string, float>();
@@ -371,7 +371,7 @@ namespace KK_PregnancyPlus
 					existingWeight = smr.GetBlendShapeWeight(blendShapeIndex);
 				}
 
-				sliderValues[smr.name] = existingWeight;
+				sliderValues[smr.name] = clearAll ? 0 : existingWeight;
 			}
 
 			sliderValues["dummy"] = 0;
