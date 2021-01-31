@@ -28,6 +28,7 @@ namespace KK_PregnancyPlus
         internal const string inflationTaperZ = "        Taper Z";
         internal const string inflationClothOffset = "        Cloth Offset";
         internal const string inflationFatFold = "        Fat Fold";
+        internal const string inflationRoundness = "        Roundness";
         private const string blendshapeText = "Open BlendShapes";
 
 
@@ -255,6 +256,24 @@ namespace KK_PregnancyPlus
                         }
                     });
 
+            cat.AddControl(new CurrentStateCategorySlider(inflationRoundness, c =>
+                {                                       
+                    var ctrl = GetCharCtrl(c);                                                   
+                    return ctrl != null ? ctrl.infConfig.inflationRoundness: 0;
+                    
+                }, 
+                    SliderRange.inflationRoundness[0] * scaleLimits, 
+                    SliderRange.inflationRoundness[1] * scaleLimits
+                ))
+                    .Value.Subscribe(f => { 
+                        foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) 
+                        {  
+                            if (ctrl.infConfig.inflationRoundness == f) continue;                    
+                            ctrl.infConfig.inflationRoundness = f;
+                            ctrl.MeshInflate();                             
+                        }
+                    });        
+
             cat.AddControl(new CurrentStateCategorySlider(inflationClothOffset, c =>
                 {                                       
                     var ctrl = GetCharCtrl(c);                                                   
@@ -407,6 +426,10 @@ namespace KK_PregnancyPlus
 
                         case "Slider " + inflationFatFold:
                             slider.value = _infConfig.inflationFatFold;
+                            continue;
+
+                        case "Slider " + inflationRoundness:
+                            slider.value = _infConfig.inflationRoundness;
                             continue;
 
                         default:

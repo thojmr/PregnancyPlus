@@ -25,6 +25,7 @@ namespace KK_PregnancyPlus
         public static ConfigEntry<float> StoryModeInflationTaperZ { get; private set; }        
         public static ConfigEntry<float> StoryModeInflationClothOffset { get; private set; }    
         public static ConfigEntry<float> StoryModeInflationFatFold { get; private set; }    
+        public static ConfigEntry<float> StoryModeInflationRoundness { get; private set; }    
 
 
         //Keyboard shortcuts for inflation on the fly!    
@@ -105,6 +106,11 @@ namespace KK_PregnancyPlus
                 new ConfigDescription("Allows you to increase or decrease the 'Taper Z' amount in story mode for" + additionalSliderText,
                 new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationTaperZ[0], PregnancyPlusGui.SliderRange.inflationTaperZ[1])));
             StoryModeInflationTaperZ.SettingChanged += InflationConfig_SettingsChanged; 
+
+            StoryModeInflationRoundness = Config.Bind<float>(storyConfigTitle, "Global Roundness Adjustment", 0, 
+                new ConfigDescription("Allows you to increase or decrease the 'Roundness' amount in story mode for" + additionalSliderText,
+                new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationRoundness[0], PregnancyPlusGui.SliderRange.inflationRoundness[1])));
+            StoryModeInflationRoundness.SettingChanged += InflationConfig_SettingsChanged; 
 
             StoryModeInflationClothOffset = Config.Bind<float>(storyConfigTitle, "Global Cloth Offset Adjustment", 0, 
                 new ConfigDescription("Allows you to increase or decrease the cloth layer distance to reduce clipping",

@@ -201,6 +201,25 @@ namespace KK_PregnancyPlus
         }
 
 
+
+        /// <summary>   
+        /// This will make the front of the belly more, or less round
+        /// </summary>  
+        internal Vector3 GetUserRoundnessTransform(Transform meshRootTf, Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 sphereCenterLs, float sphereRadius)
+        {
+            var zDistFromCenter = smoothedVectorLs.z - sphereCenterLs.z;
+
+            //As the distance forward gets further from sphere center make the shape more round (shifted forward slightly)
+            var xyLerp = Mathf.Lerp(0, GetInflationRoundness(), (zDistFromCenter - (bellyInfo.WaistThick/2.2f))/sphereRadius);
+
+            //Get the direction to move the vert
+            var xyDirection = (smoothedVectorLs - sphereCenterLs).normalized;
+
+            //set the new vert position in that direction + the new lerp scale distance
+            return smoothedVectorLs + xyDirection * xyLerp;
+        }
+
+
         /// <summary>
         /// Dampen any mesh changed near edged of the belly (sides, top, and bottom) to prevent too much vertex stretching.  The more forward the vertex is from Z the more it's allowd to be altered by sliders
         /// </summary>        
@@ -307,6 +326,14 @@ namespace KK_PregnancyPlus
             if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationFatFold;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationFatFold != null ? PregnancyPlusPlugin.StoryModeInflationFatFold.Value : 0;
             return (infConfig.inflationFatFold + globalOverrideVal);
+        }
+
+
+        internal float GetInflationRoundness() 
+        {
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationRoundness;
+            var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationRoundness != null ? PregnancyPlusPlugin.StoryModeInflationRoundness.Value : 0;
+            return (infConfig.inflationRoundness + globalOverrideVal);
         }
 
         

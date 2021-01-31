@@ -27,6 +27,7 @@ namespace KK_PregnancyPlus
         private static string inflationTaperZMaker = "Taper Z";
         private static string inflationClothOffsetMaker = "Cloth Offset";
         private static string inflationFatFoldMaker = "Fat Fold";
+        private static string inflationRoundnessMaker = "Roundness";
 
         internal static void InitMaker(Harmony hi, PregnancyPlusPlugin instance)
         {
@@ -163,6 +164,16 @@ namespace KK_PregnancyPlus
             sliders.Add(taperZ);
 
 
+            var roundness = e.AddControl(new MakerSlider(cat, inflationRoundnessMaker, SliderRange.inflationRoundness[0] * scaleLimits, SliderRange.inflationRoundness[1] * scaleLimits, ppDataDefaults.inflationRoundness, _pluginInstance));
+            roundness.BindToFunctionController<PregnancyPlusCharaController, float>(controller => controller.infConfig.inflationRoundness, (controller, value) => {
+                var oldVal = controller.infConfig.inflationRoundness;
+                controller.infConfig.inflationRoundness = value;
+                if (oldVal != value) OnMakerSettingsChanged(controller);
+            });
+            e.AddControl(new MakerText("Make the front of the belly more or less round", cat, _pluginInstance) { TextColor = hintColor });
+            sliders.Add(roundness);
+
+
             var clothOffset = e.AddControl(new MakerSlider(cat, inflationClothOffsetMaker, SliderRange.inflationClothOffset[0] * scaleLimits, SliderRange.inflationClothOffset[1] * scaleLimits, ppDataDefaults.inflationClothOffset, _pluginInstance));
             clothOffset.BindToFunctionController<PregnancyPlusCharaController, float>(controller => controller.infConfig.inflationClothOffset, (controller, value) => {
                 var oldVal = controller.infConfig.inflationClothOffset;
@@ -296,6 +307,10 @@ namespace KK_PregnancyPlus
 
                     case var _ when settingName == inflationFatFoldMaker:
                         slider.SetValue(_infConfig.inflationFatFold);
+                        continue;
+
+                    case var _ when settingName == inflationRoundnessMaker:
+                        slider.SetValue(_infConfig.inflationRoundness);
                         continue;
 
                     default:

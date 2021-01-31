@@ -409,6 +409,11 @@ namespace KK_PregnancyPlus
             //Get the base shape with XY plane size limits
             var smoothedVectorLs = SculptBaseShape(meshRootTf, originalVerticeLs, inflatedVerticieLs, sphereCenterLs);      
 
+            if (GetInflationRoundness() != 0) 
+            {  
+                smoothedVectorLs = GetUserRoundnessTransform(meshRootTf, originalVerticeLs, smoothedVectorLs, sphereCenterLs, sphereRadius);
+            }
+
             //Allow user adjustment of the height and width placement of the belly
             if (GetInflationShiftY() != 0 || GetInflationShiftZ() != 0) 
             {
@@ -444,6 +449,7 @@ namespace KK_PregnancyPlus
             {
                 smoothedVectorLs = GetUserFatFoldTransform(meshRootTf, originalVerticeLs, smoothedVectorLs, sphereCenterLs, sphereRadius);
             }
+
 
             //After all user transforms are applied, remove the edges from the sides/top of the belly
             smoothedVectorLs = RoundToSides(meshRootTf, originalVerticeLs, smoothedVectorLs, bellyInfo.OriginalSphereRadius, backExtentPosLs, pmSphereCenterLs);

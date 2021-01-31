@@ -23,6 +23,7 @@ namespace KK_PregnancyPlus
         public float inflationClothOffset = 0;
         public float inflationFatFold = 0;
         public bool GameplayEnabled = true;
+        public float inflationRoundness = 0;
         public byte[] meshBlendShape = null;//Type: List<MeshBlendShape> once Deserialized
 
 #endregion
@@ -58,6 +59,7 @@ namespace KK_PregnancyPlus
             if (inflationMultiplier != otherData.inflationMultiplier) hasChanges = true;
             if (inflationClothOffset != otherData.inflationClothOffset) hasChanges = true;
             if (inflationFatFold != otherData.inflationFatFold) hasChanges = true;           
+            if (inflationRoundness != otherData.inflationRoundness) hasChanges = true;           
 
             return hasChanges;
         }
@@ -75,6 +77,7 @@ namespace KK_PregnancyPlus
                 inflationTaperZ.GetHashCode() +
                 inflationMultiplier.GetHashCode() +
                 inflationClothOffset.GetHashCode() +
+                inflationRoundness.GetHashCode() +
                 inflationFatFold.GetHashCode();
 
             return hashCode;            
