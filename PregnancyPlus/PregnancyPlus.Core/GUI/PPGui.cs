@@ -28,7 +28,7 @@
         public static class SliderRange {
             public readonly static float[] inflationSize = {0, 40};
             public readonly static float[] inflationMultiplier = {-2f, 2f};            
-            public readonly static float[] inflationMoveY = {-0.5f * rm, 0.5f * rm};
+            public readonly static float[] inflationMoveY = {-0.5f * rmAlt, 0.5f * rmAlt};
             public readonly static float[] inflationMoveZ = {-0.2f * rm, 0.2f * rm};
             public readonly static float[] inflationStretchX = {-0.3f * rmAlt, 0.3f * rmAlt};
             public readonly static float[] inflationStretchY = {-0.3f * rmAlt, 0.3f * rmAlt};
@@ -38,7 +38,7 @@
             public readonly static float[] inflationTaperZ = {-0.075f * rm, 0.075f * rm};            
             public readonly static float[] inflationClothOffset = {-2, 2};
             public readonly static float[] inflationFatFold = {0, 2f};
-            public readonly static float[] inflationRoundness = {-0.5f, 0.5f};
+            public readonly static float[] inflationRoundness = {-0.75f, 0.75f};
         }
 
 #endregion Don't change these, they would change users cards default scales

@@ -84,6 +84,16 @@ namespace KK_PregnancyPlus
             sliders.Add(multiplier);
 
 
+            var roundness = e.AddControl(new MakerSlider(cat, inflationRoundnessMaker, SliderRange.inflationRoundness[0] * scaleLimits, SliderRange.inflationRoundness[1] * scaleLimits, ppDataDefaults.inflationRoundness, _pluginInstance));
+            roundness.BindToFunctionController<PregnancyPlusCharaController, float>(controller => controller.infConfig.inflationRoundness, (controller, value) => {
+                var oldVal = controller.infConfig.inflationRoundness;
+                controller.infConfig.inflationRoundness = value;
+                if (oldVal != value) OnMakerSettingsChanged(controller);
+            });
+            e.AddControl(new MakerText("Make the front of the belly more or less round", cat, _pluginInstance) { TextColor = hintColor });
+            sliders.Add(roundness);
+
+
             var moveY = e.AddControl(new MakerSlider(cat, inflationMoveYMaker, SliderRange.inflationMoveY[0] * scaleLimits, SliderRange.inflationMoveY[1] * scaleLimits, ppDataDefaults.inflationMoveY, _pluginInstance));
             moveY.BindToFunctionController<PregnancyPlusCharaController, float>(controller => controller.infConfig.inflationMoveY, (controller, value) => {
                 var oldVal = controller.infConfig.inflationMoveY;
@@ -162,16 +172,6 @@ namespace KK_PregnancyPlus
             });
             e.AddControl(new MakerText("Taper the front of the belly in at the top and out at the bottom.  Gives the belly an angle at the front.", cat, _pluginInstance) { TextColor = hintColor });
             sliders.Add(taperZ);
-
-
-            var roundness = e.AddControl(new MakerSlider(cat, inflationRoundnessMaker, SliderRange.inflationRoundness[0] * scaleLimits, SliderRange.inflationRoundness[1] * scaleLimits, ppDataDefaults.inflationRoundness, _pluginInstance));
-            roundness.BindToFunctionController<PregnancyPlusCharaController, float>(controller => controller.infConfig.inflationRoundness, (controller, value) => {
-                var oldVal = controller.infConfig.inflationRoundness;
-                controller.infConfig.inflationRoundness = value;
-                if (oldVal != value) OnMakerSettingsChanged(controller);
-            });
-            e.AddControl(new MakerText("Make the front of the belly more or less round", cat, _pluginInstance) { TextColor = hintColor });
-            sliders.Add(roundness);
 
 
             var clothOffset = e.AddControl(new MakerSlider(cat, inflationClothOffsetMaker, SliderRange.inflationClothOffset[0] * scaleLimits, SliderRange.inflationClothOffset[1] * scaleLimits, ppDataDefaults.inflationClothOffset, _pluginInstance));

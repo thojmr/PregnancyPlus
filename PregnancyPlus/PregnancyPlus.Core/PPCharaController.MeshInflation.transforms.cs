@@ -212,8 +212,8 @@ namespace KK_PregnancyPlus
             //As the distance forward gets further from sphere center make the shape more round (shifted forward slightly)
             var xyLerp = Mathf.Lerp(0, GetInflationRoundness(), (zDistFromCenter - (bellyInfo.WaistThick/2.2f))/sphereRadius);
 
-            //Get the direction to move the vert
-            var xyDirection = (smoothedVectorLs - sphereCenterLs).normalized;
+            //Get the direction to move the vert (offset center a little forward from sphere center)
+            var xyDirection = (smoothedVectorLs - (sphereCenterLs + meshRootTf.forward * (sphereRadius/3))).normalized;
 
             //set the new vert position in that direction + the new lerp scale distance
             return smoothedVectorLs + xyDirection * xyLerp;
