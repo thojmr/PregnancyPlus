@@ -37,8 +37,9 @@ namespace KK_PregnancyPlus
         internal void Start()
         {
             Logger = base.Logger;    
+            DebugTools.logger = Logger;
             //Initilize the plugin config options 
-            PluginConfig();
+            PluginConfig();            
 
             //Attach the mesh inflation logic to each character
             CharacterApi.RegisterExtraBehaviour<PregnancyPlusCharaController>(GUID);

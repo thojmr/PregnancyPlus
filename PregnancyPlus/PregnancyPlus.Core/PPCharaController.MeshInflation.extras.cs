@@ -57,13 +57,31 @@ namespace KK_PregnancyPlus
                 //Get the distance from center -> spine, where the belly is allowed to wrap around to (total distance from 0 to back bone /some scale that looks good)
                 get { return WaistThick/1.8f; }
             }
+
+            public float WaistToBreastDist;//Belly button to breast distance
+            public float ScaledWaistToBreastDist
+            {
+                get { return WaistToBreastDist * NHeightScale.y * CharacterScale.y; }
+            }
+
+            //From char belly button to breast distance
+            public float YLimit
+            {
+                //Get the distance from center -> ribs, with scale applied
+                get { return ScaledWaistToBreastDist; }
+            }
+
+            public float BellyButtonHeight;//Foot to belly button height
+
             
             public bool IsInitialized 
             {
                 get { return WaistWidth > 0 && WaistHeight > 0; }
             }
 
-            internal BellyInfo(float waistWidth, float waistHeight, float sphereRadius, float originalSphereRadius, Vector3 characterScale, float currentMultiplier, float waistThick, Vector3 nHeightScale) 
+            internal BellyInfo(float waistWidth, float waistHeight, float sphereRadius, float originalSphereRadius, 
+                               Vector3 characterScale, float currentMultiplier, float waistThick, Vector3 nHeightScale,
+                               float waistToBreastDist) 
             {
                 WaistWidth = waistWidth;
                 WaistHeight = waistHeight;
@@ -73,6 +91,7 @@ namespace KK_PregnancyPlus
                 CurrentMultiplier = currentMultiplier;
                 WaistThick = waistThick;
                 NHeightScale = nHeightScale;
+                WaistToBreastDist = waistToBreastDist;
             }
 
             //Determine if we need to recalculate the sphere radius (hopefully to avoid change in hip bones causing belly size to sudenly change)
@@ -252,11 +271,22 @@ namespace KK_PregnancyPlus
         /// <summary>   
         /// Move the sphereCenter this much up or down to place it better visually
         /// </summary>
-        internal Vector3 GetBellyButtonOffset(Transform fromPosition, float currentHeight) 
+        internal Vector3 GetBellyButtonOffsetVector(Transform fromPosition, float currentHeight) 
         {
             //Makes slight vertical adjustments to put the sphere at the correct point                  
-            return fromPosition.up * (0.155f * currentHeight);     
+            return fromPosition.up * GetBellyButtonOffset(currentHeight);     
         }
+
+
+        /// <summary>   
+        /// The belly center offset, thats needed to line it up with the belly button
+        /// </summary>
+        internal float GetBellyButtonOffset(float currentHeight) 
+        {
+            //Makes slight vertical adjustments to put the sphere at the correct point                  
+            return 0.155f * currentHeight;     
+        }
+
 
 
         internal float FastDistance(Vector3 firstPosition, Vector3 secondPosition) 

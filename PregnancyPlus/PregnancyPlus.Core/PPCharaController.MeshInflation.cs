@@ -118,17 +118,21 @@ namespace KK_PregnancyPlus
         internal bool MeasureWaist(ChaControl chaControl) 
         {
             #if KK
+                var breastRoot = "cf_d_bust00";
                 var ribName = "cf_s_spine02";
                 var waistName = "cf_s_waist02";
                 var thighLName = "cf_j_thigh00_L";
                 var thighRName = "cf_j_thigh00_R";  
                 var backName = "a_n_back";  
-            #elif HS2 || AI
+                var bellyButton = "cf_j_waist01";
+            #elif HS2 || AI   
+                var breastRoot = "cf_J_Mune00";                             
                 var ribName = "cf_J_Spine02_s";
                 var waistName = "cf_J_Kosi02";
                 var thighLName = "cf_J_LegUp00_L";
                 var thighRName = "cf_J_LegUp00_R";
                 var backName = "N_Back";  
+                var bellyButton = "cf_J_Kosi01";
             #endif   
 
             var charScale = PregnancyPlusHelper.GetBodyTopScale(ChaControl);
@@ -140,6 +144,8 @@ namespace KK_PregnancyPlus
             {
                 return ReMeasureWaist(chaControl, needsSphereRecalc, charScale, nHeightScale);
             }
+
+            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" charScale {charScale} nHeightScale {nHeightScale}"); 
 
             //Measeurements need to be recalculated from scratch
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" MeasureWaist init ");                                     
@@ -158,7 +164,6 @@ namespace KK_PregnancyPlus
 
             var waistToBackThickness = Math.Abs(waistBone.transform.InverseTransformPoint(backBone.position).z);
 
-
             //Get the characters X bones to measure from, in localspace to ignore n_height scale
             var thighLBone = PregnancyPlusHelper.GetBone(ChaControl, thighLName);
             var thighRBone = PregnancyPlusHelper.GetBone(ChaControl, thighRName);
@@ -166,12 +171,20 @@ namespace KK_PregnancyPlus
             
             var waistWidth = Vector3.Distance(thighLBone.transform.InverseTransformPoint(thighLBone.position), thighLBone.transform.InverseTransformPoint(thighRBone.position)); 
 
+            //Verts above this are not allowed to move
+            var bellyButtonBone = PregnancyPlusHelper.GetBone(ChaControl, bellyButton);
+            var breastBone = PregnancyPlusHelper.GetBone(ChaControl, breastRoot);          
+            var waistToBreastDist = Math.Abs(bellyButtonBone.transform.InverseTransformPoint(breastBone.position).y);  
+
+            if (PregnancyPlusPlugin.debugLog) DebugTools.DrawLineAndAttach(breastBone, 5);
+
             //Calculate sphere radius based on distance from waist to ribs (seems big, but lerping later will trim much of it), added Math.Min for skinny waists
             var sphereRadius = GetSphereRadius(waistToRibDist, waistWidth, charScale);
             var sphereRadiusMultiplied = sphereRadius * (GetInflationMultiplier() + 1);   
 
             //Store all these values for reuse later
-            bellyInfo = new BellyInfo(waistWidth, waistToRibDist, sphereRadiusMultiplied, sphereRadius, charScale, GetInflationMultiplier(), waistToBackThickness, nHeightScale);
+            bellyInfo = new BellyInfo(waistWidth, waistToRibDist, sphereRadiusMultiplied, sphereRadius, charScale, 
+                                      GetInflationMultiplier(), waistToBackThickness, nHeightScale, waistToBreastDist);
 
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" waistToRibDist {waistToRibDist} waistWidth {waistWidth} waistThick {waistToBackThickness} sphereRadiusM {sphereRadiusMultiplied}");            
 
@@ -200,7 +213,8 @@ namespace KK_PregnancyPlus
                 var newSphereRadiusMult = newSphereRadius * (GetInflationMultiplier() + 1); 
 
                 //Store new values for later checks
-                bellyInfo = new BellyInfo(bellyInfo.WaistWidth, bellyInfo.WaistHeight, newSphereRadiusMult, newSphereRadius, charScale, GetInflationMultiplier(), bellyInfo.WaistThick, nHeightScale);
+                bellyInfo = new BellyInfo(bellyInfo.WaistWidth, bellyInfo.WaistHeight, newSphereRadiusMult, newSphereRadius, 
+                                          charScale, GetInflationMultiplier(), bellyInfo.WaistThick, nHeightScale, bellyInfo.WaistToBreastDist);
 
                 if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" waistToRibDist {bellyInfo.WaistHeight} waistWidth {bellyInfo.WaistWidth} sphereRadiusM {newSphereRadiusMult}");           
                 
@@ -272,10 +286,19 @@ namespace KK_PregnancyPlus
             var currentVerts = currentVertices[rendererName];
             var bellyVertIndex = bellyVerticieIndexes[rendererName];    
 
+
             //Pre compute some values needed by SculptInflatedVerticie
-            var preMorphSphereCenter = sphereCenter - GetUserMoveTransform(meshRootTf);
-            var backExtentPos = new Vector3(preMorphSphereCenter.x, preMorphSphereCenter.y, preMorphSphereCenter.z - bellyInfo.ZLimit);
             var vertsLength = origVerts.Length;
+            var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenter);
+            var preMorphSphereCenter = sphereCenter - GetUserMoveTransform(meshRootTf);
+            var pmSphereCenterLs = meshRootTf.InverseTransformPoint(preMorphSphereCenter); 
+            var backExtentPos = new Vector3(preMorphSphereCenter.x, preMorphSphereCenter.y, preMorphSphereCenter.z - bellyInfo.ZLimit);
+            var backExtentPosLs = meshRootTf.InverseTransformPoint(backExtentPos);                        
+            var topExtentPos = new Vector3(preMorphSphereCenter.x, preMorphSphereCenter.y + bellyInfo.YLimit, preMorphSphereCenter.z);
+            var topExtentPosLs = meshRootTf.InverseTransformPoint(topExtentPos);
+
+            if (PregnancyPlusPlugin.debugLog) DebugTools.DrawLineAndAttach(meshRootTf, 5, meshRootTf.InverseTransformPoint(topExtentPos) - GetBellyButtonOffsetVector(meshRootTf, bellyInfo.BellyButtonHeight));
+            if (PregnancyPlusPlugin.debugLog) DebugTools.DrawLineAndAttach(meshRootTf, Vector3.zero, new Vector3(5, 0, 0), meshRootTf.InverseTransformPoint(backExtentPos));
 
             //Set each verticies inflated postion, with some constraints (SculptInflatedVerticie) to make it look more natural
             for (int i = 0; i < vertsLength; i++)
@@ -308,7 +331,10 @@ namespace KK_PregnancyPlus
                         }     
 
                         //Make adjustments to the shape, and feed in user slider input
-                        inflatedVertWs =  SculptInflatedVerticie(origVertWs, verticieToSpherePos, sphereCenter, waistWidth, meshRootTf, preMorphSphereCenter, sphereRadius, backExtentPos);                    
+                        inflatedVertWs =  SculptInflatedVerticie(origVertWs, verticieToSpherePos, sphereCenter, waistWidth, 
+                                                                 meshRootTf, preMorphSphereCenter, sphereRadius, backExtentPos, 
+                                                                 topExtentPos, sphereCenterLs, pmSphereCenterLs, backExtentPosLs, 
+                                                                 topExtentPosLs);                    
                         inflatedVerts[i] = meshRootTf.InverseTransformPoint(inflatedVertWs);//Convert back to local space
                     }
                     else 
@@ -363,11 +389,12 @@ namespace KK_PregnancyPlus
             
             //Sphere slider adjustments need to be transformed to local space first to eliminate any character rotation in world space   
             var bbHeight = GetBellyButtonLocalHeight(boneOrMeshTf);
+            bellyInfo.BellyButtonHeight = bbHeight;//Store for later use
             Vector3 bellyButtonPos = boneOrMeshTf.up * bbHeight; 
-            Vector3 sphereCenter = boneOrMeshTf.position + bellyButtonPos + GetUserMoveTransform(boneOrMeshTf) + GetBellyButtonOffset(boneOrMeshTf, bbHeight);                                 
+            Vector3 sphereCenter = boneOrMeshTf.position + bellyButtonPos + GetUserMoveTransform(boneOrMeshTf) + GetBellyButtonOffsetVector(boneOrMeshTf, bbHeight);                                 
 
             if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" sphereCenter {sphereCenter} meshRoot {boneOrMeshTf.position} char origin {ChaControl.transform.position}");
-            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" bellyButtonPos {bellyButtonPos} bbHeight {bbHeight}");            
+            // if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" bellyButtonPos {bellyButtonPos} bbHeight {bbHeight}");            
             return sphereCenter;
         }
 
@@ -380,7 +407,10 @@ namespace KK_PregnancyPlus
         /// <param name="sphereCenterPos">The center of the imaginary sphere</param>
         /// <param name="waistWidth">The characters waist width that limits the width of the belly (future implementation)</param>
         /// <param name="meshRootTf">The transform used to convert a mesh vector from local space to worldspace and back, also servers as the point where we want to stop making mesh changes when Z < 0</param>
-        internal Vector3 SculptInflatedVerticie(Vector3 originalVerticeWs, Vector3 inflatedVerticieWs, Vector3 sphereCenterWs, float waistWidth, Transform meshRootTf, Vector3 preMorphSphereCenterWs, float sphereRadius, Vector3 backExtentPos) 
+        internal Vector3 SculptInflatedVerticie(Vector3 originalVerticeWs, Vector3 inflatedVerticieWs, Vector3 sphereCenterWs, 
+                                                float waistWidth, Transform meshRootTf, Vector3 preMorphSphereCenterWs, float sphereRadius, 
+                                                Vector3 backExtentPos, Vector3 topExtentPos, Vector3 sphereCenterLs, Vector3 pmSphereCenterLs, 
+                                                Vector3 backExtentPosLs, Vector3 topExtentPosLs) 
         {
             //No smoothing modification in debug mode
             if (PregnancyPlusPlugin.MakeBalloon.Value) return inflatedVerticieWs;                       
@@ -402,9 +432,6 @@ namespace KK_PregnancyPlus
             //Most all of the measurements below are done in local space to ignore character rotation and position
             var originalVerticeLs = meshRootTf.InverseTransformPoint(originalVerticeWs);
             var inflatedVerticieLs = meshRootTf.InverseTransformPoint(inflatedVerticieWs);
-            var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenterWs);
-            var pmSphereCenterLs = meshRootTf.InverseTransformPoint(preMorphSphereCenterWs);
-            var backExtentPosLs = meshRootTf.InverseTransformPoint(backExtentPos);
 
             //Get the base shape with XY plane size limits
             var smoothedVectorLs = SculptBaseShape(meshRootTf, originalVerticeLs, inflatedVerticieLs, sphereCenterLs);      
@@ -453,6 +480,9 @@ namespace KK_PregnancyPlus
 
             //After all user transforms are applied, remove the edges from the sides/top of the belly
             smoothedVectorLs = RoundToSides(meshRootTf, originalVerticeLs, smoothedVectorLs, bellyInfo.OriginalSphereRadius, backExtentPosLs, pmSphereCenterLs);
+
+            //Less stretching under breast area with large slider values
+            smoothedVectorLs = ReduceRibStretching(meshRootTf, originalVerticeLs, smoothedVectorLs, topExtentPosLs);
 
             // //Experimental, move more polygons to the front of the belly at max, Measured by trying to keep belly button size the same at 0 and max inflation size
             // var bellyTipZ = (center.z + maxSphereRadius);
