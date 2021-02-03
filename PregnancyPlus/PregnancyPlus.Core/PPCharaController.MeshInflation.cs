@@ -291,13 +291,13 @@ namespace KK_PregnancyPlus
             var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenter);
             var preMorphSphereCenter = sphereCenter - GetUserMoveTransform(meshRootTf);
             var pmSphereCenterLs = meshRootTf.InverseTransformPoint(preMorphSphereCenter); 
-            var backExtentPos = new Vector3(preMorphSphereCenter.x, preMorphSphereCenter.y, preMorphSphereCenter.z - bellyInfo.ZLimit);
+            var backExtentPos = new Vector3(preMorphSphereCenter.x, sphereCenter.y, preMorphSphereCenter.z - bellyInfo.ZLimit);
             var backExtentPosLs = meshRootTf.InverseTransformPoint(backExtentPos);                        
             var topExtentPos = new Vector3(preMorphSphereCenter.x, preMorphSphereCenter.y + bellyInfo.YLimit, preMorphSphereCenter.z);
             var topExtentPosLs = meshRootTf.InverseTransformPoint(topExtentPos);
 
             if (PregnancyPlusPlugin.debugLog) DebugTools.DrawLineAndAttach(meshRootTf, 5, meshRootTf.InverseTransformPoint(topExtentPos) - GetBellyButtonOffsetVector(meshRootTf, bellyInfo.BellyButtonHeight));
-            if (PregnancyPlusPlugin.debugLog) DebugTools.DrawLineAndAttach(meshRootTf, new Vector3(-3, 0, 0), new Vector3(3, 0, 0), meshRootTf.InverseTransformPoint(backExtentPos));
+            if (PregnancyPlusPlugin.debugLog) DebugTools.DrawLineAndAttach(meshRootTf, new Vector3(-3, 0, 0), new Vector3(3, 0, 0), meshRootTf.InverseTransformPoint(backExtentPos) - GetBellyButtonOffsetVector(meshRootTf, bellyInfo.BellyButtonHeight));
 
             //Set each verticies inflated postion, with some constraints (SculptInflatedVerticie) to make it look more natural
             for (int i = 0; i < vertsLength; i++)
@@ -455,7 +455,7 @@ namespace KK_PregnancyPlus
 
             if (GetInflationRoundness() != 0) 
             {  
-                smoothedVectorLs = GetUserRoundnessTransform(meshRootTf, originalVerticeLs, smoothedVectorLs, sphereCenterLs, sphereRadius);
+                smoothedVectorLs = GetUserRoundnessTransform(meshRootTf, originalVerticeLs, smoothedVectorLs, sphereCenterLs);
             }
 
             //Allow user adjustment of the egg like shape of the belly
@@ -478,9 +478,9 @@ namespace KK_PregnancyPlus
 
 
             //After all user transforms are applied, remove the edges from the sides/top of the belly
-            smoothedVectorLs = RoundToSides(meshRootTf, originalVerticeLs, smoothedVectorLs, bellyInfo.OriginalSphereRadius, backExtentPosLs, pmSphereCenterLs);
+            smoothedVectorLs = RoundToSides(meshRootTf, originalVerticeLs, smoothedVectorLs, backExtentPosLs, pmSphereCenterLs);
 
-            //Less stretching under breast area with large slider values
+            //Less skin stretching under breast area with large slider values
             smoothedVectorLs = ReduceRibStretching(meshRootTf, originalVerticeLs, smoothedVectorLs, topExtentPosLs);
 
             // //Experimental, move more polygons to the front of the belly at max, Measured by trying to keep belly button size the same at 0 and max inflation size
@@ -530,9 +530,6 @@ namespace KK_PregnancyPlus
                 var xChangeAvg = (smoothedVectorWs.x - originalVerticeWs.x)/3;
                 smoothedVectorWs = new Vector3(smoothedVectorWs.x - xChangeAvg, smoothedVectorWs.y - yChangeAvg, originalVerticeWs.z);
             }
-
-            //TODO at this point we really need some form of final mesh smoothing pass for where the belly meets the body to remove the sharp edges that the transforms above create.
-            //Just don't want to make the sliders any slower than they already are
 
             return smoothedVectorWs;             
         }

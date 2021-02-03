@@ -19,6 +19,12 @@ namespace KK_PregnancyPlus
     public partial class PregnancyPlusCharaController: CharaCustomFunctionController
     {
 
+        //Used to determine belly scale direction
+        public enum BellyDir
+        {
+            x,y,z
+        }
+
         public class BellyInfo 
         {
             public float WaistWidth;
@@ -36,7 +42,7 @@ namespace KK_PregnancyPlus
             public float WaistThick;
             public float ScaledWaistThick
             {
-                get { return WaistThick * CharacterScale.z; }
+                get { return WaistThick * CharacterScale.z * NHeightScale.z; }
             }
 
             public Vector3 CharacterScale;//BodyTop bone scale
@@ -55,7 +61,7 @@ namespace KK_PregnancyPlus
             public float ZLimit
             {
                 //Get the distance from center -> spine, where the belly is allowed to wrap around to (total distance from 0 to back bone /some scale that looks good)
-                get { return WaistThick/1.8f; }
+                get { return ScaledWaistThick/1.9f; }
             }
 
             public float WaistToBreastDist;//Belly button to breast distance
@@ -77,6 +83,23 @@ namespace KK_PregnancyPlus
             public bool IsInitialized 
             {
                 get { return WaistWidth > 0 && WaistHeight > 0; }
+            }
+
+            //Get the sphere radius asjusted by the characters scale
+            public float ScaledRadius(BellyDir dir)
+            {
+                if (dir == BellyDir.x) return SphereRadius/CharacterScale.x;
+                if (dir == BellyDir.y) return SphereRadius/CharacterScale.y;
+                if (dir == BellyDir.z) return SphereRadius/CharacterScale.z;
+                return -1;
+            }
+
+            public float ScaledOrigRadius(BellyDir dir)
+            {
+                if (dir == BellyDir.x) return OriginalSphereRadius/CharacterScale.x;
+                if (dir == BellyDir.y) return OriginalSphereRadius/CharacterScale.y;
+                if (dir == BellyDir.z) return OriginalSphereRadius/CharacterScale.z;
+                return -1;
             }
 
             internal BellyInfo(float waistWidth, float waistHeight, float sphereRadius, float originalSphereRadius, 
