@@ -174,7 +174,7 @@ namespace KK_PregnancyPlus
             var breastBone = PregnancyPlusHelper.GetBone(ChaControl, breastRoot);          
             var waistToBreastDist = Math.Abs(bellyButtonBone.transform.InverseTransformPoint(breastBone.position).y);  
 
-            if (PregnancyPlusPlugin.debugLog && ChaControl.sex == 1) DebugTools.DrawLineAndAttach(breastBone, 5);
+            // if (PregnancyPlusPlugin.debugLog && ChaControl.sex == 1) DebugTools.DrawLineAndAttach(breastBone, 5);
 
             //Calculate sphere radius based on distance from waist to ribs (seems big, but lerping later will trim much of it), added Math.Min for skinny waists
             var sphereRadius = GetSphereRadius(waistToRibDist, waistWidth, charScale);
@@ -291,9 +291,11 @@ namespace KK_PregnancyPlus
             var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenter);
             var preMorphSphereCenter = sphereCenter - GetUserMoveTransform(meshRootTf);
             var pmSphereCenterLs = meshRootTf.InverseTransformPoint(preMorphSphereCenter); 
-            var backExtentPos = new Vector3(preMorphSphereCenter.x, sphereCenter.y, preMorphSphereCenter.z - bellyInfo.ZLimit);
+            //calculate the furthest back morph point based on the back bone position, include character rotation
+            var backExtentPos = new Vector3(preMorphSphereCenter.x, sphereCenter.y, preMorphSphereCenter.z) + meshRootTf.forward * -bellyInfo.ZLimit;
             var backExtentPosLs = meshRootTf.InverseTransformPoint(backExtentPos);                        
-            var topExtentPos = new Vector3(preMorphSphereCenter.x, preMorphSphereCenter.y + bellyInfo.YLimit, preMorphSphereCenter.z);
+            //calculate the furthest top morph point based under the breast position, include character animated height differences
+            var topExtentPos = new Vector3(preMorphSphereCenter.x, preMorphSphereCenter.y, preMorphSphereCenter.z) + meshRootTf.up * bellyInfo.YLimit;
             var topExtentPosLs = meshRootTf.InverseTransformPoint(topExtentPos);
 
             if (PregnancyPlusPlugin.debugLog) DebugTools.DrawLineAndAttach(meshRootTf, 5, meshRootTf.InverseTransformPoint(topExtentPos) - GetBellyButtonOffsetVector(meshRootTf, bellyInfo.BellyButtonHeight));
@@ -419,8 +421,6 @@ namespace KK_PregnancyPlus
             var pmInflatedToCenterDist = Math.Abs(FastDistance(preMorphSphereCenterWs, inflatedVerticieWs));
             var skinToCenterDist = Math.Abs(FastDistance(sphereCenterWs, originalVerticeWs));
             var inflatedToCenterDist = Math.Abs(FastDistance(sphereCenterWs, inflatedVerticieWs));
-            var coreLineVertWs = meshRootTf.position + meshRootTf.up * (originalVerticeWs.y - meshRootTf.position.y);
-            var origCoreDist = Math.Abs(FastDistance(originalVerticeWs, coreLineVertWs));//Get line from feet to head that verts must respect distance from
             
             // PregnancyPlusPlugin.Logger.LogInfo($" preMorphSphereCenter {preMorphSphereCenter} sphereCenterWs {sphereCenterWs} meshRootTf.pos {meshRootTf.position}");
 
@@ -478,10 +478,14 @@ namespace KK_PregnancyPlus
 
 
             //After all user transforms are applied, remove the edges from the sides/top of the belly
-            smoothedVectorLs = RoundToSides(meshRootTf, originalVerticeLs, smoothedVectorLs, backExtentPosLs, pmSphereCenterLs);
+            smoothedVectorLs = RoundToSides(meshRootTf, originalVerticeLs, smoothedVectorLs, backExtentPosLs);
+
 
             //Less skin stretching under breast area with large slider values
-            smoothedVectorLs = ReduceRibStretchingZ(meshRootTf, originalVerticeLs, smoothedVectorLs, topExtentPosLs);
+            if (originalVerticeLs.y > pmSphereCenterLs.y)
+            {                
+                smoothedVectorLs = ReduceRibStretchingZ(meshRootTf, originalVerticeLs, smoothedVectorLs, topExtentPosLs);
+            }
 
             // //Experimental, move more polygons to the front of the belly at max, Measured by trying to keep belly button size the same at 0 and max inflation size
             // var bellyTipZ = (center.z + maxSphereRadius);
@@ -494,13 +498,21 @@ namespace KK_PregnancyPlus
             // }
 
 
+            //At this point if the smoothed vector is the originalVector just return it
+            if (smoothedVectorLs.Equals(originalVerticeLs)) return meshRootTf.TransformPoint(smoothedVectorLs);
+
+
             //**** All of the below are post mesh change checks to make sure the vertex position don't go outside of bounds
 
             //Smoothed back to workdspace
             var smoothedVectorWs = meshRootTf.TransformPoint(smoothedVectorLs);
             var currentVectorDistance = Math.Abs(FastDistance(sphereCenterWs, smoothedVectorWs));
             var pmCurrentVectorDistance = Math.Abs(FastDistance(preMorphSphereCenterWs, smoothedVectorWs));     
-            var coreLineSmoothedVertWs = meshRootTf.position + meshRootTf.up * (smoothedVectorWs.y - meshRootTf.position.y);       
+            //Get core point on the same y plane as the original vert
+            var coreLineVertWs = meshRootTf.position + meshRootTf.up * (meshRootTf.InverseTransformPoint(originalVerticeWs).y);
+            var origCoreDist = Math.Abs(FastDistance(originalVerticeWs, coreLineVertWs));//Get line from feet to head that verts must respect distance from
+            //Get core point on the same y plane as the smoothed vert
+            var coreLineSmoothedVertWs = meshRootTf.position + meshRootTf.up * (meshRootTf.InverseTransformPoint(smoothedVectorWs).y);       
             var currentCoreDist = Math.Abs(FastDistance(smoothedVectorWs, coreLineSmoothedVertWs)); 
 
             //Don't allow any morphs to shrink towards the sphere center more than its original distance, only outward morphs allowed

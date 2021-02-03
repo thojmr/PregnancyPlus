@@ -224,20 +224,16 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Dampen any mesh changed near edged of the belly (sides, top, and bottom) to prevent too much vertex stretching.  The more forward the vertex is from Z the more it's allowd to be altered by sliders
         /// </summary>        
-        internal Vector3 RoundToSides(Transform meshRootTf, Vector3 originalVerticeLs, Vector3 smoothedVectorLs, 
-                                      Vector3 backExtentPosLs, Vector3 pmSphereCenterLs) 
+        internal Vector3 RoundToSides(Transform meshRootTf, Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 backExtentPosLs) 
         {        
             //The distance forward that we will lerp to a curve
             var zForwardSmoothDist = bellyInfo.ScaledOrigRadius(BellyDir.z)/2;
 
             // Get the disnce the original vector is forward from characters back (use originial and not inflated to exclude multiplier interference)
             var forwardFromBack = (originalVerticeLs.z - backExtentPosLs.z);
-            //As the vert.z approaches the front lerp it less
-            var lerpScale = forwardFromBack/zForwardSmoothDist;
-
-            smoothedVectorLs = Vector3.Lerp(originalVerticeLs, smoothedVectorLs, lerpScale);
             
-            return smoothedVectorLs;
+            //As the vert.z approaches the front lerp it less
+            return Vector3.Lerp(originalVerticeLs, smoothedVectorLs, forwardFromBack/zForwardSmoothDist);        
         }
         
 
