@@ -4,9 +4,6 @@ using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using UniRx;
 using MessagePack;
 
 #if HS2 || AI
@@ -73,6 +70,7 @@ namespace KK_PregnancyPlus
 
             return meshBlendShapes.Count > 0;
         }
+
 
         internal void OnOpenBlendShapeSelected()
         {
@@ -277,7 +275,7 @@ namespace KK_PregnancyPlus
                 return null;
             }
 
-            //Calculate the original normals, but don't show them.  We just want it for the blendshape shape origin
+            //Calculate the original normals, but don't show them.  We just want it for the blendshape shape destination
             meshCopyOrig.vertices = originalVertices[renderKey];
             meshCopyOrig.RecalculateBounds();
             NormalSolver.RecalculateNormals(meshCopyOrig, 40f, bellyVerticieIndexes[renderKey]);
@@ -285,7 +283,7 @@ namespace KK_PregnancyPlus
 
             // LogMeshBlendShapes(smr);
 
-            //Create blend shape object on the mesh
+            //Create a blend shape object on the mesh
             var bsc = new BlendShapeController(meshCopyOrig, smr, $"{renderKey}_{PregnancyPlusPlugin.GUID}");
 
             //Return the blendshape format that can be saved to character card

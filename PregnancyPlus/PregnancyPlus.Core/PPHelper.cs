@@ -1,6 +1,5 @@
 ﻿using KKAPI;
 using KKAPI.Chara;
-using KKABMX.Core;
 using UnityEngine;
 using System;
 using System.Collections.Generic;
@@ -15,7 +14,8 @@ namespace KK_PregnancyPlus
     internal static class PregnancyPlusHelper
     {        
 
-        internal const float gameSizeToCentimetersRatio = 10.3092781f;    
+        //Convert unity unit to a unity cemtimeter
+        internal const float gameSizeToCentimetersRatio = 10.3092781f;
 
 
         internal static SkinnedMeshRenderer GetMeshRenderer(ChaControl chaControl, string renderKey, bool findAll = false) 
@@ -71,49 +71,6 @@ namespace KK_PregnancyPlus
         }
 
 
-        internal static Renderer GetRenderer(ChaControl chaControl, string renderKey) 
-        {
-            var renderers = chaControl.GetComponentsInChildren<Renderer>(true);
-            var renderer = renderers.FirstOrDefault(x => x.name == renderKey);
-            return renderer;
-        }
-
-
-        internal static List<Renderer> GetRenderers(GameObject[] chaControlObjs) 
-        {            
-            var renderers = new List<Renderer>();
-            if (chaControlObjs == null) return renderers;
-
-            foreach(var chaControlObj in chaControlObjs) 
-            {
-                if (chaControlObj == null) continue;
-
-                var skinnedItems = GetRenderers(chaControlObj);
-                if (skinnedItems != null && skinnedItems.Count > 0) {
-                    renderers.AddRange(skinnedItems);
-                }
-            }
-
-            // PregnancyPlusPlugin.Logger.LogInfo($"GetMeshRenderers > {renderers.Count}");
-            return renderers;
-        }
-
-
-        internal static List<Renderer> GetRenderers(GameObject characterObj) 
-        {            
-            var renderers = new List<Renderer>();
-            if (characterObj == null) return renderers;
-
-            var skinnedItem = characterObj.GetComponentsInChildren<Renderer>(true);            
-            if (skinnedItem.Length > 0) 
-            {
-                renderers.AddRange(skinnedItem);
-            }
-
-            return renderers;
-        }
-
-
         /// <summary>   
         /// Will fetch number of weeks from KK_Pregnancy data for this character
         /// </summary>  
@@ -123,7 +80,7 @@ namespace KK_PregnancyPlus
             if (kkPregCtrlInst == null) return -1;
 
             //Get the pregnancy data object
-            var data = kkPregCtrlInst.GetType().GetProperty("Data").GetValue(kkPregCtrlInst, null);
+            var data = kkPregCtrlInst.GetType().GetProperty("Data")?.GetValue(kkPregCtrlInst, null);
             if (data == null) return -1;
 
             var week = Traverse.Create(data).Field("Week").GetValue<int>();
@@ -144,10 +101,10 @@ namespace KK_PregnancyPlus
             if (uncensorController == null) return false;
 
             //Get the body type name, and see if it is the default mesh name
-            var bodyData = uncensorController.GetType().GetProperty("BodyData").GetValue(uncensorController, null);
+            var bodyData = uncensorController.GetType().GetProperty("BodyData")?.GetValue(uncensorController, null);
             if (bodyData == null) return false;
 
-            var bodyGUID = Traverse.Create(bodyData).Field("BodyGUID").GetValue<string>();
+            var bodyGUID = Traverse.Create(bodyData).Field("BodyGUID")?.GetValue<string>();
             if (bodyGUID == null) return false;
 
             return bodyGUID != PregnancyPlusCharaController.DefaultBodyFemaleGUID && bodyGUID != PregnancyPlusCharaController.DefaultBodyMaleGUID;

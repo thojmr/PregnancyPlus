@@ -312,6 +312,7 @@ namespace KK_PregnancyPlus
                     
         }
 
+
         //Reduce, reuse, recycle methods
         internal static PregnancyPlusCharaController GetCharCtrl(Studio.OCIChar c) 
         {
@@ -320,6 +321,7 @@ namespace KK_PregnancyPlus
             if (controller == null) return null;    
             return controller;
         }
+
 
         //Reset all sliders to 0 on Reset btn click
         internal static void ResetAllSliders(float resetTo = 0) 
@@ -340,6 +342,7 @@ namespace KK_PregnancyPlus
             }
         }
 
+
         //Reset a single slider
         internal static void ResetSlider(string sliderName, float resetTo = 0) 
         {
@@ -358,6 +361,7 @@ namespace KK_PregnancyPlus
                 }
             }
         }
+
 
         //Restore sliders to last non zero config
         internal static void RestoreSliders(PregnancyPlusData _infConfig) 
@@ -440,6 +444,7 @@ namespace KK_PregnancyPlus
                 }
             }
         }
+
 
         //Reset a toggle (Breaks the game currently lol)
         internal static void ResetToggle(string toggleName, bool desiredState = false) 

@@ -1,11 +1,6 @@
-﻿using KKAPI;
-using KKAPI.Chara;
+﻿using KKAPI.Chara;
 using UnityEngine;
 using System;
-using System.Collections.Generic;
-#if HS2 || AI
-    using AIChara;
-#endif
 
 namespace KK_PregnancyPlus
 {
@@ -39,7 +34,6 @@ namespace KK_PregnancyPlus
         {            
             var curve = new AnimationCurve();
 
-            //Fast curve
             curve.AddKey(0f, 0f);
             curve.AddKey(0.25f, 0.1f);
             curve.AddKey(0.5f, 0.25f);
@@ -49,12 +43,11 @@ namespace KK_PregnancyPlus
             return curve;
         }
 
-        //Custom curve for skin boudary at top of belly
+        //Custom curve for skin boundary at top of belly
         public static AnimationCurve BellyTopAnimCurve()
         {            
             var curve = new AnimationCurve();
 
-            //Fast curve
             curve.AddKey(0f, 0f);
             curve.AddKey(0.25f, 0.1f);
             curve.AddKey(0.5f, 0.35f);

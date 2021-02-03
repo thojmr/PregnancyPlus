@@ -8,7 +8,6 @@ using System.Linq;
 using System.Reflection;
 using KKAPI.Maker;
 using KKAPI.Studio;
-using UniRx;
 #if HS2 || AI
     using AIChara;
 #endif
@@ -65,7 +64,7 @@ namespace KK_PregnancyPlus
         protected override void Start() 
         {                            
             charaFileName = ChaFileControl.parameter.fullname;        
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"Start {charaFileName}");
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= $Start {charaFileName}");
             ReadAndSetCardData();                       
 
             //Get the char measurements before they have a chance to move
@@ -110,7 +109,7 @@ namespace KK_PregnancyPlus
         }
         
 
-#endregion
+#endregion overrides/hooks
 
 
         /// <summary>
@@ -132,6 +131,7 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" IsNewChar {charaFileName} -> {chaFileControl.parameter.fullname}"); 
             return isNew;
         }
+
 
         /// <summary>
         /// Triggered by OnReload but only for logic in Story mode
@@ -196,6 +196,7 @@ namespace KK_PregnancyPlus
                 MeshInflate(0);
             }            
         }
+
 
         /// <summary>
         /// Triggered when clothing state is changed, i.e. pulled aside or taken off.

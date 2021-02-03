@@ -174,7 +174,7 @@ namespace KK_PregnancyPlus
             var breastBone = PregnancyPlusHelper.GetBone(ChaControl, breastRoot);          
             var waistToBreastDist = Math.Abs(bellyButtonBone.transform.InverseTransformPoint(breastBone.position).y);  
 
-            if (PregnancyPlusPlugin.debugLog) DebugTools.DrawLineAndAttach(breastBone, 5);
+            if (PregnancyPlusPlugin.debugLog && ChaControl.sex == 1) DebugTools.DrawLineAndAttach(breastBone, 5);
 
             //Calculate sphere radius based on distance from waist to ribs (seems big, but lerping later will trim much of it), added Math.Min for skinny waists
             var sphereRadius = GetSphereRadius(waistToRibDist, waistWidth, charScale);
@@ -481,7 +481,7 @@ namespace KK_PregnancyPlus
             smoothedVectorLs = RoundToSides(meshRootTf, originalVerticeLs, smoothedVectorLs, backExtentPosLs, pmSphereCenterLs);
 
             //Less skin stretching under breast area with large slider values
-            smoothedVectorLs = ReduceRibStretching(meshRootTf, originalVerticeLs, smoothedVectorLs, topExtentPosLs);
+            smoothedVectorLs = ReduceRibStretchingZ(meshRootTf, originalVerticeLs, smoothedVectorLs, topExtentPosLs);
 
             // //Experimental, move more polygons to the front of the belly at max, Measured by trying to keep belly button size the same at 0 and max inflation size
             // var bellyTipZ = (center.z + maxSphereRadius);
