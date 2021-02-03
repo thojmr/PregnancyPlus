@@ -245,13 +245,9 @@ namespace KK_PregnancyPlus
         /// Reduce the stretching of the skin at the top of the belly where it connects to the ribs at large Multiplier values
         /// </summary>
         internal Vector3 ReduceRibStretching(Transform meshRootTf, Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 topExtentPosLs)
-        {
-            #if KK
-                var topExtentOffset = 0.1f * bellyInfo.CharacterScale.y * bellyInfo.NHeightScale.y;
-            #elif HS2 || AI            
-                //The distance from topExtent that we want to start lerping movement more slowly
-                var topExtentOffset = 1f * bellyInfo.CharacterScale.y * bellyInfo.NHeightScale.y;
-            #endif
+        {         
+            //The distance from topExtent that we want to start lerping movement more slowly
+            var topExtentOffset = topExtentPosLs.y/10;
 
             //When above the breast bone, dont allow changes
             if (originalVerticeLs.y > topExtentPosLs.y)

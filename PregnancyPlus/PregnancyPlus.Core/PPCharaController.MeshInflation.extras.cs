@@ -42,7 +42,7 @@ namespace KK_PregnancyPlus
             public float WaistThick;
             public float ScaledWaistThick
             {
-                get { return WaistThick * CharacterScale.z * NHeightScale.z; }
+                get { return WaistThick * CharacterScale.z; }
             }
 
             public Vector3 CharacterScale;//BodyTop bone scale
@@ -67,7 +67,7 @@ namespace KK_PregnancyPlus
             public float WaistToBreastDist;//Belly button to breast distance
             public float ScaledWaistToBreastDist
             {
-                get { return WaistToBreastDist * NHeightScale.y * CharacterScale.y; }
+                get { return WaistToBreastDist * CharacterScale.y; }
             }
 
             //From char belly button to breast distance
