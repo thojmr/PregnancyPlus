@@ -145,8 +145,6 @@ namespace KK_PregnancyPlus
                 return ReMeasureWaist(chaControl, needsSphereRecalc, charScale, nHeightScale);
             }
 
-            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" charScale {charScale} nHeightScale {nHeightScale}"); 
-
             //Measeurements need to be recalculated from scratch
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" MeasureWaist init ");                                     
 
@@ -186,7 +184,7 @@ namespace KK_PregnancyPlus
             bellyInfo = new BellyInfo(waistWidth, waistToRibDist, sphereRadiusMultiplied, sphereRadius, charScale, 
                                       GetInflationMultiplier(), waistToBackThickness, nHeightScale, waistToBreastDist);
 
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" waistToRibDist {waistToRibDist} waistWidth {waistWidth} waistThick {waistToBackThickness} sphereRadiusM {sphereRadiusMultiplied}");            
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(bellyInfo.Log());            
 
             return (waistWidth > 0 && sphereRadiusMultiplied > 0 && waistToBackThickness > 0);
         }
@@ -201,7 +199,7 @@ namespace KK_PregnancyPlus
         {
             if (!needsSphereRecalc) 
             {
-                if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" waistToRibDist {bellyInfo.WaistHeight} waistWidth {bellyInfo.WaistWidth} sphereRadiusM {bellyInfo.SphereRadius}");
+                if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(bellyInfo.Log()); 
 
                 //Measeurements are fine and can be reused if above 0
                 return (bellyInfo.WaistWidth > 0 && bellyInfo.SphereRadius > 0 && bellyInfo.WaistThick > 0);
@@ -216,7 +214,8 @@ namespace KK_PregnancyPlus
                 bellyInfo = new BellyInfo(bellyInfo.WaistWidth, bellyInfo.WaistHeight, newSphereRadiusMult, newSphereRadius, 
                                           charScale, GetInflationMultiplier(), bellyInfo.WaistThick, nHeightScale, bellyInfo.WaistToBreastDist);
 
-                if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" waistToRibDist {bellyInfo.WaistHeight} waistWidth {bellyInfo.WaistWidth} sphereRadiusM {newSphereRadiusMult}");           
+                if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" MeasureWaist Recalc ");
+                if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(bellyInfo.Log()); 
                 
                 return (bellyInfo.WaistWidth > 0 && newSphereRadius > 0 && bellyInfo.WaistThick > 0);
             } 
@@ -274,7 +273,7 @@ namespace KK_PregnancyPlus
             #endif    
 #endregion        
 
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" isClothingMesh {isClothingMesh} needsPositionFix {needsPositionFix} ");
+            // if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" isClothingMesh {isClothingMesh} needsPositionFix {needsPositionFix} ");
 
             var rendererName = GetMeshKey(smr);         
             originalVertices[rendererName] = smr.sharedMesh.vertices;
@@ -298,7 +297,7 @@ namespace KK_PregnancyPlus
             var topExtentPosLs = meshRootTf.InverseTransformPoint(topExtentPos);
 
             if (PregnancyPlusPlugin.debugLog) DebugTools.DrawLineAndAttach(meshRootTf, 5, meshRootTf.InverseTransformPoint(topExtentPos) - GetBellyButtonOffsetVector(meshRootTf, bellyInfo.BellyButtonHeight));
-            if (PregnancyPlusPlugin.debugLog) DebugTools.DrawLineAndAttach(meshRootTf, Vector3.zero, new Vector3(5, 0, 0), meshRootTf.InverseTransformPoint(backExtentPos));
+            if (PregnancyPlusPlugin.debugLog) DebugTools.DrawLineAndAttach(meshRootTf, new Vector3(-3, 0, 0), new Vector3(3, 0, 0), meshRootTf.InverseTransformPoint(backExtentPos));
 
             //Set each verticies inflated postion, with some constraints (SculptInflatedVerticie) to make it look more natural
             for (int i = 0; i < vertsLength; i++)
@@ -394,7 +393,7 @@ namespace KK_PregnancyPlus
             Vector3 sphereCenter = boneOrMeshTf.position + bellyButtonPos + GetUserMoveTransform(boneOrMeshTf) + GetBellyButtonOffsetVector(boneOrMeshTf, bbHeight);                                 
 
             if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" sphereCenter {sphereCenter} meshRoot {boneOrMeshTf.position} char origin {ChaControl.transform.position}");
-            // if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" bellyButtonPos {bellyButtonPos} bbHeight {bbHeight}");            
+            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" bellyButtonPos {bellyButtonPos} bbHeight {bbHeight}");            
             return sphereCenter;
         }
 

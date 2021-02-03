@@ -105,6 +105,15 @@ namespace KK_PregnancyPlus
                 return false;
             }
 
+
+            public string Log()
+            {
+                return $@" WaistWidth {WaistWidth} WaistHeight {WaistHeight} WaistThick {WaistThick} WaistToBreastDist {WaistToBreastDist}
+                           CharacterScale {CharacterScale} NHeightScale {NHeightScale}
+                           SphereRadius {SphereRadius} OriginalSphereRadius {OriginalSphereRadius}
+                           ";
+            }
+
         }
         
 

@@ -245,7 +245,7 @@ namespace KK_PregnancyPlus
                 distance = distance * BodyTopScale.y;
             }
 
-            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" total bone dist {distance}  cm:{ConvertToCm(distance)}");
+            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" total bone chain dist {distance}  cm:{ConvertToCm(distance)}");
             return distance;
         }
 
