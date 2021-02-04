@@ -30,27 +30,28 @@ namespace KK_PregnancyPlus
             public float WaistWidth;
             public float ScaledWaistWidth
             {
-                get { return WaistWidth * CharacterScale.x; }
+                get { return WaistWidth * BodyTopScale.x; }
             }
             
             public float WaistHeight;
             public float ScaledWaistHeight
             {
-                get { return WaistHeight * CharacterScale.y; }
+                get { return WaistHeight * BodyTopScale.y; }
             }
 
             public float WaistThick;
             public float ScaledWaistThick
             {
-                get { return WaistThick * CharacterScale.z; }
+                get { return WaistThick * BodyTopScale.z; }
             }
 
-            public Vector3 CharacterScale;//BodyTop bone scale
+            public Vector3 CharacterScale;//ChaControl.transform scale (set by the Axis scale control)
+            public Vector3 BodyTopScale;//BodyTop bone scale
             public Vector3 NHeightScale;//n_height bone scale
             public Vector3 TotalCharScale
             {
-                //Multiply x*x, y*y etc to get the toal character scale (Normally CharacterScale above is all you need), this is for special cases where character uses both scales
-                get { return new Vector3(CharacterScale.x * NHeightScale.x, CharacterScale.y * NHeightScale.y, CharacterScale.z * NHeightScale.z); }
+                //Multiply x*x, y*y etc to get the toal character scale
+                get { return new Vector3(BodyTopScale.x * CharacterScale.x, BodyTopScale.y * CharacterScale.y, BodyTopScale.z * CharacterScale.z); }
             }
 
             public float SphereRadius;
@@ -67,7 +68,7 @@ namespace KK_PregnancyPlus
             public float WaistToBreastDist;//Belly button to breast distance
             public float ScaledWaistToBreastDist
             {
-                get { return WaistToBreastDist * CharacterScale.y; }
+                get { return WaistToBreastDist * BodyTopScale.y; }
             }
 
             //From char belly button to breast distance
@@ -88,41 +89,43 @@ namespace KK_PregnancyPlus
             //Get the sphere radius asjusted by the characters scale
             public float ScaledRadius(BellyDir dir)
             {
-                if (dir == BellyDir.x) return SphereRadius/CharacterScale.x;
-                if (dir == BellyDir.y) return SphereRadius/CharacterScale.y;
-                if (dir == BellyDir.z) return SphereRadius/CharacterScale.z;
+                if (dir == BellyDir.x) return SphereRadius/BodyTopScale.x;
+                if (dir == BellyDir.y) return SphereRadius/BodyTopScale.y;
+                if (dir == BellyDir.z) return SphereRadius/BodyTopScale.z;
                 return -1;
             }
 
             public float ScaledOrigRadius(BellyDir dir)
             {
-                if (dir == BellyDir.x) return OriginalSphereRadius/CharacterScale.x;
-                if (dir == BellyDir.y) return OriginalSphereRadius/CharacterScale.y;
-                if (dir == BellyDir.z) return OriginalSphereRadius/CharacterScale.z;
+                if (dir == BellyDir.x) return OriginalSphereRadius/BodyTopScale.x;
+                if (dir == BellyDir.y) return OriginalSphereRadius/BodyTopScale.y;
+                if (dir == BellyDir.z) return OriginalSphereRadius/BodyTopScale.z;
                 return -1;
             }
 
             internal BellyInfo(float waistWidth, float waistHeight, float sphereRadius, float originalSphereRadius, 
-                               Vector3 characterScale, float currentMultiplier, float waistThick, Vector3 nHeightScale,
-                               float waistToBreastDist) 
+                               Vector3 bodyTopScale, float currentMultiplier, float waistThick, Vector3 nHeightScale,
+                               float waistToBreastDist, Vector3 characterScale) 
             {
                 WaistWidth = waistWidth;
                 WaistHeight = waistHeight;
                 SphereRadius = sphereRadius;
                 OriginalSphereRadius = originalSphereRadius;
-                CharacterScale = characterScale;
+                BodyTopScale = bodyTopScale;
                 CurrentMultiplier = currentMultiplier;
                 WaistThick = waistThick;
                 NHeightScale = nHeightScale;
                 WaistToBreastDist = waistToBreastDist;
+                CharacterScale = characterScale;
             }
 
             //Determine if we need to recalculate the sphere radius (hopefully to avoid change in hip bones causing belly size to sudenly change)
-            internal bool NeedsSphereRecalc(Vector3 characterScale, Vector3 nHeightScale, float currentMultiplier) 
+            internal bool NeedsSphereRecalc(Vector3 bodyTopScale, Vector3 nHeightScale, Vector3 charScale, float currentMultiplier) 
             {
                 if (!IsInitialized) return true;
-                if (CharacterScale != characterScale) return true;
+                if (BodyTopScale != bodyTopScale) return true;
                 if (NHeightScale != nHeightScale) return true;
+                if (CharacterScale != charScale) return true;
                 if (CurrentMultiplier != currentMultiplier) return true;
 
                 return false;
@@ -132,7 +135,7 @@ namespace KK_PregnancyPlus
             public string Log()
             {
                 return $@" WaistWidth {WaistWidth} WaistHeight {WaistHeight} WaistThick {WaistThick} WaistToBreastDist {WaistToBreastDist}
-                           CharacterScale {CharacterScale} NHeightScale {NHeightScale}
+                           BodyTopScale {BodyTopScale} NHeightScale {NHeightScale}
                            SphereRadius {SphereRadius} OriginalSphereRadius {OriginalSphereRadius}
                            ";
             }

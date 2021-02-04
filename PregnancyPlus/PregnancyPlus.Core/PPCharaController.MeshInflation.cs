@@ -135,14 +135,15 @@ namespace KK_PregnancyPlus
                 var bellyButton = "cf_J_Kosi01";
             #endif   
 
-            var charScale = PregnancyPlusHelper.GetBodyTopScale(ChaControl);
+            var bodyTopScale = PregnancyPlusHelper.GetBodyTopScale(ChaControl);
             var nHeightScale = PregnancyPlusHelper.GetN_HeightScale(ChaControl);
-            var needsSphereRecalc = bellyInfo != null ? bellyInfo.NeedsSphereRecalc(charScale, nHeightScale, GetInflationMultiplier()) : true;
+            var charScale = ChaControl.transform.localScale;
+            var needsSphereRecalc = bellyInfo != null ? bellyInfo.NeedsSphereRecalc(bodyTopScale, nHeightScale, charScale,  GetInflationMultiplier()) : true;
 
             //We should reuse existing measurements when we can, because characters waise bone distance chan change with animation, which affects belly size.
             if (bellyInfo != null)
             {
-                return ReMeasureWaist(chaControl, needsSphereRecalc, charScale, nHeightScale);
+                return ReMeasureWaist(chaControl, needsSphereRecalc, bodyTopScale, nHeightScale);
             }
 
             //Measeurements need to be recalculated from scratch
@@ -177,12 +178,13 @@ namespace KK_PregnancyPlus
             // if (PregnancyPlusPlugin.debugLog && ChaControl.sex == 1) DebugTools.DrawLineAndAttach(breastBone, 5);
 
             //Calculate sphere radius based on distance from waist to ribs (seems big, but lerping later will trim much of it), added Math.Min for skinny waists
-            var sphereRadius = GetSphereRadius(waistToRibDist, waistWidth, charScale);
+            var sphereRadius = GetSphereRadius(waistToRibDist, waistWidth, bodyTopScale);
             var sphereRadiusMultiplied = sphereRadius * (GetInflationMultiplier() + 1);   
 
             //Store all these values for reuse later
-            bellyInfo = new BellyInfo(waistWidth, waistToRibDist, sphereRadiusMultiplied, sphereRadius, charScale, 
-                                      GetInflationMultiplier(), waistToBackThickness, nHeightScale, waistToBreastDist);
+            bellyInfo = new BellyInfo(waistWidth, waistToRibDist, sphereRadiusMultiplied, sphereRadius, bodyTopScale, 
+                                      GetInflationMultiplier(), waistToBackThickness, nHeightScale, waistToBreastDist,
+                                      charScale);
 
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(bellyInfo.Log());            
 
@@ -212,7 +214,8 @@ namespace KK_PregnancyPlus
 
                 //Store new values for later checks
                 bellyInfo = new BellyInfo(bellyInfo.WaistWidth, bellyInfo.WaistHeight, newSphereRadiusMult, newSphereRadius, 
-                                          charScale, GetInflationMultiplier(), bellyInfo.WaistThick, nHeightScale, bellyInfo.WaistToBreastDist);
+                                          charScale, GetInflationMultiplier(), bellyInfo.WaistThick, nHeightScale, bellyInfo.WaistToBreastDist,
+                                          ChaControl.transform.localScale);
 
                 if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" MeasureWaist Recalc ");
                 if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(bellyInfo.Log()); 
@@ -510,10 +513,10 @@ namespace KK_PregnancyPlus
             var currentVectorDistance = Math.Abs(FastDistance(sphereCenterWs, smoothedVectorWs));
             var pmCurrentVectorDistance = Math.Abs(FastDistance(preMorphSphereCenterWs, smoothedVectorWs));     
             //Get core point on the same y plane as the original vert
-            var coreLineVertWs = meshRootTf.position + meshRootTf.up * (meshRootTf.InverseTransformPoint(originalVerticeWs).y * bellyInfo.CharacterScale.y);
+            var coreLineVertWs = meshRootTf.position + meshRootTf.up * (meshRootTf.InverseTransformPoint(originalVerticeWs).y * bellyInfo.BodyTopScale.y);
             var origCoreDist = Math.Abs(FastDistance(originalVerticeWs, coreLineVertWs));//Get line from feet to head that verts must respect distance from
             //Get core point on the same y plane as the smoothed vert
-            var coreLineSmoothedVertWs = meshRootTf.position + meshRootTf.up * (meshRootTf.InverseTransformPoint(smoothedVectorWs).y * bellyInfo.CharacterScale.y);       
+            var coreLineSmoothedVertWs = meshRootTf.position + meshRootTf.up * (meshRootTf.InverseTransformPoint(smoothedVectorWs).y * bellyInfo.BodyTopScale.y);       
             var currentCoreDist = Math.Abs(FastDistance(smoothedVectorWs, coreLineSmoothedVertWs)); 
 
             //Don't allow any morphs to shrink towards the sphere center more than its original distance, only outward morphs allowed

@@ -53,12 +53,12 @@ namespace KK_PregnancyPlus
             {
                 var distFromYCenterLs = smoothedVectorLs.y - sphereCenterLs.y;
                 //Lerp up and down positon more when the belly is near the center Y, and less for top and bottom
-                var lerpY = Mathf.Lerp(GetInflationShiftY(), GetInflationShiftY()/4, Math.Abs(distFromYCenterLs/((skinToCenterDist/bellyInfo.CharacterScale.y)*1.8f)));
+                var lerpY = Mathf.Lerp(GetInflationShiftY(), GetInflationShiftY()/4, Math.Abs(distFromYCenterLs/((skinToCenterDist/bellyInfo.BodyTopScale.y)*1.8f)));
                 var yLerpedsmoothedVector = smoothedVectorLs + Vector3.up * lerpY;//Since its all local space here, we dont have to use meshRootTf.up
 
                 //Finally lerp sides slightly slower than center
                 var distanceSide = Math.Abs(smoothedVectorLs.x - sphereCenterLs.x); 
-                var finalLerpPos = Vector3.Slerp(yLerpedsmoothedVector, smoothedVectorLs, Math.Abs(distanceSide/((skinToCenterDist/bellyInfo.CharacterScale.x)*3) + 0.1f));
+                var finalLerpPos = Vector3.Slerp(yLerpedsmoothedVector, smoothedVectorLs, Math.Abs(distanceSide/((skinToCenterDist/bellyInfo.BodyTopScale.x)*3) + 0.1f));
 
                 //return the shift up/down 
                 smoothedVectorLs = finalLerpPos;
@@ -68,7 +68,7 @@ namespace KK_PregnancyPlus
             if (GetInflationShiftZ() != 0) 
             {
                 //Move the verts closest to sphere center Z more slowly than verts at the belly button.  Otherwise you stretch the ones near the body too much
-                var lerpZ = Mathf.Lerp(0, GetInflationShiftZ(), (smoothedVectorLs.z - sphereCenterLs.z)/((skinToCenterDist/bellyInfo.CharacterScale.z) *2));
+                var lerpZ = Mathf.Lerp(0, GetInflationShiftZ(), (smoothedVectorLs.z - sphereCenterLs.z)/((skinToCenterDist/bellyInfo.BodyTopScale.z) *2));
                 var finalLerpPos = smoothedVectorLs + Vector3.forward * lerpZ;
 
                 smoothedVectorLs = finalLerpPos;
@@ -122,9 +122,9 @@ namespace KK_PregnancyPlus
             var isRight = distFromXCenterLs > 0; 
 
             //Increase taper amount for vecters further above or below center.  No shift along center
-            var taperY = Mathf.Lerp(0, GetInflationTaperY(), Math.Abs(distFromYCenterLs)/(skinToCenterDist/bellyInfo.CharacterScale.y));
+            var taperY = Mathf.Lerp(0, GetInflationTaperY(), Math.Abs(distFromYCenterLs)/(skinToCenterDist/bellyInfo.BodyTopScale.y));
             //Second lerp to limit how much it shifts l/r when near x=0 line, no shift along center
-            taperY = Mathf.Lerp(0, taperY, Math.Abs(distFromXCenterLs)/(skinToCenterDist/bellyInfo.CharacterScale.x));
+            taperY = Mathf.Lerp(0, taperY, Math.Abs(distFromXCenterLs)/(skinToCenterDist/bellyInfo.BodyTopScale.x));
             //Reverse the direction based on which side the vert is on
             taperY = (isRight ? taperY : -taperY);
             taperY = (isTop ? taperY : -taperY);
@@ -148,7 +148,7 @@ namespace KK_PregnancyPlus
             var isTop = distFromYCenterLs > 0; 
 
             //Increase taper amount for vecters further above or below center.  No shifting at center
-            var taperZ = Mathf.Lerp(0, GetInflationTaperZ(), Math.Abs(distFromYCenterLs)/(skinToCenterDist/bellyInfo.CharacterScale.y));
+            var taperZ = Mathf.Lerp(0, GetInflationTaperZ(), Math.Abs(distFromYCenterLs)/(skinToCenterDist/bellyInfo.BodyTopScale.y));
             //Reverse the direction based on which side the vert is on
             taperZ = (isTop ? taperZ : -taperZ);
             var taperedZVert = smoothedVectorLs + Vector3.forward * taperZ;
@@ -156,10 +156,10 @@ namespace KK_PregnancyPlus
             //decrease movement speed near the back
             var forwardFromBack = (originalVerticeLs.z - backExtentPosLs.z);
             //Leave a little dead zone at the back where the verts don't change.  
-            var backLerp = Vector3.Lerp(smoothedVectorLs, taperedZVert, forwardFromBack/(skinToCenterDist/bellyInfo.CharacterScale.z) - ((skinToCenterDist/bellyInfo.CharacterScale.z)/2));
+            var backLerp = Vector3.Lerp(smoothedVectorLs, taperedZVert, forwardFromBack/(skinToCenterDist/bellyInfo.BodyTopScale.z) - ((skinToCenterDist/bellyInfo.BodyTopScale.z)/2));
          
             //Move verts closest to z=0 more slowly than those out front to reduce skin stretching
-            smoothedVectorLs = Vector3.Lerp(backLerp, taperedZVert, distFromZCenterLs/(skinToCenterDist/bellyInfo.CharacterScale.z));
+            smoothedVectorLs = Vector3.Lerp(backLerp, taperedZVert, distFromZCenterLs/(skinToCenterDist/bellyInfo.BodyTopScale.z));
 
             return smoothedVectorLs;
         }
