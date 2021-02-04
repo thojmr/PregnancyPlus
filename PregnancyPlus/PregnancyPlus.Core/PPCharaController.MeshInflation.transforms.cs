@@ -2,17 +2,8 @@
 using KKAPI.Chara;
 using UnityEngine;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using KKAPI.Studio;
 using KKAPI.Maker;
-
-using UniRx;
-#if HS2 || AI
-using AIChara;
-#endif
 
 namespace KK_PregnancyPlus
 {
