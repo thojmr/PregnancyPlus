@@ -163,7 +163,7 @@ namespace KK_PregnancyPlus
         /// <param name="chaControl">The character to fetch bones from</param>
         /// <param name="boneStart">The starting (bottom of tree) bone name</param>
         /// <param name="boneEnd">The optional (top level) end bone name.  If null, the entire bone tree from bottom to top will be calculated.</param>
-        internal static float BoneChainStraigntenedDistance(ChaControl chaControl, string boneStart, string boneEnd = null) 
+        internal static float BoneChainStraigntenedDistance(ChaControl chaControl, Vector3 totalCharScale, string boneStart, string boneEnd = null) 
         {
             //loops through each bone starting bottom going up through parent to destination (or root)
             var currentBone = GetBoneGO(chaControl, boneStart);
@@ -195,11 +195,10 @@ namespace KK_PregnancyPlus
             }
 
             //Check for BodyTop scale to apply it to distance (cf_n_height scale doesnt matter here for some reason)
-            var BodyTopScale = GetBodyTopScale(chaControl);
-            if (BodyTopScale.y != 1) 
+            if (totalCharScale.y != 1) 
             {                
-                if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" applying BodyTop scale to distance: {distance} scale: {BodyTopScale.y}");
-                distance = distance * BodyTopScale.y;
+                if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" applying BodyTop scale to distance: {distance} scale: {totalCharScale.y}");
+                distance = distance * totalCharScale.y;
             }
 
             if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" total bone chain dist {distance}  cm:{ConvertToCm(distance)}");

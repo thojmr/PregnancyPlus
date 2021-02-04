@@ -30,19 +30,19 @@ namespace KK_PregnancyPlus
             public float WaistWidth;
             public float ScaledWaistWidth
             {
-                get { return WaistWidth * BodyTopScale.x; }
+                get { return WaistWidth * TotalCharScale.x; }
             }
             
             public float WaistHeight;
             public float ScaledWaistHeight
             {
-                get { return WaistHeight * BodyTopScale.y; }
+                get { return WaistHeight * TotalCharScale.y; }
             }
 
             public float WaistThick;
             public float ScaledWaistThick
             {
-                get { return WaistThick * BodyTopScale.z; }
+                get { return WaistThick * TotalCharScale.z; }
             }
 
             public Vector3 CharacterScale;//ChaControl.transform scale (set by the Axis scale control)
@@ -68,7 +68,7 @@ namespace KK_PregnancyPlus
             public float WaistToBreastDist;//Belly button to breast distance
             public float ScaledWaistToBreastDist
             {
-                get { return WaistToBreastDist * BodyTopScale.y; }
+                get { return WaistToBreastDist * TotalCharScale.y; }
             }
 
             //From char belly button to breast distance
@@ -89,17 +89,17 @@ namespace KK_PregnancyPlus
             //Get the sphere radius asjusted by the characters scale
             public float ScaledRadius(BellyDir dir)
             {
-                if (dir == BellyDir.x) return SphereRadius/BodyTopScale.x;
-                if (dir == BellyDir.y) return SphereRadius/BodyTopScale.y;
-                if (dir == BellyDir.z) return SphereRadius/BodyTopScale.z;
+                if (dir == BellyDir.x) return SphereRadius/TotalCharScale.x;
+                if (dir == BellyDir.y) return SphereRadius/TotalCharScale.y;
+                if (dir == BellyDir.z) return SphereRadius/TotalCharScale.z;
                 return -1;
             }
 
             public float ScaledOrigRadius(BellyDir dir)
             {
-                if (dir == BellyDir.x) return OriginalSphereRadius/BodyTopScale.x;
-                if (dir == BellyDir.y) return OriginalSphereRadius/BodyTopScale.y;
-                if (dir == BellyDir.z) return OriginalSphereRadius/BodyTopScale.z;
+                if (dir == BellyDir.x) return OriginalSphereRadius/TotalCharScale.x;
+                if (dir == BellyDir.y) return OriginalSphereRadius/TotalCharScale.y;
+                if (dir == BellyDir.z) return OriginalSphereRadius/TotalCharScale.z;
                 return -1;
             }
 
@@ -135,7 +135,7 @@ namespace KK_PregnancyPlus
             public string Log()
             {
                 return $@" WaistWidth {WaistWidth} WaistHeight {WaistHeight} WaistThick {WaistThick} WaistToBreastDist {WaistToBreastDist}
-                           BodyTopScale {BodyTopScale} NHeightScale {NHeightScale}
+                           BodyTopScale {BodyTopScale} NHeightScale {NHeightScale} CharacterScale {CharacterScale} TotalCharScale {TotalCharScale}
                            SphereRadius {SphereRadius} OriginalSphereRadius {OriginalSphereRadius}
                            ";
             }
@@ -285,9 +285,9 @@ namespace KK_PregnancyPlus
         {            
             //Calculate the belly button height by getting each bone distance from foot to belly button (even during animation the height is correct!)
             #if KK
-                var bbHeight = PregnancyPlusHelper.BoneChainStraigntenedDistance(ChaControl, "cf_j_foot_L", "cf_j_waist01");
+                var bbHeight = PregnancyPlusHelper.BoneChainStraigntenedDistance(ChaControl, bellyInfo.TotalCharScale, "cf_j_foot_L", "cf_j_waist01");
             #elif HS2 || AI            
-                var bbHeight = PregnancyPlusHelper.BoneChainStraigntenedDistance(ChaControl, "cf_J_Toes01_L", "cf_J_Kosi01");                       
+                var bbHeight = PregnancyPlusHelper.BoneChainStraigntenedDistance(ChaControl, bellyInfo.TotalCharScale, "cf_J_Toes01_L", "cf_J_Kosi01");                       
             #endif                      
             
             return bbHeight;
