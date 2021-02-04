@@ -114,8 +114,9 @@ namespace KK_PregnancyPlus
         ///     Smaller characters have smaller bellies, wider characters have wider bellies etc...
         /// </summary>
         /// <param name="chaControl">The character to measure</param>
+        /// <param name="forceRecalc">For debuggin, will recalculate from scratch each time when true</param>
         /// <returns>Boolean if all measurements are valid</returns>
-        internal bool MeasureWaist(ChaControl chaControl) 
+        internal bool MeasureWaist(ChaControl chaControl, bool forceRecalc = false) 
         {
             #if KK
                 var breastRoot = "cf_d_bust00";
@@ -128,7 +129,7 @@ namespace KK_PregnancyPlus
             #elif HS2 || AI   
                 var breastRoot = "cf_J_Mune00";                             
                 var ribName = "cf_J_Spine02_s";
-                var waistName = "cf_J_Kosi02";
+                var waistName = "cf_J_Kosi02_s";
                 var thighLName = "cf_J_LegUp00_L";
                 var thighRName = "cf_J_LegUp00_R";
                 var backName = "N_Back";  
@@ -142,7 +143,7 @@ namespace KK_PregnancyPlus
             var needsSphereRecalc = bellyInfo != null ? bellyInfo.NeedsSphereRecalc(bodyTopScale, nHeightScale, charScale,  GetInflationMultiplier()) : true;
 
             //We should reuse existing measurements when we can, because characters waise bone distance chan change with animation, which affects belly size.
-            if (bellyInfo != null)
+            if (bellyInfo != null && !forceRecalc)
             {
                 return ReMeasureWaist(chaControl, needsSphereRecalc, bodyTopScale, nHeightScale, totalScale);
             }
@@ -150,33 +151,41 @@ namespace KK_PregnancyPlus
             //Measeurements need to be recalculated from scratch
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" MeasureWaist init ");                                     
 
+
             //Get the characters Y bones to measure from
             var ribBone = PregnancyPlusHelper.GetBone(ChaControl, ribName);
             var waistBone = PregnancyPlusHelper.GetBone(ChaControl, waistName);
             if (ribBone == null || waistBone == null) return false;
 
-            var waistToRibDist = waistBone.transform.InverseTransformPoint(ribBone.position).y;
+            //Measures from the wasist to the bottom of the ribs
+            var waistToRibDist = Vector3.Distance(waistBone.transform.InverseTransformPoint(waistBone.position), waistBone.transform.InverseTransformPoint(ribBone.position));
 
 
             //Get the characters z waist thickness
             var backBone = PregnancyPlusHelper.GetBone(ChaControl, backName);
-            if (ribBone == null || waistBone == null) return false;
+            var breastBone = PregnancyPlusHelper.GetBone(ChaControl, breastRoot);  
+            if (ribBone == null || breastBone == null) return false;
 
-            var waistToBackThickness = Math.Abs(waistBone.transform.InverseTransformPoint(backBone.position).z);
+            //Measures from breast root to the back spine distance
+            var waistToBackThickness = Math.Abs(breastBone.transform.InverseTransformPoint(backBone.position).z);
+
 
             //Get the characters X bones to measure from, in localspace to ignore n_height scale
             var thighLBone = PregnancyPlusHelper.GetBone(ChaControl, thighLName);
             var thighRBone = PregnancyPlusHelper.GetBone(ChaControl, thighRName);
             if (thighLBone == null || thighRBone == null) return false;
             
+            //Measures Left to right hip bone distance
             var waistWidth = Vector3.Distance(thighLBone.transform.InverseTransformPoint(thighLBone.position), thighLBone.transform.InverseTransformPoint(thighRBone.position)); 
 
-            //Verts above this are not allowed to move
-            var bellyButtonBone = PregnancyPlusHelper.GetBone(ChaControl, bellyButton);
-            var breastBone = PregnancyPlusHelper.GetBone(ChaControl, breastRoot);          
-            var waistToBreastDist = Math.Abs(bellyButtonBone.transform.InverseTransformPoint(breastBone.position).y);  
+
+            //Verts above this position are not allowed to move
+            var bellyButtonBone = PregnancyPlusHelper.GetBone(ChaControl, bellyButton);      
+            //Distance from waist to breast root              
+            var waistToBreastDist = waistToRibDist + Math.Abs(ribBone.transform.InverseTransformPoint(breastBone.position).y);  
 
             // if (PregnancyPlusPlugin.debugLog && ChaControl.sex == 1) DebugTools.DrawLineAndAttach(breastBone, 5);
+
 
             //Calculate sphere radius based on distance from waist to ribs (seems big, but lerping later will trim much of it), added Math.Min for skinny waists
             var sphereRadius = GetSphereRadius(waistToRibDist, waistWidth, totalScale);

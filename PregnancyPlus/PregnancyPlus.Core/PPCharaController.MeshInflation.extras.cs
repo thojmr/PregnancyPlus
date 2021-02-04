@@ -62,7 +62,7 @@ namespace KK_PregnancyPlus
             public float ZLimit
             {
                 //Get the distance from center -> spine, where the belly is allowed to wrap around to (total distance from 0 to back bone /some scale that looks good)
-                get { return ScaledWaistThick/1.9f; }
+                get { return ScaledWaistThick/2f; }
             }
 
             public float WaistToBreastDist;//Belly button to breast distance
@@ -451,7 +451,7 @@ namespace KK_PregnancyPlus
 
             sharedMesh.vertices = currentVert;
             sharedMesh.RecalculateBounds();
-            NormalSolver.RecalculateNormals(sharedMesh, 300f, bellyVerticieIndexes[renderKey]);
+            NormalSolver.RecalculateNormals(sharedMesh, 40f, bellyVerticieIndexes[renderKey]);
             //sharedMesh.RecalculateNormals();  //old way that leaves skin seams
             sharedMesh.RecalculateTangents();
 
@@ -500,7 +500,7 @@ namespace KK_PregnancyPlus
 
                 sharedMesh.vertices = origVerts;
                 sharedMesh.RecalculateBounds();
-                NormalSolver.RecalculateNormals(sharedMesh, 300f, bellyVerticieIndexes[renderKey]);
+                NormalSolver.RecalculateNormals(sharedMesh, 40f, bellyVerticieIndexes[renderKey]);
                 //sharedMesh.RecalculateNormals(); //old way that leaves skin seams
                 sharedMesh.RecalculateTangents();
             }

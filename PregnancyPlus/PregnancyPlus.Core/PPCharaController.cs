@@ -105,7 +105,8 @@ namespace KK_PregnancyPlus
             WatchForUserKeyPress();
 
             //just for testing, pretty compute heavy for Update()
-            // if (Time.frameCount % 10 == 0 && PregnancyPlusPlugin.debugLog) MeshInflate(true, true);
+            // if (Time.frameCount % 20 == 0 && PregnancyPlusPlugin.debugLog) MeasureWaist(ChaControl, true);
+            // if (Time.frameCount % 20 == 0 && PregnancyPlusPlugin.debugLog) MeshInflate(true, true);
         }
         
 
