@@ -375,12 +375,23 @@ namespace KK_PregnancyPlus
         internal Transform GetMeshRoot() 
         {                                
             #if KK
-                //Get normal mesh root attachment position, and if its not near 0,0,0 fix it so that it is
+                //Get normal mesh root attachment position, and if its not near 0,0,0 fix it so that it is (Match it to the chacontrol y pos)
                 var kkMeshRoot = PregnancyPlusHelper.GetBoneGO(ChaControl, "cf_o_root");
-                if (!kkMeshRoot) return null;
+                if (!kkMeshRoot) return null;                
                 
                 var meshRoot = kkMeshRoot.transform;
-                meshRoot.transform.position = kkMeshRoot.transform.position + kkMeshRoot.transform.up * (-ChaControl.transform.InverseTransformPoint(kkMeshRoot.transform.position).y);
+                
+                //If the mesh root y is too far from the ChaControl origin
+                if (ChaControl.transform.InverseTransformPoint(meshRoot.position).y > 0.01f)
+                {
+                    // if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($"$ GetMeshRoot pos {kkMeshRoot.transform.position}");
+                    // if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($"$ char pos {ChaControl.transform.position}");
+
+                    //Set the meshroot.pos to the chaControl.pos to make it more in line with HS2/AI, and KK Uncensor mesh
+                    meshRoot.transform.position = ChaControl.transform.position;
+
+                    // if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($"$ GetMeshRoot pos after {meshRoot.transform.position}");
+                }                
             
             #elif HS2 || AI
                 //For HS2, get the equivalent position game object (near bellybutton)
