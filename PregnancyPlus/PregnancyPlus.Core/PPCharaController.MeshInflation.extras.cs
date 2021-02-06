@@ -256,7 +256,7 @@ namespace KK_PregnancyPlus
             var totatDist = (sphereRadius - awayFromCenter);
             var originToEndDist = FastDistance(meshRootTf.InverseTransformPoint(origVertWS), meshRootTf.InverseTransformPoint(inflatedVerWS));
             //Get the positon on a line that this vector exists between flattenExtensStartAt -> to sphereRadius. Then shrink it to scale
-            var offset = Math.Abs((totatDist - originToEndDist)) * shrinkBy;
+            var offset = totatDist * shrinkBy - (Math.Abs((totatDist - originToEndDist)) * shrinkBy);
 
             //This is the total additional distance we want to move this vert away from sphere center
             return offset + GetClothLayerOffset(meshName);
