@@ -55,7 +55,7 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" inflationSize > {infConfig.inflationSize} for {charaFileName} ");
             
             //Get the measurements that determine the base belly size
-            var hasMeasuerments = MeasureWaist(ChaControl);                     
+            var hasMeasuerments = MeasureWaistAndSphere(ChaControl);                     
             if (!hasMeasuerments) return false;
             
             var anyMeshChanges = false;
@@ -116,8 +116,82 @@ namespace KK_PregnancyPlus
         /// <param name="chaControl">The character to measure</param>
         /// <param name="forceRecalc">For debuggin, will recalculate from scratch each time when true</param>
         /// <returns>Boolean if all measurements are valid</returns>
-        internal bool MeasureWaist(ChaControl chaControl, bool forceRecalc = false) 
+        internal bool MeasureWaistAndSphere(ChaControl chaControl, bool forceRecalc = false) 
+        { 
+
+            var bodyTopScale = PregnancyPlusHelper.GetBodyTopScale(ChaControl);
+            var nHeightScale = PregnancyPlusHelper.GetN_HeightScale(ChaControl);
+            var charScale = ChaControl.transform.localScale;
+            var totalScale = new Vector3(bodyTopScale.x * charScale.x, bodyTopScale.y * charScale.y, bodyTopScale.z * charScale.z);
+            var needsWaistRecalc = bellyInfo != null ? bellyInfo.NeedsBoneDistanceRecalc(bodyTopScale, nHeightScale, charScale) : true;
+            var needsSphereRecalc = bellyInfo != null ? bellyInfo.NeedsSphereRecalc(infConfig) : true;
+
+            //We should reuse existing measurements when we can, because characters waise bone distance chan change with animation, which affects belly size.
+            if (bellyInfo != null)
+            {
+                if (!forceRecalc && needsSphereRecalc && !needsWaistRecalc)//Sphere radius calc needed
+                {
+                    var _valid = MeasureSphere(chaControl, bodyTopScale, nHeightScale, totalScale);
+                    if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(bellyInfo.Log()); 
+                    return _valid;
+                }
+                else if (!forceRecalc && needsWaistRecalc && !needsSphereRecalc)//Measurements needed which also requires sphere recalc
+                {
+                    var _valid = MeasureWaist(chaControl, charScale, nHeightScale, 
+                                        out float _waistToRibDist, out float _waistToBackThickness, out float _waistWidth, out float _waistToBreastDist);
+                    MeasureSphere(chaControl, bodyTopScale, nHeightScale, totalScale);
+
+                    //Store all these values for reuse later
+                    bellyInfo = new BellyInfo(_waistWidth, _waistToRibDist, bellyInfo.SphereRadius, bellyInfo.OriginalSphereRadius, bodyTopScale, 
+                                              GetInflationMultiplier(), _waistToBackThickness, nHeightScale, _waistToBreastDist,
+                                              charScale);
+
+                    if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(bellyInfo.Log());                                             
+                    return _valid;
+                }
+                else if (!forceRecalc && !needsSphereRecalc && !needsWaistRecalc)//No changed needed
+                {
+                    //Just return the original measurements and sphere radius when no updates needed
+                    if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(bellyInfo.Log()); 
+
+                    //Measeurements are fine and can be reused if above 0
+                    return (bellyInfo.WaistWidth > 0 && bellyInfo.SphereRadius > 0 && bellyInfo.WaistThick > 0);
+                } 
+            }
+
+            //Measeurements need to be recalculated from scratch
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" MeasureWaistAndSphere init ");
+
+            //Get waist measurements from bone distances
+            var valid = MeasureWaist(chaControl, charScale, nHeightScale, 
+                                           out float waistToRibDist, out float waistToBackThickness, out float waistWidth, out float waistToBreastDist);
+
+            //Check for bad values
+            if (!valid) return false;
+
+            //Calculate sphere radius based on distance from waist to ribs (seems big, but lerping later will trim much of it), added Math.Min for skinny waists
+            var sphereRadius = GetSphereRadius(waistToRibDist, waistWidth, totalScale);
+            var sphereRadiusMultiplied = sphereRadius * (GetInflationMultiplier() + 1);   
+
+            //Store all these values for reuse later
+            bellyInfo = new BellyInfo(waistWidth, waistToRibDist, sphereRadiusMultiplied, sphereRadius, bodyTopScale, 
+                                      GetInflationMultiplier(), waistToBackThickness, nHeightScale, waistToBreastDist,
+                                      charScale);
+
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(bellyInfo.Log());            
+
+            return (waistWidth > 0 && sphereRadiusMultiplied > 0 && waistToBackThickness > 0 && waistToBreastDist > 0);
+        }
+
+
+        /// <summary>
+        /// Calculate the waist mesaurements that are used to set the default belly size
+        /// </summary>
+        /// <returns>Boolean if all measurements are valid</returns>
+        internal bool MeasureWaist(ChaControl chaControl, Vector3 charScale, Vector3 nHeightScale, 
+                                   out float waistToRibDist, out float waistToBackThickness, out float waistWidth, out float waistToBreastDist) 
         {
+            //Bone names
             #if KK
                 var breastRoot = "cf_d_bust00";
                 var ribName = "cf_s_spine02";
@@ -134,104 +208,71 @@ namespace KK_PregnancyPlus
                 var thighRName = "cf_J_LegUp00_R";
                 var backName = "N_Back";  
                 var bellyButton = "cf_J_Kosi01";
-            #endif   
+            #endif  
 
-            var bodyTopScale = PregnancyPlusHelper.GetBodyTopScale(ChaControl);
-            var nHeightScale = PregnancyPlusHelper.GetN_HeightScale(ChaControl);
-            var charScale = ChaControl.transform.localScale;
-            var totalScale = new Vector3(bodyTopScale.x * charScale.x, bodyTopScale.y * charScale.y, bodyTopScale.z * charScale.z);
-            var needsSphereRecalc = bellyInfo != null ? bellyInfo.NeedsSphereRecalc(bodyTopScale, nHeightScale, charScale,  GetInflationMultiplier()) : true;
-
-            //We should reuse existing measurements when we can, because characters waise bone distance chan change with animation, which affects belly size.
-            if (bellyInfo != null && !forceRecalc)
-            {
-                return ReMeasureWaist(chaControl, needsSphereRecalc, bodyTopScale, nHeightScale, totalScale);
-            }
-
-            //Measeurements need to be recalculated from scratch
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" MeasureWaist init ");                                     
-
+            //Init out params
+            waistToRibDist = 0;
+            waistToBackThickness = 0;
+            waistWidth = 0;
+            waistToBreastDist = 0;
 
             //Get the characters Y bones to measure from
             var ribBone = PregnancyPlusHelper.GetBone(ChaControl, ribName);
             var waistBone = PregnancyPlusHelper.GetBone(ChaControl, waistName);
-            if (ribBone == null || waistBone == null) return false;
+            if (ribBone == null || waistBone == null) return (waistWidth > 0 && waistToBackThickness > 0 && waistToRibDist > 0);
 
             //Measures from the wasist to the bottom of the ribs
-            var waistToRibDist = Vector3.Distance(waistBone.transform.InverseTransformPoint(waistBone.position), waistBone.transform.InverseTransformPoint(ribBone.position));
+            waistToRibDist = Vector3.Distance(waistBone.transform.InverseTransformPoint(waistBone.position), waistBone.transform.InverseTransformPoint(ribBone.position));
 
 
             //Get the characters z waist thickness
             var backBone = PregnancyPlusHelper.GetBone(ChaControl, backName);
             var breastBone = PregnancyPlusHelper.GetBone(ChaControl, breastRoot);  
-            if (ribBone == null || breastBone == null) return false;
+            if (ribBone == null || breastBone == null) return (waistWidth > 0 && waistToBackThickness > 0 && waistToRibDist > 0);
 
             //Measures from breast root to the back spine distance
-            var waistToBackThickness = Math.Abs(breastBone.transform.InverseTransformPoint(backBone.position).z);
-
+            waistToBackThickness = Math.Abs(breastBone.transform.InverseTransformPoint(backBone.position).z);
 
             //Get the characters X bones to measure from, in localspace to ignore n_height scale
             var thighLBone = PregnancyPlusHelper.GetBone(ChaControl, thighLName);
             var thighRBone = PregnancyPlusHelper.GetBone(ChaControl, thighRName);
-            if (thighLBone == null || thighRBone == null) return false;
+            if (thighLBone == null || thighRBone == null) return (waistWidth > 0 && waistToBackThickness > 0 && waistToRibDist > 0);
             
             //Measures Left to right hip bone distance
-            var waistWidth = Vector3.Distance(thighLBone.transform.InverseTransformPoint(thighLBone.position), thighLBone.transform.InverseTransformPoint(thighRBone.position)); 
-
+            waistWidth = Vector3.Distance(thighLBone.transform.InverseTransformPoint(thighLBone.position), thighLBone.transform.InverseTransformPoint(thighRBone.position)); 
 
             //Verts above this position are not allowed to move
             var bellyButtonBone = PregnancyPlusHelper.GetBone(ChaControl, bellyButton);      
             //Distance from waist to breast root              
-            var waistToBreastDist = waistToRibDist + Math.Abs(ribBone.transform.InverseTransformPoint(breastBone.position).y);  
+            waistToBreastDist = waistToRibDist + Math.Abs(ribBone.transform.InverseTransformPoint(breastBone.position).y);  
 
             // if (PregnancyPlusPlugin.debugLog && ChaControl.sex == 1) DebugTools.DrawLineAndAttach(breastBone, 5);
 
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" MeasureWaist Recalc ");
+             
 
-            //Calculate sphere radius based on distance from waist to ribs (seems big, but lerping later will trim much of it), added Math.Min for skinny waists
-            var sphereRadius = GetSphereRadius(waistToRibDist, waistWidth, totalScale);
-            var sphereRadiusMultiplied = sphereRadius * (GetInflationMultiplier() + 1);   
-
-            //Store all these values for reuse later
-            bellyInfo = new BellyInfo(waistWidth, waistToRibDist, sphereRadiusMultiplied, sphereRadius, bodyTopScale, 
-                                      GetInflationMultiplier(), waistToBackThickness, nHeightScale, waistToBreastDist,
-                                      charScale);
-
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(bellyInfo.Log());            
-
-            return (waistWidth > 0 && sphereRadiusMultiplied > 0 && waistToBackThickness > 0);
+            return (waistWidth > 0 && waistToBackThickness > 0 && waistToRibDist > 0); 
         }
 
 
         /// <summary>
-        /// Recalculate some of the existing measurements when character attributes change
+        /// Recalculate the existing sphere measurements when character scale changes
         /// </summary>
-        /// <param name="chaControl">The character to measure</param>
         /// <returns>Boolean if all measurements are valid</returns>
-        internal bool ReMeasureWaist(ChaControl chaControl, bool needsSphereRecalc, Vector3 charScale, Vector3 nHeightScale, Vector3 totalScale) 
+        internal bool MeasureSphere(ChaControl chaControl, Vector3 charScale, Vector3 nHeightScale, Vector3 totalScale) 
         {
-            if (!needsSphereRecalc) 
-            {
-                if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(bellyInfo.Log()); 
+            //Measeurements need to be recalculated from saved values (Does not change waistWidth! or height)
+            var newSphereRadius = GetSphereRadius(bellyInfo.WaistHeight, bellyInfo.WaistWidth, totalScale);
+            var newSphereRadiusMult = newSphereRadius * (GetInflationMultiplier() + 1); 
 
-                //Measeurements are fine and can be reused if above 0
-                return (bellyInfo.WaistWidth > 0 && bellyInfo.SphereRadius > 0 && bellyInfo.WaistThick > 0);
-            } 
-            else 
-            {
-                //Measeurements need to be recalculated from saved values (Does not change waistWidth! or height)
-                var newSphereRadius = GetSphereRadius(bellyInfo.WaistHeight, bellyInfo.WaistWidth, totalScale);
-                var newSphereRadiusMult = newSphereRadius * (GetInflationMultiplier() + 1); 
+            //Store new values for later checks
+            bellyInfo = new BellyInfo(bellyInfo.WaistWidth, bellyInfo.WaistHeight, newSphereRadiusMult, newSphereRadius, 
+                                        charScale, GetInflationMultiplier(), bellyInfo.WaistThick, nHeightScale, bellyInfo.WaistToBreastDist,
+                                        chaControl.transform.localScale);
 
-                //Store new values for later checks
-                bellyInfo = new BellyInfo(bellyInfo.WaistWidth, bellyInfo.WaistHeight, newSphereRadiusMult, newSphereRadius, 
-                                          charScale, GetInflationMultiplier(), bellyInfo.WaistThick, nHeightScale, bellyInfo.WaistToBreastDist,
-                                          chaControl.transform.localScale);
-
-                if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" MeasureWaist Recalc ");
-                if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(bellyInfo.Log()); 
-                
-                return (bellyInfo.WaistWidth > 0 && newSphereRadius > 0 && bellyInfo.WaistThick > 0);
-            } 
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" MeasureSphere Recalc ");            
+            
+            return (bellyInfo.WaistWidth > 0 && newSphereRadius > 0 && bellyInfo.WaistThick > 0);    
         }
 
 

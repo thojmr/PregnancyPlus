@@ -120,13 +120,22 @@ namespace KK_PregnancyPlus
             }
 
             //Determine if we need to recalculate the sphere radius (hopefully to avoid change in hip bones causing belly size to sudenly change)
-            internal bool NeedsSphereRecalc(Vector3 bodyTopScale, Vector3 nHeightScale, Vector3 charScale, float currentMultiplier) 
+            internal bool NeedsSphereRecalc(PregnancyPlusData data) 
+            {
+                if (!IsInitialized) return true;
+                if (CurrentMultiplier != data.inflationMultiplier) return true;
+
+                return false;
+            }
+
+
+            //Determine if we need to recalculate the bone distances (typically when character scale changes)
+            internal bool NeedsBoneDistanceRecalc(Vector3 bodyTopScale, Vector3 nHeightScale, Vector3 charScale) 
             {
                 if (!IsInitialized) return true;
                 if (BodyTopScale != bodyTopScale) return true;
                 if (NHeightScale != nHeightScale) return true;
                 if (CharacterScale != charScale) return true;
-                if (CurrentMultiplier != currentMultiplier) return true;
 
                 return false;
             }

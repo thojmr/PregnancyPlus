@@ -68,7 +68,7 @@ namespace KK_PregnancyPlus
             ReadAndSetCardData();                       
 
             //Get the char measurements before they have a chance to move
-            MeasureWaist(ChaControl); 
+            MeasureWaistAndSphere(ChaControl); 
 
             base.Start();
         }
