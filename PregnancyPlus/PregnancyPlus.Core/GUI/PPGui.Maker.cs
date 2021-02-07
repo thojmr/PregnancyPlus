@@ -11,7 +11,7 @@ namespace KK_PregnancyPlus
     //This partial class contains all of the Maker GUI
     public static partial class PregnancyPlusGui
     {        
-        internal static List<MakerSlider> sliders = new List<MakerSlider>();
+        public static List<MakerSlider> sliders = new List<MakerSlider>();
 
 
         //Slider input titles, and GameObject identifiers
@@ -214,7 +214,9 @@ namespace KK_PregnancyPlus
 
         //On any slider change, trigger mesh inflaiton update
         internal static void OnMakerSettingsChanged(PregnancyPlusCharaController controller) {
-            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" OnMakerSettingsChanged ");
+            // if (!MakerAPI.InsideAndLoaded) return;
+            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" OnMakerSettingsChanged ");            
+
             controller.MeshInflate(true);                                                                     
         }
 
@@ -225,6 +227,7 @@ namespace KK_PregnancyPlus
         public static void OnResetAll(List<MakerSlider> _sliders)
         {
             if (!MakerAPI.InsideAndLoaded) return;
+            if (_sliders == null || _sliders.Count <= 0 || !_sliders[0].Exists) return;
             if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" Resetting sliders ");
 
             //For each slider, reset to last stored character slider values
@@ -238,15 +241,16 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// On Restore, set sliders to last non zero shape, and set characters belly state
         /// </summary>
-        public static void OnRestore(List<MakerSlider> _sliders)
+        public static void OnRestore(List<MakerSlider> _sliders, PregnancyPlusData restoreToState = null)
         {
             if (!MakerAPI.InsideAndLoaded) return;
+            if (_sliders == null || _sliders.Count <= 0 || !_sliders[0].Exists) return;
 
             var chaControl = MakerAPI.GetCharacterControl();
             var charCustFunCtrl  = PregnancyPlusHelper.GetCharacterBehaviorController<PregnancyPlusCharaController>(chaControl, PregnancyPlusPlugin.GUID);
             if (charCustFunCtrl == null) return;
 
-            var _infConfig = PregnancyPlusPlugin.lastBellyState;
+            var _infConfig = restoreToState != null ? restoreToState : PregnancyPlusPlugin.lastBellyState;
 
             //For each slider, set to default which will reset the belly shape
             foreach (var slider in _sliders) 

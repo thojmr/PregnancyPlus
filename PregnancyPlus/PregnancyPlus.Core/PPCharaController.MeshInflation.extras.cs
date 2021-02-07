@@ -173,12 +173,12 @@ namespace KK_PregnancyPlus
         /// <param name="cardData">Some prexisting PregnancyPlusData that we want to activate</param>
         /// <param name="checkForNewMesh">Lets you force bypass the check for values changed to check for new meshes</param>
         /// <param name="pluginConfigSliderChanged">Will treat as if some slider values changed, which they did in global plugin config</param>
-        public bool MeshInflate(PregnancyPlusData cardData, bool checkForNewMesh = false, bool pluginConfigSliderChanged = false)
+        public bool MeshInflate(PregnancyPlusData cardData, bool checkForNewMesh = false, bool forceRecalc = false, bool pluginConfigSliderChanged = false)
         {                  
             //Allow an initial size to be passed in, and sets it to the config           
-            infConfig = cardData;           
+            infConfig = cardData;          
 
-            return MeshInflate(checkForNewMesh, false, pluginConfigSliderChanged);
+            return MeshInflate(checkForNewMesh, forceRecalc, pluginConfigSliderChanged);
         }
 
 

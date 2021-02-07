@@ -319,7 +319,7 @@ namespace KK_PregnancyPlus
                     //For uncensor body mesh
                     clothSphereCenterOffset = bodySphereCenterOffset = sphereCenter;//at belly button
                 }
-                if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" corrected sphereCenter {sphereCenter} isDefaultBody {isDefaultBody}");
+                if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" KK corrected sphereCenter {sphereCenter} isDefaultBody {isDefaultBody}");
 
             #elif (HS2 || AI)
                 //Its so simple when its not KK default mesh :/

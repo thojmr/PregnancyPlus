@@ -108,6 +108,11 @@ namespace KK_PregnancyPlus
             // if (Time.frameCount % 20 == 0 && PregnancyPlusPlugin.debugLog) MeasureWaist(ChaControl, true);
             // if (Time.frameCount % 20 == 0 && PregnancyPlusPlugin.debugLog) MeshInflate(true, true);
         }
+
+
+        protected override void OnDestroy() {
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnDestroy {charaFileName}"); 
+        }
         
 
 #endregion overrides/hooks
@@ -160,8 +165,34 @@ namespace KK_PregnancyPlus
         internal IEnumerator ReloadStudioMakerInflation(float time)
         {                        
             yield return new WaitForSeconds(time);
-            if (!StudioAPI.InsideStudio && !MakerAPI.InsideMaker) yield break;                                                       
-            MeshInflate(true, true);                                                            
+            if (!StudioAPI.InsideStudio && !MakerAPI.InsideMaker) yield break;   
+
+            if (StudioAPI.InsideStudio || (MakerAPI.InsideMaker && MakerAPI.InsideAndLoaded))
+            {
+                //If either are fully loaded, start mesh inflate
+                MeshInflate(true, true);    
+            }
+            else if (MakerAPI.InsideMaker && !MakerAPI.InsideAndLoaded)
+            {
+                StartCoroutine(WaitForMakerLoad());
+            }
+            
+        }
+
+
+        /// <summary>
+        /// When maker is not loaded, but is loading, wait for it before setting belly sliders (Only needed on maker first load)
+        /// </summary>
+        internal IEnumerator WaitForMakerLoad()
+        {
+            while (!MakerAPI.InsideAndLoaded)
+            {
+                yield return new WaitForSeconds(0.01f);
+            }
+
+            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" WaitForMakerLoad done, setting initial sliders");         
+            //Restore sliders to current state
+            PregnancyPlusGui.OnRestore(PregnancyPlusGui.sliders, GetCardData());
         }
 
 
