@@ -45,9 +45,9 @@ This repository contains the KK_PregnancyPlus plugin, that adds additional belly
 
 ## FAQ - Troubleshooting
 - Q: Where do I put the PregnancyPlus.dll?
-    - A: It should end up under <Root game folder>/BepinEx/Plugins/xx_PregnancyPlus.dll
+    - A: It should end up under {Root game folder}/BepinEx/Plugins/xx_PregnancyPlus.dll
 - Q: Some of the sliders are not working?
-    - A: Disable "Balloon" plugin config option since it disables some sliders.  Then try adjusting your 'Move Z' slider to make sure it is not outside your characters body.
+    - A: First disable "Balloon" Plugin Config option since it ignores some sliders.  Then try adjusting your 'Move Y' slider to make sure it is not outside your characters body.  Third, make sure P+ gameplay is enabled in Plugin Config, and on the character card (It will be by default)
 - Q: The belly size is suddenly changing when the character moves, or I slightly adjust a slider.
     - A: The default belly size is calculated based on the hip and rib bone width.  In rare cases It can be due to strange character animations.
 - Q: There is no slider effect when the character has no legs.
@@ -62,20 +62,19 @@ You can grab the latest plugin release [here](https://github.com/thojmr/KK_Pregn
 This plugin works in Koikatsu, Honey Select 2, and AI.  Grab the KK zip for Koikatsu, HS2 zip for Honey Select 2, and AI zip for AI [here](https://github.com/thojmr/KK_PregnancyPlus/releases)
 
 ## How to install
-Almost all plugins are installed in the same way. If there are any extra steps needed they will be added to the plugin descriptions below.
 1. Make sure you have at least BepInEx 5.1 and latest BepisPlugins and KKAPI.
 2. Download the latest release of the plugin you want.
-3. Extract the archive into your game directory. The plugin .dll should end up inside your BepInEx\plugins\ directory.
+3. Extract the zip archive into your root game directory. The plugin .dll will end up inside your BepInEx\plugins\ directory.
     - Should look like {root game}/BepInEx/plugins/XX_PregnancyPlus.dll
-4. Check if there are no warnings on game startup, if the plugin has settings it should appear in plugin settings.
+4. Check if there are no warnings on game startup, if the plugin loaded it should appear in Plugin Config.
 
-## Compiling with Visual Studio 2019 (The official way)
+## (Developers only) Compiling with Visual Studio 2019 (The official way)
 Simply clone this repository to your drive and use the free version of Visual Studio 2019 for C# to compile it. Hit build and all necessary dependencies should be automatically downloaded. Check the following links for useful tutorials. If you are having trouble or want to try to make your own plugin/mod, feel free to ask for help in modding channels of either the [Koikatsu](https://discord.gg/hevygx6) or [IllusionSoft](https://discord.gg/F3bDEFE) Discord servers.
 - https://help.github.com/en/github/creating-cloning-and-archiving-repositories/cloning-a-repository
 - https://docs.microsoft.com/en-us/visualstudio/get-started/csharp/?view=vs-2019
 - https://docs.microsoft.com/en-us/visualstudio/ide/troubleshooting-broken-references?view=vs-2019
 
-## Compiling with Visual Studio Code (Not the suggested way, but my way)
+## (Developers only) Compiling with Visual Studio Code (Not the suggested way, but my way)
 Simply clone this repository to your drive and use Visual Studio Code.  
 Install the C# extension for VSCode. 
 Make sure the following directory exists `C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/MSBuild/Current/Bin/msbuild.exe`.  
@@ -134,6 +133,5 @@ If sucessfull you should see a KK_PregnancyPlus.dll file nested in .\bin\
     - Blendshapes are predefined mesh transitions that could be tied to the sliders in the same way.  However blend shapes depend on the base mesh having the same number of verticies as the original mesh it was created on.  Because this game relies heavily on Uncensor bodies and a wide verity of clothing, two meshed rarley have the same number of verticies, which limits where you can use pre made blend shapes.  Instead this plugin calculates the desired mesh position on the fly when sliders are changed, which doesn't depend on two meshes having the same vertex count/position.
 
 ## Some TODO items that may or mat not be implemented in the future (depending on interest)
--  Make accessories move along with the belly to prevent clipping
 -  Fix clothing flattening at the largest belly sizes (Has been improved already)
 -  There are certain clothing items that do not work in the current state.  Specifically any mesh marked as isReadable = true will not be editable.
