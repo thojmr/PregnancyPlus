@@ -601,7 +601,7 @@ namespace KK_PregnancyPlus
             }
 
             //Don't allow any morphs to move behind the original verticie z position (ignoring ones already behind sphere center)
-            if (originalVerticeLs.z > smoothedVectorLs.z && originalVerticeLs.z > pmSphereCenterLs.z) 
+            if (originalVerticeLs.z > smoothedVectorLs.z && originalVerticeLs.z > sphereCenterLs.z) 
             {
                 //Get the average(not really average) x and y change to move the new position halfway back to the oiriginal vert (hopefullt less strange triangles near belly to body edge)
                 var yChangeAvg = (smoothedVectorWs.y - originalVerticeWs.y)/3;
