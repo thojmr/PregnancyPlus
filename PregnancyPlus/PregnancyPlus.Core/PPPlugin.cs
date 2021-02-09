@@ -21,7 +21,7 @@ namespace KK_PregnancyPlus
     public partial class PregnancyPlusPlugin : BaseUnityPlugin
     {
         public const string GUID = "KK_PregnancyPlus";
-        public const string Version = "1.19";
+        public const string Version = "1.20";
         internal static new ManualLogSource Logger { get; private set; }
 
         #if DEBUG
@@ -54,7 +54,7 @@ namespace KK_PregnancyPlus
 
     
         /// <summary>
-        /// Triggers all charCustFunCtrl GUI components when needed in studio
+        /// Triggers any charCustFunCtrl GUI components when blendshape GUI is opened in studio
         /// </summary>
         internal void OnGUI()
         {                
