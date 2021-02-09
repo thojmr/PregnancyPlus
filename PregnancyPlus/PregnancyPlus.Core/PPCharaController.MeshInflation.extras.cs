@@ -65,17 +65,17 @@ namespace KK_PregnancyPlus
                 get { return ScaledWaistThick/2f; }
             }
 
-            public float WaistToBreastDist;//Belly button to breast distance
-            public float ScaledWaistToBreastDist
+            public float BellyToBreastDist;//Belly button to breast distance
+            public float ScaledBellyToBreastDist
             {
-                get { return WaistToBreastDist * TotalCharScale.y; }
+                get { return BellyToBreastDist * TotalCharScale.y; }
             }
 
             //From char belly button to breast distance
             public float YLimit
             {
                 //Get the distance from center -> ribs, with scale applied
-                get { return ScaledWaistToBreastDist; }
+                get { return ScaledBellyToBreastDist; }
             }
 
             public float BellyButtonHeight;//Foot to belly button height
@@ -105,7 +105,7 @@ namespace KK_PregnancyPlus
 
             internal BellyInfo(float waistWidth, float waistHeight, float sphereRadius, float originalSphereRadius, 
                                Vector3 bodyTopScale, float currentMultiplier, float waistThick, Vector3 nHeightScale,
-                               float waistToBreastDist, Vector3 characterScale) 
+                               float bellyToBreastDist, Vector3 characterScale) 
             {
                 WaistWidth = waistWidth;
                 WaistHeight = waistHeight;
@@ -115,7 +115,7 @@ namespace KK_PregnancyPlus
                 CurrentMultiplier = currentMultiplier;
                 WaistThick = waistThick;
                 NHeightScale = nHeightScale;
-                WaistToBreastDist = waistToBreastDist;
+                BellyToBreastDist = bellyToBreastDist;
                 CharacterScale = characterScale;
             }
 
@@ -143,7 +143,7 @@ namespace KK_PregnancyPlus
 
             public string Log()
             {
-                return $@" WaistWidth {WaistWidth} WaistHeight {WaistHeight} WaistThick {WaistThick} WaistToBreastDist {WaistToBreastDist}
+                return $@" WaistWidth {WaistWidth} WaistHeight {WaistHeight} WaistThick {WaistThick} BellyToBreastDist {BellyToBreastDist}
                            BodyTopScale {BodyTopScale} NHeightScale {NHeightScale} CharacterScale {CharacterScale} TotalCharScale {TotalCharScale}
                            SphereRadius {SphereRadius} OriginalSphereRadius {OriginalSphereRadius}
                            ";

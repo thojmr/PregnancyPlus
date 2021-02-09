@@ -138,12 +138,12 @@ namespace KK_PregnancyPlus
                 else if (!forceRecalc && needsWaistRecalc && !needsSphereRecalc)//Measurements needed which also requires sphere recalc
                 {
                     var _valid = MeasureWaist(chaControl, charScale, nHeightScale, 
-                                        out float _waistToRibDist, out float _waistToBackThickness, out float _waistWidth, out float _waistToBreastDist);
+                                        out float _waistToRibDist, out float _waistToBackThickness, out float _waistWidth, out float _bellyToBreastDist);
                     MeasureSphere(chaControl, bodyTopScale, nHeightScale, totalScale);
 
                     //Store all these values for reuse later
                     bellyInfo = new BellyInfo(_waistWidth, _waistToRibDist, bellyInfo.SphereRadius, bellyInfo.OriginalSphereRadius, bodyTopScale, 
-                                              GetInflationMultiplier(), _waistToBackThickness, nHeightScale, _waistToBreastDist,
+                                              GetInflationMultiplier(), _waistToBackThickness, nHeightScale, _bellyToBreastDist,
                                               charScale);
 
                     if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(bellyInfo.Log());                                             
@@ -164,7 +164,7 @@ namespace KK_PregnancyPlus
 
             //Get waist measurements from bone distances
             var valid = MeasureWaist(chaControl, charScale, nHeightScale, 
-                                           out float waistToRibDist, out float waistToBackThickness, out float waistWidth, out float waistToBreastDist);
+                                           out float waistToRibDist, out float waistToBackThickness, out float waistWidth, out float bellyToBreastDist);
 
             //Check for bad values
             if (!valid) return false;
@@ -175,12 +175,12 @@ namespace KK_PregnancyPlus
 
             //Store all these values for reuse later
             bellyInfo = new BellyInfo(waistWidth, waistToRibDist, sphereRadiusMultiplied, sphereRadius, bodyTopScale, 
-                                      GetInflationMultiplier(), waistToBackThickness, nHeightScale, waistToBreastDist,
+                                      GetInflationMultiplier(), waistToBackThickness, nHeightScale, bellyToBreastDist,
                                       charScale);
 
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(bellyInfo.Log());            
 
-            return (waistWidth > 0 && sphereRadiusMultiplied > 0 && waistToBackThickness > 0 && waistToBreastDist > 0);
+            return (waistWidth > 0 && sphereRadiusMultiplied > 0 && waistToBackThickness > 0 && bellyToBreastDist > 0);
         }
 
 
@@ -189,7 +189,7 @@ namespace KK_PregnancyPlus
         /// </summary>
         /// <returns>Boolean if all measurements are valid</returns>
         internal bool MeasureWaist(ChaControl chaControl, Vector3 charScale, Vector3 nHeightScale, 
-                                   out float waistToRibDist, out float waistToBackThickness, out float waistWidth, out float waistToBreastDist) 
+                                   out float waistToRibDist, out float waistToBackThickness, out float waistWidth, out float bellyToBreastDist) 
         {
             //Bone names
             #if KK
@@ -214,7 +214,7 @@ namespace KK_PregnancyPlus
             waistToRibDist = 0;
             waistToBackThickness = 0;
             waistWidth = 0;
-            waistToBreastDist = 0;
+            bellyToBreastDist = 0;
 
             //Get the characters Y bones to measure from
             var ribBone = PregnancyPlusHelper.GetBone(ChaControl, ribName);
@@ -244,7 +244,7 @@ namespace KK_PregnancyPlus
             //Verts above this position are not allowed to move
             var bellyButtonBone = PregnancyPlusHelper.GetBone(ChaControl, bellyButton);      
             //Distance from waist to breast root              
-            waistToBreastDist = waistToRibDist + Math.Abs(ribBone.transform.InverseTransformPoint(breastBone.position).y);  
+            bellyToBreastDist = Math.Abs(bellyButtonBone.transform.InverseTransformPoint(ribBone.position).y) + Math.Abs(ribBone.transform.InverseTransformPoint(breastBone.position).y);  
 
             // if (PregnancyPlusPlugin.debugLog && ChaControl.sex == 1) DebugTools.DrawLineAndAttach(breastBone, 5);
 
@@ -267,7 +267,7 @@ namespace KK_PregnancyPlus
 
             //Store new values for later checks
             bellyInfo = new BellyInfo(bellyInfo.WaistWidth, bellyInfo.WaistHeight, newSphereRadiusMult, newSphereRadius, 
-                                        charScale, GetInflationMultiplier(), bellyInfo.WaistThick, nHeightScale, bellyInfo.WaistToBreastDist,
+                                        charScale, GetInflationMultiplier(), bellyInfo.WaistThick, nHeightScale, bellyInfo.BellyToBreastDist,
                                         chaControl.transform.localScale);
 
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" MeasureSphere Recalc ");            
@@ -352,7 +352,7 @@ namespace KK_PregnancyPlus
             var topExtentPos = new Vector3(preMorphSphereCenter.x, preMorphSphereCenter.y, preMorphSphereCenter.z) + meshRootTf.up * bellyInfo.YLimit;
             var topExtentPosLs = meshRootTf.InverseTransformPoint(topExtentPos);
 
-            if (PregnancyPlusPlugin.debugLog) DebugTools.DrawLineAndAttach(meshRootTf, 5, meshRootTf.InverseTransformPoint(topExtentPos) - GetBellyButtonOffsetVector(meshRootTf, bellyInfo.BellyButtonHeight));
+            if (PregnancyPlusPlugin.debugLog) DebugTools.DrawLineAndAttach(meshRootTf, 5, meshRootTf.InverseTransformPoint(topExtentPos) - meshRootTf.up * GetBellyButtonOffset(bellyInfo.BellyButtonHeight));
             // if (PregnancyPlusPlugin.debugLog) DebugTools.DrawLineAndAttach(meshRootTf, new Vector3(-3, 0, 0), new Vector3(3, 0, 0), meshRootTf.InverseTransformPoint(backExtentPos) - GetBellyButtonOffsetVector(meshRootTf, bellyInfo.BellyButtonHeight));
             // if (PregnancyPlusPlugin.debugLog) DebugTools.DrawLineAndAttach(meshRootTf, 5, meshRootTf.InverseTransformPoint(sphereCenter));
 
@@ -460,8 +460,8 @@ namespace KK_PregnancyPlus
             Vector3 bellyButtonPos = boneOrMeshTf.up * bbHeight; 
             Vector3 sphereCenter = boneOrMeshTf.position + bellyButtonPos + GetUserMoveTransform(boneOrMeshTf) + GetBellyButtonOffsetVector(boneOrMeshTf, bbHeight);                                 
 
-            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" sphereCenter {sphereCenter} meshRoot {boneOrMeshTf.position} char origin {ChaControl.transform.position}");
-            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" bellyButtonPos {bellyButtonPos} bbHeight {bbHeight}");            
+            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" bbHeight {bbHeight}");            
+            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" sphereCenter {sphereCenter} meshRoot {boneOrMeshTf.position} char origin {ChaControl.transform.position}");            
             return sphereCenter;
         }
 
