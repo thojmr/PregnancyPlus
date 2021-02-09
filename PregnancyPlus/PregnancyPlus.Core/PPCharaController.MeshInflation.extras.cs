@@ -120,10 +120,10 @@ namespace KK_PregnancyPlus
             }
 
             //Determine if we need to recalculate the sphere radius (hopefully to avoid change in hip bones causing belly size to sudenly change)
-            internal bool NeedsSphereRecalc(PregnancyPlusData data) 
+            internal bool NeedsSphereRecalc(PregnancyPlusData data, float newMultiplier) 
             {
                 if (!IsInitialized) return true;
-                if (CurrentMultiplier != data.inflationMultiplier) return true;
+                if (CurrentMultiplier != newMultiplier) return true;
 
                 return false;
             }
