@@ -4,6 +4,8 @@ using KKAPI.Maker;
 using KKAPI.Maker.UI;
 using KKAPI.Studio;
 using UnityEngine;
+using UnityEngine.UI;
+using System;
 using System.Collections.Generic;
 
 namespace KK_PregnancyPlus
@@ -36,6 +38,7 @@ namespace KK_PregnancyPlus
             if (!StudioAPI.InsideStudio)
             {
                 MakerAPI.RegisterCustomSubCategories += MakerAPI_MakerBaseLoaded;
+                // MakerAPI.MakerFinishedLoading += MakerAPI_MakerFinishedLoading;
             }
         }
 
@@ -43,6 +46,9 @@ namespace KK_PregnancyPlus
         {
             // Only female characters, unless plugin config says otherwise
             if (!PregnancyPlusPlugin.AllowMale.Value && MakerAPI.GetMakerSex() == 0) return;
+
+            //clear last
+            sliders = new List<MakerSlider>();
 
             //Set the menu location of the p+ sliders
             #if KK           
@@ -209,7 +215,6 @@ namespace KK_PregnancyPlus
                 OnRestore(sliders);
             });
             e.AddControl(new MakerText("Restores the last set belly shape", cat, _pluginInstance) { TextColor = hintColor });
-
         }
 
         //On any slider change, trigger mesh inflaiton update
