@@ -65,7 +65,7 @@ namespace KK_PregnancyPlus
             anyMeshChanges = LoopAndApplyMeshChanges(clothRenderers, sliderHaveChanged, anyMeshChanges, true);
 
             //do the same for body meshs
-            var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody);
+            var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, true);
             anyMeshChanges = LoopAndApplyMeshChanges(bodyRenderers, sliderHaveChanged, anyMeshChanges);
 
             //If any changes were applied, updated the last used shape for the Restore GUI button
