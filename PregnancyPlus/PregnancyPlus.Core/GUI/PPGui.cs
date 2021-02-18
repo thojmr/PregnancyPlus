@@ -18,18 +18,20 @@
 
         #if KK  //Range multiplier for the min max values allowed
             private readonly static float rm = 1;
-            private readonly static float rmAlt = 1;
+            private readonly static float rmAlt = 2f;//Some small adjustments for sliders that felt too large or small in range
+            private readonly static float rmAlt2 = 0.75f;
         #elif HS2 || AI
             private readonly static float rm = 2f;
             private readonly static float rmAlt = 1;
+            private readonly static float rmAlt2 = 1f;
         #endif
 
         //The allowed slider ranges for each slider type
         public static class SliderRange {
             public readonly static float[] inflationSize = {0, 40};
             public readonly static float[] inflationMultiplier = {-2f, 2f};            
-            public readonly static float[] inflationMoveY = {-0.5f * rmAlt, 0.5f * rmAlt};
-            public readonly static float[] inflationMoveZ = {-0.2f * rm, 0.2f * rm};
+            public readonly static float[] inflationMoveY = {-0.5f * rmAlt2, 0.5f * rmAlt2};
+            public readonly static float[] inflationMoveZ = {-0.2f * rm * rmAlt2, 0.2f * rm * rmAlt2};
             public readonly static float[] inflationStretchX = {-0.3f * rmAlt, 0.3f * rmAlt};
             public readonly static float[] inflationStretchY = {-0.3f * rmAlt, 0.3f * rmAlt};
             public readonly static float[] inflationShiftY = {-0.2f * rm, 0.2f * rm};
