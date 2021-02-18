@@ -36,6 +36,7 @@ namespace KK_PregnancyPlus
         public Dictionary<string, Vector3[]> inflatedVertices = new Dictionary<string, Vector3[]>();//Max extended mesh verts, after all slider calculations
         public Dictionary<string, Vector3[]> currentVertices = new Dictionary<string, Vector3[]>();//Currently active visible mesh verts
         public Dictionary<string, bool[]> bellyVerticieIndexes = new Dictionary<string, bool[]>();//List of verticie indexes that belong to the belly area
+        public Dictionary<string, bool[]> alteredVerticieIndexes = new Dictionary<string, bool[]>();//List of verticie indexes that belong to the belly area and within the current belly radius
 
 
 

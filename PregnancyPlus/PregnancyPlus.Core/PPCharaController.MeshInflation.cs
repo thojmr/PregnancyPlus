@@ -351,8 +351,9 @@ namespace KK_PregnancyPlus
             //calculate the furthest top morph point based under the breast position, include character animated height differences
             var topExtentPos = new Vector3(preMorphSphereCenter.x, preMorphSphereCenter.y, preMorphSphereCenter.z) + meshRootTf.up * bellyInfo.YLimit;
             var topExtentPosLs = meshRootTf.InverseTransformPoint(topExtentPos);
+            var vertNormalCaluRadius = sphereRadius + waistWidth/10;//Only recalculate normals for verts within this radius to prevent shadows under breast at small belly sizes
 
-            if (PregnancyPlusPlugin.debugLog) DebugTools.DrawLineAndAttach(meshRootTf, 5, meshRootTf.InverseTransformPoint(topExtentPos) - meshRootTf.up * GetBellyButtonOffset(bellyInfo.BellyButtonHeight));
+            // if (PregnancyPlusPlugin.debugLog) DebugTools.DrawLineAndAttach(meshRootTf, 5, meshRootTf.InverseTransformPoint(topExtentPos) - meshRootTf.up * GetBellyButtonOffset(bellyInfo.BellyButtonHeight));
             // if (PregnancyPlusPlugin.debugLog) DebugTools.DrawLineAndAttach(meshRootTf, new Vector3(-3, 0, 0), new Vector3(3, 0, 0), meshRootTf.InverseTransformPoint(backExtentPos) - GetBellyButtonOffsetVector(meshRootTf, bellyInfo.BellyButtonHeight));
             // if (PregnancyPlusPlugin.debugLog) DebugTools.DrawLineAndAttach(meshRootTf, 5, meshRootTf.InverseTransformPoint(sphereCenter));
 
@@ -365,13 +366,15 @@ namespace KK_PregnancyPlus
                 if (bellyVertIndex[i]) 
                 {                    
                     var origVertWs = meshRootTf.TransformPoint(origVerts[i]);//Convert to worldspace 
-                    var originIsInsideRadius = FastDistance(origVertWs, sphereCenter) <= sphereRadius;
+                    var vertDistance = FastDistance(origVertWs, sphereCenter);
+
+                    CalculateNormalsBoundary(vertDistance, vertNormalCaluRadius, i, rendererName);
 
                     //Ignore verts outside the sphere radius
-                    if (originIsInsideRadius) 
+                    if (vertDistance <= vertNormalCaluRadius) 
                     {
                         Vector3 inflatedVertWs;                    
-                        Vector3 verticieToSpherePos;                                                             
+                        Vector3 verticieToSpherePos;                                                                                    
 
                         //Shift each belly vertex away from sphere center in a sphere pattern
                         if (!isClothingMesh) 
@@ -394,7 +397,7 @@ namespace KK_PregnancyPlus
                         inflatedVerts[i] = meshRootTf.InverseTransformPoint(inflatedVertWs);//Convert back to local space
                     }
                     else 
-                    {
+                    {                        
                         inflatedVerts[i] = origVert;
                     }
                 }
@@ -643,6 +646,7 @@ namespace KK_PregnancyPlus
 
             //Create new mesh dictionary key for bone indexes
             bellyVerticieIndexes[renderKey] = new bool[sharedMesh.vertexCount];
+            alteredVerticieIndexes[renderKey] = new bool[sharedMesh.vertexCount];
             var bellyVertIndex = bellyVerticieIndexes[renderKey];
 
             var verticies = sharedMesh.vertices;

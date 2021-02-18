@@ -397,6 +397,23 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
+        /// If the vert is within the calculated normals radius, then consider it as an altered vert that needs normal recalculation when applying inflation
+        ///  Hopefully this will reduce breast shadows for smaller bellies
+        /// </summary>
+        public void CalculateNormalsBoundary(float vertDistance, float vertNormalCaluRadius, int i, string renderKey)
+        {
+            if (vertDistance < vertNormalCaluRadius)
+            {
+                alteredVerticieIndexes[renderKey][i] = true;
+            }
+            else 
+            {
+                alteredVerticieIndexes[renderKey][i] = false;
+            }
+        }
+
+
+        /// <summary>
         /// This will update all verticies with a lerp from originalVertices to inflatedVertices depending on the inflationSize config
         /// Only modifies belly verticies, and if none are found, no action taken.
         /// </summary>
@@ -460,7 +477,7 @@ namespace KK_PregnancyPlus
 
             sharedMesh.vertices = currentVert;
             sharedMesh.RecalculateBounds();
-            NormalSolver.RecalculateNormals(sharedMesh, 40f, bellyVerticieIndexes[renderKey]);
+            NormalSolver.RecalculateNormals(sharedMesh, 40f, alteredVerticieIndexes[renderKey]);
             //sharedMesh.RecalculateNormals();  //old way that leaves skin seams
             sharedMesh.RecalculateTangents();
 
@@ -509,7 +526,7 @@ namespace KK_PregnancyPlus
 
                 sharedMesh.vertices = origVerts;
                 sharedMesh.RecalculateBounds();
-                NormalSolver.RecalculateNormals(sharedMesh, 40f, bellyVerticieIndexes[renderKey]);
+                NormalSolver.RecalculateNormals(sharedMesh, 40f, alteredVerticieIndexes[renderKey]);
                 //sharedMesh.RecalculateNormals(); //old way that leaves skin seams
                 sharedMesh.RecalculateTangents();
             }
