@@ -187,6 +187,24 @@ namespace KK_PregnancyPlus
             return bone.gameObject;
         }
 
+        /// <summary>   
+        /// Find a parent game object given its name
+        /// </summary> 
+        public static GameObject GetParentGoByName(GameObject childGo, string parentName)
+        {
+            if (childGo == null) return null;
+            
+            var currentGo = childGo;
+            while (currentGo.transform.parent != null)
+            {
+                //Get the parent game object, and check the name for a match
+                currentGo = currentGo.transform.parent.gameObject;                
+                if (currentGo.name == parentName) return currentGo;                
+            }
+
+            return null;
+        }
+
 
         /// <summary>
         /// Calculates the length of a set of chained bones from bottom up.  It will only caluculate the true Y distance, so it effectively ignores any animations (behaves like a TPose measurement).false  Should include bones scales as well
