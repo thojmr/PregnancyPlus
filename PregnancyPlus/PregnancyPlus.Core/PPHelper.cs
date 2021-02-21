@@ -142,15 +142,46 @@ namespace KK_PregnancyPlus
         internal static Transform GetBone(ChaControl chaControl, string boneName) 
         {
             if (chaControl == null) return null;
+            if (boneName.Contains(".")) return null;
             
             return chaControl.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == boneName);
         }
 
 
+        /// <summary>   
+        /// returns a bone by name.  If a period is included, it will get the child bone in the chain like "boneParentName.boneChildName"
+        /// </summary>  
         internal static GameObject GetBoneGO(ChaControl chaControl, string boneName) 
         {
             if (chaControl == null) return null;
+            if (boneName == null) return null;
+
+            //When bone name is chanined with a period get the correct nested child bone (usefull when multiple matching bone names)
+            if (boneName.Contains("."))
+            {                
+                var boneNames = boneName.Split('.');
+                Transform _bone = null;
+                var i = 0;
+
+                //With each bone name, navigate to the last child and return it
+                foreach(var name in boneNames)
+                {
+                    if (name == null || name.Equals("")) return null;
+
+                    //On first iteration fetch bone like normal
+                    if (i == 0) _bone = GetBone(chaControl, name);
+
+                    //On nth iteration fetch bone by transform child name
+                    if (i > 0) _bone = _bone.Find(name);                    
+
+                    if (_bone == null) return null;
+                    i++;
+                }
+
+                return _bone.gameObject;
+            }
             
+            //Otherwise Get a bone by name
             var bone = GetBone(chaControl, boneName);
             if (bone == null) return null;
             return bone.gameObject;
