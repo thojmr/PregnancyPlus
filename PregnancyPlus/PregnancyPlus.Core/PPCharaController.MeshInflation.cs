@@ -301,34 +301,42 @@ namespace KK_PregnancyPlus
 #region Fixes for different mesh localspace positions between KK and HS2/AI
             #if KK            
                 var isDefaultBody = !PregnancyPlusHelper.IsUncensorBody(ChaControl, UncensorCOMName); 
-                if (isClothingMesh) 
-                {
-                    //KK just has to have strange vert positions, so we have to use adjust the sphere center location for body and clothes
-                    var clothesMeshRoot = PregnancyPlusHelper.GetBoneGO(ChaControl, "p_cf_body_00.cf_o_root").transform;           
+                var clothOffsetFix = 1.0212f;//Where does this offset even come from?  Seems like and default KK body, cloth all have a small error in position, or maybe its the other way around...
+                var defaultBodyOffsetFix = 0.0231f;//Where does this offset even come from?
 
-                    //Calculate the custom clothes offset distance needed for certain clothing (Why can't it all be the same....) Half the distance in extremely special cases...
-                    var clothRootToSphereCenter = meshRootTf.up * FastDistance(clothesMeshRoot.position, sphereCenter);//TODO * (bellyInfo.MeshRootDidMove && needsPositionFix ? 0.5f : 1);
-                    var clothOffsetFix = 1.021f;
+                if (isClothingMesh && needsPositionFix) 
+                {
+                    //Special logic for clothing that isn't local positioned correctly                    
+
+                    //KK just has to have strange vert positions, so we have to adjust the sphere center location for body and clothes
+                    var clothesMeshRoot = PregnancyPlusHelper.GetBoneGO(ChaControl, "p_cf_body_00.cf_o_root").transform;                     
+                    // var specialCloth = PregnancyPlusHelper.GetParentGoByName(smr.gameObject, "clothes_00")?.transform;    
+
+                    //Used to determine if the child smr of cf_o_root has not been positioned correctly at 0,0,0.  Which needs special clothSphereCenterOffset logic
+                    var needsSpecialClothFix = false;//bellyInfo.MeshRootDidMove && specialCloth?.position != clothesMeshRoot.position && needsPositionFix;
+                    if (PregnancyPlusPlugin.debugLog && needsSpecialClothFix) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] needsSpecialClothFix {needsSpecialClothFix}");
+
+                    //Calculate the custom clothes offset distance needed for certain clothing (Why can't it all be the same....)
+                    var clothRootToSphereCenter = needsSpecialClothFix 
+                        ? meshRootTf.up * FastDistance(clothesMeshRoot.position, sphereCenter)/2 * clothOffsetFix - (GetUserMoveTransform(meshRootTf))/2//this line not used at the moment, will come back to this is more reports come in
+                        : meshRootTf.up * FastDistance(clothesMeshRoot.position, sphereCenter) * clothOffsetFix;                    
                     
                     //Get distance from bb to clothesMeshRoot if needs fix
-                    clothSphereCenterOffset = needsPositionFix ? sphereCenter - (clothRootToSphereCenter * clothOffsetFix) : sphereCenter;//At belly button - meshRoot position (plus some tiny dumb offset that I cant find the source of)
-                    sphereCenter = needsPositionFix ? clothSphereCenterOffset : sphereCenter;
-
-                    // if (PregnancyPlusPlugin.debugLog && smr.name.Contains("bra")) DebugTools.LogParents(smr.gameObject, 3);
+                    sphereCenter = clothSphereCenterOffset = sphereCenter - clothRootToSphereCenter;//At belly button - offset from meshroot (plus some tiny dumb offset that I cant find the source of)
                 } 
                 else if (isDefaultBody) 
                 {
-                    bodySphereCenterOffset = meshRootTf.position + GetUserMoveTransform(meshRootTf) + meshRootTf.up * -0.021f;////at 0,0,0, once again what is this crazy small offset?
-                    sphereCenter = meshRootTf.position + GetUserMoveTransform(meshRootTf);//at belly button - meshRoot position
+                    bodySphereCenterOffset = meshRootTf.position + GetUserMoveTransform(meshRootTf) - meshRootTf.up * defaultBodyOffsetFix;////at 0,0,0, once again what is this crazy small offset?
+                    sphereCenter = meshRootTf.position + GetUserMoveTransform(meshRootTf);//at belly button - offset from meshroot
                 }
                 else 
                 {
-                    //For uncensor body mesh
+                    //For uncensor body mesh, and most clothing items
                     clothSphereCenterOffset = bodySphereCenterOffset = sphereCenter;//at belly button
                 }
-                if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] corrected sphereCenter {sphereCenter} isDefaultBody {isDefaultBody} needsPositionFix {needsPositionFix}");
+                if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] corrected sphereCenter {sphereCenter} clothSphereCenterOffset {clothSphereCenterOffset} isDefaultBody {isDefaultBody} needsPositionFix {needsPositionFix}");
 
-            #elif (HS2 || AI)
+            #elif HS2 || AI
                 //Its so simple when its not KK default mesh :/
                 clothSphereCenterOffset = bodySphereCenterOffset = sphereCenter;
             #endif    

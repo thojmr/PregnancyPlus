@@ -462,7 +462,7 @@ namespace KK_PregnancyPlus
             for (int i = 0; i < currentVertLength; i++)
             {
                 //If not a belly index verticie then skip the morph
-                if (!bellyVertIndex[i]) continue;
+                if (!PregnancyPlusPlugin.debugAllVerts && !bellyVertIndex[i]) continue;
 
                 //Set the lerp size of the belly based on the users slider value
                 currentVert[i] = Vector3.Lerp(origVert[i], inflatedVertices[renderKey][i], (infSize/40));

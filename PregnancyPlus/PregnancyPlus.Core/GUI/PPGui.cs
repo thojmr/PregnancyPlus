@@ -20,12 +20,12 @@
             private readonly static float rmAltHS2x2 = 1;
             private readonly static float rmKKx2 = 2f;//Some small adjustments for sliders that felt too large or small in range
             private readonly static float rmKKxFract = 0.75f;
-            private readonly static float rmKKx4 = 5f;
+            private readonly static float rmKKx10 = 10f;
         #elif HS2 || AI
             private readonly static float rmAltHS2x2 = 2f;
             private readonly static float rmKKx2 = 1;
             private readonly static float rmKKxFract = 1f;
-            private readonly static float rmKKx4 = 1f;
+            private readonly static float rmKKx10 = 1f;
         #endif
 
         //The allowed slider ranges for each slider type
@@ -40,7 +40,7 @@
             public readonly static float[] inflationShiftZ = {-0.15f * rmAltHS2x2, 0.15f * rmAltHS2x2};
             public readonly static float[] inflationTaperY = {-0.075f * rmAltHS2x2, 0.075f * rmAltHS2x2};
             public readonly static float[] inflationTaperZ = {-0.075f * rmAltHS2x2, 0.075f * rmAltHS2x2};            
-            public readonly static float[] inflationClothOffset = {-2 * rmKKx4, 2 * rmKKx4};
+            public readonly static float[] inflationClothOffset = {-2 * rmKKx10, 2 * rmKKx10};
             public readonly static float[] inflationFatFold = {0, 2f};
             public readonly static float[] inflationRoundness = {-0.75f, 0.75f};
         }
