@@ -25,9 +25,14 @@ namespace KK_PregnancyPlus
         internal static new ManualLogSource Logger { get; private set; }
 
         #if DEBUG
+            //Control all debug logging when running in debug mode
             internal static bool debugLog = true;
+            internal static bool debugAllVerts = false;
+            
         #else
+            //Always leave these false here
             internal static bool debugLog = false;
+            internal static bool debugAllVerts = false;
         #endif        
 
         //Used to hold the last non zero belly shape slider values that were applied to any character for Restore button
@@ -64,11 +69,13 @@ namespace KK_PregnancyPlus
             var handlers = CharacterApi.GetRegisteredBehaviour(GUID);
             if (handlers == null || handlers.Instances == null) return;
 
-            //I guess this is how its suppposed to be done?
-            foreach (PregnancyPlusCharaController charCustFunCtrl in handlers.Instances)
-            { 
-                charCustFunCtrl.blendShapeGui.OnGUI(this);                                    
-            }
+            #if !DEBUG  //Tired of the errors caused by ScriptEngine here
+                //I guess this is how its suppposed to be done?
+                foreach (PregnancyPlusCharaController charCustFunCtrl in handlers.Instances)
+                {         
+                    charCustFunCtrl.blendShapeGui.OnGUI(this);                                                    
+                }
+            #endif
         }
     
     }

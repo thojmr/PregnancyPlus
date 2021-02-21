@@ -79,6 +79,7 @@ namespace KK_PregnancyPlus
             }
 
             public float BellyButtonHeight;//Foot to belly button height
+            public bool MeshRootDidMove = false;//Keep track when we move the meshroot position for certain clothing positional calculations
 
             
             public bool IsInitialized 
@@ -105,7 +106,7 @@ namespace KK_PregnancyPlus
 
             internal BellyInfo(float waistWidth, float waistHeight, float sphereRadius, float originalSphereRadius, 
                                Vector3 bodyTopScale, float currentMultiplier, float waistThick, Vector3 nHeightScale,
-                               float bellyToBreastDist, Vector3 characterScale) 
+                               float bellyToBreastDist, Vector3 characterScale, bool meshRootDidMove = false) 
             {
                 WaistWidth = waistWidth;
                 WaistHeight = waistHeight;
@@ -117,6 +118,7 @@ namespace KK_PregnancyPlus
                 NHeightScale = nHeightScale;
                 BellyToBreastDist = bellyToBreastDist;
                 CharacterScale = characterScale;
+                MeshRootDidMove = meshRootDidMove;
             }
 
             //Determine if we need to recalculate the sphere radius (hopefully to avoid change in hip bones causing belly size to sudenly change)

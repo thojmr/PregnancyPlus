@@ -144,7 +144,7 @@ namespace KK_PregnancyPlus
                     //Store all these values for reuse later
                     bellyInfo = new BellyInfo(_waistWidth, _waistToRibDist, bellyInfo.SphereRadius, bellyInfo.OriginalSphereRadius, bodyTopScale, 
                                               GetInflationMultiplier(), _waistToBackThickness, nHeightScale, _bellyToBreastDist,
-                                              charScale);
+                                              charScale, bellyInfo.MeshRootDidMove);
 
                     if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(bellyInfo.Log());                                             
                     return _valid;
@@ -268,7 +268,7 @@ namespace KK_PregnancyPlus
             //Store new values for later checks
             bellyInfo = new BellyInfo(bellyInfo.WaistWidth, bellyInfo.WaistHeight, newSphereRadiusMult, newSphereRadius, 
                                         charScale, GetInflationMultiplier(), bellyInfo.WaistThick, nHeightScale, bellyInfo.BellyToBreastDist,
-                                        chaControl.transform.localScale);
+                                        chaControl.transform.localScale, bellyInfo.MeshRootDidMove);
 
             if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" MeasureSphere Recalc ");            
             
@@ -291,7 +291,7 @@ namespace KK_PregnancyPlus
 
             if (smr == null) return false;
 
-            var meshRootTf = GetMeshRoot();
+            GetMeshRoot(out Transform meshRootTf, out float meshRootDistMoved);
             if (meshRootTf == null) return false;
                         
             //set sphere center and allow for adjusting its position from the UI sliders  
@@ -304,10 +304,17 @@ namespace KK_PregnancyPlus
                 if (isClothingMesh) 
                 {
                     //KK just has to have strange vert positions, so we have to use adjust the sphere center location for body and clothes
-                    var clothesMeshRoot = PregnancyPlusHelper.GetBone(ChaControl, "cf_o_root").position;
+                    var clothesMeshRoot = PregnancyPlusHelper.GetBoneGO(ChaControl, "p_cf_body_00.cf_o_root").transform;           
+
+                    //Calculate the custom clothes offset distance needed for certain clothing (Why can't it all be the same....) Half the distance in extremely special cases...
+                    var clothRootToSphereCenter = meshRootTf.up * FastDistance(clothesMeshRoot.position, sphereCenter);//TODO * (bellyInfo.MeshRootDidMove && needsPositionFix ? 0.5f : 1);
+                    var clothOffsetFix = 1.021f;
+                    
                     //Get distance from bb to clothesMeshRoot if needs fix
-                    clothSphereCenterOffset = needsPositionFix ? sphereCenter - meshRootTf.up * FastDistance(clothesMeshRoot, sphereCenter) * 1.021f : sphereCenter;//At belly button - meshRoot position (plus some tiny dumb offset that I cant find the source of)
+                    clothSphereCenterOffset = needsPositionFix ? sphereCenter - (clothRootToSphereCenter * clothOffsetFix) : sphereCenter;//At belly button - meshRoot position (plus some tiny dumb offset that I cant find the source of)
                     sphereCenter = needsPositionFix ? clothSphereCenterOffset : sphereCenter;
+
+                    // if (PregnancyPlusPlugin.debugLog && smr.name.Contains("bra")) DebugTools.LogParents(smr.gameObject, 3);
                 } 
                 else if (isDefaultBody) 
                 {
@@ -319,15 +326,13 @@ namespace KK_PregnancyPlus
                     //For uncensor body mesh
                     clothSphereCenterOffset = bodySphereCenterOffset = sphereCenter;//at belly button
                 }
-                if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" KK corrected sphereCenter {sphereCenter} isDefaultBody {isDefaultBody}");
+                if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] corrected sphereCenter {sphereCenter} isDefaultBody {isDefaultBody} needsPositionFix {needsPositionFix}");
 
             #elif (HS2 || AI)
                 //Its so simple when its not KK default mesh :/
                 clothSphereCenterOffset = bodySphereCenterOffset = sphereCenter;
             #endif    
-#endregion        
-
-            // if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" isClothingMesh {isClothingMesh} needsPositionFix {needsPositionFix} ");
+#endregion                    
 
             var rendererName = GetMeshKey(smr);         
             originalVertices[rendererName] = smr.sharedMesh.vertices;
@@ -339,6 +344,14 @@ namespace KK_PregnancyPlus
             var currentVerts = currentVertices[rendererName];
             var bellyVertIndex = bellyVerticieIndexes[rendererName];    
 
+            #if DEBUG
+                var bellyVertsCount = 0;
+                for (int i = 0; i < bellyVertIndex.Length; i++)
+                {
+                    if (bellyVertIndex[i]) bellyVertsCount++;
+                }
+                if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" Mesh affected vert count {bellyVertsCount}");
+            #endif
 
             //Pre compute some values needed by SculptInflatedVerticie
             var vertsLength = origVerts.Length;
@@ -363,7 +376,7 @@ namespace KK_PregnancyPlus
                 var origVert = origVerts[i];
 
                 //Only care about inflating belly verticies
-                if (bellyVertIndex[i]) 
+                if (bellyVertIndex[i] || PregnancyPlusPlugin.debugAllVerts) 
                 {                    
                     var origVertWs = meshRootTf.TransformPoint(origVerts[i]);//Convert to worldspace 
                     var vertDistance = FastDistance(origVertWs, sphereCenter);
@@ -371,7 +384,7 @@ namespace KK_PregnancyPlus
                     CalculateNormalsBoundary(vertDistance, vertNormalCaluRadius, i, rendererName);
 
                     //Ignore verts outside the sphere radius
-                    if (vertDistance <= vertNormalCaluRadius) 
+                    if (vertDistance <= vertNormalCaluRadius || PregnancyPlusPlugin.debugAllVerts) 
                     {
                         Vector3 inflatedVertWs;                    
                         Vector3 verticieToSpherePos;                                                                                    
@@ -416,36 +429,40 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Get the root position of the mesh, so we can calculate the true position of its mesh verticies later
         /// </summary>
-        internal Transform GetMeshRoot() 
-        {                                
+        internal void GetMeshRoot(out Transform meshRootTf, out float distanceMoved) 
+        {                   
+            distanceMoved = 0f;
+            meshRootTf = null;
+
             #if KK
                 //Get normal mesh root attachment position, and if its not near 0,0,0 fix it so that it is (Match it to the chacontrol y pos)
-                var kkMeshRoot = PregnancyPlusHelper.GetBoneGO(ChaControl, "cf_o_root");
-                if (!kkMeshRoot) return null;                
-                
-                var meshRoot = kkMeshRoot.transform;
+                var kkMeshRoot = PregnancyPlusHelper.GetBoneGO(ChaControl, "p_cf_body_00.cf_o_root");
+                if (kkMeshRoot == null) return;                
                 
                 //If the mesh root y is too far from the ChaControl origin
-                if (ChaControl.transform.InverseTransformPoint(meshRoot.position).y > 0.01f)
+                if (ChaControl.transform.InverseTransformPoint(kkMeshRoot.transform.position).y > 0.01f)
                 {
                     // if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($"$ GetMeshRoot pos {kkMeshRoot.transform.position}");
                     // if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($"$ char pos {ChaControl.transform.position}");
+                    distanceMoved = FastDistance(ChaControl.transform.position, kkMeshRoot.transform.position);
+                    if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" MeshRoot moved to charRoot by {distanceMoved}f");
 
                     //Set the meshroot.pos to the chaControl.pos to make it more in line with HS2/AI, and KK Uncensor mesh
-                    meshRoot.transform.position = ChaControl.transform.position;
+                    kkMeshRoot.transform.position = ChaControl.transform.position;
+                    bellyInfo.MeshRootDidMove = true;
 
-                    // if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($"$ GetMeshRoot pos after {meshRoot.transform.position}");
-                }                
+                    // if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($"$ GetMeshRoot pos after {meshRoot.transform.position}");                    
+                }     
+
+                meshRootTf = kkMeshRoot.transform;           
             
             #elif HS2 || AI
                 //For HS2, get the equivalent position game object (near bellybutton)
                 var meshRootGo = PregnancyPlusHelper.GetBoneGO(ChaControl, "n_o_root");
-                if (!meshRootGo) return null;
-                var meshRoot = meshRootGo.transform;
+                if (meshRootGo == null) return;
+                meshRootTf = meshRootGo.transform;
 
-            #endif
-
-            return meshRoot;
+            #endif            
         }
 
 
@@ -483,7 +500,7 @@ namespace KK_PregnancyPlus
                                                 Vector3 backExtentPosLs, Vector3 topExtentPosLs) 
         {
             //No smoothing modification in debug mode
-            if (PregnancyPlusPlugin.MakeBalloon.Value) return inflatedVerticieWs;                       
+            if (PregnancyPlusPlugin.MakeBalloon.Value || PregnancyPlusPlugin.debugAllVerts) return inflatedVerticieWs;                       
             
             //get the smoothing distance limits so we don't have weird polygons and shapes on the edges, and prevents morphs from shrinking past original skin boundary
             var pmSkinToCenterDist = Math.Abs(FastDistance(preMorphSphereCenterWs, originalVerticeWs));
