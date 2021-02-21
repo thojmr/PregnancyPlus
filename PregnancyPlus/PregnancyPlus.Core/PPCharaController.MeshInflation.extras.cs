@@ -252,7 +252,7 @@ namespace KK_PregnancyPlus
 
             var inflatedVerWS = (origVertWS - sphereCenterWs).normalized * sphereRadius + sphereCenterWs;//Get the line we want to do measurements on            
             //We dont care about empty space at sphere center, move outwards a bit before determining vector location on the line
-            float awayFromCenter = (waistWidth/3);
+            float awayFromCenter = (bellyInfo.ScaledWaistWidth/3);
 
             //The total radial distance after removing the distance we want to ignore
             var totatDist = (sphereRadius - awayFromCenter);
