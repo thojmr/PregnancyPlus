@@ -319,7 +319,7 @@ namespace KK_PregnancyPlus
             #if KK            
                 //When mesh is the default kk body, we have to adjust the mesh to match some strange offset that comes up
                 var isDefaultBody = !PregnancyPlusHelper.IsUncensorBody(ChaControl, UncensorCOMName); 
-                var defaultBodyOffsetFix = 0.0231f;//Where does this offset even come from?
+                var defaultBodyOffsetFix = 0.021f * bellyInfo.TotalCharScale.y;//Where does this offset even come from?
 
                 if (!isClothingMesh && isDefaultBody) 
                 {
