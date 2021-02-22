@@ -8,7 +8,7 @@ using KKAPI.Maker;
 namespace KK_PregnancyPlus
 {
 
-    //This partial class contains all the transforms used to smooth the belly verticies
+    //This partial class contains all the lerp transforms used to smooth the belly verticies
     public partial class PregnancyPlusCharaController: CharaCustomFunctionController
     {
         
@@ -255,9 +255,6 @@ namespace KK_PregnancyPlus
 
             return smoothedVectorLs;
         }
-
-
-
 
 
 

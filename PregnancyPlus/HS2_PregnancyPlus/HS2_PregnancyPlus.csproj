@@ -113,9 +113,12 @@
 
   <ItemGroup>
     <Compile Include="..\PregnancyPlus.Core\PPCharaController.cs" />
-    <Compile Include="..\PregnancyPlus.Core\PPCharaController.MeshInflation.extras.cs" />
-    <Compile Include="..\PregnancyPlus.Core\PPCharaController.MeshInflation.transforms.cs" />
+    <Compile Include="..\PregnancyPlus.Core\PPCharaController.MeshInflation.Extras.cs" />
+    <Compile Include="..\PregnancyPlus.Core\PPCharaController.MeshInflation.Transforms.cs" />
+    <Compile Include="..\PregnancyPlus.Core\PPCharaController.MeshInflation.Interface.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPCharaController.MeshInflation.cs" />
+    <Compile Include="..\PregnancyPlus.Core\PPCharaController.MeasureBody.cs" />
+    <Compile Include="..\PregnancyPlus.Core\PPCharaController.FilterVerts.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPCharaController.BlendShape.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPCharaController.AnimationCurve.cs" />
     <Compile Include="..\PregnancyPlus.Core\GUI\PPGui.cs" />
