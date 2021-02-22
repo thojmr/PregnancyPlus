@@ -245,6 +245,7 @@ namespace KK_PregnancyPlus
         /// <param name="sphereRadius">The desired sphere radius</param>
         /// <param name="waistWidth">The average width of the characters waist</param>
         /// <param name="origVertWS">The original verticie's worldspace position</param>
+        /// <param name="meshName">Used to determine inner vs outer mesh layers from a known list of names</param>
         internal float GetClothesFixOffset(Transform meshRootTf, Vector3 sphereCenterWs, float sphereRadius, float waistWidth, Vector3 origVertWS, string meshName) 
         {  
             //The size of the area to spread the flattened offsets over like shrinking center dist -> inflated dist into a small area shifted outside the radius.  So hard to explin with words...
@@ -292,7 +293,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Get the distance from the characters feet to the belly button collapsed into a straight Y line.null  (Ignores animation and scale, gives true measurement)
         /// </summary>
-        internal float GetBellyButtonLocalHeight(Transform boneOrMeshTf) 
+        internal float GetBellyButtonLocalHeight() 
         {            
             //Calculate the belly button height by getting each bone distance from foot to belly button (even during animation the height is correct!)
             #if KK
