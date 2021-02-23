@@ -13,6 +13,7 @@ namespace KK_PregnancyPlus
         public static ConfigEntry<bool> StoryMode { get; private set; }
         public static ConfigEntry<bool> AllowMale { get; private set; }
         public static ConfigEntry<bool> MakeBalloon { get; private set; }
+        public static ConfigEntry<bool> DebugAnimations { get; private set; }
         public static ConfigEntry<float> MaxStoryModeBelly { get; private set; }
         public static ConfigEntry<float> StoryModeInflationMultiplier { get; private set; }
         public static ConfigEntry<float> StoryModeInflationMoveY { get; private set; }
@@ -38,8 +39,10 @@ namespace KK_PregnancyPlus
         {            
             AllowMale = Config.Bind<bool>("General", "Allow male", false, "When enabled, the sliders will work on male characters as well.");
 
-            MakeBalloon = Config.Bind<bool>("Character Studio", "Balloon mode (Debug mode)", false, "Debug mesh mode, disable to go back to the original style.  This will disable some sliders.");
+            MakeBalloon = Config.Bind<bool>("Debug", "Balloon mode (Debug mode)", false, "Debug mesh mode, disable to go back to the original style.  This will disable some sliders.");
             MakeBalloon.SettingChanged += MakeBalloon_SettingsChanged;
+
+            DebugAnimations = Config.Bind<bool>("Debug", "Debug Animated Belly (Debug mode)", false, "Will force update the belly shape every x ticks to help debug belly shape during animations.  Don't leave enabled.");
 
             #if KK
                 var storyConfigTitle = "Story/Main-Game Mode (Requires KK_Pregnancy)";     
