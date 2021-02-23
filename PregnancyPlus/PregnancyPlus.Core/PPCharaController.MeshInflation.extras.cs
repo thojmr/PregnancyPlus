@@ -91,7 +91,7 @@ namespace KK_PregnancyPlus
         internal float GetClothesFixOffset(Transform meshRootTf, Vector3 sphereCenterWs, float sphereRadius, float waistWidth, Vector3 origVertWS, string meshName) 
         {  
             //The size of the area to spread the flattened offsets over like shrinking center dist -> inflated dist into a small area shifted outside the radius.  So hard to explin with words...
-            float shrinkBy = bellyInfo.ScaledWaistWidth/40 + (bellyInfo.ScaledWaistWidth/40 * GetInflationClothOffset());
+            float shrinkBy = bellyInfo.ScaledWaistWidth/30 + (bellyInfo.ScaledWaistWidth/40 * GetInflationClothOffset());
 
             var inflatedVerWS = (origVertWS - sphereCenterWs).normalized * sphereRadius + sphereCenterWs;//Get the line we want to do measurements on            
             //We dont care about empty space at sphere center, move outwards a bit before determining vector location on the line
@@ -99,7 +99,7 @@ namespace KK_PregnancyPlus
 
             //The total radial distance after removing the distance we want to ignore
             var totatDist = (sphereRadius - awayFromCenter);
-            var originToEndDist = FastDistance(meshRootTf.InverseTransformPoint(origVertWS), meshRootTf.InverseTransformPoint(inflatedVerWS));
+            var originToEndDist = FastDistance(origVertWS, inflatedVerWS);
             //Get the positon on a line that this vector exists between flattenExtensStartAt -> to sphereRadius. Then shrink it to scale
             var offset = totatDist * shrinkBy - (Math.Abs((totatDist - originToEndDist)) * shrinkBy);
 
