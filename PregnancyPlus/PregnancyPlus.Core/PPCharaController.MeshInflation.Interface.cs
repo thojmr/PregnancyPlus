@@ -33,8 +33,8 @@ namespace KK_PregnancyPlus
             //Some meshes are not readable and cant be touched...  Nothing I can do about this right now
             if (!sharedMesh.isReadable) 
             {
-                if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(
-                     $"ApplyInflation > smr '{renderKey}' is not readable, skipping");
+                PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_MeshNotReadable, 
+                    $"ApplyInflation > smr '{renderKey}' is not readable, skipping");
                 return false;
             } 
 
@@ -70,8 +70,8 @@ namespace KK_PregnancyPlus
             //Check that the mesh did not change behind the scenes.  It will have a different vert count if it did (possible to be the same though...)
             if (currentVert.Length != sharedMesh.vertexCount) 
             {
-                PregnancyPlusPlugin.Logger.LogInfo(
-                            $"ApplyInflation > smr.sharedMesh '{renderKey}' has incorrect vert count {currentVert.Length}|{sharedMesh.vertexCount}");
+                PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_IncorrectVertCount, 
+                    $"ApplyInflation > smr.sharedMesh '{renderKey}' has incorrect vert count {currentVert.Length}|{sharedMesh.vertexCount}");
                 return false;
             }
 
@@ -114,16 +114,16 @@ namespace KK_PregnancyPlus
 
                 //Some meshes are not readable and cant be touched...
                 if (!sharedMesh.isReadable) {
-                    if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(
-                         $"ResetInflation > smr '{renderKey}' is not readable, skipping");
-                        continue;
+                    PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_MeshNotReadable, 
+                        $"ResetInflation > smr '{renderKey}' is not readable, skipping");
+                    continue;
                 } 
 
                 if (!sharedMesh || origVerts.Equals(null) || origVerts.Length == 0) continue;
                 
                 if (origVerts.Length != sharedMesh.vertexCount) 
                 {
-                    PregnancyPlusPlugin.Logger.LogInfo(
+                    PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_IncorrectVertCount, 
                         $"ResetInflation > smr '{renderKey}' has incorrect vert count {origVerts.Length}|{sharedMesh.vertexCount}");
                     continue;
                 }

@@ -69,7 +69,12 @@ namespace KK_PregnancyPlus
             ReadAndSetCardData();                       
 
             //Get the char measurements before they have a chance to move
-            MeasureWaistAndSphere(ChaControl); 
+            var success = MeasureWaistAndSphere(ChaControl);
+            if (!success)
+            {
+                PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_BadMeasurement, 
+                    $"Start(): Could not get belly measurements from character");
+            }
 
             base.Start();
         }

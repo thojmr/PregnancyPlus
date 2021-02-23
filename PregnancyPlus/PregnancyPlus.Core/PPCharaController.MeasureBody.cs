@@ -204,7 +204,7 @@ namespace KK_PregnancyPlus
 
             //Get waist measurements from bone distances
             var valid = MeasureWaist(chaControl, charScale, nHeightScale, 
-                                           out float waistToRibDist, out float waistToBackThickness, out float waistWidth, out float bellyToBreastDist);
+                                     out float waistToRibDist, out float waistToBackThickness, out float waistWidth, out float bellyToBreastDist);
 
             //Check for bad values
             if (!valid) return false;

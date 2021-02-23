@@ -56,7 +56,11 @@ namespace KK_PregnancyPlus
             
             //Get the measurements that determine the base belly size
             var hasMeasuerments = MeasureWaistAndSphere(ChaControl);                     
-            if (!hasMeasuerments) return false;
+            if (!hasMeasuerments) {
+                PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_BadMeasurement, 
+                    $"Could not get belly measurements from character");
+                return false;
+            }
             
             var anyMeshChanges = false;
 

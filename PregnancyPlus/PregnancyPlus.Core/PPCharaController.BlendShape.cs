@@ -254,8 +254,8 @@ namespace KK_PregnancyPlus
             var meshCopyOrig = PregnancyPlusHelper.CopyMesh(smr.sharedMesh);   
             if (!meshCopyOrig.isReadable) 
             {
-                if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(
-                     $"CreateBlendShape > smr '{renderKey}' is not readable, skipping");
+                PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_MeshNotReadable, 
+                    $"CreateBlendShape > smr '{renderKey}' is not readable, skipping");                     
                 return null;
             } 
 
@@ -270,8 +270,8 @@ namespace KK_PregnancyPlus
 
             if (originalVertices[renderKey].Length != meshCopyOrig.vertexCount) 
             {
-                PregnancyPlusPlugin.Logger.LogInfo(
-                            $"CreateBlendShape > smr.sharedMesh '{renderKey}' has incorrect vert count {originalVertices[renderKey].Length}|{meshCopyOrig.vertexCount}");
+                PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_IncorrectVertCount, 
+                    $"CreateBlendShape > smr.sharedMesh '{renderKey}' has incorrect vert count {originalVertices[renderKey].Length}|{meshCopyOrig.vertexCount}");  
                 return null;
             }
 

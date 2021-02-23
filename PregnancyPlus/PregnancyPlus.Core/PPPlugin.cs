@@ -37,14 +37,16 @@ namespace KK_PregnancyPlus
 
         //Used to hold the last non zero belly shape slider values that were applied to any character for Restore button
         public static PregnancyPlusData lastBellyState =  new PregnancyPlusData();
+        public static ErrorCodeController errorCodeCtrl;
 
 
         internal void Start()
         {
             Logger = base.Logger;    
             DebugTools.logger = Logger;
+            errorCodeCtrl = new ErrorCodeController(Logger, debugLog);
             //Initilize the plugin config options 
-            PluginConfig();            
+            PluginConfig();                    
 
             //Attach the mesh inflation logic to each character
             CharacterApi.RegisterExtraBehaviour<PregnancyPlusCharaController>(GUID);

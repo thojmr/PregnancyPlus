@@ -31,9 +31,9 @@ namespace KK_PregnancyPlus
 
             if (!sharedMesh.isReadable) 
             {
-                if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(
-                     $"GetFilteredVerticieIndexes > smr '{renderKey}' is not readable, skipping");
-                    return false;
+                PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_MeshNotReadable, 
+                    $"GetFilteredVerticieIndexes > smr '{renderKey}' is not readable, skipping");
+                return false;
             }
 
             //return early if no bone weights found
