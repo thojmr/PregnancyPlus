@@ -95,7 +95,8 @@ namespace KK_PregnancyPlus
 			}	
 			catch (Exception e)
 			{
-				if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" OnRemoveAllBlendShapes > HSPE not found {e.Message} ");
+				PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(-1, ErrorCode.PregPlus_HSPENotFound, 
+                    	$" OnRemoveAllBlendShapes > HSPE not found {e.Message} ");
 			}	
 
 			_charaInstance.OnRemoveAllBlendShapes();
@@ -141,7 +142,8 @@ namespace KK_PregnancyPlus
 			}	
 			catch (Exception e)
 			{
-				if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" CloseWindow > HSPE not found {e.Message} ");
+				PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(-1, ErrorCode.PregPlus_HSPENotFound, 
+                    	$" CloseWindow > HSPE not found {e.Message} ");
 			}
 			guiSkinnedMeshRenderers = new List<SkinnedMeshRenderer>();
 			lastTouched = -1;

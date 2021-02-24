@@ -166,7 +166,8 @@ namespace KK_PregnancyPlus
 				catch (Exception e)
 				{
 					//If KKPE does not exists catch the error, and warn the user
-					if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" SetHspeBlendShapeWeight > HSPE not found {e.Message} ");
+					PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(-1, ErrorCode.PregPlus_HSPENotFound, 
+                    	$"SetHspeBlendShapeWeight > HSPE not found {e.Message} ");
 					HSPEExists = false;
 				}
 
