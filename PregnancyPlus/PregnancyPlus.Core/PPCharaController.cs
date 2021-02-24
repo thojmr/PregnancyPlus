@@ -77,7 +77,7 @@ namespace KK_PregnancyPlus
             }
 
             base.Start();
-        }
+        }        
 
 
         //The HS2 / AI way to detect clothing change
@@ -252,7 +252,7 @@ namespace KK_PregnancyPlus
             #if KK
                 var debounceTime = 0.1f;
             #elif HS2 || AI
-                var debounceTime = 0.2f;
+                var debounceTime = 0.15f;
             #endif
             //Force recalc because of some cloth items in HS2 Maker that don't seem to want to follow the rules
             StartCoroutine(WaitForMeshToSettle(debounceTime, true, forceRecalcVerts));

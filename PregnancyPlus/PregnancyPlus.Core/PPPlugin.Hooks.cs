@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using KKAPI.Maker;
+using KKAPI.Studio;
 #if AI || HS2
     using AIChara;
 #elif KK
@@ -34,7 +35,7 @@ namespace KK_PregnancyPlus
             /// Trigger the ClothesStateChangeEvent for toggling on and off a clothing item
             /// </summary>
             [HarmonyPostfix, HarmonyPatch(typeof(ChaControl), nameof(ChaControl.SetClothesState))]
-            private static void SetClothesStatePostfix(ChaControl __instance, int clothesKind)
+            private static void ChaControl_SetClothesState(ChaControl __instance, int clothesKind)
             {
                 //Ignore gloves, shoes, socks
                 if (IsIgnoredClothing(clothesKind)) return;
@@ -51,7 +52,7 @@ namespace KK_PregnancyPlus
             /// Trigger the ClothesStateChangeEvent when changing custom outfits in maker
             /// </summary>
             [HarmonyPostfix, HarmonyPatch(typeof(ChaControl), nameof(ChaControl.ChangeCustomClothes))]
-            private static void ChangeCustomClothes(ChaControl __instance, int kind)
+            private static void ChaControl_ChangeCustomClothes(ChaControl __instance, int kind)
             {
 
                 //Ignore gloves, shoes, socks
@@ -66,6 +67,25 @@ namespace KK_PregnancyPlus
                     controller.ClothesStateChangeEvent(__instance.chaID, kind, true);  
                 }
             }
+
+            #if HS2 || AI
+                /// <summary>
+                /// When HS2WearCustom changes clothing (catches clothes change that the above does not)
+                /// </summary>
+                [HarmonyPostfix, HarmonyPatch(typeof(ChaControl), nameof(ChaControl.ChangeClothesAsync), typeof(int), typeof(int), typeof(bool), typeof(bool))]
+                private static void ChaControl_ChangeClothesAsync(ChaControl __instance, int kind, int id, bool forceChange, bool asyncFlags)
+                {
+                    //Dont ignore any clothes types here, since they can come with additional uncensor mesh as well (like Squeeze Socks)
+                    if (StudioAPI.InsideStudio || MakerAPI.InsideAndLoaded)
+                    {
+                        var controller = GetCharaController(__instance);
+                        if (controller == null) return;
+                    
+                        //Send event to the CustomCharaFunctionController that the clothes were changed on
+                        controller.ClothesStateChangeEvent(__instance.chaID, kind);  
+                    }
+                }
+            #endif
 
 
             /// <summary>
