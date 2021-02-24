@@ -16,7 +16,9 @@ namespace KK_PregnancyPlus
         /// </summary>
         /// <param name="chaControl"></param>
         /// <returns>KKAPI character controller</returns>
-        public static PregnancyPlusCharaController GetCharaController(ChaControl chaControl) => chaControl == null ? null : chaControl.gameObject.GetComponent<PregnancyPlusCharaController>();
+        public static PregnancyPlusCharaController GetCharaController(ChaControl chaControl) => (chaControl == null)
+            ? null 
+            : chaControl.gameObject.GetComponent<PregnancyPlusCharaController>();
 
 
 
@@ -26,6 +28,7 @@ namespace KK_PregnancyPlus
             {
                 harmonyInstance.PatchAll(typeof(Hooks));
             }
+
 
             /// <summary>
             /// Trigger the ClothesStateChangeEvent for toggling on and off a clothing item
@@ -42,6 +45,7 @@ namespace KK_PregnancyPlus
                 //Send event to the CustomCharaFunctionController that the clothes were changed on
                 controller.ClothesStateChangeEvent(__instance.chaID, clothesKind);                                
             }
+
 
             /// <summary>
             /// Trigger the ClothesStateChangeEvent when changing custom outfits in maker
@@ -62,8 +66,6 @@ namespace KK_PregnancyPlus
                     controller.ClothesStateChangeEvent(__instance.chaID, kind, true);  
                 }
             }
-
-
 
 
             /// <summary>

@@ -2,6 +2,16 @@ using System.Collections.Generic;
 using BepInEx.Logging;
 
 
+//Possible Preg+ errors we want to look for in output.logs
+public enum ErrorCode
+{
+    PregPlus_MeshNotReadable,//When the mesh is marked as isReadable == false, we can't read or modify the mesh.
+    PregPlus_IncorrectVertCount,//When the current mesh vert count does not match the stored mesh vert count.  The mesh was swaped out.
+    PregPlus_BadMeasurement,//When a part of the character fails to take measurement needed for belly placement.
+    PregPlus_HSPENotFound//When HSPE plugin is not found while using blendshapes (It's not a hard dependency, but still good to know when its not included)
+}
+
+
 public class ErrorCodeController
 {    
     // Tracks the existing thrown error codes for a given preg+ character
@@ -61,14 +71,4 @@ public class ErrorCodeController
         AppendErrorCode(charId, errorCode);
         logger.LogInfo($"{errorCode} {message}");        
     }
-}
-
-
-//Possible Preg+ errors we want to look for in output.logs
-public enum ErrorCode
-{
-    PregPlus_MeshNotReadable,//When the mesh is marked as isReadable == false, we can't read or modify the mesh.
-    PregPlus_IncorrectVertCount,//When the current mesh vert count does not match the stored mesh vert count.  The mesh was swaped out.
-    PregPlus_BadMeasurement,//When a part of the character fails to take measurement needed for belly placement.
-    PregPlus_HSPENotFound
 }

@@ -36,7 +36,7 @@ namespace KK_PregnancyPlus
         #endif        
 
         //Used to hold the last non zero belly shape slider values that were applied to any character for Restore button
-        public static PregnancyPlusData lastBellyState =  new PregnancyPlusData();
+        public static PregnancyPlusData lastBellyState =  new PregnancyPlusData();        
         public static ErrorCodeController errorCodeCtrl;
 
 
@@ -45,7 +45,7 @@ namespace KK_PregnancyPlus
             Logger = base.Logger;    
             DebugTools.logger = Logger;
             errorCodeCtrl = new ErrorCodeController(Logger, debugLog);
-            //Initilize the plugin config options 
+            //Initilize the Bepinex F1 ConfigurationManager options
             PluginConfig();                    
 
             //Attach the mesh inflation logic to each character
@@ -72,9 +72,9 @@ namespace KK_PregnancyPlus
             if (handlers == null || handlers.Instances == null) return;
 
             #if !DEBUG  //Tired of the errors caused by ScriptEngine here
-                //I guess this is how its suppposed to be done?
                 foreach (PregnancyPlusCharaController charCustFunCtrl in handlers.Instances)
                 {         
+                    //Update any active gui windows
                     charCustFunCtrl.blendShapeGui.OnGUI(this);                                                    
                 }
             #endif
