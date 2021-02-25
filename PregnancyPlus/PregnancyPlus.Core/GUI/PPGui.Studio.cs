@@ -378,7 +378,7 @@ namespace KK_PregnancyPlus
                 //For each slider component (should just be one per subItem) set to last good value
                 foreach(var slider in sliders) 
                 {
-                    if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" Restoring slider > {slider.name}");
+                    if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" Restoring slider > {slider.name}");
 
                     //Set the correct slider with it's old config value
                     switch (slider.name) 

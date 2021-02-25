@@ -96,7 +96,7 @@ namespace KK_PregnancyPlus
             if (smr.sharedMesh.blendShapeCount > 0) 
             {
                 //Blend shape already exists overwright it the hard way
-                if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" AddBlendShape > overwriting {blendShape.log}");                       
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" AddBlendShape > overwriting {blendShape.log}");                       
                 OverwriteBlendShape(smr, blendShape);
 
                 //Fix for some shared mesh properties not updating after AddBlendShapeFrame
@@ -104,7 +104,7 @@ namespace KK_PregnancyPlus
                 return;
             }
 
-            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" AddBlendShape > {blendShape.log}");
+            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" AddBlendShape > {blendShape.log}");
             smr.sharedMesh.AddBlendShapeFrame(blendShape.name, blendShape.weight, blendShape.verticies, blendShape.normals, blendShape.tangents);    
             //Fix for some shared mesh properties not updating after AddBlendShapeFrame
             smr.sharedMesh = smr.sharedMesh;//I hate this line of code              
@@ -205,7 +205,7 @@ namespace KK_PregnancyPlus
             var shapeName = smr.sharedMesh.GetBlendShapeName(shapeIndex);
             var shapeCount = smr.sharedMesh.blendShapeCount;
 
-            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" ApplyBlendShapeWeight > shapeIndex {shapeIndex} shapeWeight {shapeWeight} shapeCount {shapeCount} shapeFrameCount {shapeFrameCount} lerpWeight {lerpWeight}");            
+            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" ApplyBlendShapeWeight > shapeIndex {shapeIndex} shapeWeight {shapeWeight} shapeCount {shapeCount} shapeFrameCount {shapeFrameCount} lerpWeight {lerpWeight}");            
             smr.SetBlendShapeWeight(shapeIndex, lerpWeight);
 
             return true;

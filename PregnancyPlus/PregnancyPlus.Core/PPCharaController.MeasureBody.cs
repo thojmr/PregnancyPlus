@@ -172,7 +172,7 @@ namespace KK_PregnancyPlus
                 if (!forceRecalc && needsSphereRecalc && !needsWaistRecalc)//Sphere radius calc needed
                 {
                     var _valid = MeasureSphere(chaControl, bodyTopScale, nHeightScale, totalScale);
-                    if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(bellyInfo.Log()); 
+                    if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo(bellyInfo.Log()); 
                     return _valid;
                 }
                 else if (!forceRecalc && needsWaistRecalc && !needsSphereRecalc)//Measurements needed which also requires sphere recalc
@@ -186,13 +186,13 @@ namespace KK_PregnancyPlus
                                               GetInflationMultiplier(), _waistToBackThickness, nHeightScale, _bellyToBreastDist,
                                               charScale, bellyInfo.MeshRootDidMove);
 
-                    if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(bellyInfo.Log());                                             
+                    if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo(bellyInfo.Log());                                             
                     return _valid;
                 }
                 else if (!forceRecalc && !needsSphereRecalc && !needsWaistRecalc)//No changed needed
                 {
                     //Just return the original measurements and sphere radius when no updates needed
-                    if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(bellyInfo.Log()); 
+                    if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo(bellyInfo.Log()); 
 
                     //Measeurements are fine and can be reused if above 0
                     return (bellyInfo.WaistWidth > 0 && bellyInfo.SphereRadius > 0 && bellyInfo.WaistThick > 0);
@@ -200,7 +200,7 @@ namespace KK_PregnancyPlus
             }
 
             //Measeurements need to be recalculated from scratch
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" MeasureWaistAndSphere init ");
+            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" MeasureWaistAndSphere init ");
 
             //Get waist measurements from bone distances
             var valid = MeasureWaist(chaControl, charScale, nHeightScale, 
@@ -218,7 +218,7 @@ namespace KK_PregnancyPlus
                                       GetInflationMultiplier(), waistToBackThickness, nHeightScale, bellyToBreastDist,
                                       charScale);
 
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(bellyInfo.Log());            
+            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo(bellyInfo.Log());            
 
             return (waistWidth > 0 && sphereRadiusMultiplied > 0 && waistToBackThickness > 0 && bellyToBreastDist > 0);
         }
@@ -286,7 +286,7 @@ namespace KK_PregnancyPlus
             //Distance from waist to breast root              
             bellyToBreastDist = Math.Abs(bellyButtonBone.transform.InverseTransformPoint(ribBone.position).y) + Math.Abs(ribBone.transform.InverseTransformPoint(breastBone.position).y);  
 
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" MeasureWaist Recalc ");            
+            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" MeasureWaist Recalc ");            
             return (waistWidth > 0 && waistToBackThickness > 0 && waistToRibDist > 0); 
         }
 
@@ -306,7 +306,7 @@ namespace KK_PregnancyPlus
                                         charScale, GetInflationMultiplier(), bellyInfo.WaistThick, nHeightScale, bellyInfo.BellyToBreastDist,
                                         chaControl.transform.localScale, bellyInfo.MeshRootDidMove);
 
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" MeasureSphere Recalc ");            
+            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" MeasureSphere Recalc ");            
             
             return (bellyInfo.WaistWidth > 0 && newSphereRadius > 0 && bellyInfo.WaistThick > 0);    
         }
