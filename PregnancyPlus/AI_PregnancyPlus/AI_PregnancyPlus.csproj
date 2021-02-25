@@ -134,6 +134,7 @@
     <Compile Include="..\PregnancyPlus.Core\Data\PPData.cs" />
     <Compile Include="..\PregnancyPlus.Core\tools\NormalsSolver.cs" />
     <Compile Include="..\PregnancyPlus.Core\tools\BlendShapeController.cs" />
+    <Compile Include="..\PregnancyPlus.Core\tools\ConfigurationManagerAttributes.cs" />
     <Compile Include="..\PregnancyPlus.Core\ErrorCode.cs" />
     <Compile Include="..\..\..\#DebugTools\DebugTools.cs" />
   </ItemGroup>

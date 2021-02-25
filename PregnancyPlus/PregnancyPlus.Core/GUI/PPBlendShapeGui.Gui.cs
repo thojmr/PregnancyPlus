@@ -149,7 +149,7 @@ namespace KK_PregnancyPlus
 			if (_sliderValues[smrName] != _sliderValuesHistory[smrName]) 
 			{					
 				lastTouched = i;
-				// if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" BlendShapeSlider changed {smrName} > kkBsIndex {kkBsIndex}  val {_sliderValues[smrName]}");
+				// if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" BlendShapeSlider changed {smrName} > kkBsIndex {kkBsIndex}  val {_sliderValues[smrName]}");
 
 				//If there are no blendshapes for this mesh anymore just reset HSPE
 				if (kkBsIndex < 0) {

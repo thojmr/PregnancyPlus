@@ -232,7 +232,7 @@ namespace KK_PregnancyPlus
 
                 //calculate the diatance by measuring y local distances only (we want to exclude angular distances)
                 var newDifference = (lastBone != null ? currentBone.transform.InverseTransformPoint(currentBone.transform.position).y - currentBone.transform.InverseTransformPoint(lastBone.transform.position).y : 0);
-                // if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" newDifference {newDifference}  currentBone.name {currentBone.name}  scale {currentBone.transform.localScale} corrected {((newDifference * currentBone.transform.localScale.y) - newDifference)}");
+                // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" newDifference {newDifference}  currentBone.name {currentBone.name}  scale {currentBone.transform.localScale} corrected {((newDifference * currentBone.transform.localScale.y) - newDifference)}");
                 
                 //Ignore any negative bone differences (like char root bone which is at 0,0,0)
                 if (newDifference > 0) {                    
@@ -246,11 +246,11 @@ namespace KK_PregnancyPlus
             //Check for BodyTop scale to apply it to distance (cf_n_height scale doesnt matter here for some reason)
             if (totalCharScale.y != 1) 
             {                
-                if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" applying BodyTop scale to distance: {distance} scale: {totalCharScale.y}");
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" applying BodyTop scale to distance: {distance} scale: {totalCharScale.y}");
                 distance = distance * totalCharScale.y;
             }
 
-            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" total bone chain dist {distance}  cm:{ConvertToCm(distance)}");
+            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" total bone chain dist {distance}  cm:{ConvertToCm(distance)}");
             return distance;
         }
 

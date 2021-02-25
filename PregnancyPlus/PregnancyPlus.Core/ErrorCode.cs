@@ -26,6 +26,11 @@ public class ErrorCodeController
         debugLog = _debugLog;
     }
 
+    public void SetDebugLogState(bool isDebug)
+    {
+        debugLog = isDebug;
+    }
+
 
     /// <summary>
     /// Check for existing error code for this character id

@@ -23,17 +23,7 @@ namespace KK_PregnancyPlus
         public const string GUID = "KK_PregnancyPlus";
         public const string Version = "1.25";
         internal static new ManualLogSource Logger { get; private set; }
-
-        #if DEBUG
-            //Control all debug logging when running in debug mode
-            internal static bool debugLog = true;
-            internal static bool debugAllVerts = false;
-            
-        #else
-            //Always leave these false here
-            internal static bool debugLog = false;
-            internal static bool debugAllVerts = false;
-        #endif        
+   
 
         //Used to hold the last non zero belly shape slider values that were applied to any character for Restore button
         public static PregnancyPlusData lastBellyState =  new PregnancyPlusData();        
@@ -43,8 +33,8 @@ namespace KK_PregnancyPlus
         internal void Start()
         {
             Logger = base.Logger;    
-            DebugTools.logger = Logger;
-            errorCodeCtrl = new ErrorCodeController(Logger, debugLog);
+            DebugTools.logger = Logger;          
+            errorCodeCtrl = new ErrorCodeController(Logger, PregnancyPlusPlugin.DebugLog != null ? PregnancyPlusPlugin.DebugLog.Value : false);  
             //Initilize the Bepinex F1 ConfigurationManager options
             PluginConfig();                    
 
@@ -56,7 +46,7 @@ namespace KK_PregnancyPlus
 
             //Set up studio/malker GUI sliders
             PregnancyPlusGui.InitStudio(hi, this);
-            PregnancyPlusGui.InitMaker(hi, this);
+            PregnancyPlusGui.InitMaker(hi, this);            
         }
 
     

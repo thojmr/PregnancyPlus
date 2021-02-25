@@ -45,8 +45,8 @@ namespace KK_PregnancyPlus
         /// <returns>boolean true if any blendshapes were created</returns>
         internal bool OnCreateBlendShapeSelected(bool temporary = false) 
         {
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" ");
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" OnCreateBlendShapeSelected ");
+            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" ");
+            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" OnCreateBlendShapeSelected ");
 
             var meshBlendShapes = new List<MeshBlendShape>();
             meshWithBlendShapes = new List<SkinnedMeshRenderer>();
@@ -156,7 +156,7 @@ namespace KK_PregnancyPlus
         internal void LoadBlendShapes(PregnancyPlusData data) 
         {
             if (data.meshBlendShape == null) return;
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" MeshBlendShape size > {data.meshBlendShape.Length/1024}KB ");
+            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" MeshBlendShape size > {data.meshBlendShape.Length/1024}KB ");
 
             meshWithBlendShapes = new List<SkinnedMeshRenderer>();
 
@@ -236,7 +236,7 @@ namespace KK_PregnancyPlus
                 var frameCount = smr.sharedMesh.GetBlendShapeFrameCount(i);
                 smr.sharedMesh.GetBlendShapeFrameVertices(i, 0, deltaVertices, deltaNormals, deltaTangents);
 
-                if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" LogMeshBlendShapes > {name} shapeIndex {i} weight {weight} frameCount {frameCount} deltaVertices {deltaVertices.Length}");            
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" LogMeshBlendShapes > {name} shapeIndex {i} weight {weight} frameCount {frameCount} deltaVertices {deltaVertices.Length}");            
             }
         }
 
@@ -263,7 +263,7 @@ namespace KK_PregnancyPlus
             var exists = originalVertices.TryGetValue(renderKey, out var val);
             if (!exists) 
             {
-                if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(
+                if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo(
                      $"CreateBlendShape > smr '{renderKey}' does not exists, skipping");
                 return null;
             }

@@ -63,7 +63,7 @@ namespace KK_PregnancyPlus
         /// </summary>
 		internal void OpenBlendShapeGui(List<SkinnedMeshRenderer> smrs, PregnancyPlusCharaController charaInstance) 
 		{
-			if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" OpenBlendShapeGui ");		
+			if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" OpenBlendShapeGui ");		
 
 			_charaInstance = charaInstance;				
 			OnGuiInit(smrs);

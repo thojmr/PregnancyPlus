@@ -220,7 +220,7 @@ namespace KK_PregnancyPlus
         //On any slider change, trigger mesh inflaiton update
         internal static void OnMakerSettingsChanged(PregnancyPlusCharaController controller) {
             // if (!MakerAPI.InsideAndLoaded) return;
-            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" OnMakerSettingsChanged ");            
+            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" OnMakerSettingsChanged ");            
 
             controller.MeshInflate(true);                                                                     
         }
@@ -233,7 +233,7 @@ namespace KK_PregnancyPlus
         {
             if (!MakerAPI.InsideAndLoaded) return;
             if (_sliders == null || _sliders.Count <= 0 || !_sliders[0].Exists) return;
-            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" Resetting sliders ");
+            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" Resetting sliders ");
 
             //For each slider, reset to last stored character slider values
             foreach (var slider in _sliders) 
@@ -264,7 +264,7 @@ namespace KK_PregnancyPlus
                 var settingName = Traverse.Create(slider).Field("_settingName").GetValue<string>();
                 if (settingName == null) continue;
                 
-                if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" Restoring slider > {settingName}");
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" Restoring slider > {settingName}");
 
                 //Set the correct slider with it's old config value
                 switch (settingName) 

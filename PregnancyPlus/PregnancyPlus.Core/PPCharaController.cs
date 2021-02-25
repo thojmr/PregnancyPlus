@@ -57,7 +57,7 @@ namespace KK_PregnancyPlus
         {
             //only allow saving card inside maker or studio
             if (!StudioAPI.InsideStudio && !MakerAPI.InsideMaker) return;
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnCardBeingSaved ");
+            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnCardBeingSaved ");
             SetExtendedData(infConfig.Save());
         }
 
@@ -65,7 +65,7 @@ namespace KK_PregnancyPlus
         protected override void Start() 
         {                            
             charaFileName = ChaFileControl.parameter.fullname;        
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= $Start {charaFileName}");
+            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $Start {charaFileName}");
             ReadAndSetCardData();                       
 
             //Get the char measurements before they have a chance to move
@@ -83,7 +83,7 @@ namespace KK_PregnancyPlus
         //The HS2 / AI way to detect clothing change
         protected override void OnCoordinateBeingLoaded(ChaFileCoordinate coordinate) 
         {
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnCoordinateBeingLoaded {coordinate.coordinateName}");
+            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnCoordinateBeingLoaded {coordinate.coordinateName}");
             OnCoordinateLoaded();
 
             base.OnCoordinateBeingLoaded(coordinate);
@@ -92,7 +92,7 @@ namespace KK_PregnancyPlus
 
         protected override void OnReload(GameMode currentGameMode)
         {
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnReload {currentGameMode}"); 
+            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnReload {currentGameMode}"); 
             ClearOnReload();
 
             //Check for swapping out character GO with new character, because we want to keep the current slider values
@@ -113,14 +113,14 @@ namespace KK_PregnancyPlus
             //just for debugging, pretty compute heavy for Update()
             if (PregnancyPlusPlugin.DebugAnimations.Value)
             {
-                if (Time.frameCount % 60 == 0 && PregnancyPlusPlugin.debugLog) MeasureWaistAndSphere(ChaControl, true);
-                if (Time.frameCount % 60 == 0 && PregnancyPlusPlugin.debugLog) MeshInflate(true, true);
+                if (Time.frameCount % 60 == 0 && PregnancyPlusPlugin.DebugLog.Value) MeasureWaistAndSphere(ChaControl, true);
+                if (Time.frameCount % 60 == 0 && PregnancyPlusPlugin.DebugLog.Value) MeshInflate(true, true);
             }
         }
 
 
         protected override void OnDestroy() {
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnDestroy {charaFileName}"); 
+            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnDestroy {charaFileName}"); 
         }
         
 
@@ -143,7 +143,7 @@ namespace KK_PregnancyPlus
         /// </summary>
         internal bool IsNewChar(ChaFileControl chaFileControl) 
         {   var isNew = (charaFileName != chaFileControl.parameter.fullname);
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" IsNewChar {charaFileName} -> {chaFileControl.parameter.fullname}"); 
+            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" IsNewChar {charaFileName} -> {chaFileControl.parameter.fullname}"); 
             return isNew;
         }
 
@@ -199,7 +199,7 @@ namespace KK_PregnancyPlus
                 yield return new WaitForSeconds(0.01f);
             }
 
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" WaitForMakerLoad done, setting initial sliders");         
+            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" WaitForMakerLoad done, setting initial sliders");         
             //Restore sliders to current state
             PregnancyPlusGui.OnRestore(PregnancyPlusGui.sliders, GetCardData());
         }
@@ -247,7 +247,7 @@ namespace KK_PregnancyPlus
             //Wait for card data to load, and make sure this is the same character the clothes event triggered for
             if (!initialized || chaID != ChaControl.chaID) return;
 
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($"+= ClothesStateChangeEvent {clothesKind}");
+            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= ClothesStateChangeEvent {clothesKind}");
 
             #if KK
                 var debounceTime = 0.1f;
@@ -265,7 +265,7 @@ namespace KK_PregnancyPlus
         internal void ReadAndSetCardData()
         {
             infConfig = GetCardData();
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" ReadAndSetCardData > {infConfig.ValuesToString()}");
+            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" ReadAndSetCardData > {infConfig.ValuesToString()}");
             
             //Load any blendshapes from card
             LoadBlendShapes(infConfig);
@@ -308,7 +308,7 @@ namespace KK_PregnancyPlus
             yield return new WaitForSeconds(waitTime);
             //If guid is the latest, trigger method
             if (debounceGuid == guid) {
-                if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" WaitForMeshToSettle checkNewMesh:{checkNewMesh} forceRecalcVerts:{forceRecalcVerts}");
+                if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" WaitForMeshToSettle checkNewMesh:{checkNewMesh} forceRecalcVerts:{forceRecalcVerts}");
                 MeshInflate(checkNewMesh, forceRecalcVerts);
             }
         }
@@ -329,7 +329,7 @@ namespace KK_PregnancyPlus
             }
 
             var week = PregnancyPlusHelper.GetWeeksFromPregnancyPluginData(ChaControl, KK_PregnancyPluginName);
-            if (PregnancyPlusPlugin.debugLog) PregnancyPlusPlugin.Logger.LogInfo($" GetWeeksAndSetInflation {ChaControl.name} >  Week:{week} checkNewMesh:{checkNewMesh} slidersChanged:{slidersChanged}");
+            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" GetWeeksAndSetInflation {ChaControl.name} >  Week:{week} checkNewMesh:{checkNewMesh} slidersChanged:{slidersChanged}");
             if (week < 0) return;
 
             //Compute the additonal belly size added based on user configured vallue from 0-40

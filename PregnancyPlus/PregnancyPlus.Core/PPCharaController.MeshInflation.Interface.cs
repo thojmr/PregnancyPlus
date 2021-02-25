@@ -42,7 +42,7 @@ namespace KK_PregnancyPlus
             var exists = originalVertices.TryGetValue(renderKey, out var val);
             if (!exists) 
             {
-                if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo(
+                if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo(
                      $"ApplyInflation > smr '{renderKey}' does not exists, skipping");
                 RemoveRenderKey(renderKey);
                 return false;
@@ -61,7 +61,7 @@ namespace KK_PregnancyPlus
             for (int i = 0; i < currentVertLength; i++)
             {
                 //If not a belly index verticie then skip the morph
-                if (!PregnancyPlusPlugin.debugAllVerts && !bellyVertIndex[i]) continue;
+                if (!PregnancyPlusPlugin.DebugVerts.Value && !bellyVertIndex[i]) continue;
 
                 //Set the lerp size of the belly based on the users slider value
                 currentVert[i] = Vector3.Lerp(origVert[i], inflatedVertices[renderKey][i], (infSize/40));
@@ -75,7 +75,7 @@ namespace KK_PregnancyPlus
                 return false;
             }
 
-            if (PregnancyPlusPlugin.debugLog)  PregnancyPlusPlugin.Logger.LogInfo($" mesh did ApplyInflation > {smr.name}");
+            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" mesh did ApplyInflation > {smr.name}");
 
             sharedMesh.vertices = currentVert;
             sharedMesh.RecalculateBounds();
