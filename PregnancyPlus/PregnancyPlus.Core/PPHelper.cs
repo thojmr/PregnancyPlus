@@ -14,7 +14,7 @@ namespace KK_PregnancyPlus
     internal static class PregnancyPlusHelper
     {        
 
-        //Convert unity unit to a unity cemtimeter
+        //Convert unity unit to a unity cemtimeter (probably need to divide by 10 for KK)
         internal const float gameSizeToCentimetersRatio = 10.3092781f;
 
 
