@@ -91,7 +91,7 @@ namespace KK_PregnancyPlus
         internal float GetClothesFixOffset(Transform meshRootTf, Vector3 sphereCenterWs, float sphereRadius, float waistWidth, Vector3 origVertWS, string meshName) 
         {  
             //The size of the area to spread the flattened offsets over like shrinking center dist -> inflated dist into a small area shifted outside the radius.  So hard to explin with words...
-            float shrinkBy = bellyInfo.ScaledWaistWidth/30 + (bellyInfo.ScaledWaistWidth/40 * GetInflationClothOffset());
+            float shrinkBy = bellyInfo.ScaledWaistWidth/20 + (bellyInfo.ScaledWaistWidth/20 * GetInflationClothOffset());
 
             var inflatedVerWS = (origVertWS - sphereCenterWs).normalized * sphereRadius + sphereCenterWs;//Get the line we want to do measurements on            
             //We dont care about empty space at sphere center, move outwards a bit before determining vector location on the line
@@ -99,12 +99,15 @@ namespace KK_PregnancyPlus
 
             //The total radial distance after removing the distance we want to ignore
             var totatDist = (sphereRadius - awayFromCenter);
-            var originToEndDist = FastDistance(origVertWS, inflatedVerWS);
-            //Get the positon on a line that this vector exists between flattenExtensStartAt -> to sphereRadius. Then shrink it to scale
-            var offset = totatDist * shrinkBy - (Math.Abs((totatDist - originToEndDist)) * shrinkBy);
+            var chothToEndDist = FastDistance(origVertWS, inflatedVerWS);
+            //The closer the cloth is to the end of the sphere radius, the less we want to move it on offset
+            var clothFromEndDistLerp = FastDistance(sphereCenterWs, origVertWS)/sphereRadius;
+            //Get the positon on a line that this vector exists between flattenExtensStartAt -> to sphereRadius. Then shrink it down to a thin layer
+            var offset = (totatDist - chothToEndDist) * shrinkBy;            
+            var lerpedOffset = Mathf.Lerp(offset, offset/5, clothFromEndDistLerp);
 
-            //This is the total additional distance we want to move this vert away from sphere center
-            return offset + GetClothLayerOffset(meshName);
+            //This is the total additional distance we want to move this vert away from sphere center.  Move it inwards just a tad
+            return lerpedOffset + GetClothLayerOffset(meshName);
         }
 
 
