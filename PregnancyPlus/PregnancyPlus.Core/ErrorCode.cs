@@ -8,7 +8,8 @@ public enum ErrorCode
     PregPlus_MeshNotReadable,//When the mesh is marked as isReadable == false, we can't read or modify the mesh.
     PregPlus_IncorrectVertCount,//When the current mesh vert count does not match the stored mesh vert count.  The mesh was swaped out.
     PregPlus_BadMeasurement,//When a part of the character fails to take measurement needed for belly placement.
-    PregPlus_HSPENotFound//When HSPE plugin is not found while using blendshapes (It's not a hard dependency, but still good to know when its not included)
+    PregPlus_HSPENotFound,//When HSPE plugin is not found while using blendshapes (It's not a hard dependency, but still good to know when its not included)
+    PregPlus_BodyMeshDisguisedAsCloth,//When a body mesh is detected that is nested under a cloth Game Object (like Squeeze Socks)
 }
 
 
@@ -74,6 +75,6 @@ public class ErrorCodeController
     {
         if (!debugLog && ErrorCodeExists(charId, errorCode)) return;
         AppendErrorCode(charId, errorCode);
-        logger.LogInfo($"{errorCode} {message}");        
+        logger.LogWarning($"{errorCode} > {message}");        
     }
 }

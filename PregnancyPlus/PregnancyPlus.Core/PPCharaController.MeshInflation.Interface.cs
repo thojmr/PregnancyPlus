@@ -100,7 +100,10 @@ namespace KK_PregnancyPlus
             {
                 var smr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderKey);
                 //Normally triggered when user changes clothes, the old clothes render wont be found
-                if (smr == null) continue;                
+                if (smr == null) {
+                    if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogWarning($" ResetInflation > smr was not found {renderKey}");
+                    continue;                
+                }
 
                 //Create an instance of sharedMesh so we don't modify the mesh shared between characters, that was a fun issue
                 Mesh meshCopy = (Mesh)UnityEngine.Object.Instantiate(smr.sharedMesh);

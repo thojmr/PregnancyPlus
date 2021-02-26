@@ -149,8 +149,13 @@ namespace KK_PregnancyPlus
             Vector3 bodySphereCenterOffset = Vector3.zero;//For defaultt KK body mesh custom offset correction
 
             if (smr == null) return false;
-            //Found out body mesh can be parented to cloth game objects...   Make sure to flag it as non-clothing
-            if (smr.name == "o_body_cf" || smr.name == "o_body_a") isClothingMesh = false;            
+
+            //Found out body mesh can be nested under cloth game objects...   Make sure to flag it as non-clothing
+            if (smr.name.Contains("o_body_cf") || smr.name.Contains("o_body_a")) {
+                PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_BodyMeshDisguisedAsCloth, 
+                    $" body mesh {smr.name} was nested under cloth object {smr.transform.parent.name}.  This is usually not an issue.");
+                isClothingMesh = false;            
+            }
 
             GetMeshRoot(out Transform meshRootTf, out float meshRootDistMoved);
             if (meshRootTf == null) return false;

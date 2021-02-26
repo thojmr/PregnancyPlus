@@ -240,7 +240,7 @@ namespace KK_PregnancyPlus
         /// </summary>    
         internal string GetMeshKey(SkinnedMeshRenderer smr) 
         {
-            return PregnancyPlusHelper.KeyFromNameAndVerts(smr.name, smr.sharedMesh.vertexCount);
+            return PregnancyPlusHelper.KeyFromNameAndVerts(smr);
         }
 
 

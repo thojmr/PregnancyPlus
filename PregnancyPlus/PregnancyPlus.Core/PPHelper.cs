@@ -18,18 +18,21 @@ namespace KK_PregnancyPlus
         internal const float gameSizeToCentimetersRatio = 10.3092781f;
 
 
-        internal static SkinnedMeshRenderer GetMeshRenderer(ChaControl chaControl, string renderKey, bool findAll = false) 
+        /// <summary>
+        /// Search all SMR's for a matchtching key
+        /// </summary>
+        internal static SkinnedMeshRenderer GetMeshRenderer(ChaControl chaControl, string renderKey) 
         {
-            var renderers = chaControl.GetComponentsInChildren<SkinnedMeshRenderer>(findAll);
-            var renderer = renderers.FirstOrDefault(x => (KeyFromNameAndVerts(x.name, x.sharedMesh.vertexCount)) == renderKey);
+            var renderers = chaControl.GetComponentsInChildren<SkinnedMeshRenderer>(true);//Even search inactive renderers
+            var renderer = renderers.FirstOrDefault(x => (KeyFromNameAndVerts(x)) == renderKey);
             return renderer;
         }
 
 
         /// <summary>
-        /// Craft smr render key from the name and vert count, used to identify a stored mesh inflation
+        /// Craft smr render key from the name and instance id, used to identify a stored mesh inflation
         /// </summary>
-        internal static string KeyFromNameAndVerts(string name, int vertexCount) => $"{name}_{vertexCount.ToString()}";
+        internal static string KeyFromNameAndVerts(SkinnedMeshRenderer smr) => $"{smr.name}_{smr.sharedMesh.vertexCount}";
 
 
         /// <summary>
