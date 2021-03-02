@@ -68,14 +68,6 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $Start {charaFileName}");
             ReadAndSetCardData();                       
 
-            //Get the char measurements before they have a chance to move
-            var success = MeasureWaistAndSphere(ChaControl);
-            if (!success)
-            {
-                PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_BadMeasurement, 
-                    $"Start(): Could not get belly measurements from character");
-            }
-
             base.Start();
         }        
 
@@ -102,7 +94,7 @@ namespace KK_PregnancyPlus
             ReadAndSetCardData();
 
             StartCoroutine(ReloadStoryInflation(0.5f));     
-            StartCoroutine(ReloadStudioMakerInflation(0.5f));    
+            StartCoroutine(ReloadStudioMakerInflation(1.5f));  //Give time for character to load, and settle  
         }
 
 

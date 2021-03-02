@@ -310,6 +310,57 @@ namespace KK_PregnancyPlus
             
             return (bellyInfo.WaistWidth > 0 && newSphereRadius > 0 && bellyInfo.WaistThick > 0);    
         }
+
+
+        /// <summary>
+        /// Calculates the length of a set of chained bones from bottom up.  It will only caluculate the true Y distance, so it effectively ignores any animations (behaves like a TPose measurement).false  Should include bones scales as well
+        /// </summary>
+        /// <param name="chaControl">The character to fetch bones from</param>
+        /// <param name="boneStart">The starting (bottom of tree) bone name</param>
+        /// <param name="boneEnd">The optional (top level) end bone name.  If null, the entire bone tree from bottom to top will be calculated.</param>
+        internal float BoneChainYDistance(ChaControl chaControl, Vector3 totalCharScale, string boneStart, string boneEnd = null) 
+        {
+            //loops through each bone starting bottom going up through parent to destination (or root)
+            var currentBone = PregnancyPlusHelper.GetBoneGO(chaControl, boneStart);
+            GameObject lastBone = currentBone;
+
+            if (currentBone == null) return 0;  
+            float distance = 0;        
+
+            //Keep going while a parent transform exists
+            while (currentBone != null && currentBone.transform.parent) 
+            {            
+                //If the bone name matches boneEnd return the total distance to this bone so far
+                if (boneEnd != null && currentBone.name.ToLower() == boneEnd.ToLower()) 
+                {
+                    break;
+                }
+
+                //calculate the diatance by measuring y local distances only (we want to exclude angular distances)
+                var newDifference = (lastBone != null ? currentBone.transform.InverseTransformPoint(currentBone.transform.position).y 
+                                     - currentBone.transform.InverseTransformPoint(lastBone.transform.position).y : 0);
+                // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" newDifference {newDifference}  currentBone.name {currentBone.name}  scale {currentBone.transform.localScale} corrected {((newDifference * currentBone.transform.localScale.y) - newDifference)}");
+                
+                //Ignore any negative bone differences (like char root bone which is at 0,0,0)
+                if (newDifference > 0) {                    
+                    distance = distance + newDifference;
+                    lastBone = currentBone;
+                }                
+
+                currentBone = currentBone.transform.parent.gameObject;
+            }
+
+            //Check for BodyTop scale to apply it to distance (cf_n_height scale doesnt matter here for some reason)
+            if (totalCharScale.y != 1) 
+            {                
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" applying BodyTop scale to distance: {distance} scale: {totalCharScale.y}");
+                distance = distance * totalCharScale.y;
+            }
+
+            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" total bone chain dist {distance}  cm:{PregnancyPlusHelper.ConvertToCm(distance)}");
+            return distance;
+        }
+
     }
 }
 

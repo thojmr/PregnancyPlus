@@ -142,9 +142,9 @@ namespace KK_PregnancyPlus
         {            
             //Calculate the belly button height by getting each bone distance from foot to belly button (even during animation the height is correct!)
             #if KK
-                var bbHeight = PregnancyPlusHelper.BoneChainStraigntenedDistance(ChaControl, bellyInfo.TotalCharScale, "cf_j_foot_L", "cf_j_waist01");
+                var bbHeight = BoneChainYDistance(ChaControl, bellyInfo.TotalCharScale, "cf_j_foot_L", "cf_j_waist01");
             #elif HS2 || AI            
-                var bbHeight = PregnancyPlusHelper.BoneChainStraigntenedDistance(ChaControl, bellyInfo.TotalCharScale, "cf_J_Toes01_L", "cf_J_Kosi01");                       
+                var bbHeight = BoneChainYDistance(ChaControl, bellyInfo.TotalCharScale, "cf_J_Toes01_L", "cf_J_Kosi01");                       
             #endif                      
             
             return bbHeight;
