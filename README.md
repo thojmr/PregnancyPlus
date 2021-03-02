@@ -1,19 +1,19 @@
 # Introduction
-This repository contains the KK_PregnancyPlus plugin, that adds additional belly sliders in Studio and Maker.  It is intended to compliment the [KK_Pregnancy](https://github.com/ManlyMarco/KoikatuGameplayMods) plugin, but can be used without it.   (For example: HS2 , AI)  
-Can be used in any game mode when the slider vales are saved to a character card.
+This repository contains the PregnancyPlus plugin, that adds additional belly sliders in Studio and Maker.  It is intended to compliment the [KK_Pregnancy](https://github.com/ManlyMarco/KoikatuGameplayMods) plugin, but can be used without it.   (For example: HS2 , AI)  
+The belly shape will persist in any game mode when slider vales are saved to the characters card.
 
 <img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/result.png" height="575"></img>
 <img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/P%2BMakerGUI.PNG" height="575"></img>
 <img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/P%2BStudioGUI.PNG" width="476.5"></img>
 
 ## Features
-- Adds a number of slider that will allow you to change the size and shape of the belly area in Studio and Maker.
-    - Slider values will save to scene or card, so you can share it with others that have the plugin.
-    - In HS2 and AI the belly size will be whatever is defined on the character card + the F1 config slider adjustments.
-- Timeline (KK) and VNGE (HS2/AI) integration for animating the belly.
-- Adds 3 configurable keybinds in plugin config that can be used to increase or decrease the belly size in Story Mode / Main Game Mode on the fly.   
-- This plugin can be a substitute for stomach bulges as well, but it's original intent is pregnancy.    
-- Adds a "Story Mode / Main Game" mode config option.  Disable if you want to turn off this plugins features temporarily while playing.
+- Adds a number of slider that will allow you to change the size and shape of a characters belly in Studio and Maker.
+    - Slider values will save to scene or card.
+    - In the main game you can further adjust all characters belly shape at once with the F1 plugin config sliders.
+- Timeline (KK) and VNGE (HS2/AI) integration for animating the belly (see below).
+- Adds 3 configurable keybinds in plugin config that can be used to increase or decrease the belly size in Main Game mode, on the fly.   
+- This plugin can be a substitute for stomach bulges/fat bellies as well, but it's original intent is pregnancy.    
+- Adds a "Main Game" mode config option.  Disable if you want to turn off this plugins features temporarily while playing.
 - This plugin is somewhat compatible with "[ddaa33] Pregnant plugin (ShapeKeyPlugin)" if you wish to combine the effects of both, you can.  But the effects applied by this other plugin will not save to the character card by default.
 
 ## Koikatsu Only Features
@@ -40,7 +40,7 @@ Can be used in any game mode when the slider vales are saved to a character card
     - In HS2 or AI: Studio > (HS2PE or AIPE) > Adv.mode > Bones
     - Bone: cf_J_kosi01_s  Set the following: PositionZ: 0.6, ScaleZ: 1.6, RotateX: 11
     - Bone: cf_spine01_s  Set the following: PositionZ: 0.6, ScaleZ: 1.6, RotateX: 351
-    -  Now apply any P+ sliders you want
+    - Now apply any P+ sliders you want
 - This will however make slight changes to the characters spine shape, so keep that in mind.  
 - Also since this is altering bones, you may have some unintended cosequences down the road.
 
@@ -56,8 +56,7 @@ Can be used in any game mode when the slider vales are saved to a character card
     - A: The character must have a leg scale > 0 for the belly sliders to work correctly.
 
 ## Notes
-- Modding this game is new to me, so dont expect this to feel like a finished product.  More like an interesting way to learn C#
-- There will be cloth clipping.  You can use the Cloth Offset slider to help with it, but It's a difficult problem.
+- There will be cloth clipping.  You can use the Cloth Offset slider to help with it, but It's a difficult problem to solve.
 
 ## How to download
 You can grab the latest plugin release [here](https://github.com/thojmr/KK_PregnancyPlus/releases), or build it yourself (developers only).  Explained further below.
@@ -137,4 +136,3 @@ If sucessfull you should see a KK_PregnancyPlus.dll file nested in .\bin\
 ## Some TODO items that may or mat not be implemented in the future (depending on interest)
 -  Fix clothing flattening at the largest belly sizes (Has been improved already)
 -  There are certain clothing items that do not work in the current state.  Specifically any mesh marked as isReadable = true will not be editable.
--  There are many types of clothes and body meshes that are not imported correctly and getting all of them to work together is a difficult task.
