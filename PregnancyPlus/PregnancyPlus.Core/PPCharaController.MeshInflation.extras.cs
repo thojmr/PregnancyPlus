@@ -19,6 +19,9 @@ namespace KK_PregnancyPlus
     public partial class PregnancyPlusCharaController: CharaCustomFunctionController
     {   
 
+        public float BellyButtonOffset = 0.155f;
+        
+
         /// <summary>
         /// An overload for MeshInflate() that allows you to pass an initial inflationSize param
         /// For quickly setting the size, without worrying about the other config params
@@ -80,7 +83,7 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Tried to correct cloth flattening when inflation is at max, by offsetting each vert based on the distance it is from the sphere center to the max sphere radius
+        /// Allows users to adjust the offset of clothing by a small amount
         /// </summary>
         /// <param name="meshRootTf">The transform used to convert a mesh vector from local space to worldspace and back</param>
         /// <param name="sphereCenterWs">The center position of the inflation sphere</param>
@@ -90,20 +93,15 @@ namespace KK_PregnancyPlus
         /// <param name="meshName">Used to determine inner vs outer mesh layers from a known list of names</param>
         internal float GetClothesFixOffset(Transform meshRootTf, Vector3 sphereCenterWs, float sphereRadius, float waistWidth, Vector3 origVertWS, string meshName) 
         {  
+            //Check that the slider has a non zero value
+            var inflationOffset = GetInflationClothOffset();
+            if (inflationOffset == 0) return 0;
+
             //The size of the area to spread the flattened offsets over like shrinking center dist -> inflated dist into a small area shifted outside the radius.  So hard to explin with words...
-            float shrinkBy = bellyInfo.ScaledWaistWidth/20 + (bellyInfo.ScaledWaistWidth/20 * GetInflationClothOffset());
+            float offset = bellyInfo.ScaledWaistWidth/60 * inflationOffset;
 
-            var inflatedVerWS = (origVertWS - sphereCenterWs).normalized * sphereRadius + sphereCenterWs;//Get the line we want to do measurements on            
-            //We dont care about empty space at sphere center, move outwards a bit before determining vector location on the line
-            float awayFromCenter = (bellyInfo.ScaledWaistWidth/3);
-
-            //The total radial distance after removing the distance we want to ignore
-            var totatDist = (sphereRadius - awayFromCenter);
-            var chothToEndDist = FastDistance(origVertWS, inflatedVerWS);
-            //The closer the cloth is to the end of the sphere radius, the less we want to move it on offset
-            var clothFromEndDistLerp = FastDistance(sphereCenterWs, origVertWS)/sphereRadius;
-            //Get the positon on a line that this vector exists between flattenExtensStartAt -> to sphereRadius. Then shrink it down to a thin layer
-            var offset = (totatDist - chothToEndDist) * shrinkBy;            
+            // //The closer the cloth is to the end of the sphere radius, the less we want to move it on offset
+            var clothFromEndDistLerp = FastDistance(sphereCenterWs, origVertWS)/sphereRadius;          
             var lerpedOffset = Mathf.Lerp(offset, offset/5, clothFromEndDistLerp);
 
             //This is the total additional distance we want to move this vert away from sphere center.  Move it inwards just a tad
@@ -128,7 +126,7 @@ namespace KK_PregnancyPlus
             }
 
             //The mininum distance offset for each cloth layer, adjusted by user
-            float additonalOffset = (bellyInfo.ScaledWaistWidth/60) + ((bellyInfo.ScaledWaistWidth/60) * GetInflationClothOffset());
+            float additonalOffset = (bellyInfo.ScaledWaistWidth/60) * GetInflationClothOffset();
 
             //If outer layer then add the offset
             return additonalOffset;
@@ -176,7 +174,7 @@ namespace KK_PregnancyPlus
         internal float GetBellyButtonOffset(float currentHeight) 
         {
             //Makes slight vertical adjustments to put the sphere at the correct point                  
-            return 0.155f * currentHeight;     
+            return BellyButtonOffset * currentHeight;     
         }
 
 
@@ -230,9 +228,11 @@ namespace KK_PregnancyPlus
         {
             if (originalVertices.ContainsKey(keyToRemove)) originalVertices.Remove(keyToRemove);
             if (inflatedVertices.ContainsKey(keyToRemove)) inflatedVertices.Remove(keyToRemove);
+            if (inflatedVerticesOffsets.ContainsKey(keyToRemove)) inflatedVerticesOffsets.Remove(keyToRemove);
             if (currentVertices.ContainsKey(keyToRemove)) currentVertices.Remove(keyToRemove);
             if (bellyVerticieIndexes.ContainsKey(keyToRemove)) bellyVerticieIndexes.Remove(keyToRemove);        
             if (alteredVerticieIndexes.ContainsKey(keyToRemove)) alteredVerticieIndexes.Remove(keyToRemove);  
+            if (clothingOffsets.ContainsKey(keyToRemove)) clothingOffsets.Remove(keyToRemove);  
         }
 
         

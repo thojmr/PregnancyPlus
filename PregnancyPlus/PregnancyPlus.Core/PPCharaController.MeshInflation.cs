@@ -64,24 +64,15 @@ namespace KK_PregnancyPlus
                 return false;
             }
             
-            var anyMeshChanges = false;
-            var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);
-            var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, true);
-
-            #if KK
-                var meshName = "o_body_a";
-            #elif HS2 || AI
-                var meshName = "o_body_cf";
-            #endif
-            var bodyMeshRenderer = bodyRenderers.Find(x => x.name == meshName);
-            //Create mesh collider to make clothing measurements from skin
-            CreateMeshCollider(bodyMeshRenderer);
+            var anyMeshChanges = false;            
 
             //Get and apply all clothes render mesh changes, then do body mesh too
-            anyMeshChanges = LoopAndApplyMeshChanges(clothRenderers, sliderHaveChanged, anyMeshChanges, true, bodyMeshRenderer);          
+            var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);            
+            anyMeshChanges = LoopAndApplyMeshChanges(clothRenderers, sliderHaveChanged, anyMeshChanges, true, GetBodyMeshRenderer());          
+            var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, true);
             anyMeshChanges = LoopAndApplyMeshChanges(bodyRenderers, sliderHaveChanged, anyMeshChanges);
 
-            RemoveMeshCollider(bodyMeshRenderer);
+            RemoveMeshCollider();
 
             //If any changes were applied, updated the last used shape for the Restore GUI button
             if (infConfig.HasAnyValue()) 
@@ -108,17 +99,21 @@ namespace KK_PregnancyPlus
                                               bool isClothingMesh = false, SkinnedMeshRenderer bodyMeshRenderer = null) 
         {
             foreach(var smr in smrs) 
-            {                
-                //Dont recompute verts if no sliders have changed
-                if (NeedsComputeVerts(smr, sliderHaveChanged))
-                {
-                    var didCompute = ComputeMeshVerts(smr, isClothingMesh);
-                    //If it fails to compute, skip (mesn.IsReadable = false will cause this)
-                    if (!didCompute) continue;    
+            {           
+                var didCompute = false;  
 
-                    //Use ray cast for each belly vert to get the clothing offset
-                    if (isClothingMesh) DoClothMeasurement(smr, bodyMeshRenderer);
+                //Dont recompute verts if no sliders have changed
+                var needsComputeVerts = NeedsComputeVerts(smr, sliderHaveChanged);
+                if (needsComputeVerts)
+                {
+                    didCompute = ComputeMeshVerts(smr, isClothingMesh);                                                                                   
                 }
+
+                //Use ray cast for each belly vert to get the clothing offset
+                if (isClothingMesh) DoClothMeasurement(smr, bodyMeshRenderer, needsComputeVerts);
+
+                //If mesh fails to compute, skip (mesn.IsReadable = false will cause this) 
+                if (needsComputeVerts && !didCompute) continue;
 
                 var appliedMeshChanges = ApplyInflation(smr, GetMeshKey(smr));            
                 if (appliedMeshChanges) anyMeshChanges = true;                
@@ -180,15 +175,19 @@ namespace KK_PregnancyPlus
                         
             //set sphere center and allow for adjusting its position from the UI sliders  
             Vector3 sphereCenter = GetSphereCenter(meshRootTf, isClothingMesh);
-            ApplyConditionalSphereCenterOffset(meshRootTf, isClothingMesh, sphereCenter, out sphereCenter, out bodySphereCenterOffset);                  
+            ApplyConditionalSphereCenterOffset(meshRootTf, isClothingMesh, sphereCenter, out sphereCenter, out bodySphereCenterOffset);  
+            currentMeshSphereCenter = sphereCenter;                
 
             var rendererName = GetMeshKey(smr);         
             originalVertices[rendererName] = smr.sharedMesh.vertices;
             inflatedVertices[rendererName] = new Vector3[originalVertices[rendererName].Length];
+            inflatedVerticesOffsets[rendererName] = new Vector3[originalVertices[rendererName].Length];
             currentVertices[rendererName] = new Vector3[originalVertices[rendererName].Length];
+            clothingOffsets[rendererName] = new float[originalVertices[rendererName].Length];
 
             var origVerts = originalVertices[rendererName];
             var inflatedVerts = inflatedVertices[rendererName];
+            var inflatedVertOffsets = inflatedVerticesOffsets[rendererName];
             var currentVerts = currentVertices[rendererName];
             var bellyVertIndex = bellyVerticieIndexes[rendererName];    
 
@@ -246,7 +245,7 @@ namespace KK_PregnancyPlus
                         else 
                         {   
                             //Reduce cloth flattening at largest inflation values                     
-                            float reduceClothFlattenOffset = 0;//GetClothesFixOffset(meshRootTf, sphereCenter, sphereRadius, waistWidth, origVertWs, smr.name);
+                            float reduceClothFlattenOffset = GetClothesFixOffset(meshRootTf, sphereCenter, sphereRadius, waistWidth, origVertWs, smr.name);
                             verticieToSpherePos = (origVertWs - sphereCenter).normalized * (sphereRadius + reduceClothFlattenOffset) + sphereCenter;                            
                         }     
 
@@ -255,16 +254,16 @@ namespace KK_PregnancyPlus
                                                                  meshRootTf, preMorphSphereCenter, sphereRadius, backExtentPos, 
                                                                  topExtentPos, sphereCenterLs, pmSphereCenterLs, backExtentPosLs, 
                                                                  topExtentPosLs);                    
-                        inflatedVerts[i] = smr.transform.InverseTransformPoint(inflatedVertWs);//Convert back to local space
+                        inflatedVertOffsets[i] = inflatedVerts[i] = smr.transform.InverseTransformPoint(inflatedVertWs);//Convert back to local space
                     }
                     else 
                     {                        
-                        inflatedVerts[i] = origVert;
+                        inflatedVertOffsets[i] = inflatedVerts[i] = origVert;
                     }
                 }
                 else 
                 {
-                    inflatedVerts[i] = origVert;
+                    inflatedVertOffsets[i] = inflatedVerts[i] = origVert;
                 }
                 
                 currentVerts[i] = origVert;

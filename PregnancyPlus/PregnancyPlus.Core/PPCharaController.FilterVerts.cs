@@ -44,7 +44,7 @@ namespace KK_PregnancyPlus
 
             //Create new mesh dictionary key for bone indexes
             bellyVerticieIndexes[renderKey] = new bool[sharedMesh.vertexCount];
-            alteredVerticieIndexes[renderKey] = new bool[sharedMesh.vertexCount];
+            alteredVerticieIndexes[renderKey] = new bool[sharedMesh.vertexCount];            
             var bellyVertIndex = bellyVerticieIndexes[renderKey];
 
             var verticies = sharedMesh.vertices;

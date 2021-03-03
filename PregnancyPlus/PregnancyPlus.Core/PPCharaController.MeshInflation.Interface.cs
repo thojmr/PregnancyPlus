@@ -64,7 +64,7 @@ namespace KK_PregnancyPlus
                 if (!PregnancyPlusPlugin.DebugVerts.Value && !bellyVertIndex[i]) continue;
 
                 //Set the lerp size of the belly based on the users slider value (if clothing, it will include clothing offset)
-                currentVert[i] = Vector3.Lerp(origVert[i], inflatedVertices[renderKey][i], (infSize/40));
+                currentVert[i] = Vector3.Lerp(origVert[i], inflatedVerticesOffsets[renderKey][i], (infSize/40));
             }
 
             //Check that the mesh did not change behind the scenes.  It will have a different vert count if it did (possible to be the same though...)
