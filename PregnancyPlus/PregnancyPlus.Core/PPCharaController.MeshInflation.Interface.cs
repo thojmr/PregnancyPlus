@@ -63,7 +63,7 @@ namespace KK_PregnancyPlus
                 //If not a belly index verticie then skip the morph
                 if (!PregnancyPlusPlugin.DebugVerts.Value && !bellyVertIndex[i]) continue;
 
-                //Set the lerp size of the belly based on the users slider value
+                //Set the lerp size of the belly based on the users slider value (if clothing, it will include clothing offset)
                 currentVert[i] = Vector3.Lerp(origVert[i], inflatedVertices[renderKey][i], (infSize/40));
             }
 

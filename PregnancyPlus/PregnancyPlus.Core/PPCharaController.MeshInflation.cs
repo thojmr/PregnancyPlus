@@ -2,6 +2,7 @@
 using KKAPI.Chara;
 using UnityEngine;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 #if HS2 || AI
     using AIChara;
@@ -56,21 +57,31 @@ namespace KK_PregnancyPlus
             
             //Get the measurements that determine the base belly size
             var hasMeasuerments = MeasureWaistAndSphere(ChaControl);                     
-            if (!hasMeasuerments) {
+            if (!hasMeasuerments) 
+            {
                 PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_BadMeasurement, 
                     $"Could not get belly measurements from character");
                 return false;
             }
             
             var anyMeshChanges = false;
-
-            //Get and apply all clothes render mesh changes
             var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);
-            anyMeshChanges = LoopAndApplyMeshChanges(clothRenderers, sliderHaveChanged, anyMeshChanges, true);
-
-            //do the same for body meshs
             var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, true);
+
+            #if KK
+                var meshName = "o_body_a";
+            #elif HS2 || AI
+                var meshName = "o_body_cf";
+            #endif
+            var bodyMeshRenderer = bodyRenderers.Find(x => x.name == meshName);
+            //Create mesh collider to make clothing measurements from skin
+            CreateMeshCollider(bodyMeshRenderer);
+
+            //Get and apply all clothes render mesh changes, then do body mesh too
+            anyMeshChanges = LoopAndApplyMeshChanges(clothRenderers, sliderHaveChanged, anyMeshChanges, true, bodyMeshRenderer);          
             anyMeshChanges = LoopAndApplyMeshChanges(bodyRenderers, sliderHaveChanged, anyMeshChanges);
+
+            RemoveMeshCollider(bodyMeshRenderer);
 
             //If any changes were applied, updated the last used shape for the Restore GUI button
             if (infConfig.HasAnyValue()) 
@@ -93,7 +104,8 @@ namespace KK_PregnancyPlus
         /// <param name="anyMeshChanges">If any mesh changes have happened so far</param>
         /// <param name="isClothingMesh">If this smr is a cloth mesh</param>
         /// <returns>boolean true if any meshes were changed</returns>
-        internal bool LoopAndApplyMeshChanges(List<SkinnedMeshRenderer> smrs, bool sliderHaveChanged, bool anyMeshChanges, bool isClothingMesh = false) 
+        internal bool LoopAndApplyMeshChanges(List<SkinnedMeshRenderer> smrs, bool sliderHaveChanged, bool anyMeshChanges, 
+                                              bool isClothingMesh = false, SkinnedMeshRenderer bodyMeshRenderer = null) 
         {
             foreach(var smr in smrs) 
             {                
@@ -103,6 +115,9 @@ namespace KK_PregnancyPlus
                     var didCompute = ComputeMeshVerts(smr, isClothingMesh);
                     //If it fails to compute, skip (mesn.IsReadable = false will cause this)
                     if (!didCompute) continue;    
+
+                    //Use ray cast for each belly vert to get the clothing offset
+                    if (isClothingMesh) DoClothMeasurement(smr, bodyMeshRenderer);
                 }
 
                 var appliedMeshChanges = ApplyInflation(smr, GetMeshKey(smr));            
@@ -151,7 +166,8 @@ namespace KK_PregnancyPlus
             if (smr == null) return false;
 
             //Found out body mesh can be nested under cloth game objects...   Make sure to flag it as non-clothing
-            if (smr.name.Contains("o_body_cf") || smr.name.Contains("o_body_a")) {
+            if (smr.name.Contains("o_body_cf") || smr.name.Contains("o_body_a")) 
+            {
                 PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_BodyMeshDisguisedAsCloth, 
                     $" body mesh {smr.name} was nested under cloth object {smr.transform.parent.name}.  This is usually not an issue.");
                 isClothingMesh = false;            
@@ -230,7 +246,7 @@ namespace KK_PregnancyPlus
                         else 
                         {   
                             //Reduce cloth flattening at largest inflation values                     
-                            float reduceClothFlattenOffset = GetClothesFixOffset(meshRootTf, sphereCenter, sphereRadius, waistWidth, origVertWs, smr.name);
+                            float reduceClothFlattenOffset = 0;//GetClothesFixOffset(meshRootTf, sphereCenter, sphereRadius, waistWidth, origVertWs, smr.name);
                             verticieToSpherePos = (origVertWs - sphereCenter).normalized * (sphereRadius + reduceClothFlattenOffset) + sphereCenter;                            
                         }     
 
