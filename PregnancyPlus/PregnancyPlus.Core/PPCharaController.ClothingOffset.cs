@@ -125,7 +125,7 @@ namespace KK_PregnancyPlus
             }
 
             //Lerp the final offset based on the inflation size.  Since clothes will be most flatteded at the largest size (40), and no change needed at default belly size
-            var clothOffsetLerp = infConfig.inflationSize/40;
+            var clothOffsetLerp = infConfig.inflationSize/60;
             var rayCastDist = bellyInfo.OriginalSphereRadius/2;            
 
             #if KK
@@ -148,9 +148,12 @@ namespace KK_PregnancyPlus
                         continue;
                     }
 
+                    var origVertWs = clothSmr.transform.TransformPoint(origVerts[i]);
                     var inflatedVertWs = clothSmr.transform.TransformPoint(inflatedVerts[i]);
+                    var offset = VertOffsetWs(inflatedVertWs, center, GetEdgeLerp(origVertWs, center, clothOffsets[i]), clothOffsetLerp);
+
                     //Re compute the offset distance from the stored clothOffset value for this vert
-                    inflatedVertOffsets[i] = clothSmr.transform.InverseTransformPoint(VertOffsetWs(inflatedVertWs, center, clothOffsets[i], clothOffsetLerp));
+                    inflatedVertOffsets[i] = clothSmr.transform.InverseTransformPoint(offset);
                 }
 
                 currentMeshSphereCenter = Vector3.zero;
@@ -191,8 +194,10 @@ namespace KK_PregnancyPlus
                 }
                 clothOffsets[i] = dist;
                 
+                var offset = VertOffsetWs(inflatedVertWs, center, GetEdgeLerp(origVertWs, center, dist), clothOffsetLerp);
+
                 //Offset the Inflated vert by the raycast hit distance, and away from center              
-                inflatedVertOffsets[i] = clothSmr.transform.InverseTransformPoint(VertOffsetWs(inflatedVertWs, center, dist, clothOffsetLerp));
+                inflatedVertOffsets[i] = clothSmr.transform.InverseTransformPoint(offset);
                 // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" MeshCollider dist {dist} lerp {clothOffsetLerp} max {rayCastDists}");
             }
 
@@ -242,6 +247,20 @@ namespace KK_PregnancyPlus
             {
                 rayCastTargetPositions[i] = PregnancyPlusHelper.GetBone(ChaControl, rayCastTargetNames[i]).position;
             }            
+        }
+
+
+        /// <summary>
+        /// Reduce the total offset when a clothing vert is near the sphere radius boundary, for a smooth transition along the modified vert line
+        /// </summary>
+        public float GetEdgeLerp(Vector3 origVertWs, Vector3 center, float offset)
+        {
+            //Get the distance the original cloth vert is from the sphere radius
+            var distancePastRadius = FastDistance(origVertWs, center) - bellyInfo.SphereRadius;
+            //The further the vert is outside the radius, the less it is offset (begin lerp just before the radius is reached for best results)
+            var edgeLerpOffset = Mathf.Lerp(offset, 0, (distancePastRadius - bellyInfo.WaistWidth/20)/(bellyInfo.WaistWidth/10));
+
+            return edgeLerpOffset;
         }
 
     }
