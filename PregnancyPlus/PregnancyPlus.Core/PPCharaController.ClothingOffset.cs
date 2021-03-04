@@ -115,8 +115,15 @@ namespace KK_PregnancyPlus
             var inflatedVertOffsets = inflatedVerticesOffsets[renderKey];
             var origVerts = originalVertices[renderKey];
             var alteredVertIndexes = alteredVerticieIndexes[renderKey];
-            var clothOffsets = clothingOffsets[renderKey];
-            var clothingOffsetsHasValue = clothOffsets[0].Equals(null);
+
+            //Check for existing offset values, init if none found
+            var clothingOffsetsHasValue = clothingOffsets.TryGetValue(renderKey, out float[] clothOffsets);
+            if (!clothingOffsetsHasValue) 
+            {
+                clothingOffsets[renderKey] = new float[origVerts.Length];
+                clothOffsets = clothingOffsets[renderKey];
+            }
+
             //Lerp the final offset based on the inflation size.  Since clothes will be most flatteded at the largest size (40), and no change needed at default belly size
             var clothOffsetLerp = infConfig.inflationSize/40;
             var rayCastDist = bellyInfo.OriginalSphereRadius/2;            
@@ -132,7 +139,6 @@ namespace KK_PregnancyPlus
             //When we already have the offsets, just reuse them instead of recalculating
             if (clothingOffsetsHasValue && !needsRecomputeOffsets)
             {
-                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" Re-Using clothing offset values");
                 for (var i = 0; i < inflatedVerts.Length; i++)
                 {
                     if (!alteredVertIndexes[i]) 
@@ -154,7 +160,7 @@ namespace KK_PregnancyPlus
             //Create mesh collider to make clothing measurements from skin
             CreateMeshCollider(bodySmr);   
             GetRayCastTargetPositions();
-            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" Calculating clothing offset values");
+            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" Pre-calculating clothing offset values");
 
             //When we need to initially caluculate the offsets (or rebuild).  For each vert raycast to center and see if it hits
             for (var i = 0; i < inflatedVerts.Length; i++)

@@ -172,7 +172,7 @@ namespace KK_PregnancyPlus
                 if (!forceRecalc && needsSphereRecalc && !needsWaistRecalc)//Sphere radius calc needed
                 {
                     var _valid = MeasureSphere(chaControl, bodyTopScale, nHeightScale, totalScale);
-                    if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo(bellyInfo.Log()); 
+                    if (PregnancyPlusPlugin.DebugCalcs.Value)  PregnancyPlusPlugin.Logger.LogInfo(bellyInfo.Log()); 
                     return _valid;
                 }
                 else if (!forceRecalc && needsWaistRecalc && !needsSphereRecalc)//Measurements needed which also requires sphere recalc
@@ -186,13 +186,13 @@ namespace KK_PregnancyPlus
                                               GetInflationMultiplier(), _waistToBackThickness, nHeightScale, _bellyToBreastDist,
                                               charScale, bellyInfo.MeshRootDidMove);
 
-                    if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo(bellyInfo.Log());                                             
+                    if (PregnancyPlusPlugin.DebugCalcs.Value)  PregnancyPlusPlugin.Logger.LogInfo(bellyInfo.Log());                                             
                     return _valid;
                 }
                 else if (!forceRecalc && !needsSphereRecalc && !needsWaistRecalc)//No changed needed
                 {
                     //Just return the original measurements and sphere radius when no updates needed
-                    if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo(bellyInfo.Log()); 
+                    if (PregnancyPlusPlugin.DebugCalcs.Value)  PregnancyPlusPlugin.Logger.LogInfo(bellyInfo.Log()); 
 
                     //Measeurements are fine and can be reused if above 0
                     return (bellyInfo.WaistWidth > 0 && bellyInfo.SphereRadius > 0 && bellyInfo.WaistThick > 0);
@@ -218,7 +218,7 @@ namespace KK_PregnancyPlus
                                       GetInflationMultiplier(), waistToBackThickness, nHeightScale, bellyToBreastDist,
                                       charScale);
 
-            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo(bellyInfo.Log());            
+            if (PregnancyPlusPlugin.DebugCalcs.Value)  PregnancyPlusPlugin.Logger.LogInfo(bellyInfo.Log());            
 
             return (waistWidth > 0 && sphereRadiusMultiplied > 0 && waistToBackThickness > 0 && bellyToBreastDist > 0);
         }
@@ -339,7 +339,7 @@ namespace KK_PregnancyPlus
                 //calculate the diatance by measuring y local distances only (we want to exclude angular distances)
                 var newDifference = (lastBone != null ? currentBone.transform.InverseTransformPoint(currentBone.transform.position).y 
                                      - currentBone.transform.InverseTransformPoint(lastBone.transform.position).y : 0);
-                // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" newDifference {newDifference}  currentBone.name {currentBone.name}  scale {currentBone.transform.localScale} corrected {((newDifference * currentBone.transform.localScale.y) - newDifference)}");
+                if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" newDifference {newDifference}  currentBone.name {currentBone.name}  scale {currentBone.transform.localScale} corrected {((newDifference * currentBone.transform.localScale.y) - newDifference)}");
                 
                 //Ignore any negative bone differences (like char root bone which is at 0,0,0)
                 if (newDifference > 0) {                    
@@ -353,11 +353,11 @@ namespace KK_PregnancyPlus
             //Check for BodyTop scale to apply it to distance (cf_n_height scale doesnt matter here for some reason)
             if (totalCharScale.y != 1) 
             {                
-                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" applying BodyTop scale to distance: {distance} scale: {totalCharScale.y}");
+                if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" applying BodyTop scale to distance: {distance} scale: {totalCharScale.y}");
                 distance = distance * totalCharScale.y;
             }
 
-            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" total bone chain dist {distance}  cm:{PregnancyPlusHelper.ConvertToCm(distance)}");
+            if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" total bone chain dist {distance}  cm:{PregnancyPlusHelper.ConvertToCm(distance)}");
             return distance;
         }
 

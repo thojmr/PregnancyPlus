@@ -52,8 +52,8 @@ namespace KK_PregnancyPlus
                 return false;                                
             }
             
-            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" ---------- ");
-            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" inflationSize > {infConfig.inflationSize} for {charaFileName} ");
+            if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value)  PregnancyPlusPlugin.Logger.LogInfo($" ---------- ");
+            if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value)  PregnancyPlusPlugin.Logger.LogInfo($" inflationSize > {infConfig.inflationSize} for {charaFileName} ");
             
             //Get the measurements that determine the base belly size
             var hasMeasuerments = MeasureWaistAndSphere(ChaControl);                     
@@ -68,7 +68,7 @@ namespace KK_PregnancyPlus
 
             //Get and apply all clothes render mesh changes, then do body mesh too
             var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);            
-            anyMeshChanges = LoopAndApplyMeshChanges(clothRenderers, sliderHaveChanged, anyMeshChanges, true, GetBodyMeshRenderer());          
+            anyMeshChanges = LoopAndApplyMeshChanges(clothRenderers, sliderHaveChanged, anyMeshChanges, true, GetBodyMeshRenderer(), freshStart);          
             var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, true);
             anyMeshChanges = LoopAndApplyMeshChanges(bodyRenderers, sliderHaveChanged, anyMeshChanges);
 
@@ -96,7 +96,7 @@ namespace KK_PregnancyPlus
         /// <param name="isClothingMesh">If this smr is a cloth mesh</param>
         /// <returns>boolean true if any meshes were changed</returns>
         internal bool LoopAndApplyMeshChanges(List<SkinnedMeshRenderer> smrs, bool sliderHaveChanged, bool anyMeshChanges, 
-                                              bool isClothingMesh = false, SkinnedMeshRenderer bodyMeshRenderer = null) 
+                                              bool isClothingMesh = false, SkinnedMeshRenderer bodyMeshRenderer = null, bool freshStart = false) 
         {
             foreach(var smr in smrs) 
             {           
@@ -110,7 +110,7 @@ namespace KK_PregnancyPlus
                 }
 
                 //Use ray cast for each belly vert to get the clothing offset
-                if (isClothingMesh) DoClothMeasurement(smr, bodyMeshRenderer, needsComputeVerts);
+                if (isClothingMesh) DoClothMeasurement(smr, bodyMeshRenderer, freshStart);
 
                 //If mesh fails to compute, skip (mesn.IsReadable = false will cause this) 
                 if (needsComputeVerts && !didCompute) continue;
@@ -140,8 +140,8 @@ namespace KK_PregnancyPlus
             //If no belly verts found, or existing verts already exists, then we can skip this mesh
             if (!hasVerticies) return false; 
 
-            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" ");
-            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($"  ComputeMeshVerts > {smr.name}"); 
+            if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" ");
+            if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($"  ComputeMeshVerts > {smr.name}"); 
             return GetInflatedVerticies(smr, bellyInfo.SphereRadius, bellyInfo.WaistWidth, isClothingMesh);
         }
 
@@ -183,7 +183,6 @@ namespace KK_PregnancyPlus
             inflatedVertices[rendererName] = new Vector3[originalVertices[rendererName].Length];
             inflatedVerticesOffsets[rendererName] = new Vector3[originalVertices[rendererName].Length];
             currentVertices[rendererName] = new Vector3[originalVertices[rendererName].Length];
-            clothingOffsets[rendererName] = new float[originalVertices[rendererName].Length];
 
             var origVerts = originalVertices[rendererName];
             var inflatedVerts = inflatedVertices[rendererName];
@@ -197,7 +196,7 @@ namespace KK_PregnancyPlus
                 {
                     if (bellyVertIndex[i]) bellyVertsCount++;
                 }
-                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" Mesh affected vert count {bellyVertsCount}");
+                if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" Mesh affected vert count {bellyVertsCount}");
             #endif
 
             //Pre compute some values needed by SculptInflatedVerticie
@@ -292,7 +291,7 @@ namespace KK_PregnancyPlus
                     // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($"$ GetMeshRoot pos {kkMeshRoot.transform.position}");
                     // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($"$ char pos {ChaControl.transform.position}");
                     distanceMoved = FastDistance(ChaControl.transform.position, kkMeshRoot.transform.position);
-                    if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" MeshRoot moved to charRoot by {distanceMoved}f");
+                    if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" MeshRoot moved to charRoot by {distanceMoved}f");
 
                     //Set the meshroot.pos to the chaControl.pos to make it more in line with HS2/AI, and KK Uncensor mesh
                     kkMeshRoot.transform.position = ChaControl.transform.position;
@@ -327,8 +326,8 @@ namespace KK_PregnancyPlus
             Vector3 bellyButtonPos = boneOrMeshTf.up * bbHeight; 
             Vector3 sphereCenter = boneOrMeshTf.position + bellyButtonPos + GetUserMoveTransform(boneOrMeshTf) + GetBellyButtonOffsetVector(boneOrMeshTf, bbHeight);                                 
 
-            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" bbHeight {bbHeight}");            
-            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" sphereCenter {sphereCenter} meshRoot {boneOrMeshTf.position} char origin {ChaControl.transform.position}");            
+            if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" bbHeight {bbHeight}");            
+            if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" sphereCenter {sphereCenter} meshRoot {boneOrMeshTf.position} char origin {ChaControl.transform.position}");            
             return sphereCenter;
         }
 
@@ -355,7 +354,7 @@ namespace KK_PregnancyPlus
                     //For uncensor body mesh, and any clothing
                     bodySphereCenterOffset = sphereCenter = _sphereCenter;//at belly button
                 }
-                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] corrected sphereCenter {_sphereCenter} isDefaultBody {isDefaultBody}");
+                if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] corrected sphereCenter {_sphereCenter} isDefaultBody {isDefaultBody}");
 
             #elif HS2 || AI
                 //Its so simple when its not KK default mesh :/

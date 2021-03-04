@@ -31,6 +31,7 @@ namespace KK_PregnancyPlus
         public static ConfigEntry<bool> MakeBalloon { get; private set; }
         public static ConfigEntry<bool> DebugAnimations { get; private set; }
         public static ConfigEntry<bool> DebugLog { get; private set; }
+        public static ConfigEntry<bool> DebugCalcs { get; private set; }
         public static ConfigEntry<bool> DebugVerts { get; private set; }
 
 
@@ -51,14 +52,14 @@ namespace KK_PregnancyPlus
             MakeBalloon.SettingChanged += MakeBalloon_SettingsChanged;
 
 
-            DebugAnimations = Config.Bind<bool>("Debug", "Debug Animated Belly (Debug mode)", false,
+            DebugAnimations = Config.Bind<bool>("Debug", "Refresh X Ticks (Debug mode)", false,
                 new ConfigDescription( "Will force update the belly shape every x ticks to help debug belly shape during animations.  Don't leave enabled.",
                     null,
                     new ConfigurationManagerAttributes { Order = 9, IsAdvanced = true })
                 );        
 
 
-            DebugVerts = Config.Bind<bool>("Debug", "Enable Mesh Debugging (Debug mode)", false,
+            DebugVerts = Config.Bind<bool>("Debug", "Entire Mesh Debugging (Debug mode)", false,
                 new ConfigDescription( "Will cause all mesh verticies to be affected by sliders so I can narrow down which meshes are behaving, and which are not.  Don't leave enabled",
                     null,
                     new ConfigurationManagerAttributes { Order = 8, IsAdvanced = true })
@@ -66,13 +67,19 @@ namespace KK_PregnancyPlus
             DebugVerts.SettingChanged += DebugVerts_SettingsChanged;
 
 
-            DebugLog = Config.Bind<bool>("Debug", "Enable Advanced Logging (Debug mode)", false,
+            DebugLog = Config.Bind<bool>("Debug", "Enable Debug Logging (Debug mode)", false,
                 new ConfigDescription( "Will log lots of Preg+ details to the console, but will condiserably slow down the game.  Don't leave enabled",
                     null,
-                    new ConfigurationManagerAttributes { Order = 1, IsAdvanced = true })
+                    new ConfigurationManagerAttributes { Order = 2, IsAdvanced = true })
                 );
             DebugLog.SettingChanged += DebugLog_SettingsChanged;
 
+
+            DebugCalcs = Config.Bind<bool>("Debug", "Enable Debug Logging of calculations (Debug mode)", false,
+                new ConfigDescription( "Will log lots of Preg+ belly calculations to the console, but will condiserably slow down the game.  Don't leave enabled",
+                    null,
+                    new ConfigurationManagerAttributes { Order = 1, IsAdvanced = true })
+                );
 
             //General config options
             AllowMale = Config.Bind<bool>("General", "Allow male", false,

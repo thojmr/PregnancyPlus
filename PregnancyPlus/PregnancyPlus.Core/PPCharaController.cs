@@ -107,8 +107,8 @@ namespace KK_PregnancyPlus
             //just for debugging, pretty compute heavy for Update()
             if (PregnancyPlusPlugin.DebugAnimations.Value)
             {
-                if (Time.frameCount % 60 == 0 && PregnancyPlusPlugin.DebugLog.Value) MeasureWaistAndSphere(ChaControl, true);
-                if (Time.frameCount % 60 == 0 && PregnancyPlusPlugin.DebugLog.Value) MeshInflate(true, true);
+                if (Time.frameCount % 60 == 0) MeasureWaistAndSphere(ChaControl, true);
+                if (Time.frameCount % 60 == 0) MeshInflate(true, true);
             }
         }
 
