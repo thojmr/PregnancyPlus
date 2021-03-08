@@ -15,15 +15,17 @@ namespace KK_PregnancyPlus
     public partial class PregnancyPlusCharaController: CharaCustomFunctionController
     {           
 
-        public Vector3 currentMeshSphereCenter = Vector3.zero;
-        internal string[] rayCastTargetNames = new string[4] { "cf_J_Spine02", "cf_J_Kosi01", "cf_J_LegUp00_L", "cf_J_LegUp00_R" };
+        public Vector3 currentMeshSphereCenter = Vector3.zero;        
         internal Vector3[] rayCastTargetPositions = new Vector3[4];
-
-        //Clothing layers, based on clothing name
+        
         #if KK      
-            string[] innerLayers = {"o_bra_a", "o_bra_b", "o_shorts_a", "o_shorts_b", "o_panst_garter1", "o_panst_a", "o_panst_b"};
+            //The bones we want to make raycast targets
+            internal string[] rayCastTargetNames = new string[4] { "cf_j_spine02", "cf_j_waist01", "cf_j_thigh00_L", "cf_j_thigh00_R" };        
+            //Clothing layers, based on clothing name
+            internal string[] innerLayers = {"o_bra_a", "o_bra_b", "o_shorts_a", "o_shorts_b", "o_panst_garter1", "o_panst_a", "o_panst_b"};
         #elif HS2 || AI                
-            string[] innerLayers = {"o_bra_a", "o_bra_b", "o_shorts_a", "o_shorts_b", "o_panst_garter1", "o_panst_a", "o_panst_b"};
+            internal string[] rayCastTargetNames = new string[4] { "cf_J_Spine02", "cf_J_Kosi01", "cf_J_LegUp00_L", "cf_J_LegUp00_R" };
+            internal string[] innerLayers = {"o_bra_a", "o_bra_b", "o_shorts_a", "o_shorts_b", "o_panst_garter1", "o_panst_a", "o_panst_b"};
         #endif   
 
 
@@ -267,7 +269,7 @@ namespace KK_PregnancyPlus
             //Get the distance the original cloth vert is from the sphere radius
             var distancePastRadius = FastDistance(origVertWs, center) - bellyInfo.SphereRadius;
             //The further the vert is outside the radius, the less it is offset (begin lerp just before the radius is reached for best results)
-            var edgeLerpOffset = Mathf.Lerp(offset, 0, (distancePastRadius - bellyInfo.WaistWidth/20)/(bellyInfo.WaistWidth/10));
+            var edgeLerpOffset = Mathf.Lerp(offset, 0, (distancePastRadius - bellyInfo.WaistWidth/15)/(bellyInfo.WaistWidth/10));
 
             return edgeLerpOffset;
         }

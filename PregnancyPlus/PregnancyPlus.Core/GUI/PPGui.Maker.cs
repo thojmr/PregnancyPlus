@@ -201,13 +201,13 @@ namespace KK_PregnancyPlus
             sliders.Add(fatFold);
 
 
-            var clothOffsetVersion = e.AddControl(new MakerDropdown(inflationClothingOffsetVersionMaker, new string[2] {"V1", "V2"}, cat, 1, _pluginInstance));
+            var clothOffsetVersion = e.AddControl(new MakerDropdown(inflationClothingOffsetVersionMaker, new string[2] {"V1", "V2 experimental"}, cat, 1, _pluginInstance));
             clothOffsetVersion.BindToFunctionController<PregnancyPlusCharaController, int>(controller => controller.infConfig.clothingOffsetVersion, (controller, value) => {
                 var oldVal = controller.infConfig.clothingOffsetVersion;
                 controller.infConfig.clothingOffsetVersion = value;
                 if (oldVal != value) OnClothingOffsetVersionChanged(controller);
             });
-            e.AddControl(new MakerText("The Clothing Offset version will determine how the offset is calculated.  V2 is more accurate, an better retains cloth shape when pregnant.  V1 is pre v1.27 and will result in more clipping and a flatter shape.  Toggle to see the difference.", cat, _pluginInstance) { TextColor = hintColor });
+            e.AddControl(new MakerText("The Clothing Offset version will determine how the offset is calculated.  V2 is more accurate, and better retains original cloth shape when pregnant.  V1 (pre v1.27) will result in flattter clothing, and some clipping.  Toggle to see the difference.", cat, _pluginInstance) { TextColor = hintColor });
 
 
 
