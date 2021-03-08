@@ -112,6 +112,7 @@ namespace KK_PregnancyPlus
         public static PregnancyPlusData Load(PluginData data)
         {
             if (data?.data == null) return null;
+            var hasClothingVersion = false;
 
             var result = new PregnancyPlusData();
             foreach (var fieldInfo in _serializedFields)
@@ -120,6 +121,11 @@ namespace KK_PregnancyPlus
                 {
                     try
                     {
+                        if (fieldInfo.Name == "clothingOffsetVersion" && (int)val > -1)
+                        {
+                            hasClothingVersion = true;
+                        }
+
                         if (fieldInfo.FieldType.IsEnum) val = (int)val;
                         fieldInfo.SetValue(result, val);
                     }
@@ -128,6 +134,12 @@ namespace KK_PregnancyPlus
                         Console.WriteLine(ex);
                     }
                 }
+            }
+
+            //Set clothing offset version to V1 == 0 when slider values exists, but no version was found
+            if (!hasClothingVersion && result.HasAnyValue())
+            {
+                result.clothingOffsetVersion = 0;
             }
 
             return result;
