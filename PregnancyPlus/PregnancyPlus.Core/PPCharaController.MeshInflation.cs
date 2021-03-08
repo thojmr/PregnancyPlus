@@ -110,7 +110,7 @@ namespace KK_PregnancyPlus
                 }
 
                 //Use ray cast for each belly vert to get the clothing offset
-                if (isClothingMesh) DoClothMeasurement(smr, bodyMeshRenderer, freshStart);
+                if (isClothingMesh && infConfig.clothingOffsetVersion == 1) DoClothMeasurement(smr, bodyMeshRenderer, freshStart);
 
                 //If mesh fails to compute, skip (mesn.IsReadable = false will cause this) 
                 if (needsComputeVerts && !didCompute) continue;

@@ -79,57 +79,6 @@ namespace KK_PregnancyPlus
 
             //When no mesh found key, or incorrect vert count, the mesh changed so we need to recompute
             return true;
-        }
-
-
-        /// <summary>
-        /// Allows users to adjust the offset of clothing by a small amount
-        /// </summary>
-        /// <param name="meshRootTf">The transform used to convert a mesh vector from local space to worldspace and back</param>
-        /// <param name="sphereCenterWs">The center position of the inflation sphere</param>
-        /// <param name="sphereRadius">The desired sphere radius</param>
-        /// <param name="waistWidth">The average width of the characters waist</param>
-        /// <param name="origVertWS">The original verticie's worldspace position</param>
-        /// <param name="meshName">Used to determine inner vs outer mesh layers from a known list of names</param>
-        internal float GetClothesFixOffset(Transform meshRootTf, Vector3 sphereCenterWs, float sphereRadius, float waistWidth, Vector3 origVertWS, string meshName) 
-        {  
-            //Check that the slider has a non zero value
-            var inflationOffset = GetInflationClothOffset();
-            if (inflationOffset == 0) return 0;
-
-            //The size of the area to spread the flattened offsets over like shrinking center dist -> inflated dist into a small area shifted outside the radius.  So hard to explin with words...
-            float offset = bellyInfo.ScaledWaistWidth/60 * inflationOffset;
-
-            // //The closer the cloth is to the end of the sphere radius, the less we want to move it on offset
-            var clothFromEndDistLerp = FastDistance(sphereCenterWs, origVertWS)/sphereRadius;          
-            var lerpedOffset = Mathf.Lerp(offset, offset/5, clothFromEndDistLerp);
-
-            //This is the total additional distance we want to move this vert away from sphere center.  Move it inwards just a tad
-            return lerpedOffset + GetClothLayerOffset(meshName);
-        }
-
-
-        /// <summary>
-        /// There are two cloth layers, inner and outer. I've assigned each cloth layer a static offset. layers: 1 = skin tight, 2 = above skin tight.  This way each layer will have less chance of cliping through to the next
-        /// </summary>
-        internal float GetClothLayerOffset(string meshName) {            
-            #if KK      
-                string[] innerLayers = {"o_bra_a", "o_bra_b", "o_shorts_a", "o_shorts_b", "o_panst_garter1", "o_panst_a", "o_panst_b"};
-            #elif HS2 || AI                
-                string[] innerLayers = {"o_bra_a", "o_bra_b", "o_shorts_a", "o_shorts_b", "o_panst_garter1", "o_panst_a", "o_panst_b"};
-            #endif            
-
-            //If inner layer then it doesnt need an additional offset
-            if (innerLayers.Contains(meshName)) 
-            {
-                return 0;
-            }
-
-            //The mininum distance offset for each cloth layer, adjusted by user
-            float additonalOffset = (bellyInfo.ScaledWaistWidth/60) * GetInflationClothOffset();
-
-            //If outer layer then add the offset
-            return additonalOffset;
         } 
 
 

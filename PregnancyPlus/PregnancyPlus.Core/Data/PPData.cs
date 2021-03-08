@@ -24,6 +24,7 @@ namespace KK_PregnancyPlus
         public float inflationFatFold = 0;
         public bool GameplayEnabled = true;
         public float inflationRoundness = 0;
+        public int clothingOffsetVersion = 1;//Tracks which clothing offset vserion this character was made with  v1 == 0, v2 == 1
         public byte[] meshBlendShape = null;//Type: List<MeshBlendShape> once Deserialized
 
 #endregion
@@ -39,7 +40,7 @@ namespace KK_PregnancyPlus
             return $" inflationSize {inflationSize} inflationMultiplier {inflationMultiplier} GameplayEnabled {GameplayEnabled} ...";
         }
 
-        //Allow comparison between all public properties of two PregnancyPlusData objects
+        //Allow comparison between all public properties of two PregnancyPlusData objects (excluding clothingOffsetVersion)
         public override bool Equals(Object obj)
         {
             var otherData = obj as PregnancyPlusData;
@@ -59,7 +60,7 @@ namespace KK_PregnancyPlus
             if (inflationMultiplier != otherData.inflationMultiplier) hasChanges = true;
             if (inflationClothOffset != otherData.inflationClothOffset) hasChanges = true;
             if (inflationFatFold != otherData.inflationFatFold) hasChanges = true;           
-            if (inflationRoundness != otherData.inflationRoundness) hasChanges = true;           
+            if (inflationRoundness != otherData.inflationRoundness) hasChanges = true;                      
 
             return hasChanges;
         }
@@ -78,6 +79,7 @@ namespace KK_PregnancyPlus
                 inflationMultiplier.GetHashCode() +
                 inflationClothOffset.GetHashCode() +
                 inflationRoundness.GetHashCode() +
+                clothingOffsetVersion.GetHashCode() +
                 inflationFatFold.GetHashCode();
 
             return hashCode;            

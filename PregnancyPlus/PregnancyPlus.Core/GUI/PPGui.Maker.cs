@@ -29,6 +29,7 @@ namespace KK_PregnancyPlus
         private static string inflationTaperZMaker = "Taper Z";
         private static string inflationClothOffsetMaker = "Cloth Offset";
         private static string inflationFatFoldMaker = "Fat Fold";
+        private static string inflationClothingOffsetVersionMaker = "Clothing Offset Version";
         private static string inflationRoundnessMaker = "Roundness";
 
         internal static void InitMaker(Harmony hi, PregnancyPlusPlugin instance)
@@ -200,6 +201,15 @@ namespace KK_PregnancyPlus
             sliders.Add(fatFold);
 
 
+            var clothOffsetVersion = e.AddControl(new MakerDropdown(inflationClothingOffsetVersionMaker, new string[2] {"V1", "V2"}, cat, 1, _pluginInstance));
+            clothOffsetVersion.BindToFunctionController<PregnancyPlusCharaController, int>(controller => controller.infConfig.clothingOffsetVersion, (controller, value) => {
+                var oldVal = controller.infConfig.clothingOffsetVersion;
+                controller.infConfig.clothingOffsetVersion = value;
+                if (oldVal != value) OnClothingOffsetVersionChanged(controller);
+            });
+            e.AddControl(new MakerText("The Clothing Offset version will determine how the offset is calculated.  V2 is more accurate, an better retains cloth shape when pregnant.  V1 is pre v1.27 and will result in more clipping and a flatter shape.  Toggle to see the difference.", cat, _pluginInstance) { TextColor = hintColor });
+
+
 
 
             //Maker state buttons
@@ -223,6 +233,13 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" OnMakerSettingsChanged ");            
 
             controller.MeshInflate(true);                                                                     
+        }
+
+
+        internal static void OnClothingOffsetVersionChanged(PregnancyPlusCharaController controller) {
+            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" OnClothingOffsetVersionChanged {controller.infConfig.clothingOffsetVersion}");            
+
+            controller.MeshInflate(true, true);                                                                     
         }
 
 
