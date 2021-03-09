@@ -157,14 +157,16 @@ namespace KK_PregnancyPlus
                         clothOffsets[i] = 0;
                         inflatedVertOffsets[i] = inflatedVerts[i];
                         continue;
-                    }
+                    }                    
 
                     var origVertWs = clothSmr.transform.TransformPoint(origVerts[i]);
                     var inflatedVertWs = clothSmr.transform.TransformPoint(inflatedVerts[i]);
-                    var offset = VertOffsetWs(inflatedVertWs, center, GetEdgeLerp(origVertWs, center, clothOffsets[i]), clothOffsetLerp);
+                    var offsetPos = VertOffsetWs(inflatedVertWs, center, GetEdgeLerp(origVertWs, center, clothOffsets[i]), clothOffsetLerp);                    
+
+                    // DebugTools.DrawLine(offsetPos, inflatedVertWs, 0.1f);
 
                     //Re compute the offset distance from the stored clothOffset value for this vert
-                    inflatedVertOffsets[i] = clothSmr.transform.InverseTransformPoint(offset);
+                    inflatedVertOffsets[i] = clothSmr.transform.InverseTransformPoint(offsetPos);                    
                 }
 
                 currentMeshSphereCenter = Vector3.zero;
@@ -174,7 +176,10 @@ namespace KK_PregnancyPlus
             //Create mesh collider to make clothing measurements from skin
             CreateMeshCollider(bodySmr);   
             GetRayCastTargetPositions();
+
             if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" Pre-calculating clothing offset values");
+            var distanceTotal = 0f;
+            var distancedVertCount = 0;
 
             //When we need to initially caluculate the offsets (or rebuild).  For each vert raycast to center and see if it hits
             for (var i = 0; i < inflatedVerts.Length; i++)
@@ -194,23 +199,50 @@ namespace KK_PregnancyPlus
                 //Get raycast hit distance to the mesh collider on the skin
                 var dist = GetClosestRayCast(origVertWs, center, rayCastDist);
 
-                // DebugTools.DrawLine(origVertWs, center, 0.1f);
-
                 //Ignore any distance that didnt hit the mesh collider
                 if (dist >= rayCastDist) 
                 {
-                    clothOffsets[i] = 0;
+                    clothOffsets[i] = minOffset;
                     inflatedVertOffsets[i] = inflatedVerts[i];
                     continue;
                 }
                 clothOffsets[i] = dist + minOffset;
-                
-                var offset = VertOffsetWs(inflatedVertWs, center, GetEdgeLerp(origVertWs, center, clothOffsets[i]), clothOffsetLerp);
 
-                //Offset the Inflated vert by the raycast hit distance, and away from center              
-                inflatedVertOffsets[i] = clothSmr.transform.InverseTransformPoint(offset);
-                // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" MeshCollider dist {dist} lerp {clothOffsetLerp} max {rayCastDists}");
+                //Calculate the averge vert offset for each mesh, so we can reduce the pointy bits on some clothing
+                distancedVertCount++;
+                distanceTotal += dist;                
             }
+
+            //Check that at least one vert was computed
+            if (distancedVertCount <= 0) 
+            {
+                currentMeshSphereCenter = Vector3.zero;
+                return;
+            }
+
+            var distAverage = distanceTotal/distancedVertCount;            
+
+            //Once we have a mesh vertex distance average, lerp the verts with an irregularly long distance so they don't stick out so much
+            for (var i = 0; i < inflatedVerts.Length; i++)
+            {
+                //Skip untouched verts
+                if (!alteredVertIndexes[i]) continue;
+
+                //Convert to worldspace since thats where the mesh collider lives
+                var origVertWs = clothSmr.transform.TransformPoint(origVerts[i]);
+                var inflatedVertWs = clothSmr.transform.TransformPoint(inflatedVerts[i]);
+
+                //The new offset distance after lerping the longer distances down a bit
+                clothOffsets[i] = Mathf.Lerp(clothOffsets[i], distAverage * 2f, (clothOffsets[i] - distAverage)/distAverage);
+
+                //Calculate final offset position
+                var offsetPos = VertOffsetWs(inflatedVertWs, center, GetEdgeLerp(origVertWs, center, clothOffsets[i]), clothOffsetLerp);
+
+                // DebugTools.DrawLine(offsetPos, inflatedVertWs, 0.1f);
+
+                //Convert back to localspace             
+                inflatedVertOffsets[i] = clothSmr.transform.InverseTransformPoint(offsetPos);
+            }            
 
             currentMeshSphereCenter = Vector3.zero;
         }
@@ -274,6 +306,7 @@ namespace KK_PregnancyPlus
             return edgeLerpOffset;
         }
 
+#region Slider Controlled Offset
 
         /// <summary>
         /// Allows users to adjust the offset of clothing by a small amount, uses V2 by default with characters saved on v1.27+
@@ -390,6 +423,8 @@ namespace KK_PregnancyPlus
             //If outer layer then add the offset
             return additonalOffset;
         } 
+
+#endregion Slider Controlled Offset
 
     }
 }
