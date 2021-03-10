@@ -98,19 +98,16 @@ namespace KK_PregnancyPlus
         internal bool LoopAndApplyMeshChanges(List<SkinnedMeshRenderer> smrs, bool sliderHaveChanged, bool anyMeshChanges, 
                                               bool isClothingMesh = false, SkinnedMeshRenderer bodyMeshRenderer = null, bool freshStart = false) 
         {
-            foreach(var smr in smrs) 
+            foreach (var smr in smrs) 
             {           
                 var didCompute = false;  
 
-                //Dont recompute verts if no sliders have changed
+                //Dont recompute verts if no sliders have changed or clothing added
                 var needsComputeVerts = NeedsComputeVerts(smr, sliderHaveChanged);
                 if (needsComputeVerts)
                 {
-                    didCompute = ComputeMeshVerts(smr, isClothingMesh);                                                                                   
+                    didCompute = ComputeMeshVerts(smr, isClothingMesh, bodyMeshRenderer, freshStart);                                                                                   
                 }
-
-                //Use ray cast for each belly vert to get the clothing offset
-                if (isClothingMesh && infConfig.clothingOffsetVersion == 1) DoClothMeasurement(smr, bodyMeshRenderer, freshStart);
 
                 //If mesh fails to compute, skip (mesn.IsReadable = false will cause this) 
                 if (needsComputeVerts && !didCompute) continue;
@@ -126,7 +123,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Just a helper function to combine searching for verts in a mesh, and then applying the transforms
         /// </summary>
-        internal bool ComputeMeshVerts(SkinnedMeshRenderer smr, bool isClothingMesh = false) 
+        internal bool ComputeMeshVerts(SkinnedMeshRenderer smr, bool isClothingMesh, SkinnedMeshRenderer bodyMeshRenderer, bool freshStart) 
         {
             //The list of bones to get verticies for
             #if KK            
@@ -142,7 +139,7 @@ namespace KK_PregnancyPlus
 
             if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" ");
             if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($"  ComputeMeshVerts > {smr.name}"); 
-            return GetInflatedVerticies(smr, bellyInfo.SphereRadius, bellyInfo.WaistWidth, isClothingMesh);
+            return GetInflatedVerticies(smr, bellyInfo.SphereRadius, bellyInfo.WaistWidth, isClothingMesh, bodyMeshRenderer, freshStart);
         }
 
 
@@ -154,7 +151,8 @@ namespace KK_PregnancyPlus
         /// <param name="waistWidth">The width of the characters waist</param>
         /// <param name="isClothingMesh">Clothing requires a few tweaks to match skin morphs</param>
         /// <returns>Will return True if mesh verticies > 0 were found  Some meshes wont have any verticies for the belly area, returning false</returns>
-        internal bool GetInflatedVerticies(SkinnedMeshRenderer smr, float sphereRadius, float waistWidth, bool isClothingMesh = false) 
+        internal bool GetInflatedVerticies(SkinnedMeshRenderer smr, float sphereRadius, float waistWidth, bool isClothingMesh, 
+                                           SkinnedMeshRenderer bodySmr, bool freshStart) 
         {
             Vector3 bodySphereCenterOffset = Vector3.zero;//For defaultt KK body mesh custom offset correction
 
@@ -181,12 +179,13 @@ namespace KK_PregnancyPlus
             var rendererName = GetMeshKey(smr);         
             originalVertices[rendererName] = smr.sharedMesh.vertices;
             inflatedVertices[rendererName] = new Vector3[originalVertices[rendererName].Length];
-            inflatedVerticesOffsets[rendererName] = new Vector3[originalVertices[rendererName].Length];
             currentVertices[rendererName] = new Vector3[originalVertices[rendererName].Length];
+            //Get the cloth offset for each cloth vertex via raycast to skin
+            var clothOffsets = DoClothMeasurement(smr, bodySmr, sphereCenter);
+            if (clothOffsets == null) clothOffsets = new float[originalVertices[rendererName].Length];
 
             var origVerts = originalVertices[rendererName];
             var inflatedVerts = inflatedVertices[rendererName];
-            var inflatedVertOffsets = inflatedVerticesOffsets[rendererName];
             var currentVerts = currentVertices[rendererName];
             var bellyVertIndex = bellyVerticieIndexes[rendererName];    
 
@@ -244,7 +243,7 @@ namespace KK_PregnancyPlus
                         else 
                         {   
                             //Reduce cloth flattening at largest inflation values                     
-                            float reduceClothFlattenOffset = GetClothesFixOffset(meshRootTf, sphereCenter, sphereRadius, waistWidth, origVertWs, smr.name);
+                            float reduceClothFlattenOffset = GetClothesFixOffset(meshRootTf, sphereCenter, sphereRadius, waistWidth, origVertWs, smr.name, clothOffsets[i]);
                             verticieToSpherePos = (origVertWs - sphereCenter).normalized * (sphereRadius + reduceClothFlattenOffset) + sphereCenter;                            
                         }     
 
@@ -253,16 +252,16 @@ namespace KK_PregnancyPlus
                                                                  meshRootTf, preMorphSphereCenter, sphereRadius, backExtentPos, 
                                                                  topExtentPos, sphereCenterLs, pmSphereCenterLs, backExtentPosLs, 
                                                                  topExtentPosLs);                    
-                        inflatedVertOffsets[i] = inflatedVerts[i] = smr.transform.InverseTransformPoint(inflatedVertWs);//Convert back to local space
+                         inflatedVerts[i] = smr.transform.InverseTransformPoint(inflatedVertWs);//Convert back to local space
                     }
                     else 
                     {                        
-                        inflatedVertOffsets[i] = inflatedVerts[i] = origVert;
+                        inflatedVerts[i] = origVert;
                     }
                 }
                 else 
                 {
-                    inflatedVertOffsets[i] = inflatedVerts[i] = origVert;
+                    inflatedVerts[i] = origVert;
                 }
                 
                 currentVerts[i] = origVert;

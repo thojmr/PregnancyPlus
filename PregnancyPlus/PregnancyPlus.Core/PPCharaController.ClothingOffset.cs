@@ -112,19 +112,18 @@ namespace KK_PregnancyPlus
         /// Compute the clothVert offset for each clothing vert from the distance it is away from the skin mesh
         ///  BodySmr must have mesh collider attached at this point
         /// </summary>
-        internal void DoClothMeasurement(SkinnedMeshRenderer clothSmr, SkinnedMeshRenderer bodySmr, bool needsRecomputeOffsets = false)
+        internal float[] DoClothMeasurement(SkinnedMeshRenderer clothSmr, SkinnedMeshRenderer bodySmr, Vector3 sphereCenter, bool needsRecomputeOffsets = false)
         {     
-            if (!bodySmr) return;    
-            if (clothSmr.name.Contains("o_body_cf") || clothSmr.name.Contains("o_body_a")) return;//skip body meshes     
+            if (!bodySmr) return null;    
+            if (clothSmr.name.Contains("o_body_cf") || clothSmr.name.Contains("o_body_a")) return null;//skip body meshes     
+            if (infConfig.clothingOffsetVersion == 0) return null;
 
             //Get the pre calculated preg verts for this mesh
             var renderKey = GetMeshKey(clothSmr);        
-            inflatedVertices.TryGetValue(renderKey, out Vector3[] inflatedVerts);            
-            if (inflatedVerts == null || inflatedVerts.Length <= 0) return;
+            originalVertices.TryGetValue(renderKey, out Vector3[] origVerts);            
+            if (origVerts == null || origVerts.Length <= 0) return null;
 
-            var inflatedVertOffsets = inflatedVerticesOffsets[renderKey];
-            var origVerts = originalVertices[renderKey];
-            var alteredVertIndexes = alteredVerticieIndexes[renderKey];
+            var alteredVertIndexes = bellyVerticieIndexes[renderKey];
 
             //Check for existing offset values, init if none found
             var clothingOffsetsHasValue = clothingOffsets.TryGetValue(renderKey, out float[] clothOffsets);
@@ -135,44 +134,16 @@ namespace KK_PregnancyPlus
             }
 
             //Lerp the final offset based on the inflation size.  Since clothes will be most flatteded at the largest size (40), and no change needed at default belly size
-            var clothOffsetLerp = infConfig.inflationSize/60;
             var rayCastDist = bellyInfo.OriginalSphereRadius/2;            
-            var minOffset = bellyInfo.ScaledWaistWidth/200;
-            
-            #if KK                
-                var centerBoneName = "cf_j_waist01";
-            #elif HS2 || AI
-                var centerBoneName = "cf_J_Kosi01";
-            #endif            
-            //Center point used to get offset direction and raycast to point
-            var center = currentMeshSphereCenter == Vector3.zero ? PregnancyPlusHelper.GetBone(ChaControl, centerBoneName).position : currentMeshSphereCenter;
+            var minOffset = bellyInfo.ScaledWaistWidth/200;                  
 
             //When we already have the offsets, just reuse them instead of recalculating
             if (clothingOffsetsHasValue && !needsRecomputeOffsets)
             {
-                for (var i = 0; i < inflatedVerts.Length; i++)
-                {
-                    if (!alteredVertIndexes[i]) 
-                    {
-                        clothOffsets[i] = 0;
-                        inflatedVertOffsets[i] = inflatedVerts[i];
-                        continue;
-                    }                    
-
-                    var origVertWs = clothSmr.transform.TransformPoint(origVerts[i]);
-                    var inflatedVertWs = clothSmr.transform.TransformPoint(inflatedVerts[i]);
-                    var offsetPos = VertOffsetWs(inflatedVertWs, center, GetEdgeLerp(origVertWs, center, clothOffsets[i]), clothOffsetLerp);                    
-
-                    // DebugTools.DrawLine(offsetPos, inflatedVertWs, 0.1f);
-
-                    //Re compute the offset distance from the stored clothOffset value for this vert
-                    inflatedVertOffsets[i] = clothSmr.transform.InverseTransformPoint(offsetPos);                    
-                }
-
-                currentMeshSphereCenter = Vector3.zero;
-                return;
+                return clothOffsets;
             }
 
+            // **  Below here, will only be called once per mesh, or until cloting is added/removed and needs recalculation **
             //Create mesh collider to make clothing measurements from skin
             CreateMeshCollider(bodySmr);   
             GetRayCastTargetPositions();
@@ -182,28 +153,25 @@ namespace KK_PregnancyPlus
             var distancedVertCount = 0;
 
             //When we need to initially caluculate the offsets (or rebuild).  For each vert raycast to center and see if it hits
-            for (var i = 0; i < inflatedVerts.Length; i++)
+            for (var i = 0; i < origVerts.Length; i++)
             {
                 //Skip untouched verts
                 if (!alteredVertIndexes[i]) 
                 {
                     clothOffsets[i] = 0;
-                    inflatedVertOffsets[i] = inflatedVerts[i];
                     continue;
                 }
 
                 //Convert to worldspace since thats where the mesh collider lives
                 var origVertWs = clothSmr.transform.TransformPoint(origVerts[i]);
-                var inflatedVertWs = clothSmr.transform.TransformPoint(inflatedVerts[i]);                
                 
                 //Get raycast hit distance to the mesh collider on the skin
-                var dist = GetClosestRayCast(origVertWs, center, rayCastDist);
+                var dist = GetClosestRayCast(origVertWs, sphereCenter, rayCastDist);
 
                 //Ignore any distance that didnt hit the mesh collider
                 if (dist >= rayCastDist) 
                 {
                     clothOffsets[i] = minOffset;
-                    inflatedVertOffsets[i] = inflatedVerts[i];
                     continue;
                 }
                 clothOffsets[i] = dist + minOffset;
@@ -216,35 +184,28 @@ namespace KK_PregnancyPlus
             //Check that at least one vert was computed
             if (distancedVertCount <= 0) 
             {
+                if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" No verts found to compute offset");
                 currentMeshSphereCenter = Vector3.zero;
-                return;
+                return null;
             }
 
             var distAverage = distanceTotal/distancedVertCount;            
 
             //Once we have a mesh vertex distance average, lerp the verts with an irregularly long distance so they don't stick out so much
-            for (var i = 0; i < inflatedVerts.Length; i++)
+            for (var i = 0; i < origVerts.Length; i++)
             {
                 //Skip untouched verts
                 if (!alteredVertIndexes[i]) continue;
 
                 //Convert to worldspace since thats where the mesh collider lives
                 var origVertWs = clothSmr.transform.TransformPoint(origVerts[i]);
-                var inflatedVertWs = clothSmr.transform.TransformPoint(inflatedVerts[i]);
 
-                //The new offset distance after lerping the longer distances down a bit
-                clothOffsets[i] = Mathf.Lerp(clothOffsets[i], distAverage * 2f, (clothOffsets[i] - distAverage)/distAverage);
-
-                //Calculate final offset position
-                var offsetPos = VertOffsetWs(inflatedVertWs, center, GetEdgeLerp(origVertWs, center, clothOffsets[i]), clothOffsetLerp);
-
-                // DebugTools.DrawLine(offsetPos, inflatedVertWs, 0.1f);
-
-                //Convert back to localspace             
-                inflatedVertOffsets[i] = clothSmr.transform.InverseTransformPoint(offsetPos);
+                //The new offset distance after lerping the longer distances (furthest coth pieces) closer a bit
+                clothOffsets[i] = Mathf.Lerp(clothOffsets[i], distAverage * 1.5f, (clothOffsets[i] - distAverage)/distAverage);
             }            
 
-            currentMeshSphereCenter = Vector3.zero;
+            currentMeshSphereCenter = Vector3.zero;            
+            return clothOffsets;
         }
 
 
@@ -311,14 +272,14 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Allows users to adjust the offset of clothing by a small amount, uses V2 by default with characters saved on v1.27+
         /// </summary>
-        internal float GetClothesFixOffset(Transform meshRootTf, Vector3 sphereCenterWs, float sphereRadius, float waistWidth, Vector3 origVertWS, string meshName) 
+        internal float GetClothesFixOffset(Transform meshRootTf, Vector3 sphereCenterWs, float sphereRadius, float waistWidth, Vector3 origVertWS, string meshName, float offset) 
         {
             //Figure out which version of the clothing offset logic the character was made with, and apply the offset
             if (infConfig.clothingOffsetVersion == 1)
             {
                 //V2 is just a simple offset based on slider value, since DoClothMeasurement takes care of making sure any cloth bypasses the cloth flattening issue.
                 //This method remains as a way for the user to further offset clothing items if they need to
-                return GetClothesFixOffsetV2(meshRootTf, sphereCenterWs, sphereRadius, waistWidth, origVertWS, meshName);
+                return GetClothesFixOffsetV2(meshRootTf, sphereCenterWs, sphereRadius, waistWidth, origVertWS, meshName, offset);
             } 
             else 
             {
@@ -337,18 +298,18 @@ namespace KK_PregnancyPlus
         /// <param name="waistWidth">The average width of the characters waist</param>
         /// <param name="origVertWS">The original verticie's worldspace position</param>
         /// <param name="meshName">Used to determine inner vs outer mesh layers from a known list of names</param>
-        internal float GetClothesFixOffsetV2(Transform meshRootTf, Vector3 sphereCenterWs, float sphereRadius, float waistWidth, Vector3 origVertWS, string meshName) 
+        internal float GetClothesFixOffsetV2(Transform meshRootTf, Vector3 sphereCenterWs, float sphereRadius, float waistWidth, 
+                                             Vector3 origVertWS, string meshName, float offset) 
         {  
             //Check that the slider has a non zero value
             var inflationOffset = GetInflationClothOffset();
-            if (inflationOffset == 0) return 0;
 
             //The size of the area to spread the flattened offsets over like shrinking center dist -> inflated dist into a small area shifted outside the radius.  So hard to explin with words...
-            float offset = bellyInfo.ScaledWaistWidth/60 * inflationOffset;
+            var shrinkedOffset = offset + (bellyInfo.ScaledWaistWidth/100 * inflationOffset);
 
             // //The closer the cloth is to the end of the sphere radius, the less we want to move it on offset
             var clothFromEndDistLerp = FastDistance(sphereCenterWs, origVertWS)/sphereRadius;          
-            var lerpedOffset = Mathf.Lerp(offset, offset/5, clothFromEndDistLerp);
+            var lerpedOffset = Mathf.Lerp(shrinkedOffset, shrinkedOffset/3, clothFromEndDistLerp);
 
             //This is the total additional distance we want to move this vert away from sphere center.  Move it inwards just a tad
             return lerpedOffset + GetClothLayerOffsetV2(meshName);
@@ -367,7 +328,7 @@ namespace KK_PregnancyPlus
             }
 
             //The mininum distance offset for each cloth layer, adjusted by user
-            float additonalOffset = (bellyInfo.ScaledWaistWidth/250) * GetInflationClothOffset();
+            float additonalOffset = (bellyInfo.ScaledWaistWidth/200) + (bellyInfo.ScaledWaistWidth/100) * GetInflationClothOffset();
 
             //If outer layer then add the offset
             return additonalOffset;
