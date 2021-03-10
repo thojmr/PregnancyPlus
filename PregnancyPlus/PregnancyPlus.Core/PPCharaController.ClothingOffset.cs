@@ -15,7 +15,6 @@ namespace KK_PregnancyPlus
     public partial class PregnancyPlusCharaController: CharaCustomFunctionController
     {           
 
-        public Vector3 currentMeshSphereCenter = Vector3.zero;        
         internal Vector3[] rayCastTargetPositions = new Vector3[4];
         
         #if KK      
@@ -149,8 +148,6 @@ namespace KK_PregnancyPlus
             GetRayCastTargetPositions();
 
             if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" Pre-calculating clothing offset values");
-            var distanceTotal = 0f;
-            var distancedVertCount = 0;
 
             //When we need to initially caluculate the offsets (or rebuild).  For each vert raycast to center and see if it hits
             for (var i = 0; i < origVerts.Length; i++)
@@ -174,37 +171,9 @@ namespace KK_PregnancyPlus
                     clothOffsets[i] = minOffset;
                     continue;
                 }
-                clothOffsets[i] = dist + minOffset;
+                clothOffsets[i] = dist + minOffset;               
+            }           
 
-                //Calculate the averge vert offset for each mesh, so we can reduce the pointy bits on some clothing
-                distancedVertCount++;
-                distanceTotal += dist;                
-            }
-
-            //Check that at least one vert was computed
-            if (distancedVertCount <= 0) 
-            {
-                if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" No verts found to compute offset");
-                currentMeshSphereCenter = Vector3.zero;
-                return null;
-            }
-
-            var distAverage = distanceTotal/distancedVertCount;            
-
-            //Once we have a mesh vertex distance average, lerp the verts with an irregularly long distance so they don't stick out so much
-            for (var i = 0; i < origVerts.Length; i++)
-            {
-                //Skip untouched verts
-                if (!alteredVertIndexes[i]) continue;
-
-                //Convert to worldspace since thats where the mesh collider lives
-                var origVertWs = clothSmr.transform.TransformPoint(origVerts[i]);
-
-                //The new offset distance after lerping the longer distances (furthest coth pieces) closer a bit
-                clothOffsets[i] = Mathf.Lerp(clothOffsets[i], distAverage * 1.5f, (clothOffsets[i] - distAverage)/distAverage);
-            }            
-
-            currentMeshSphereCenter = Vector3.zero;            
             return clothOffsets;
         }
 
@@ -224,7 +193,7 @@ namespace KK_PregnancyPlus
             }
 
             //Also check raycast to the current sphereCenter
-            var currentDist = RayCastToCenter(clothVertWs, currentMeshSphereCenter, maxDistance);
+            var currentDist = RayCastToCenter(clothVertWs, sphereCenter, maxDistance);
             if (currentDist < lowestDist) lowestDist = currentDist;
             
             
@@ -328,7 +297,7 @@ namespace KK_PregnancyPlus
             }
 
             //The mininum distance offset for each cloth layer, adjusted by user
-            float additonalOffset = (bellyInfo.ScaledWaistWidth/200) + (bellyInfo.ScaledWaistWidth/100) * GetInflationClothOffset();
+            float additonalOffset = (bellyInfo.ScaledWaistWidth/120) + (bellyInfo.ScaledWaistWidth/100) * GetInflationClothOffset();
 
             //If outer layer then add the offset
             return additonalOffset;
