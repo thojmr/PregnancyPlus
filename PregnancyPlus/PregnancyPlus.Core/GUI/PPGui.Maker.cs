@@ -207,7 +207,7 @@ namespace KK_PregnancyPlus
                 controller.infConfig.clothingOffsetVersion = value;
                 if (oldVal != value) OnClothingOffsetVersionChanged(controller);
             });
-            e.AddControl(new MakerText("The Clothing Offset version will determine how the offset is calculated.  V2 is more accurate, and better retains original cloth shape when pregnant.  V1 (pre v1.27) will result in flattter clothing, and some clipping.  Toggle to see the difference.", cat, _pluginInstance) { TextColor = hintColor });
+            e.AddControl(new MakerText("The Clothing Offset version will determine how the offset is calculated.  V2 is less flat with less clipping.  V1 (pre v1.28) is very flat with more clipping.", cat, _pluginInstance) { TextColor = hintColor });
 
 
 
