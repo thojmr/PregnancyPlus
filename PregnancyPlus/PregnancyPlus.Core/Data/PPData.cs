@@ -37,7 +37,7 @@ namespace KK_PregnancyPlus
         }
 
         public string ValuesToString() {
-            return $" inflationSize {inflationSize} inflationMultiplier {inflationMultiplier} GameplayEnabled {GameplayEnabled} ...";
+            return $" inflationSize {inflationSize} GameplayEnabled {GameplayEnabled} clothingOffsetVersion {clothingOffsetVersion}";
         }
 
         //Allow comparison between all public properties of two PregnancyPlusData objects (excluding clothingOffsetVersion)
@@ -148,14 +148,25 @@ namespace KK_PregnancyPlus
         public PluginData Save()
         {
             var result = new PluginData { version = 1 };
+            var anyValuesChanged = false;
+            
             foreach (var fieldInfo in _serializedFields)
             {
                 var value = fieldInfo.GetValue(this);
                 // Check if any value is different than default, if not then don't save any data
                 var defaultValue = fieldInfo.GetValue(_default);
 
-                if (!Equals(defaultValue, value))
+                if (!Equals(defaultValue, value)) 
+                {
                     result.data.Add(fieldInfo.Name, value);
+                    anyValuesChanged = true;
+                }
+            }
+
+            //always save clolthing offset version if any values above set
+            if (anyValuesChanged && !result.data.ContainsKey("clothingOffsetVersion")) 
+            {
+                result.data.Add("clothingOffsetVersion", clothingOffsetVersion);                             
             }
 
             return result.data.Count > 0 ? result : null;
