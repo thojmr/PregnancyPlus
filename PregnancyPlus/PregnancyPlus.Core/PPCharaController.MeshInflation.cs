@@ -276,11 +276,14 @@ namespace KK_PregnancyPlus
         internal void GetMeshRoot(out Transform meshRootTf, out float distanceMoved) 
         {                   
             distanceMoved = 0f;
-            meshRootTf = null;
+            meshRootTf = null;                    
 
             #if KK
+                //Male vs female body bone string
+                var bodyBone = ChaControl.sex == 0 ? "p_cm_body_00.cf_o_root" : "p_cf_body_00.cf_o_root";
+
                 //Get normal mesh root attachment position, and if its not near 0,0,0 fix it so that it is (Match it to the chacontrol y pos)
-                var kkMeshRoot = PregnancyPlusHelper.GetBoneGO(ChaControl, "p_cf_body_00.cf_o_root");
+                var kkMeshRoot = PregnancyPlusHelper.GetBoneGO(ChaControl, bodyBone);
                 if (kkMeshRoot == null) return;                
                 
                 //If the mesh root y is too far from the ChaControl origin
@@ -301,8 +304,10 @@ namespace KK_PregnancyPlus
                 meshRootTf = kkMeshRoot.transform;           
             
             #elif HS2 || AI
+                var bodyBone = ChaControl.sex == 0 ? "p_cm_body_00.n_o_root" : "p_cf_body_00.n_o_root";
+
                 //For HS2, get the equivalent position game object (near bellybutton)
-                var meshRootGo = PregnancyPlusHelper.GetBoneGO(ChaControl, "p_cf_body_00.n_o_root");
+                var meshRootGo = PregnancyPlusHelper.GetBoneGO(ChaControl, bodyBone);
                 if (meshRootGo == null) return;
                 meshRootTf = meshRootGo.transform;
 

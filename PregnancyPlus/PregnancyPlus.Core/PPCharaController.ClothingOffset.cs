@@ -113,14 +113,16 @@ namespace KK_PregnancyPlus
         /// </summary>
         internal float[] DoClothMeasurement(SkinnedMeshRenderer clothSmr, SkinnedMeshRenderer bodySmr, Vector3 sphereCenter, bool needsRecomputeOffsets = false)
         {     
-            if (!bodySmr) return null;    
-            if (clothSmr.name.Contains("o_body_cf") || clothSmr.name.Contains("o_body_a")) return null;//skip body meshes     
+            if (!bodySmr) return null;   
+
+            //skip body meshes  (but this can be incorrect when a clothing mesh contains o_body_a in rare cases (Bad mesh makers! bad!))
+            if (clothSmr.name.Contains("o_body_cf") || clothSmr.name.Contains("o_body_a")) return null;    
             if (infConfig.clothingOffsetVersion == 0) return null;
 
             //Get the pre calculated preg verts for this mesh
             var renderKey = GetMeshKey(clothSmr);        
             originalVertices.TryGetValue(renderKey, out Vector3[] origVerts);            
-            if (origVerts == null || origVerts.Length <= 0) return null;
+            if (origVerts == null || origVerts.Length <= 0) return null;//Hopefully this never happens
 
             var alteredVertIndexes = bellyVerticieIndexes[renderKey];
 
@@ -136,14 +138,7 @@ namespace KK_PregnancyPlus
             var rayCastDist = bellyInfo.OriginalSphereRadius/2;            
             var minOffset = bellyInfo.ScaledWaistWidth/200;                  
 
-            //When we already have the offsets, just reuse them instead of recalculating
-            if (clothingOffsetsHasValue && !needsRecomputeOffsets)
-            {
-                return clothOffsets;
-            }
-
-            // **  Below here, will only be called once per mesh, or until cloting is added/removed and needs recalculation **
-            //Create mesh collider to make clothing measurements from skin
+            //Create mesh collider to make clothing measurements from skin (if it doesnt already exists)
             CreateMeshCollider(bodySmr);   
             GetRayCastTargetPositions();
 
@@ -171,7 +166,11 @@ namespace KK_PregnancyPlus
                     clothOffsets[i] = minOffset;
                     continue;
                 }
-                clothOffsets[i] = dist + minOffset;               
+
+                //Always add a min distance to the final offset to prevent skin tight clothing clipping
+                clothOffsets[i] = dist + minOffset;    
+
+                // DebugTools.DrawLine(offsetPos, inflatedVertWs, 0.1f);           
             }           
 
             return clothOffsets;
@@ -224,7 +223,7 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Reduce the total offset when a clothing vert is near the sphere radius boundary, for a smooth transition along the modified vert line
+        /// Reduce the total offset when a clothing vert is near the sphere radius boundary, for a smooth transition to non modified verts
         /// </summary>
         public float GetEdgeLerp(Vector3 origVertWs, Vector3 center, float offset)
         {
@@ -277,7 +276,8 @@ namespace KK_PregnancyPlus
             var shrinkedOffset = offset + (bellyInfo.ScaledWaistWidth/100 * inflationOffset);
 
             // //The closer the cloth is to the end of the sphere radius, the less we want to move it on offset
-            var clothFromEndDistLerp = FastDistance(sphereCenterWs, origVertWS)/sphereRadius;          
+            var clothFromEndDistLerp = FastDistance(sphereCenterWs, origVertWS)/sphereRadius;    
+            // diving by 3 just gave the best results      
             var lerpedOffset = Mathf.Lerp(shrinkedOffset, shrinkedOffset/3, clothFromEndDistLerp);
 
             //This is the total additional distance we want to move this vert away from sphere center.  Move it inwards just a tad
@@ -286,7 +286,8 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// There are two cloth layers, inner and outer. I've assigned each cloth layer a static offset. layers: 1 = skin tight, 2 = above skin tight.  This way each layer will have less chance of cliping through to the next
+        /// There are two cloth layers, inner and outer. I've assigned each cloth layer a static offset. 
+        ///    layers: 1 = skin tight, 2 = above skin tight.  This way each layer will have less chance of cliping through to the next
         /// </summary>
         internal float GetClothLayerOffsetV2(string meshName) 
         {                     
