@@ -167,9 +167,9 @@ namespace KK_PregnancyPlus
                 isClothingMesh = false;            
             }
 
-            GetMeshRoot(out Transform meshRootTf, out float meshRootDistMoved);
+            var meshRootTf = GetMeshRoot();
             if (meshRootTf == null) return false;
-
+            
             // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" SMR pos {smr.transform.position} rot {smr.transform.rotation} parent {smr.transform.parent}");
                         
             //set sphere center and allow for adjusting its position from the UI sliders  
@@ -183,7 +183,7 @@ namespace KK_PregnancyPlus
             //Get the cloth offset for each cloth vertex via raycast to skin
             var clothOffsets = DoClothMeasurement(smr, bodySmr, sphereCenter);
             if (clothOffsets == null) clothOffsets = new float[originalVertices[rendererName].Length];
-
+            
             var origVerts = originalVertices[rendererName];
             var inflatedVerts = inflatedVertices[rendererName];
             var currentVerts = currentVertices[rendererName];
@@ -274,25 +274,22 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Get the root position of the mesh, so we can calculate the true position of its mesh verticies later
         /// </summary>
-        internal void GetMeshRoot(out Transform meshRootTf, out float distanceMoved) 
-        {                   
-            distanceMoved = 0f;
-            meshRootTf = null;                    
-
+        internal Transform GetMeshRoot() 
+        {                                   
             #if KK
                 //Male vs female body bone string
                 var bodyBone = ChaControl.sex == 0 ? "p_cm_body_00.cf_o_root" : "p_cf_body_00.cf_o_root";
 
                 //Get normal mesh root attachment position, and if its not near 0,0,0 fix it so that it is (Match it to the chacontrol y pos)
                 var kkMeshRoot = PregnancyPlusHelper.GetBoneGO(ChaControl, bodyBone);
-                if (kkMeshRoot == null) return;                
+                if (kkMeshRoot == null) return null;                
                 
                 //If the mesh root y is too far from the ChaControl origin
                 if (ChaControl.transform.InverseTransformPoint(kkMeshRoot.transform.position).y > 0.01f)
                 {
                     // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($"$ GetMeshRoot pos {kkMeshRoot.transform.position}");
                     // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($"$ char pos {ChaControl.transform.position}");
-                    distanceMoved = FastDistance(ChaControl.transform.position, kkMeshRoot.transform.position);
+                    var distanceMoved = FastDistance(ChaControl.transform.position, kkMeshRoot.transform.position);
                     if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" MeshRoot moved to charRoot by {distanceMoved}f");
 
                     //Set the meshroot.pos to the chaControl.pos to make it more in line with HS2/AI, and KK Uncensor mesh
@@ -302,15 +299,15 @@ namespace KK_PregnancyPlus
                     // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($"$ GetMeshRoot pos after {meshRoot.transform.position}");                    
                 }     
 
-                meshRootTf = kkMeshRoot.transform;           
+                return kkMeshRoot.transform;           
             
             #elif HS2 || AI
                 var bodyBone = ChaControl.sex == 0 ? "p_cm_body_00.n_o_root" : "p_cf_body_00.n_o_root";
 
                 //For HS2, get the equivalent position game object (near bellybutton)
                 var meshRootGo = PregnancyPlusHelper.GetBoneGO(ChaControl, bodyBone);
-                if (meshRootGo == null) return;
-                meshRootTf = meshRootGo.transform;
+                if (meshRootGo == null) return null;
+                return meshRootGo.transform;
 
             #endif            
         }
