@@ -65,7 +65,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// See if we already have this mesh's indexes stored, if the slider values haven't changed then we dont need to recompute, just apply existing cumputed verts
         /// </summary>
-        internal bool NeedsComputeVerts(SkinnedMeshRenderer smr, bool sliderHaveChanged) 
+        internal bool NeedsComputeVerts(SkinnedMeshRenderer smr, bool sliderHaveChanged, bool onlyInflationSizeChanged) 
         {
             var renderKey = GetMeshKey(smr);
             //Do a quick check to see if we need to fetch the bone indexes again.  ex: on second call we should allready have them
@@ -73,8 +73,12 @@ namespace KK_PregnancyPlus
             var isInitialized = bellyVerticieIndexes.TryGetValue(renderKey, out bool[] existingValues);
             if (isInitialized)
             {
-                //If the vertex count has not changed then we can skip this
-                if (existingValues.Length == smr.sharedMesh.vertexCount) return sliderHaveChanged;
+                //If the vertex count has not changed then we can skip this if no critical sliders changed
+                if (existingValues.Length == smr.sharedMesh.vertexCount) 
+                {
+                    if (onlyInflationSizeChanged) return false;
+                    return sliderHaveChanged;
+                }
             }
 
             //When no mesh found key, or incorrect vert count, the mesh changed so we need to recompute
@@ -150,6 +154,16 @@ namespace KK_PregnancyPlus
         {
             if (pluginConfigSliderChanged) return true;
             return infConfig.Equals(infConfigHistory);
+        }
+
+
+        /// <summary>   
+        /// Whether or not the infation size was the only changed value
+        /// </summary>        
+        internal bool OnlyInflationSizeChanged(bool pluginConfigSliderChanged = false) 
+        {
+            if (pluginConfigSliderChanged) return true;
+            return infConfig.InflationSizeOnlyChange(infConfigHistory);
         }
 
 

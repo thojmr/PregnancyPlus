@@ -31,6 +31,7 @@ namespace KK_PregnancyPlus
             if (!PregnancyPlusPlugin.AllowMale.Value && ChaControl.sex == 0) return false;// Only female characters, unless plugin config says otherwise          
 
             var sliderHaveChanged = NeedsMeshUpdate(pluginConfigSliderChanged);
+            var onlyInflationSizeChanged = OnlyInflationSizeChanged();
             //Only continue if one of the config values changed
             if (!sliderHaveChanged) 
             {
@@ -68,9 +69,9 @@ namespace KK_PregnancyPlus
 
             //Get and apply all clothes render mesh changes, then do body mesh too
             var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);            
-            anyMeshChanges = LoopAndApplyMeshChanges(clothRenderers, sliderHaveChanged, anyMeshChanges, true, GetBodyMeshRenderer(), freshStart);          
+            anyMeshChanges = LoopAndApplyMeshChanges(clothRenderers, sliderHaveChanged, onlyInflationSizeChanged, anyMeshChanges, true, GetBodyMeshRenderer(), freshStart);          
             var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, true);
-            anyMeshChanges = LoopAndApplyMeshChanges(bodyRenderers, sliderHaveChanged, anyMeshChanges);
+            anyMeshChanges = LoopAndApplyMeshChanges(bodyRenderers, sliderHaveChanged, onlyInflationSizeChanged, anyMeshChanges);
 
             RemoveMeshCollider();
 
@@ -95,7 +96,7 @@ namespace KK_PregnancyPlus
         /// <param name="anyMeshChanges">If any mesh changes have happened so far</param>
         /// <param name="isClothingMesh">If this smr is a cloth mesh</param>
         /// <returns>boolean true if any meshes were changed</returns>
-        internal bool LoopAndApplyMeshChanges(List<SkinnedMeshRenderer> smrs, bool sliderHaveChanged, bool anyMeshChanges, 
+        internal bool LoopAndApplyMeshChanges(List<SkinnedMeshRenderer> smrs, bool sliderHaveChanged, bool onlyInflationSizeChanged, bool anyMeshChanges, 
                                               bool isClothingMesh = false, SkinnedMeshRenderer bodyMeshRenderer = null, bool freshStart = false) 
         {
             foreach (var smr in smrs) 
@@ -103,7 +104,7 @@ namespace KK_PregnancyPlus
                 var didCompute = false;  
 
                 //Dont recompute verts if no sliders have changed or clothing added
-                var needsComputeVerts = NeedsComputeVerts(smr, sliderHaveChanged);
+                var needsComputeVerts = NeedsComputeVerts(smr, sliderHaveChanged, onlyInflationSizeChanged);
                 if (needsComputeVerts)
                 {
                     didCompute = ComputeMeshVerts(smr, isClothingMesh, bodyMeshRenderer, freshStart);                                                                                   
@@ -134,7 +135,7 @@ namespace KK_PregnancyPlus
 
             var hasVerticies = GetFilteredVerticieIndexes(smr, PregnancyPlusPlugin.MakeBalloon.Value ? null : boneFilters);        
 
-            //If no belly verts found, or existing verts already exists, then we can skip this mesh
+            //If no belly verts found, or verts already exists, then we can skip this mesh
             if (!hasVerticies) return false; 
 
             if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" ");

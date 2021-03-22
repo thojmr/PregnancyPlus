@@ -65,6 +65,32 @@ namespace KK_PregnancyPlus
             return hasChanges;
         }
 
+
+        //Allow comparison between all public properties of two PregnancyPlusData objects (excluding clothingOffsetVersion)
+        public bool InflationSizeOnlyChange(Object obj)
+        {
+            var otherData = obj as PregnancyPlusData;
+            if (otherData == null) return false;
+            var inflationSizeOnlyChanges = false;
+
+            //Compare this class instance values to another
+            if (inflationSize != otherData.inflationSize) inflationSizeOnlyChanges = true;              
+            if (inflationMoveY != otherData.inflationMoveY) inflationSizeOnlyChanges = false;
+            if (inflationMoveZ != otherData.inflationMoveZ) inflationSizeOnlyChanges = false;
+            if (inflationStretchX != otherData.inflationStretchX) inflationSizeOnlyChanges = false;
+            if (inflationStretchY != otherData.inflationStretchY) inflationSizeOnlyChanges = false;
+            if (inflationShiftY != otherData.inflationShiftY) inflationSizeOnlyChanges = false;
+            if (inflationShiftZ != otherData.inflationShiftZ) inflationSizeOnlyChanges = false;
+            if (inflationTaperY != otherData.inflationTaperY) inflationSizeOnlyChanges = false;
+            if (inflationTaperZ != otherData.inflationTaperZ) inflationSizeOnlyChanges = false;
+            if (inflationMultiplier != otherData.inflationMultiplier) inflationSizeOnlyChanges = false;
+            if (inflationClothOffset != otherData.inflationClothOffset) inflationSizeOnlyChanges = false;
+            if (inflationFatFold != otherData.inflationFatFold) inflationSizeOnlyChanges = false;           
+            if (inflationRoundness != otherData.inflationRoundness) inflationSizeOnlyChanges = false;                      
+
+            return inflationSizeOnlyChanges;
+        }
+
         public override int GetHashCode()
         {
             var hashCode = inflationSize.GetHashCode() +
