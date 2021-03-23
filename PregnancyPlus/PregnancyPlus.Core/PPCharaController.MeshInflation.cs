@@ -419,7 +419,7 @@ namespace KK_PregnancyPlus
 
             if (GetInflationRoundness() != 0) 
             {  
-                smoothedVectorLs = GetUserRoundnessTransform(meshRootTf, originalVerticeLs, smoothedVectorLs, sphereCenterLs);
+                smoothedVectorLs = GetUserRoundnessTransform(meshRootTf, originalVerticeLs, smoothedVectorLs, sphereCenterLs, skinToCenterDist);
             }
 
             //Allow user adjustment of the egg like shape of the belly

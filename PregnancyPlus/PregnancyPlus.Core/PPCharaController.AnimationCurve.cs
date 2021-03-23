@@ -12,6 +12,7 @@ namespace KK_PregnancyPlus
         public AnimationCurve FastLerpAC = FastLerpAnimCurve();
         public AnimationCurve SlowLerpAC = SlowLerpAnimCurve();
         public AnimationCurve BellyTopAC = BellyTopAnimCurve();
+        public AnimationCurve BellyEdgeAC = BellyEdgeAnimCurve();
 
 
         //Curves quickly towards top
@@ -52,6 +53,22 @@ namespace KK_PregnancyPlus
             curve.AddKey(0.25f, 0.1f);
             curve.AddKey(0.5f, 0.35f);
             curve.AddKey(0.75f, 0.9f);
+            curve.AddKey(1f, 1f);
+
+            return curve;
+        }
+
+
+        //Custom curve for roundness near the skin edge of the belly 
+        public static AnimationCurve BellyEdgeAnimCurve()
+        {            
+            var curve = new AnimationCurve();
+
+            curve.AddKey(0f, 0f);
+            curve.AddKey(0.25f, 0.001f);
+            curve.AddKey(0.5f, 0.001f);
+            curve.AddKey(0.75f, 0.2f);        
+            curve.AddKey(0.9f, 0.7f);
             curve.AddKey(1f, 1f);
 
             return curve;

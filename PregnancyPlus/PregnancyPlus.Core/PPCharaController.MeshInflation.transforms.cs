@@ -197,18 +197,21 @@ namespace KK_PregnancyPlus
         /// <summary>   
         /// This will make the front of the belly more, or less round
         /// </summary>  
-        internal Vector3 GetUserRoundnessTransform(Transform meshRootTf, Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 sphereCenterLs)
+        internal Vector3 GetUserRoundnessTransform(Transform meshRootTf, Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 sphereCenterLs, float skinToCenterDist)
         {
             var zDistFromCenter = smoothedVectorLs.z - sphereCenterLs.z;
 
-            //As the distance forward gets further from sphere center make the shape more round (shifted forward slightly)
-            var xyLerp = Mathf.Lerp(0, GetInflationRoundness(), (zDistFromCenter - (bellyInfo.WaistThick/2.2f))/bellyInfo.ScaledRadius(BellyDir.z));
+            //As the distance forward gets further from sphere center make the shape more round (shifted outward slightly from center)
+            var xyLerp = Mathf.Lerp(0, GetInflationRoundness(), (zDistFromCenter - (bellyInfo.WaistThick/4f))/bellyInfo.ScaledRadius(BellyDir.z));
+
+            //As the original vert gets closer to the sphere radius, apply less change since we want smooth transitions at belly's edge
+            var totalLerp = Mathf.Lerp(xyLerp, 0, BellyEdgeAC.Evaluate(skinToCenterDist/bellyInfo.ScaledRadius(BellyDir.z)));
 
             //Get the direction to move the vert (offset center a little forward from sphere center)
             var xyDirection = (smoothedVectorLs - (sphereCenterLs + Vector3.forward * (bellyInfo.ScaledRadius(BellyDir.z)/3))).normalized;
 
             //set the new vert position in that direction + the new lerp scale distance
-            return smoothedVectorLs + xyDirection * xyLerp;
+            return smoothedVectorLs + xyDirection * totalLerp;
         }
 
 
