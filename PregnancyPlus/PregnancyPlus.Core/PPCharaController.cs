@@ -15,7 +15,7 @@ using KKAPI.Studio;
 namespace KK_PregnancyPlus
 {
 
-    //This partial class contains the property declarations and override hooks
+    //This partial class contains the characters properties, overrides, and events
     public partial class PregnancyPlusCharaController: CharaCustomFunctionController
     {        
 
@@ -64,7 +64,8 @@ namespace KK_PregnancyPlus
 
 
         protected override void Start() 
-        {                            
+        {  
+            //Character card name used to detect switching characters  
             charaFileName = ChaFileControl.parameter.fullname;        
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $Start {charaFileName}");
             ReadAndSetCardData();                       
@@ -88,7 +89,7 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnReload {currentGameMode}"); 
             ClearOnReload();
 
-            //Check for swapping out character GO with new character, because we want to keep the current slider values
+            //Check for swapping out character Game Object with new character
             var isNewCharFile = IsNewChar(ChaFileControl);
             charaFileName = ChaFileControl.parameter.fullname;
 
@@ -103,7 +104,7 @@ namespace KK_PregnancyPlus
         {
             WatchForUserKeyPress();
 
-            //just for debugging, pretty compute heavy for Update()
+            //just for debugging belly during animations, very compute heavy for Update()
             if (PregnancyPlusPlugin.DebugAnimations.Value)
             {
                 if (Time.frameCount % 60 == 0) MeasureWaistAndSphere(ChaControl, true);
@@ -206,7 +207,7 @@ namespace KK_PregnancyPlus
             //When the user presses a key combo they set, it increases or decreases the belly inflation amount, only for story mode
             if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return;        
 
-            //Only continue if body is rendered on screen  (Dont want to do every loaded char)
+            //Only if body is rendered on screen  (Dont want to do every internally loaded char)
             #if KK
                 if (ChaControl.rendBody == null || !ChaControl.rendBody.isVisible) return;
             #elif HS2 || AI
@@ -215,6 +216,7 @@ namespace KK_PregnancyPlus
             
             if (PregnancyPlusPlugin.StoryModeInflationIncrease.Value.IsDown()) 
             {
+                //Increase size by 2
                 var newVal = infConfig.inflationSize + 2;
                 MeshInflate(newVal);                
             }
@@ -227,6 +229,7 @@ namespace KK_PregnancyPlus
 
             if (PregnancyPlusPlugin.StoryModeInflationReset.Value.IsDown()) 
             {
+                //reset size
                 MeshInflate(0);
             }            
         }
@@ -300,7 +303,8 @@ namespace KK_PregnancyPlus
 
             yield return new WaitForSeconds(waitTime);
             //If guid is the latest, trigger method
-            if (debounceGuid == guid) {
+            if (debounceGuid == guid) 
+            {
                 if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" WaitForMeshToSettle checkNewMesh:{checkNewMesh} forceRecalcVerts:{forceRecalcVerts}");
                 MeshInflate(checkNewMesh, forceRecalcVerts);
             }

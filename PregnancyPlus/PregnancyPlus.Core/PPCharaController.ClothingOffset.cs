@@ -11,7 +11,7 @@ using System.Linq;
 namespace KK_PregnancyPlus
 {
 
-    //This partial class contains the clothing offset calculation logic
+    //This partial class contains the clothing offset calculation logic, for better placement of clothing on the belly after inflation
     public partial class PregnancyPlusCharaController: CharaCustomFunctionController
     {           
 
@@ -22,9 +22,11 @@ namespace KK_PregnancyPlus
             internal string[] rayCastTargetNames = new string[4] { "cf_j_spine02", "cf_j_waist01", "cf_j_thigh00_L", "cf_j_thigh00_R" };        
             //Clothing layers, based on clothing name
             internal string[] innerLayers = {"o_bra_a", "o_bra_b", "o_shorts_a", "o_shorts_b", "o_panst_garter1", "o_panst_a", "o_panst_b"};
+
         #elif HS2 || AI                
             internal string[] rayCastTargetNames = new string[4] { "cf_J_Spine02", "cf_J_Kosi01", "cf_J_LegUp00_L", "cf_J_LegUp00_R" };
             internal string[] innerLayers = {"o_bra_a", "o_bra_b", "o_shorts_a", "o_shorts_b", "o_panst_garter1", "o_panst_a", "o_panst_b"};
+            
         #endif   
 
 
@@ -111,7 +113,8 @@ namespace KK_PregnancyPlus
         /// Compute the clothVert offset for each clothing vert from the distance it is away from the skin mesh
         ///  BodySmr must have mesh collider attached at this point
         /// </summary>
-        internal float[] DoClothMeasurement(SkinnedMeshRenderer clothSmr, SkinnedMeshRenderer bodySmr, Vector3 sphereCenter, bool needsRecomputeOffsets = false)
+        internal float[] DoClothMeasurement(SkinnedMeshRenderer clothSmr, SkinnedMeshRenderer bodySmr, 
+                                            Vector3 sphereCenter, bool needsRecomputeOffsets = false)
         {     
             if (!bodySmr) return null;   
 

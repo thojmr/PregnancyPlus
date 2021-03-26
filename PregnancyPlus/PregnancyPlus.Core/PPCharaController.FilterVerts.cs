@@ -109,7 +109,8 @@ namespace KK_PregnancyPlus
                 if (!bones[i]) continue;  
 
                 //Get all the bone indexes if no filters are used              
-                if (!hasBoneFilters) {
+                if (!hasBoneFilters) 
+                {
                     bellyBoneIndexes.Add(i);
                     continue;
                 }

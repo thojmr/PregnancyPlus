@@ -12,7 +12,9 @@ public enum ErrorCode
     PregPlus_BodyMeshDisguisedAsCloth,//When a body mesh is detected that is nested under a cloth Game Object (like Squeeze Socks)
 }
 
-
+/// <summary>
+/// Needed better user log error tracking. Errors are thrown once per character when conditions are met. Search output.log for the Enums above to track down issues.
+/// </summary>
 public class ErrorCodeController
 {    
     // Tracks the existing thrown error codes for a given preg+ character

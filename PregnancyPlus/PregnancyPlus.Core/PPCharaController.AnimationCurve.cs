@@ -5,7 +5,7 @@ using System;
 namespace KK_PregnancyPlus
 {
 
-    //This partial class contains the animation curves used in mesh transformations
+    //This partial class contains the animation curves used in mesh transformations, much better curvature than a simple linear mathf.lerp
     public partial class PregnancyPlusCharaController: CharaCustomFunctionController
     {           
         

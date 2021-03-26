@@ -342,7 +342,8 @@ namespace KK_PregnancyPlus
                 if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" newDifference {newDifference}  currentBone.name {currentBone.name}  scale {currentBone.transform.localScale} corrected {((newDifference * currentBone.transform.localScale.y) - newDifference)}");
                 
                 //Ignore any negative bone differences (like char root bone which is at 0,0,0)
-                if (newDifference > 0) {                    
+                if (newDifference > 0) 
+                {                    
                     distance = distance + newDifference;
                     lastBone = currentBone;
                 }                
