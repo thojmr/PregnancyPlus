@@ -30,7 +30,7 @@ namespace KK_PregnancyPlus
         internal const string inflationFatFold = "        Fat Fold";
         internal const string inflationRoundness = "        Roundness";
         private const string blendshapeText = "Open BlendShapes";
-        private const string smoothBellyMeshText = "Apply Mesh Smoothing (Its Slow!)";
+        private const string smoothBellyMeshText = "Mesh Smoothing (Give it a second)";
 
 
         internal static void InitStudio(Harmony hi, PregnancyPlusPlugin instance)

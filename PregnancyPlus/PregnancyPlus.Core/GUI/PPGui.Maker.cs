@@ -207,7 +207,7 @@ namespace KK_PregnancyPlus
                 controller.infConfig.clothingOffsetVersion = value;
                 if (oldVal != value) OnClothingOffsetVersionChanged(controller);
             });
-            e.AddControl(new MakerText("The Clothing Offset version will determine how the offset is calculated.  V2 is less flat with less clipping.  V1 (pre v1.28) is very flat with more clipping.", cat, _pluginInstance) { TextColor = hintColor });
+            e.AddControl(new MakerText("The Clothing Offset version will determine how clothing sits on the belly.  V2 retains the cloth thickness.  V1 (pre v1.28) is very flat with more clipping.", cat, _pluginInstance) { TextColor = hintColor });
 
 
 
@@ -224,7 +224,14 @@ namespace KK_PregnancyPlus
             restoreBtn.OnClick.AddListener(() => {
                 OnRestore(sliders);
             });
-            e.AddControl(new MakerText("Restores the last set belly shape", cat, _pluginInstance) { TextColor = hintColor });
+            e.AddControl(new MakerText("Restores the last set belly shape.  Even across characters.", cat, _pluginInstance) { TextColor = hintColor });
+
+
+            var smoothBtn = e.AddControl(new MakerButton("Mesh Smoothing", cat, _pluginInstance));
+            smoothBtn.OnClick.AddListener(() => {
+                OnSmoothClicked();
+            });
+            e.AddControl(new MakerText("Applies smoothing to the mesh near the belly.  It will take a few seconds.  Resets on changes and character load.", cat, _pluginInstance) { TextColor = hintColor });
         }
 
         //On any slider change, trigger mesh inflaiton update
@@ -240,6 +247,20 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" OnClothingOffsetVersionChanged {controller.infConfig.clothingOffsetVersion}");            
 
             controller.MeshInflate(true, true);                                                                     
+        }
+
+
+        internal static void OnSmoothClicked()
+        {
+            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" OnSmoothClicked");
+            var handlers = CharacterApi.GetRegisteredBehaviour(PregnancyPlusPlugin.GUID);
+
+            //Find the active character and apply smoothing
+            foreach (PregnancyPlusCharaController charCustFunCtrl in handlers.Instances) 
+            {            
+                //Need to recalculate mesh position when sliders change here
+                charCustFunCtrl.ApplySmoothing();                                                                          
+            } 
         }
 
 
