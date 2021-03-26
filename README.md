@@ -18,6 +18,9 @@ The belly shape will persist in any game mode when slider vales are saved to the
 - Adds 3 configurable keybinds in plugin config that can be used to increase or decrease the belly size in Main Game, on the fly.   
 - This plugin can be a substitute for stomach bulges/fat bellies as well, but it's original intent is pregnancy.    
 - Adds a "Main Game" mode config option.  Disable if you want to turn off this plugins features temporarily while playing.
+- Adds a "Mesh Smoothing" button in Studio and Maker, that allows you to smooth the belly mesh and reduce any edges resulting from some slider combinations.
+    - The smoothing will reset on slider change or character load, so it's only temporary for visuals and animations sake.
+    - The smoothed shape will be captured for blendshapes!
 - This plugin is somewhat compatible with "[ddaa33] Pregnant plugin (ShapeKeyPlugin)" if you wish to combine the effects of both, you can.  But the effects applied by this other plugin will not save to the character card by default.
 
 ## Koikatsu Only Features
