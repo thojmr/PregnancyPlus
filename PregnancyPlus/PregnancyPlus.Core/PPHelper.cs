@@ -21,9 +21,9 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Search all SMR's for a matchtching key
         /// </summary>
-        internal static SkinnedMeshRenderer GetMeshRenderer(ChaControl chaControl, string renderKey) 
+        internal static SkinnedMeshRenderer GetMeshRenderer(ChaControl chaControl, string renderKey, bool searchInactive = true) 
         {
-            var renderers = chaControl.GetComponentsInChildren<SkinnedMeshRenderer>(true);//Even search inactive renderers
+            var renderers = chaControl.GetComponentsInChildren<SkinnedMeshRenderer>(searchInactive);//Even search inactive renderers
             var renderer = renderers.FirstOrDefault(x => (KeyFromNameAndVerts(x)) == renderKey);
             return renderer;
         }

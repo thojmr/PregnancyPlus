@@ -140,42 +140,69 @@ namespace KK_PregnancyPlus
         }
 
 
-        internal void ApplySmoothing()
-        {
-            #if KK
-                var meshName = "o_body_a";
-            #elif HS2 || AI
-                var meshName = "o_body_cf";
-            #endif
 
+        /// <summary>   
+        /// Will smooth and jagged edges around the characters belly caused by some slider combinations
+        /// </summary>   
+        /// <param name="includeClothMesh">Optionally include all cloth meshes as well</param>
+        internal void ApplySmoothing(bool includeClothMesh = false)
+        {
             //Check that inflationConfig has a value
             if (!infConfig.HasAnyValue()) return;
-            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" ApplySmoothing()");
+            if (infConfig.inflationSize == 0) return;
+            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" ApplySmoothing({includeClothMesh})");
 
-            //Resets all mesh inflations
-            var keyList = new List<string>(originalVertices.Keys);
+            //Trigger mesh recalculation to overwrite last smoothing pass changes if any existed
+            MeshInflate(true, true);
 
-            //For every active meshRenderer key we have created
-            foreach(var renderKey in keyList) 
+            //Smooth all mesh around the belly area including clothing
+            if (includeClothMesh)
             {
-                var bodySmr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderKey);
-                //Get the current characters body smr
-                // var bodySmr = PregnancyPlusHelper.GetMeshRendererByName(ChaControl, meshName);
-                if (bodySmr == null) continue;
-                
-                //Check that is has existing inflated verticies
-                // var renderKey = GetMeshKey(bodySmr);
-                if (!inflatedVertices.ContainsKey(renderKey)) {
-                    if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" No inflated verts found for ApplySmoothing");
-                    continue;
+                //Get all existing mesh keys
+                var keyList = new List<string>(originalVertices.Keys);
+
+                //For every `active` meshRenderer key we have created, smooth the mesh
+                foreach(var renderKey in keyList) 
+                {
+                    var smr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderKey, false);
+                    SmoothSingleMesh(smr, renderKey);
                 }
+            } 
+            //Only smooth the body mesh around the belly area
+            else
+            {
+                #if KK
+                    var meshName = "o_body_a";
+                #elif HS2 || AI
+                    var meshName = "o_body_cf";
+                #endif
 
-                //Set the new smoothed inflated verticies
-                inflatedVertices[renderKey] = SmoothMesh.Start(bodySmr.sharedMesh, alteredVerticieIndexes[renderKey]);
-
-                //Re-trigger ApplyInflation to set the new smoothed mesh
-                ApplyInflation(bodySmr, renderKey);
+                var bodySmr = PregnancyPlusHelper.GetMeshRendererByName(ChaControl, meshName);
+                var renderKey = GetMeshKey(bodySmr);
+                SmoothSingleMesh(bodySmr, renderKey);
             }
+        }
+
+
+        /// <summary>   
+        /// Smooths a single mesh with lapacian smoothing
+        /// </summary>   
+        internal void SmoothSingleMesh(SkinnedMeshRenderer smr, string renderKey)
+        {
+            if (smr == null || renderKey == null) return;
+            
+            //Check that this mesh has computed inflated verticies            
+            if (!inflatedVertices.ContainsKey(renderKey)) 
+            {
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" No inflated verts found for SmoothSingleMesh");
+                return;
+            }
+
+            //Get the new smoothed mesh verticies (compute only the belly verts)
+            inflatedVertices[renderKey] = SmoothMesh.Start(smr.sharedMesh, alteredVerticieIndexes[renderKey]);
+
+            //Re-trigger ApplyInflation to set the new smoothed mesh
+            ApplyInflation(smr, renderKey);
         }
 
     }

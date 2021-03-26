@@ -7,6 +7,9 @@
 
         internal readonly static PregnancyPlusData ppDataDefaults = new PregnancyPlusData();
         
+        //Whether to include clothing in mesh smoothing calculations or not, to reduce clipping in some cases
+        internal static bool includeClothSmoothing = false;
+
 #region Don't change these, they would change users cards default scales
 
         #if KK

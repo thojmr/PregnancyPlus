@@ -227,11 +227,18 @@ namespace KK_PregnancyPlus
             e.AddControl(new MakerText("Restores the last set belly shape.  Even across characters.", cat, _pluginInstance) { TextColor = hintColor });
 
 
-            var smoothBtn = e.AddControl(new MakerButton("Mesh Smoothing", cat, _pluginInstance));
+            var smoothBtn = e.AddControl(new MakerButton("Belly Mesh Smoothing", cat, _pluginInstance));
             smoothBtn.OnClick.AddListener(() => {
                 OnSmoothClicked();
             });
             e.AddControl(new MakerText("Applies smoothing to the mesh near the belly.  It will take a few seconds.  Resets on changes and character load.", cat, _pluginInstance) { TextColor = hintColor });
+
+
+            var cothSmoothing = e.AddControl(new MakerToggle(cat, "Include cloth when smoothing", false, _pluginInstance));
+            cothSmoothing.BindToFunctionController<PregnancyPlusCharaController, bool>(controller => includeClothSmoothing, (controller, value) => {
+                includeClothSmoothing = value;
+            });
+            e.AddControl(new MakerText("If enabled, will include clothing in the smoohting calculation above, to help reduce clipping for skin tight clothes.", cat, _pluginInstance) { TextColor = hintColor });
         }
 
         //On any slider change, trigger mesh inflaiton update
@@ -259,7 +266,7 @@ namespace KK_PregnancyPlus
             foreach (PregnancyPlusCharaController charCustFunCtrl in handlers.Instances) 
             {            
                 //Need to recalculate mesh position when sliders change here
-                charCustFunCtrl.ApplySmoothing();                                                                          
+                charCustFunCtrl.ApplySmoothing(includeClothSmoothing);                                                                          
             } 
         }
 
