@@ -139,6 +139,43 @@ namespace KK_PregnancyPlus
             }
         }
 
+
+        internal void ApplySmoothing()
+        {
+            #if KK
+                var meshName = "o_body_a";
+            #elif HS2 || AI
+                var meshName = "o_body_cf";
+            #endif
+
+            #if HS2
+                        //Resets all mesh inflations
+                var keyList = new List<string>(originalVertices.Keys);
+
+                //For every active meshRenderer key we have created
+                foreach(var renderKey in keyList) 
+                {
+                    var bodySmr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderKey);
+                    //Get the current characters body smr
+                    // var bodySmr = PregnancyPlusHelper.GetMeshRendererByName(ChaControl, meshName);
+                    if (bodySmr == null) continue;
+                    
+                    //Check that is has existing inflated verticies
+                    // var renderKey = GetMeshKey(bodySmr);
+                    if (!inflatedVertices.ContainsKey(renderKey)) {
+                        if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" No inflated verts found for ApplySmoothing");
+                        continue;
+                    }
+
+                    //Set the new smoothed inflated verticies
+                    inflatedVertices[renderKey] = SmoothMesh.Start(bodySmr.sharedMesh, alteredVerticieIndexes[renderKey]);
+
+                    //Re-trigger ApplyInflation to set the new smoothed mesh
+                    ApplyInflation(bodySmr, renderKey);
+                }
+            #endif
+        }
+
     }
 }
 

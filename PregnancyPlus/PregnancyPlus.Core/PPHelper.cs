@@ -30,6 +30,17 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
+        /// Search all SMR's for a matchtching name
+        /// </summary>
+        internal static SkinnedMeshRenderer GetMeshRendererByName(ChaControl chaControl, string smrName) 
+        {
+            var renderers = chaControl.GetComponentsInChildren<SkinnedMeshRenderer>(true);//Even search inactive renderers
+            var renderer = renderers.FirstOrDefault(x => x.name == smrName);
+            return renderer;
+        }
+
+
+        /// <summary>
         /// Craft smr render key from the name and instance id, used to identify a stored mesh inflation
         /// </summary>
         internal static string KeyFromNameAndVerts(SkinnedMeshRenderer smr) => $"{smr.name}_{smr.sharedMesh.vertexCount}";

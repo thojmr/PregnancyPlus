@@ -30,6 +30,7 @@ namespace KK_PregnancyPlus
         internal const string inflationFatFold = "        Fat Fold";
         internal const string inflationRoundness = "        Roundness";
         private const string blendshapeText = "Open BlendShapes";
+        private const string smoothBellyMeshText = "Apply Mesh Smoothing (Its Slow!)";
 
 
         internal static void InitStudio(Harmony hi, PregnancyPlusPlugin instance)
@@ -309,6 +310,19 @@ namespace KK_PregnancyPlus
                             ctrl.MeshInflate();                             
                         }
                     });
+
+            cat.AddControl(new CurrentStateCategorySwitch(smoothBellyMeshText, c =>
+                {                                         
+                    return false;
+                }))
+                .Value.Subscribe(f => {
+                    if (f == false) return;
+                    //Try to apply smoothing to belly mesh on click
+                    foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) 
+                    {             
+                        ctrl.ApplySmoothing();                                                   
+                    }
+                });
                     
         }
 
