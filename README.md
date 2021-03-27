@@ -43,9 +43,9 @@ The belly shape will persist in any game mode when slider vales are saved to the
     - Follow VNGE guides for further info
 
 ## Bigger!
-- For additonal effect in HS2/AI you can mimic what KK_Pregnancy does to belly bones to make the final shape even larger/rounder
+- For additonal effect in HS2 you can mimic what KK_Pregnancy does to belly bones to make the final shape even larger/rounder
 - Here's how 
-    - In HS2 or AI: Studio > (HS2PE or AIPE) > Adv.mode > Bones
+    - In HS2 or AI: Studio > HS2PE > Adv.mode > Bones
     - Bone: cf_J_kosi01_s  Set the following: PositionZ: 0.6, ScaleZ: 1.6, RotateX: 11
     - Bone: cf_spine01_s  Set the following: PositionZ: 0.6, ScaleZ: 1.6, RotateX: 351
     - Now apply any P+ sliders you want
