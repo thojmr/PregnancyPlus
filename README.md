@@ -19,8 +19,9 @@ The belly shape will persist in any game mode when slider vales are saved to the
 - This plugin can be a substitute for stomach bulges/fat bellies as well, but it's original intent is pregnancy.    
 - Adds a "Main Game" mode config option.  Disable if you want to turn off this plugins features temporarily while playing.
 - Adds a "Mesh Smoothing" button in Studio and Maker, that allows you to smooth the belly mesh and reduce any edges resulting from some slider combinations.
-    - The smoothing will reset on slider change or character load, so it's only temporary for visuals and animations sake.
-    - The smoothed shape will be captured for blendshapes!
+    - The smoothing will reset on slider change or character load, so it's mostly for screenshots and animations.
+    - The smoothed shape will be captured by blendshapes!
+    - Optionally you can smooth any skin tight clothing as well, to help reduce clipping while smoothing.
 - This plugin is somewhat compatible with "[ddaa33] Pregnant plugin (ShapeKeyPlugin)" if you wish to combine the effects of both, you can.  But the effects applied by this other plugin will not save to the character card by default.
 
 ## Koikatsu Only Features
@@ -42,9 +43,9 @@ The belly shape will persist in any game mode when slider vales are saved to the
     - Follow VNGE guides for further info
 
 ## Bigger!
-- For additonal effect in HS2/AI you can mimic what KK_Pregnancy does to belly bones to make the final shape even larger/rounder
+- For additonal effect in HS2 you can mimic what KK_Pregnancy does to belly bones to make the final shape even larger/rounder
 - Here's how 
-    - In HS2 or AI: Studio > (HS2PE or AIPE) > Adv.mode > Bones
+    - In HS2 or AI: Studio > HS2PE > Adv.mode > Bones
     - Bone: cf_J_kosi01_s  Set the following: PositionZ: 0.6, ScaleZ: 1.6, RotateX: 11
     - Bone: cf_spine01_s  Set the following: PositionZ: 0.6, ScaleZ: 1.6, RotateX: 351
     - Now apply any P+ sliders you want
