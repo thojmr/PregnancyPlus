@@ -327,7 +327,11 @@ namespace KK_PregnancyPlus
 
             var week = PregnancyPlusHelper.GetWeeksFromPregnancyPluginData(ChaControl, KK_PregnancyPluginName);
             if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" GetWeeksAndSetInflation {ChaControl.name} >  Week:{week} checkNewMesh:{checkNewMesh} slidersChanged:{slidersChanged}");
-            if (week < 0) return;
+            if (week < 0) {
+                //Fix for when character gives birth, we need to reset belly
+                if (infConfig.inflationSize > 0) MeshInflate(0);
+                return;
+            }
 
             //Compute the additonal belly size added based on user configured vallue from 0-40
             var additionalPregPlusSize = Mathf.Lerp(0, week, PregnancyPlusPlugin.MaxStoryModeBelly.Value/40);
