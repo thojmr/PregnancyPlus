@@ -174,7 +174,7 @@ namespace KK_PregnancyPlus
                         
             //set sphere center and allow for adjusting its position from the UI sliders  
             Vector3 sphereCenter = GetSphereCenter(meshRootTf, isClothingMesh);
-            ApplyConditionalSphereCenterOffset(meshRootTf, isClothingMesh, sphereCenter, out sphereCenter, out bodySphereCenterOffset);  
+            ApplyConditionalSphereCenterOffset(meshRootTf, isClothingMesh, sphereCenter, smr,  out sphereCenter, out bodySphereCenterOffset);  
 
             var rendererName = GetMeshKey(smr);         
             originalVertices[rendererName] = smr.sharedMesh.vertices;
@@ -337,15 +337,17 @@ namespace KK_PregnancyPlus
         /// In special cases we need to apply a small offset to the sphereCenter to align the mesh correctly with the other meshes.  Otherwise you get tons of clipping
         ///  Mostly used to fix the default KK body which seems to be mis aligned from uncensor, and AI/HS2 meshes
         /// </summary>
-        public void ApplyConditionalSphereCenterOffset(Transform meshRootTf, bool isClothingMesh, Vector3 _sphereCenter, out Vector3 sphereCenter, out Vector3 bodySphereCenterOffset)
+        public void ApplyConditionalSphereCenterOffset(Transform meshRootTf, bool isClothingMesh, Vector3 _sphereCenter, SkinnedMeshRenderer smr, out Vector3 sphereCenter, out Vector3 bodySphereCenterOffset)
         {
             //Fixes for different mesh localspace positions/rotations between KK and HS2/AI
             #if KK            
                 //When mesh is the default kk body, we have to adjust the mesh to match some strange offset that comes up
-                var isDefaultBody = !PregnancyPlusHelper.IsUncensorBody(ChaControl, UncensorCOMName); 
+                var isDefaultBody = !PregnancyPlusHelper.IsUncensorBody(ChaControl, UncensorCOMName);
+                //When the mesh shares similar local vertex positions as the default body, do the same
+                var isLikeDefaultBody = smr.localBounds.center.y < 0 && smr.sharedMesh.bounds.center.y < 0;
                 var defaultBodyOffsetFix = 0.0277f * bellyInfo.TotalCharScale.y * bellyInfo.NHeightScale.y;//Where does this offset even come from?
 
-                if (!isClothingMesh && isDefaultBody) 
+                if (!isClothingMesh && (isDefaultBody || isLikeDefaultBody)) 
                 {
                     bodySphereCenterOffset = meshRootTf.position + GetUserMoveTransform(meshRootTf) - meshRootTf.up * defaultBodyOffsetFix;////at 0,0,0, once again what is this crazy small offset?
                     sphereCenter = meshRootTf.position + GetUserMoveTransform(meshRootTf);//at belly button - offset from meshroot
@@ -355,7 +357,7 @@ namespace KK_PregnancyPlus
                     //For uncensor body mesh, and any clothing
                     bodySphereCenterOffset = sphereCenter = _sphereCenter;//at belly button
                 }
-                if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] corrected sphereCenter {_sphereCenter} isDefaultBody {isDefaultBody}");
+                if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] corrected sphereCenter {_sphereCenter} isDefaultBody {isDefaultBody} isLikeDefaultBody {isLikeDefaultBody}");
 
             #elif HS2 || AI
                 //Its so simple when its not KK default mesh :/
