@@ -1,6 +1,6 @@
 # Introduction
 This repository contains the PregnancyPlus plugin, that adds additional belly sliders in Studio and Maker.  It is intended to compliment the [KK_Pregnancy](https://github.com/ManlyMarco/KoikatuGameplayMods) plugin, but can be used without it.   (For example: HS2 , AI)  
-The belly shape will persist in any game mode when slider vales are saved to the characters card, or scene.
+The belly shape will persist in any game mode when slider values are saved to the characters card, or scene.
 
 ** 
  This project now has all the features I originally intended, so nothing new in the pipeline.  I will continue to provide bugfixes and support. 
