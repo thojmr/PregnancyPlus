@@ -88,6 +88,33 @@ namespace KK_PregnancyPlus
             #endif
 
 
+            #if KK
+            //TODO this issue might exists in AI too
+                /// <summary>
+                /// When a character becomes visible let preg+ controller know, in main game mode only
+                /// </summary>
+                [HarmonyPostfix]
+                [HarmonyPatch(typeof(ChaControl), "UpdateForce")]
+                private static void VisibilityStateEvent(ChaControl __instance)
+                {
+                    //Only continue in main game mode
+                    if (!__instance.loadEnd || !PregnancyPlusPlugin.StoryMode.Value || StudioAPI.InsideStudio || MakerAPI.InsideAndLoaded)
+                    {
+                        return;
+                    }
+
+                    bool newState = __instance.rendBody.isVisible;
+
+                    //Send current visible state to each character's preg+ controller                    
+                    var controller = GetCharaController(__instance);
+                    if (controller == null) return;
+
+                    controller.CheckVisibilityState(newState);
+                }
+
+            #endif
+
+
             /// <summary>
             /// Ignore gloves, socks, and shoes since they dont affect the belly area
             /// </summary>

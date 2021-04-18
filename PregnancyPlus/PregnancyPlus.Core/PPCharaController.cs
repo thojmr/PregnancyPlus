@@ -23,6 +23,7 @@ namespace KK_PregnancyPlus
 
         public BellyInfo bellyInfo;
         public string charaFileName = null;
+        public bool lastVisibleState = false;//Track last mesh render state, to determine when to re-apply preg+ shape in main game
 
         public PregnancyPlusBlendShapeGui blendShapeGui = new PregnancyPlusBlendShapeGui();
 
@@ -87,6 +88,7 @@ namespace KK_PregnancyPlus
         protected override void OnReload(GameMode currentGameMode)
         {
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnReload {currentGameMode}"); 
+            lastVisibleState = false;
             ClearOnReload();
 
             //Check for swapping out character Game Object with new character
@@ -254,6 +256,23 @@ namespace KK_PregnancyPlus
             StartCoroutine(WaitForMeshToSettle(debounceTime, true, forceRecalcVerts));
         }
 
+
+        /// <summary>
+        /// Check whether the characters visibility state has changed, via chaControl hook
+        /// </summary>
+        internal void CheckVisibilityState(bool newState)
+        {
+            //If the character was already visible, ignore this until next reload
+            if (lastVisibleState) return;
+            if (!newState) return;
+
+            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= CheckVisibilityState {charaFileName} {newState}");
+
+            lastVisibleState = true;
+            //Re trigger mesh inflation when character first becomes visible
+            MeshInflate(false, false, false, true);
+        }
+
         
         /// <summary>
         /// Get card data and update this characters infConfig with it
@@ -305,9 +324,33 @@ namespace KK_PregnancyPlus
             //If guid is the latest, trigger method
             if (debounceGuid == guid) 
             {
-                if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" WaitForMeshToSettle checkNewMesh:{checkNewMesh} forceRecalcVerts:{forceRecalcVerts}");
+                if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" WaitForMeshToSettle checkNewMesh:{checkNewMesh} forceRecalcVerts:{forceRecalcVerts}");        
+                CheckMeshVisibility();
                 MeshInflate(checkNewMesh, forceRecalcVerts);
             }
+        }
+
+
+        /// <summary>
+        /// Check whether the body mesh is currently rendered.  If any mesh changes were made while un-rendered, flag for re-apply belly on next visibility change
+        /// </summary>
+        internal void CheckMeshVisibility() 
+        {
+            #if KK
+                if (ChaControl.rendBody == null || !ChaControl.rendBody.isVisible)  
+                {
+                    // PregnancyPlusPlugin.Logger.LogInfo($" chaControl.rendBody not visible for {charaFileName}");
+                    lastVisibleState = false;
+                }
+
+            #elif HS2 || AI
+
+                if (ChaControl.cmpBody == null || !ChaControl.cmpBody.isVisible) 
+                {
+                    // PregnancyPlusPlugin.Logger.LogInfo($" chaControl.rendBody not visible for {charaFileName}");
+                    lastVisibleState = false;
+                }
+            #endif
         }
 
         

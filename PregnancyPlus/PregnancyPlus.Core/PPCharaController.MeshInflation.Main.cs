@@ -25,7 +25,7 @@ namespace KK_PregnancyPlus
         /// <param name="freshStart">Will recalculate verts like a first time run</param>
         /// <param name="pluginConfigSliderChanged">Will treat as if some slider values changed, which they did in global plugin config</param>
         /// <returns>Will return True if the mesh was altered and False if not</returns>
-        public bool MeshInflate(bool checkForNewMesh = false, bool freshStart = false, bool pluginConfigSliderChanged = false)
+        public bool MeshInflate(bool checkForNewMesh = false, bool freshStart = false, bool pluginConfigSliderChanged = false, bool visibilityUpdate = false)
         {
             if (ChaControl.objBodyBone == null) return false;//Make sure chatacter objs exists first  
             if (!PregnancyPlusPlugin.AllowMale.Value && ChaControl.sex == 0) return false;// Only female characters, unless plugin config says otherwise          
@@ -33,7 +33,7 @@ namespace KK_PregnancyPlus
             var sliderHaveChanged = NeedsMeshUpdate(pluginConfigSliderChanged);
             var onlyInflationSizeChanged = OnlyInflationSizeChanged();
             //Only continue if one of the config values changed
-            if (!sliderHaveChanged) 
+            if (!sliderHaveChanged && !visibilityUpdate) 
             {
                 //Only stop here, if no recalculation needed
                 if (!freshStart && !checkForNewMesh)  return false; 
@@ -54,7 +54,7 @@ namespace KK_PregnancyPlus
             }
             
             if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value)  PregnancyPlusPlugin.Logger.LogInfo($" ---------- ");
-            if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value)  PregnancyPlusPlugin.Logger.LogInfo($" inflationSize > {infConfig.inflationSize} for {charaFileName} ");
+            if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value)  PregnancyPlusPlugin.Logger.LogInfo($" inflationSize > {infConfig.inflationSize} for {charaFileName} ");            
             
             //Get the measurements that determine the base belly size
             var hasMeasuerments = MeasureWaistAndSphere(ChaControl);                     
@@ -252,7 +252,7 @@ namespace KK_PregnancyPlus
                                                                  meshRootTf, preMorphSphereCenter, sphereRadius, backExtentPos, 
                                                                  topExtentPos, sphereCenterLs, pmSphereCenterLs, backExtentPosLs, 
                                                                  topExtentPosLs);                    
-                         inflatedVerts[i] = smr.transform.InverseTransformPoint(inflatedVertWs);//Convert back to local space
+                        inflatedVerts[i] = smr.transform.InverseTransformPoint(inflatedVertWs);//Convert back to local space
                     }
                     else 
                     {                        
