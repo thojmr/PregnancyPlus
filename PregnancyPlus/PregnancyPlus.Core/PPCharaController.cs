@@ -47,7 +47,13 @@ namespace KK_PregnancyPlus
         public const string DefaultBodyFemaleGUID = "Default.Body.Female";
         public const string DefaultBodyMaleGUID = "Default.Body.Male";
 
-        public const string KK_PregnancyPluginName = "KK_Pregnancy";//key that allows us to pull KK_pregnancy data values
+        #if KK //key that allows us to pull KK_pregnancy data values
+            public const string KK_PregnancyPluginName = "KK_Pregnancy";
+        #elif AI
+            public const string KK_PregnancyPluginName = "AI_Pregnancy";
+        #elif HS2
+            public const string KK_PregnancyPluginName = "";
+        #endif
 
         internal Guid debounceGuid;//Track multiple events with a debounce based on these id's
 
@@ -155,9 +161,9 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.StoryMode != null && !PregnancyPlusPlugin.StoryMode.Value) yield break;            
             if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) yield break;
             
-            #if KK
+            #if KK || AI
                 GetWeeksAndSetInflation(true);                                 
-            #elif HS2 || AI                  
+            #elif HS2
                 //For HS2 AI, we set global belly size from plugin config, or character card                    
                 MeshInflate(true);                                       
             #endif                                           

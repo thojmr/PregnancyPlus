@@ -90,33 +90,32 @@ namespace KK_PregnancyPlus
 
 
             #if KK
-                var storyConfigTitle = "Story/Main-Game Mode (Requires KK_Pregnancy)";     
-                var storyConfigDescription = "Initial belly size will be loaded from character card, if enabled on the character card in Maker.\r\n\r\nIf KK_Pregnancy is also installed, this will combine the effects of KK_PregnancyPlus with KK_Pregnancy (larger max belly overall). \r\n\r\nThe below sliders can be used in tandem to adjust all characters shapes when this is enabled";
+                var storyConfigTitle = "Story/Main-Game Mode";     
                 var additionalSliderText = " for all pregnant characters";
-            #elif HS2 || AI
+
+                var maxBellySizeTitle = "KK_Pregnancy Integration";
+                var maxBellySizeDescription = "The maximum additional belly size/shape that this plugin will add to the original KK_Pregnancy belly. The character must be pregnant.\r\n0 will result in the original KK_Pregnancy belly, while 40 will be the original + the full Preg+ size/shape.";
+            
+            #elif AI
+                var storyConfigTitle = "Story/Main-Game Mode";     
+                var additionalSliderText = " for all pregnant characters";
+
+                var maxBellySizeTitle = "AI_Pregnancy Integration";
+                var maxBellySizeDescription = "The maximum additional belly size/shape that this plugin will add to the original AI_Pregnancy belly. The character must be pregnant.\r\n0 will result in the original AI_Pregnancy belly, while 40 will be the original + the full Preg+ size/shape.";
+
+            #elif HS2            
                 var storyConfigTitle = "Story/Main-Game Mode";
-                var storyConfigDescription = "Initial belly size will be loaded from character card, if enabled on the character card in Maker.\r\n\r\nThe below sliders can be used in tandem to adjust all characters shapes when this is enabled.";
                 var additionalSliderText = "";
+                
             #endif
 
 
             StoryMode = Config.Bind<bool>(storyConfigTitle, "Gameplay Enabled", true,
-                new ConfigDescription(storyConfigDescription,
+                new ConfigDescription("Whether or not Preg+ is enabled in Main Game mode",
                     null,
                     new ConfigurationManagerAttributes { Order = 20 })
                 );
             StoryMode.SettingChanged += StoryMode_SettingsChanged;
-
-
-            #if KK 
-                //This config is for KK_Pregnancy integration to set the additional size this plugin will add to KK_Pregnancy (KK only)
-                MaxStoryModeBelly = Config.Bind<float>(storyConfigTitle, "Max additional belly size", 10f, 
-                    new ConfigDescription("The maximum additional belly size that this plugin will add to the original KK_Pregnancy belly. The character must be pregnant.\r\n0 will result in the original KK_Pregnancy belly, while 40 will be the original + an additional 40 added by this plugin.",
-                        new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationSize[0], PregnancyPlusGui.SliderRange.inflationSize[1]),
-                        new ConfigurationManagerAttributes { Order = 19 })
-                    );
-                MaxStoryModeBelly.SettingChanged += InflationConfig_SettingsChanged;
-            #endif
 
             StoryModeInflationMultiplier = Config.Bind<float>(storyConfigTitle, "Global Multiplier Adjustment", 0, 
                 new ConfigDescription("Allows you to increase or decrease the 'Multiplier' amount in story mode" + additionalSliderText,
@@ -202,6 +201,16 @@ namespace KK_PregnancyPlus
                 );
             StoryModeInflationFatFold.SettingChanged += InflationConfig_SettingsChanged;  
                     
+
+            #if KK || AI
+                //This config is for KK/AI_Pregnancy integration to set the additional size this plugin will add to KK/AI_Pregnancy
+                MaxStoryModeBelly = Config.Bind<float>(maxBellySizeTitle, "Max additional belly size", 10f, 
+                    new ConfigDescription(maxBellySizeDescription,
+                        new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationSize[0], PregnancyPlusGui.SliderRange.inflationSize[1]),
+                        new ConfigurationManagerAttributes { Order = 1 })
+                    );
+                MaxStoryModeBelly.SettingChanged += InflationConfig_SettingsChanged;
+            #endif
                     
 
             //Live inflation in story mode.  Increase or decrease base inflationSize with a keybinding press
@@ -235,9 +244,9 @@ namespace KK_PregnancyPlus
                 //Re trigger inflation and recalculate vert positions
                 foreach (PregnancyPlusCharaController charCustFunCtrl in handlers.Instances)
                 { 
-                    #if KK //In kk we want to use KK_pregnancy weeks to determine the belly size
+                    #if KK || AI //In kk we want to use KK_pregnancy weeks to determine the belly size
                         charCustFunCtrl.GetWeeksAndSetInflation(true);                     
-                    #elif HS2 || AI //In HS2/AI we set the belly size based on the plugin config slider
+                    #elif HS2 //In HS2 we set the belly size based on the plugin config slider
                         charCustFunCtrl.MeshInflate(true);                     
                     #endif                    
                 }
@@ -263,9 +272,9 @@ namespace KK_PregnancyPlus
             {  
                 if (PregnancyPlusPlugin.StoryMode != null && PregnancyPlusPlugin.StoryMode.Value) 
                 {            
-                    #if KK //custom integration with KK_Pregnancy    
+                    #if KK || AI //custom integration with KK_Pregnancy    
                         charCustFunCtrl.GetWeeksAndSetInflation(true, true);    
-                    #elif HS2 || AI
+                    #elif HS2
                         //Need to recalculate mesh position when sliders change here
                         charCustFunCtrl.MeshInflate(false, false, true);                     
                     #endif             

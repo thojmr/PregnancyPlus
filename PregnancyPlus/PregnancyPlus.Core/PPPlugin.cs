@@ -17,6 +17,7 @@ namespace KK_PregnancyPlus
         [BepInDependency("HS2PE", BepInDependency.DependencyFlags.SoftDependency)]
     #elif AI
         [BepInDependency("AIPE", BepInDependency.DependencyFlags.SoftDependency)]
+        [BepInDependency("AI_Pregnancy", BepInDependency.DependencyFlags.SoftDependency)]
     #endif
     public partial class PregnancyPlusPlugin : BaseUnityPlugin
     {
