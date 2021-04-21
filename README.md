@@ -1,5 +1,5 @@
 # Introduction
-This repository contains the PregnancyPlus plugin, that adds additional belly sliders in Studio and Maker.  It is intended to compliment the [KK_Pregnancy](https://github.com/ManlyMarco/KoikatuGameplayMods) plugin, but can be used without it.   (For example: HS2 , AI)  
+This repository contains the PregnancyPlus plugin, that adds additional belly sliders in Studio and Maker.  It is intended to compliment the [KK_Pregnancy](https://github.com/ManlyMarco/KoikatuGameplayMods) plugin, but can be used without it.   (For example: HS2)  
 The belly shape will persist in any game mode when slider values are saved to the characters card, or scene.
 
 ** 
@@ -24,8 +24,11 @@ The belly shape will persist in any game mode when slider values are saved to th
     - Optionally you can smooth any skin tight clothing as well, to help reduce clipping while smoothing.
 - This plugin is somewhat compatible with "[ddaa33] Pregnant plugin (ShapeKeyPlugin)" if you wish to combine the effects of both, you can.  But the effects applied by this other plugin will not save to the character card by default.
 
+## Koikatsu and AI Only Features
+- In Koikatsu and AI the "Inflation Size" belly slider will be added in addition to KK/AI_Pregnancy when both pregnancy plugins are installed.  You can control the amount of Preg+ belly shape applied on top of the KK/AI_Pregnancy belly with the "Max Additional Belly Size" slider. 0 being no additional Preg+ slider effect, and max being the full Preg+ slider effect + the current KK/AI_Pregnancy weeks size.  You can use the F1 plugin config sliders to further adjust the results for all pregnant characters at once.
+  - This is mainly used to tweak the final pregnant shape, or add additional belly sizes.
+
 ## Koikatsu Only Features
-- In Koikatsu the "Inflation Size" belly slider will be added in addition to the KK_Pregnancy when both mods are installed.  You can use the F1 config sliders to adjust the results.  Ex: If the character is 40 weeks pregnant.  They will have the deafult KK_Pregnancy 40 week belly + ("Max Additional Belly Size" * 40) Inflation Size from KK_Pregnancy Plus.  If "Max Additional Belly Size" is set to a low number, the final result will be a slightly larger belly, if it's set high, it will be much much larger.
 - Studio Timeline integration via blendshapes.  Here's how to:
     - Set the P+ character sliders to the desired shape you want.
     - Click "Open Blendshapes" button. You will see a popup that will show you any existing P+ blendshapes.  If none are found, then use the "Create New" button.
@@ -43,7 +46,7 @@ The belly shape will persist in any game mode when slider values are saved to th
     - Follow VNGE guides for further info
 
 ## Bigger!
-- For additonal effect in HS2 you can mimic what KK_Pregnancy does to belly bones to make the final shape even larger/rounder
+- For additonal effect in HS2 you can mimic what KK_Pregnancy does to belly bones to make the final shape larger/rounder
 - Here's how 
     - In HS2 or AI: Studio > HS2PE > Adv.mode > Bones
     - Bone: cf_J_kosi01_s  Set the following: PositionZ: 0.6, ScaleZ: 1.6, RotateX: 11
