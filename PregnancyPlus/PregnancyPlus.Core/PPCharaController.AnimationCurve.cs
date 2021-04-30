@@ -13,6 +13,8 @@ namespace KK_PregnancyPlus
         public AnimationCurve SlowLerpAC = SlowLerpAnimCurve();
         public AnimationCurve BellyTopAC = BellyTopAnimCurve();
         public AnimationCurve BellyEdgeAC = BellyEdgeAnimCurve();
+        public AnimationCurve BellySidesAC = BellySidesAnimCurve();
+        public AnimationCurve MediumLerpAC = MediumLerpAnimCurve();
 
 
         //Curves quickly towards top
@@ -44,6 +46,19 @@ namespace KK_PregnancyPlus
             return curve;
         }
 
+        public static AnimationCurve MediumLerpAnimCurve()
+        {            
+            var curve = new AnimationCurve();
+
+            curve.AddKey(0f, 0f);
+            curve.AddKey(0.25f, 0.35f);
+            curve.AddKey(0.5f, 0.5f);
+            curve.AddKey(0.75f, 0.75f);
+            curve.AddKey(1f, 1f);
+
+            return curve;
+        }
+
         //Custom curve for skin boundary at top of belly
         public static AnimationCurve BellyTopAnimCurve()
         {            
@@ -69,6 +84,21 @@ namespace KK_PregnancyPlus
             curve.AddKey(0.5f, 0.001f);
             curve.AddKey(0.75f, 0.2f);        
             curve.AddKey(0.9f, 0.7f);
+            curve.AddKey(1f, 1f);
+
+            return curve;
+        }
+
+        //Custom curve for smoothing both sides of the belly from the back around to the sides (Reduces edges along back back at largest sizes)
+        public static AnimationCurve BellySidesAnimCurve()
+        {            
+            var curve = new AnimationCurve();
+
+            curve.AddKey(0f, 0f);
+            curve.AddKey(0.25f, 0.15f);
+            curve.AddKey(0.5f, 0.35f);
+            curve.AddKey(0.7f, 0.7f);
+            curve.AddKey(0.9f, 0.9f);
             curve.AddKey(1f, 1f);
 
             return curve;

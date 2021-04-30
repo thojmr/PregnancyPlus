@@ -220,14 +220,17 @@ namespace KK_PregnancyPlus
         /// </summary>        
         internal Vector3 RoundToSides(Transform meshRootTf, Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 backExtentPosLs) 
         {        
-            //The distance forward that we will lerp to a curve
-            var zForwardSmoothDist = bellyInfo.ScaledOrigRadius(BellyDir.z)/2;
+            var origRad = bellyInfo.ScaledOrigRadius(BellyDir.z)/1.8f;
+            var multipliedRad = bellyInfo.ScaledRadius(BellyDir.z)/2;
+
+            //The distance forward that we will lerp to a curve (as multiplier grows, apply less of it)
+            var zForwardSmoothDist = multipliedRad > origRad ? (origRad + (multipliedRad - origRad)/3f) : origRad;
 
             // Get the disnce the original vector is forward from characters back (use originial and not inflated to exclude multiplier interference)
             var forwardFromBack = (originalVerticeLs.z - backExtentPosLs.z);
             
             //As the vert.z approaches the front lerp it less
-            return Vector3.Lerp(originalVerticeLs, smoothedVectorLs, forwardFromBack/zForwardSmoothDist);        
+            return Vector3.Lerp(originalVerticeLs, smoothedVectorLs, BellySidesAC.Evaluate(forwardFromBack/zForwardSmoothDist));        
         }
         
 
