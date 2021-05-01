@@ -67,7 +67,7 @@ public class SmoothFilter
 				alpha [0..1] influences previous points pv, e.g. 0
 				beta  [0..1] e.g. > 0.5
 	*/
-	public static Vector3[] hcFilter(Vector3[] sv, Vector3[] pv, int[] t, float alpha, float beta, bool[] indexedVerts)
+	public static Vector3[] hcFilter(Vector3[] sv, int[] t, float alpha, float beta, bool[] indexedVerts)
 	{
 		Vector3[] wv = new Vector3[sv.Length];
 		Vector3[] bv = new Vector3[sv.Length];
