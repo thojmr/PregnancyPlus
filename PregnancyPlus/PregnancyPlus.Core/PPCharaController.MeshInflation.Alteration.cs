@@ -3,6 +3,7 @@ using KKAPI.Chara;
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.Threading;
 using BepInEx;
 
@@ -149,16 +150,26 @@ namespace KK_PregnancyPlus
         }
 
 
-
         /// <summary>   
         /// Will smooth and jagged edges around the characters belly caused by some slider combinations
         /// </summary>   
         /// <param name="includeClothMesh">Optionally include all cloth meshes as well</param>
         internal void ApplySmoothing(bool includeClothMesh = false)
         {
+            //Run in coroutine to "reduce" locking main thread, sine this is a heavy task
+            StartCoroutine(ApplySmoothingCoroutine(includeClothMesh));
+        }
+
+
+        /// <summary>   
+        /// Will smooth and jagged edges around the characters belly caused by some slider combinations
+        /// </summary>   
+        /// <param name="includeClothMesh">Optionally include all cloth meshes as well</param>
+        internal IEnumerator ApplySmoothingCoroutine(bool includeClothMesh = false)
+        {
             //Check that inflationConfig has a value
-            if (!infConfig.HasAnyValue()) return;
-            if (infConfig.inflationSize == 0) return;
+            if (!infConfig.HasAnyValue()) yield return null;
+            if (infConfig.inflationSize == 0) yield return null;
             if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" ApplySmoothing({includeClothMesh})");
 
             //Trigger mesh recalculation to overwrite last smoothing pass changes if any existed
@@ -196,13 +207,9 @@ namespace KK_PregnancyPlus
                     //Get get the render key and apply the changes
                     foreach(var renderKey in renderKeys) 
                     {
-                        //Set the new smoothed mesh verts
-                        if (meshResult[renderKey] != null) inflatedVertices[renderKey] = meshResult[renderKey];
-
-                        var smr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderKey, false);
-                        //Re-trigger ApplyInflation to set the new smoothed mesh           
-                        ApplyInflation(smr, renderKey);
+                        ApplySmoothResults(meshResult[renderKey], renderKey);
                     }
+                    yield return null;//Allow UI updates after each mesh has finished updating, instead of locking ui until the very end
                 }
             } 
             //Only smooth the body mesh around the belly area
@@ -223,7 +230,22 @@ namespace KK_PregnancyPlus
                 //Re-trigger ApplyInflation to set the new smoothed mesh
                 ApplyInflation(bodySmr, renderKey);
             }
+
+            yield return null;
         }        
+
+
+        /// <summary>   
+        /// Update characters mesh with the new smoothed results
+        /// </summary>
+        internal void ApplySmoothResults(Vector3[] newMesh, string renderKey) {
+            //Set the new smoothed mesh verts
+            if (newMesh != null) inflatedVertices[renderKey] = newMesh;
+
+            var smr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderKey, false);
+            //Re-trigger ApplyInflation to set the new smoothed mesh           
+            ApplyInflation(smr, renderKey);
+        }
 
 
         /// <summary>   
