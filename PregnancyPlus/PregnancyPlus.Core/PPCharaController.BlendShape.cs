@@ -105,7 +105,9 @@ namespace KK_PregnancyPlus
                 //Dont create blend shape if no inflated verts exists
                 if (!exists || inflatedVertices[renderKey].Length < 0) continue;
 
-                var meshBlendShape = CreateBlendShape(smr, renderKey);
+                var blendShapeCtrl = CreateBlendShape(smr, renderKey);
+                //Return the blendshape format that can be saved to character card
+                var meshBlendShape = ConvertToMeshBlendShape(smr.name, blendShapeCtrl.blendShape);
                 if (meshBlendShape != null) 
                 {
                     meshBlendShapes.Add(meshBlendShape);                
@@ -200,7 +202,7 @@ namespace KK_PregnancyPlus
                     if (BlendShapeAlreadyExists(smr, meshBlendShape.BlendShape)) continue;
 
                     //Add the blendshape to the mesh
-                    new BlendShapeController(smr, blendShape);
+                    new BlendShapeController(smr.sharedMesh, blendShape, smr);
 
                     // LogMeshBlendShapes(smr);
                 }                
@@ -247,12 +249,13 @@ namespace KK_PregnancyPlus
         /// </summary>
         /// <param name="smr">Target mesh renderer to update (original shape)</param>
         /// <param name="renderKey">The Shared Mesh render name, used in dictionary keys to get the current verticie values</param>
+        /// <param name="blendShapeTag">Optional blend shape tag to append to the blend shape name, used for identification if needed</param>
         /// <returns>Returns the MeshBlendShape that is created. Can be null</returns>
-        internal MeshBlendShape CreateBlendShape(SkinnedMeshRenderer smr, string renderKey) 
+        internal BlendShapeController CreateBlendShape(SkinnedMeshRenderer smr, string renderKey, string blendShapeTag = null) 
         {     
             //Make a copy of the mesh. We dont want to affect the existing for this
-            var meshCopyOrig = PregnancyPlusHelper.CopyMesh(smr.sharedMesh);   
-            if (!meshCopyOrig.isReadable) 
+            var meshCopyTarget = PregnancyPlusHelper.CopyMesh(smr.sharedMesh);   
+            if (!meshCopyTarget.isReadable) 
             {
                 PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_MeshNotReadable, 
                     $"CreateBlendShape > smr '{renderKey}' is not readable, skipping");                     
@@ -268,27 +271,74 @@ namespace KK_PregnancyPlus
                 return null;
             }
 
-            if (originalVertices[renderKey].Length != meshCopyOrig.vertexCount) 
+            if (originalVertices[renderKey].Length != meshCopyTarget.vertexCount) 
             {
                 PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_IncorrectVertCount, 
-                    $"CreateBlendShape > smr.sharedMesh '{renderKey}' has incorrect vert count {originalVertices[renderKey].Length}|{meshCopyOrig.vertexCount}");  
+                    $"CreateBlendShape > smr.sharedMesh '{renderKey}' has incorrect vert count {originalVertices[renderKey].Length}|{meshCopyTarget.vertexCount}");  
                 return null;
             }
 
             //Calculate the original normals, but don't show them.  We just want it for the blendshape shape destination
-            meshCopyOrig.vertices = originalVertices[renderKey];
-            meshCopyOrig.RecalculateBounds();
-            NormalSolver.RecalculateNormals(meshCopyOrig, 40f, bellyVerticieIndexes[renderKey]);
-            meshCopyOrig.RecalculateTangents();
+            meshCopyTarget.vertices = inflatedVertices[renderKey];
+            meshCopyTarget.RecalculateBounds();
+            NormalSolver.RecalculateNormals(meshCopyTarget, 40f, bellyVerticieIndexes[renderKey]);
+            meshCopyTarget.RecalculateTangents();
 
             // LogMeshBlendShapes(smr);
 
-            //Create a blend shape object on the mesh
-            var bsc = new BlendShapeController(meshCopyOrig, smr, $"{renderKey}_{PregnancyPlusPlugin.GUID}");
+            var blendShapeName = MakeBlendShapeName(renderKey, blendShapeTag);
 
-            //Return the blendshape format that can be saved to character card
-            return ConvertToMeshBlendShape(smr.name, bsc.blendShape);
+            //Create a blend shape object on the mesh, and return the controller object
+            return new BlendShapeController(smr.sharedMesh, meshCopyTarget, blendShapeName, smr);            
         }  
+
+        internal string MakeBlendShapeName(string renderKey, string blendShapeTag = null) {
+            return blendShapeTag == null ? $"{renderKey}_{PregnancyPlusPlugin.GUID}" : $"{renderKey}_{PregnancyPlusPlugin.GUID}_{blendShapeTag}";
+        }
+
+
+        /// <summary>
+        /// Find a blendshape by name on a smr, and change its weight.  If it does not exists, create it.
+        /// </summary>
+        /// <param name="smr">Target mesh renderer to update (original shape)</param>
+        /// <param name="renderKey">The Shared Mesh render name, used in dictionary keys to get the current verticie values</param>
+        /// <param name="didCompute">Whether the blendshape needs to be remade because the mesh shape was altered</param>
+        /// <param name="blendShapeTag">Optional blend shape tag to append to the blend shape name, used for identification if needed</param>
+        internal bool ApplyBlendShapeWeight(SkinnedMeshRenderer smr, string renderKey, bool onlyInflationSizeChanged, string blendShapeTag = null) {
+
+            var blendShapeName = MakeBlendShapeName(renderKey, blendShapeTag);
+            //Try to find an existing blendshape by name
+            BlendShapeController bsc = new BlendShapeController(smr, blendShapeName);
+            
+            //If not found then create it
+            if (bsc.blendShape == null || !onlyInflationSizeChanged) bsc = CreateBlendShape(smr, renderKey, blendShapeTag);
+
+            if (bsc.blendShape == null) {
+                if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogWarning(
+                     $"UpdateBlendShapeWeight > There was a problem creating the blendshape ${blendShapeName}");
+                return false;
+            }
+            
+            //Update the weight to be the same as inflationSize value   
+            return bsc.ApplyBlendShapeWeight(smr, infConfig.inflationSize);
+        }
+        
+
+        /// <summary>
+        /// Allows resetting a blendshape weight back to 0
+        /// </summary>
+        /// <param name="smr">Target mesh renderer to update (original shape)</param>
+        /// <param name="renderKey">The Shared Mesh render name, used to calculate the blendshape name</param>
+        /// <param name="blendShapeTag">Optional blend shape tag to append to the blend shape name, used for identification if needed</param>
+        internal bool ResetBlendShapeWeight(SkinnedMeshRenderer smr, string renderKey, string blendShapeTag = null) {
+            var blendShapeName = MakeBlendShapeName(renderKey, blendShapeTag);
+
+            //Try to find an existing blendshape by name
+            BlendShapeController bsc = new BlendShapeController(smr, blendShapeName);
+            if (bsc.blendShape == null) return false;
+
+            return bsc.ApplyBlendShapeWeight(smr, 0);
+        }
     }
 }
 

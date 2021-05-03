@@ -225,7 +225,7 @@ namespace KK_PregnancyPlus
 			for (int i = 0; i < count; i++)
 			{
 				var name = sharedMesh.GetBlendShapeName(i);
-				if (name.Contains(searchName)) return i;
+				if (name.EndsWith(searchName)) return i;
 			}
 
 			return -1;

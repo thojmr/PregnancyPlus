@@ -51,7 +51,7 @@ namespace KK_PregnancyPlus
         /// <param name="originalSmr">Original untouched mesh</param>
         /// <param name="blendShapeName">Desired name of the blend shape, should be unique</param>
         /// <param name="newSmr">The smr containing the target mesh shape</param>
-        public BlendShapeController(Mesh originalSmrMesh, SkinnedMeshRenderer newSmr, string blendShapeName) 
+        public BlendShapeController(Mesh originalSmrMesh, Mesh targetSmrMesh, string blendShapeName, SkinnedMeshRenderer smr) 
         {
             if (!blendShape.isInitilized) 
             {
@@ -63,12 +63,12 @@ namespace KK_PregnancyPlus
                 blendShape.weight = maxShapeSize;
 
                 //Get delta diffs of the two meshes for the blend shape
-                blendShape.verticies = GetV3Deltas(originalSmrMesh.vertices, newSmr.sharedMesh.vertices);
-                blendShape.normals = GetV3Deltas(originalSmrMesh.normals, newSmr.sharedMesh.normals);
-                blendShape.tangents = GetV3Deltas(ConvertV4ToV3(originalSmrMesh.tangents), ConvertV4ToV3(newSmr.sharedMesh.tangents));                            
+                blendShape.verticies = GetV3Deltas(originalSmrMesh.vertices, targetSmrMesh.vertices);
+                blendShape.normals = GetV3Deltas(originalSmrMesh.normals, targetSmrMesh.normals);
+                blendShape.tangents = GetV3Deltas(ConvertV4ToV3(originalSmrMesh.tangents), ConvertV4ToV3(targetSmrMesh.tangents));                            
             }
 
-            AddBlendShapeToMesh(newSmr);
+            AddBlendShapeToMesh(smr);
         }
 
 
@@ -77,10 +77,21 @@ namespace KK_PregnancyPlus
         /// </summary>
         /// <param name="smr">The current active mesh</param>
         /// <param name="_blendShape">The blendshape we loaded from character card</param>
-        public BlendShapeController(SkinnedMeshRenderer smr, BlendShape _blendShape)         
+        public BlendShapeController(Mesh targetSmrMesh, BlendShape _blendShape, SkinnedMeshRenderer smr)         
         {
             blendShape = _blendShape;
             AddBlendShapeToMesh(smr);
+        }
+
+
+        /// <summary>
+        /// Constructor overload that finds a blendshape by name
+        /// </summary>
+        /// <param name="smr">The mesh to search on</param>
+        /// <param name="blendShapeName">The blendshape name to search for</param>
+        public BlendShapeController(SkinnedMeshRenderer smr, string blendShapeName)         
+        {
+            blendShape = GetBlendShapeByName(smr, blendShapeName);
         }
 
 
@@ -107,7 +118,7 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" AddBlendShape > {blendShape.log}");
             smr.sharedMesh.AddBlendShapeFrame(blendShape.name, blendShape.weight, blendShape.verticies, blendShape.normals, blendShape.tangents);    
             //Fix for some shared mesh properties not updating after AddBlendShapeFrame
-            smr.sharedMesh = smr.sharedMesh;//I hate this line of code              
+            smr.sharedMesh = smr.sharedMesh; //I hate this line of code              
         }
 
 
@@ -187,7 +198,7 @@ namespace KK_PregnancyPlus
         /// This will change the weight (apperance) of an existing BlendShape attached to a skinned mesh renderer. Weight 0 will reset to the default shape (Not used here)
         /// </summary>
         /// <param name="smr">The skinned mesh renderer to attach the blend shape</param>
-        /// <param name="weight">Float value from 0-100 that will increase the blend to the target shape as the number grows</param>
+        /// <param name="weight">Float value from 0-40 that will increase the blend to the target shape as the number grows</param>
         /// <returns>boolean true if the blend shape exists</returns>
         public bool ApplyBlendShapeWeight(SkinnedMeshRenderer smr, float weight) 
         {
@@ -205,10 +216,46 @@ namespace KK_PregnancyPlus
             var shapeName = smr.sharedMesh.GetBlendShapeName(shapeIndex);
             var shapeCount = smr.sharedMesh.blendShapeCount;
 
-            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" ApplyBlendShapeWeight > shapeIndex {shapeIndex} shapeWeight {shapeWeight} shapeCount {shapeCount} shapeFrameCount {shapeFrameCount} lerpWeight {lerpWeight}");            
+            // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" ApplyBlendShapeWeight > shapeIndex {shapeIndex} shapeWeight {shapeWeight} shapeCount {shapeCount} shapeFrameCount {shapeFrameCount} lerpWeight {lerpWeight}");            
             smr.SetBlendShapeWeight(shapeIndex, lerpWeight);
 
             return true;
+        }
+
+
+        /// <summary>
+        /// Get an existing blendshape by name.null  Only returns the first frame since thats all Preg+ uses
+        /// </summary>
+        /// <param name="smr">The skinned mesh renderer to search for the blend shape</param>
+        /// <param name="blendShapeName">The blendshape name to search for</param>
+        internal BlendShape GetBlendShapeByName(SkinnedMeshRenderer smr, string blendShapeName) {
+            //Check whether the blendshape exists
+            var shapeIndex = smr.sharedMesh.GetBlendShapeIndex(blendShapeName);
+
+            //If the blendshape is not found return
+            if (shapeIndex < 0) {
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" GetBlendShapeByName > not found: {blendShapeName}");
+                return null;
+            }
+
+            Vector3[] deltaVertices = new Vector3 [smr.sharedMesh.vertexCount];
+            Vector3[] deltaNormals = new Vector3 [smr.sharedMesh.vertexCount];
+            Vector3[] deltaTangents = new Vector3 [smr.sharedMesh.tangents.Length];
+
+            //Get the blendshape details
+            smr.sharedMesh.GetBlendShapeFrameVertices(shapeIndex, 0, deltaVertices, deltaNormals, deltaTangents);
+            var name = smr.sharedMesh.GetBlendShapeName(shapeIndex);
+            var weight = smr.sharedMesh.GetBlendShapeFrameWeight(shapeIndex, 0);
+
+            //Copy the blendshape data for the first frame
+            var bsFrame = new BlendShape();
+            bsFrame.verticies = deltaVertices;
+            bsFrame.normals = deltaNormals;
+            bsFrame.tangents = deltaTangents;
+            bsFrame.weight = weight;
+            bsFrame.name = name;
+
+            return bsFrame;
         }
 
         public void ClearBlendShapes(SkinnedMeshRenderer smr) 
