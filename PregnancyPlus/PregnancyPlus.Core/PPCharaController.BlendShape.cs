@@ -202,7 +202,7 @@ namespace KK_PregnancyPlus
                     if (BlendShapeAlreadyExists(smr, meshBlendShape.BlendShape)) continue;
 
                     //Add the blendshape to the mesh
-                    new BlendShapeController(smr.sharedMesh, blendShape, smr);
+                    new BlendShapeController(blendShape, smr);
 
                     // LogMeshBlendShapes(smr);
                 }                
@@ -322,7 +322,7 @@ namespace KK_PregnancyPlus
             //Update the weight to be the same as inflationSize value   
             return bsc.ApplyBlendShapeWeight(smr, infConfig.inflationSize);
         }
-        
+
 
         /// <summary>
         /// Allows resetting a blendshape weight back to 0

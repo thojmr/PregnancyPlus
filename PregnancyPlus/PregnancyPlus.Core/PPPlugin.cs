@@ -7,7 +7,7 @@ using KKAPI.Chara;
 
 namespace KK_PregnancyPlus
 {
-    [BepInPlugin(GUID, GUID, Version)]
+    [BepInPlugin(GUID, GUID, "5.3.0")]
     [BepInDependency(KoikatuAPI.GUID, "1.12")]
     [BepInDependency("com.deathweasel.bepinex.uncensorselector", BepInDependency.DependencyFlags.SoftDependency)]
     #if KK
@@ -62,13 +62,13 @@ namespace KK_PregnancyPlus
             var handlers = CharacterApi.GetRegisteredBehaviour(GUID);
             if (handlers == null || handlers.Instances == null) return;
 
-            // #if !DEBUG  //Tired of the errors caused by ScriptEngine here
+            #if !DEBUG  //Tired of the errors caused by ScriptEngine here
                 foreach (PregnancyPlusCharaController charCustFunCtrl in handlers.Instances)
                 {         
                     //Update any active gui windows
                     charCustFunCtrl.blendShapeGui.OnGUI(this);                                                    
                 }
-            // #endif
+            #endif
         }
     
     }
