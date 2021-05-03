@@ -19,10 +19,10 @@ The belly shape will persist in any game mode when slider values are saved to th
 - This plugin can be a substitute for stomach bulges/fat bellies as well, but it's original intent is pregnancy.    
 - Adds a "Main Game" mode config option.  Disable if you want to turn off this plugins features temporarily while playing.
 - Adds a "Mesh Smoothing" button in Studio and Maker, that allows you to smooth the belly mesh and reduce any edges resulting from some slider combinations.
-    - The smoothing will reset on slider change or character load, so it's mostly for screenshots and animations.
+    - The smoothing will reset on slider change or character load, so it's mostly for screenshots, animations, and blendshapes.
     - The smoothed shape will be captured by blendshapes!
-    - Optionally you can smooth any skin tight clothing as well, to help reduce clipping while smoothing.
-- This plugin is somewhat compatible with "[ddaa33] Pregnant plugin (ShapeKeyPlugin)" if you wish to combine the effects of both, you can.  But the effects applied by this other plugin will not save to the character card by default.
+    - Optionally you can smooth any skin tight clothing as well, to help reduce clipping while smoothing, but clothing doesnt always look great afterwords.
+- This plugin is somewhat compatible with "[ddaa33] Pregnant plugin (ShapeKeyPlugin)" if you wish to combine the effects of both, you can.  But the effects applied by that plugin will not save to the character card by default. (Only to P+ saved blendshapes)
 
 ## Koikatsu and AI Only Features
 - In Koikatsu and AI the "Inflation Size" belly slider will be added in addition to KK/AI_Pregnancy when both pregnancy plugins are installed.  You can control the amount of Preg+ belly shape applied on top of the KK/AI_Pregnancy belly with the "Max Additional Belly Size" slider. 0 being no additional Preg+ slider effect, and max being the full Preg+ slider effect + the current KK/AI_Pregnancy weeks size.  You can use the F1 plugin config sliders to further adjust the results for all pregnant characters at once.
@@ -30,19 +30,19 @@ The belly shape will persist in any game mode when slider values are saved to th
 
 ## Koikatsu Only Features
 - Studio Timeline integration via blendshapes.  Here's how to:
-    - Set the P+ character sliders to the desired shape you want.
+    - Set the P+ character sliders to the desired shape you want (including belly smoothing).
     - Click "Open Blendshapes" button. You will see a popup that will show you any existing P+ blendshapes.  If none are found, then use the "Create New" button.
-    - Move your blendshape sliders to the desired position (At least one blendshape slider must be green (touched) before the next step)
+    - Move your new blendshape sliders to the desired position.  At least one blendshape slider must be green (touched) before the next step
     - Open Timeline with Ctrl+T, search for "Blendshape" and middle click to add.
     - Follow Timeline guides for further info
 
 ## Honey Select 2 and AI Only Features
 - Studio VNGE integration via blendshapes.  Here's how to:
-    - Set the P+ character sliders to the desired shape you want.
+    - Set the P+ character sliders to the desired shape you want (including belly smoothing).
     - Click "Open Blendshapes" button. You will see a popup that will show you any existing P+ blendshapes.  If none are found, then use the "Create New" button.
-    - Move your blendshape sliders to the desired position (At least one blendshape slider must be green (touched) before the next step)
-    - Open VNGE, and add it under "Clip Manager" 
-     - To use BlendShapes in VNGE set ExportChara_XXPE_BlendShapes=1 in vnactor.ini everywhere it is found
+    - Move your new blendshape sliders to the desired position.  At least one blendshape slider must be green (touched) before the next step
+    - Open VNGE, and add the blendshape(s) under "Clip Manager" 
+     - To use BlendShapes in VNGE set ExportChara_XXPE_BlendShapes=1 in vnactor.ini everywhere it is found (may become obsolete)
     - Follow VNGE guides for further info
 
 ## Bigger!
@@ -61,10 +61,10 @@ The belly shape will persist in any game mode when slider values are saved to th
 - Q: Why are some outfits not affected by the sliders?
     - A: Some outifts in Unity are marked as not readable, and the mesh of these outfits can not be altered at runtime.
 - Q: Some of the sliders are not working?
-    - A: First disable "Balloon" Plugin Config option since it ignores some sliders.  Then try adjusting your 'Move Y' slider to make sure it is not outside your characters body.  Third, make sure P+ gameplay is enabled in Plugin Config, and on the character card (It will be by default).  Worst case scenario you can try turning on Preg+ debug logging to look for any errors in the Plugin Config. 
+    - A: First make sure you don't have the debug mesh option enabled.  Then try adjusting your 'Move Y' 'Move Z' sliders to make sure their centers are not outside your characters body.  Third, make sure P+ gameplay is enabled in Plugin Config, and on the character card (It will be by default).  Worst case scenario you can try turning on Preg+ debug logging to look for any errors in the Plugin Config and report to me. 
 - Q: The belly size is suddenly changing when the character moves, or the first time I adjust a slider.
     - A: The default belly size is calculated based on the hip and rib bone width.  In rare cases It can be due to strange character animations, or character size adjustments.   
-- Q: There is no slider effect when the character has no legs.
+- Q: There are no slider effects when the character has no legs.
     - A: The character must have a leg scale > 0 for the belly sliders to work correctly.
 
 ## Notes
