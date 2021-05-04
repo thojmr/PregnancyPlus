@@ -240,6 +240,12 @@ namespace KK_PregnancyPlus
                 return null;
             }
 
+            var shapeFrameCount = smr.sharedMesh.GetBlendShapeFrameCount(shapeIndex);
+            if (shapeFrameCount <= 0) {
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" GetBlendShapeByName > frame count <= 0: {blendShapeName}");
+                return null;
+            }
+
             Vector3[] deltaVertices = new Vector3 [smr.sharedMesh.vertexCount];
             Vector3[] deltaNormals = new Vector3 [smr.sharedMesh.vertexCount];
             Vector3[] deltaTangents = new Vector3 [smr.sharedMesh.tangents.Length];

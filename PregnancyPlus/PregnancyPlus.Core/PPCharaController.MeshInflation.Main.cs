@@ -55,7 +55,9 @@ namespace KK_PregnancyPlus
             
             if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value)  PregnancyPlusPlugin.Logger.LogInfo($" ---------- ");
             if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value)  PregnancyPlusPlugin.Logger.LogInfo($" inflationSize > {infConfig.inflationSize} for {charaFileName} ");            
-            
+            // if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" flags1: checkForNewMesh {checkForNewMesh},  freshStart {freshStart}, pluginConfigSliderChanged {pluginConfigSliderChanged}, visibilityUpdate {visibilityUpdate}");
+            // if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" flags2: sliderHaveChanged {sliderHaveChanged},  onlyInflationSizeChanged {onlyInflationSizeChanged}");
+
             //Get the measurements that determine the base belly size
             var hasMeasuerments = MeasureWaistAndSphere(ChaControl);                     
             if (!hasMeasuerments) 
@@ -107,13 +109,14 @@ namespace KK_PregnancyPlus
                 var needsComputeVerts = NeedsComputeVerts(smr, sliderHaveChanged, onlyInflationSizeChanged);
                 if (needsComputeVerts)
                 {
+                    // if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"   needsComputeVerts {smr.name}");
                     didCompute = ComputeMeshVerts(smr, isClothingMesh, bodyMeshRenderer, freshStart);                                                                                   
                 }
 
                 //If mesh fails to compute, skip (mesn.IsReadable = false will cause this) 
                 if (needsComputeVerts && !didCompute) continue;
 
-                var appliedMeshChanges = ApplyInflation(smr, GetMeshKey(smr), onlyInflationSizeChanged, "sliders");
+                var appliedMeshChanges = ApplyInflation(smr, GetMeshKey(smr), (!onlyInflationSizeChanged && sliderHaveChanged), "sliders");
                 if (appliedMeshChanges) anyMeshChanges = true;                
             }  
 

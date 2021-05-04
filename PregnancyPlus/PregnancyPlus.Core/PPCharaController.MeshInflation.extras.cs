@@ -67,7 +67,11 @@ namespace KK_PregnancyPlus
         /// </summary>
         internal bool NeedsComputeVerts(SkinnedMeshRenderer smr, bool sliderHaveChanged, bool onlyInflationSizeChanged) 
         {
-            var renderKey = GetMeshKey(smr);
+            var renderKey = GetMeshKey(smr);       
+
+            //If mesh is on ignore list, skip it
+            if (ignoreMeshList.Contains(renderKey)) return false;                 
+
             //Do a quick check to see if we need to fetch the bone indexes again.  ex: on second call we should allready have them
             //This saves a lot on compute apparently!            
             var isInitialized = bellyVerticieIndexes.TryGetValue(renderKey, out bool[] existingValues);

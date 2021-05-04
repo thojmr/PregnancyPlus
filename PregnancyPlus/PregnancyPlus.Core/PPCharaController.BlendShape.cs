@@ -302,16 +302,16 @@ namespace KK_PregnancyPlus
         /// </summary>
         /// <param name="smr">Target mesh renderer to update (original shape)</param>
         /// <param name="renderKey">The Shared Mesh render name, used in dictionary keys to get the current verticie values</param>
-        /// <param name="didCompute">Whether the blendshape needs to be remade because the mesh shape was altered</param>
+        /// <param name="needsOverwrite">Whether the blendshape needs to be remade because the mesh shape was altered</param>
         /// <param name="blendShapeTag">Optional blend shape tag to append to the blend shape name, used for identification if needed</param>
-        internal bool ApplyBlendShapeWeight(SkinnedMeshRenderer smr, string renderKey, bool onlyInflationSizeChanged, string blendShapeTag = null) {
+        internal bool ApplyBlendShapeWeight(SkinnedMeshRenderer smr, string renderKey, bool needsOverwrite, string blendShapeTag = null) {
 
             var blendShapeName = MakeBlendShapeName(renderKey, blendShapeTag);
             //Try to find an existing blendshape by name
             BlendShapeController bsc = new BlendShapeController(smr, blendShapeName);
             
             //If not found then create it
-            if (bsc.blendShape == null || !onlyInflationSizeChanged) bsc = CreateBlendShape(smr, renderKey, blendShapeTag);
+            if (bsc.blendShape == null || needsOverwrite) bsc = CreateBlendShape(smr, renderKey, blendShapeTag);
 
             if (bsc.blendShape == null) {
                 if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogWarning(

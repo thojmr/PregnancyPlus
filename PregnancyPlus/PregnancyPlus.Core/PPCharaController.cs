@@ -39,7 +39,7 @@ namespace KK_PregnancyPlus
         public Dictionary<string, float[]> clothingOffsets = new Dictionary<string, float[]>();//The distance we want to offset each vertex fromt the body mesh when inflated
         public Dictionary<string, bool[]> bellyVerticieIndexes = new Dictionary<string, bool[]>();//List of verticie indexes that belong to the belly area
         public Dictionary<string, bool[]> alteredVerticieIndexes = new Dictionary<string, bool[]>();//List of verticie indexes that belong to the belly area and within the current belly radius
-
+        public List<string> ignoreMeshList = new List<string>();//List of mesh names/keys to ignore since they dont have belly verts
 
 
         //For fetching uncensor body guid data (bugfix for uncensor body vertex positions)
@@ -251,7 +251,7 @@ namespace KK_PregnancyPlus
             //Wait for card data to load, and make sure this is the same character the clothes event triggered for
             if (!initialized || chaID != ChaControl.chaID) return;
 
-            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= ClothesStateChangeEvent {clothesKind}");
+            // if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= ClothesStateChangeEvent {clothesKind}");
 
             #if KK
                 var debounceTime = 0.1f;
@@ -330,7 +330,7 @@ namespace KK_PregnancyPlus
             //If guid is the latest, trigger method
             if (debounceGuid == guid) 
             {
-                if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" WaitForMeshToSettle checkNewMesh:{checkNewMesh} forceRecalcVerts:{forceRecalcVerts}");        
+                // if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" WaitForMeshToSettle checkNewMesh:{checkNewMesh} forceRecalcVerts:{forceRecalcVerts}");        
                 CheckMeshVisibility();
                 MeshInflate(checkNewMesh, forceRecalcVerts);
             }

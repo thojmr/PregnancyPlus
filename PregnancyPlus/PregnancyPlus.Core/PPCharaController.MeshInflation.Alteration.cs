@@ -19,10 +19,10 @@ namespace KK_PregnancyPlus
         /// </summary>
         /// <param name="mesh">Target mesh to update</param>
         /// <param name="renderKey">The Shared Mesh render name, used in dictionary keys to get the current verticie values</param>
-        /// <param name="onlyInflationSizeChanged">When true we don't have to overwrite the blendshape, and only have to set it's weight</param>
+        /// <param name="needsOverwrite">When false we don't have to overwrite the blendshape, and only have to set it's weight</param>
         /// <param name="blendShapeTag">string to append to the end of the blendshape name, for identification</param>
         /// <returns>Will return True if any verticies are changed</returns>
-        internal bool ApplyInflation(SkinnedMeshRenderer smr, string renderKey, bool onlyInflationSizeChanged, string blendShapeTag = null) 
+        internal bool ApplyInflation(SkinnedMeshRenderer smr, string renderKey, bool needsOverwrite, string blendShapeTag = null) 
         {
             if (smr == null) 
             {
@@ -47,8 +47,8 @@ namespace KK_PregnancyPlus
             var exists = originalVertices.TryGetValue(renderKey, out var val);
             if (!exists) 
             {
-                if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo(
-                     $"ApplyInflation > smr '{renderKey}' does not exists, skipping");
+                // if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo(
+                //      $"ApplyInflation > smr '{renderKey}' does not exists, skipping");
                 RemoveRenderKey(renderKey);
                 return false;
             }
@@ -62,7 +62,7 @@ namespace KK_PregnancyPlus
             }
 
             //Create or update the smr blendshape
-            ApplyBlendShapeWeight(smr, renderKey, onlyInflationSizeChanged, "sliders");
+            ApplyBlendShapeWeight(smr, renderKey, needsOverwrite, "sliders");
 
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" mesh did ApplyInflation > {smr.name}");
             return true;
@@ -123,35 +123,45 @@ namespace KK_PregnancyPlus
                 //Get all existing mesh keys
                 var keyList = new List<string>(originalVertices.Keys);
 
-                //For each mesh key, calculate the new smoothed mesh in parallel
-                var meshResults = ThreadingExtensions.RunParallel<string, Dictionary<String, Vector3[]>>(keyList, (_renderKey) => {                    
-                    // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" QueueUserWorkItem : {_renderKey}");
+                //Ill add this back laater once I do some more research
+                // //For each mesh key, calculate the new smoothed mesh in parallel
+                // var meshResults = ThreadingExtensions.RunParallel<string, Dictionary<String, Vector3[]>>(keyList, (_renderKey) => {                    
+                //     // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" QueueUserWorkItem : {_renderKey}");
 
-                    var smr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, _renderKey, false);
-                    if (smr == null) return null;
+                //     var smr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, _renderKey, false);
+                //     if (smr == null) return null;
 
-                    //Do the smoothing here, and get the new smoothed verts
-                    var newVerts = SmoothSingleMesh(smr, _renderKey);
+                //     //Do the smoothing here, and get the new smoothed verts
+                //     var newVerts = SmoothSingleMesh(smr, _renderKey);
 
-                    //Create returned data format
-                    var keyAndVertDict = new Dictionary<String, Vector3[]>();
-                    keyAndVertDict[_renderKey] = newVerts;
+                //     //Create returned data format
+                //     var keyAndVertDict = new Dictionary<String, Vector3[]>();
+                //     keyAndVertDict[_renderKey] = newVerts;
 
-                    return keyAndVertDict;
-                });
+                //     return keyAndVertDict;
+                // });
                 
-                //For each mesh result
-                foreach(var meshResult in meshResults) 
-                {
-                    if (meshResult == null) continue;
-                    var renderKeys = meshResult.Keys;//Only 1 key per result in this case                    
+                // //For each mesh result
+                // foreach(var meshResult in meshResults) 
+                // {
+                //     if (meshResult == null) continue;
+                //     var renderKeys = meshResult.Keys;//Only 1 key per result in this case                    
 
-                    //Get get the render key and apply the changes
-                    foreach(var renderKey in renderKeys) 
-                    {
-                        ApplySmoothResults(meshResult[renderKey], renderKey);
-                    }
-                    yield return null;//Allow UI updates after each mesh has finished updating, instead of locking ui until the very end
+                //     //Get get the render key and apply the changes
+                //     foreach(var renderKey in renderKeys) 
+                //     {
+                //         ApplySmoothResults(meshResult[renderKey], renderKey);
+                //     }
+                //     yield return null;//Allow UI updates after each mesh has finished updating, instead of locking ui until the very end
+                // }
+
+                //For every `active` meshRenderer key we have created, smooth the mesh
+                foreach(var renderKey in keyList) 
+                {
+                    var smr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderKey, false);
+                    var newVerts = SmoothSingleMesh(smr, renderKey);
+                    //Re-trigger ApplyInflation to set the new smoothed mesh
+                    ApplySmoothResults(newVerts, renderKey, smr);
                 }
             } 
             //Only smooth the body mesh around the belly area
@@ -166,11 +176,8 @@ namespace KK_PregnancyPlus
                 var bodySmr = PregnancyPlusHelper.GetMeshRendererByName(ChaControl, meshName);
                 var renderKey = GetMeshKey(bodySmr);
 
-                var newVerts = SmoothSingleMesh(bodySmr, renderKey);
-                if (newVerts != null) inflatedVertices[renderKey] = newVerts;
-
-                //Re-trigger ApplyInflation to set the new smoothed mesh
-                ApplyInflation(bodySmr, renderKey,false, "sliders");                
+                var newVerts = SmoothSingleMesh(bodySmr, renderKey);     
+                ApplySmoothResults(newVerts, renderKey, bodySmr);
             }
 
             yield return null;
@@ -180,13 +187,13 @@ namespace KK_PregnancyPlus
         /// <summary>   
         /// Update characters mesh with the new smoothed results
         /// </summary>
-        internal void ApplySmoothResults(Vector3[] newMesh, string renderKey) {
+        internal void ApplySmoothResults(Vector3[] newMesh, string renderKey, SkinnedMeshRenderer smr = null) {
             //Set the new smoothed mesh verts
             if (newMesh != null) inflatedVertices[renderKey] = newMesh;
 
-            var smr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderKey, false);
+            if (smr == null) smr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderKey, false);
             //Re-trigger ApplyInflation to set the new smoothed mesh           
-            ApplyInflation(smr, renderKey, false, "sliders");            
+            ApplyInflation(smr, renderKey, true, "sliders");            
         }
 
 
