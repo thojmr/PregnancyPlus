@@ -62,7 +62,7 @@ namespace KK_PregnancyPlus
             }
 
             //Create or update the smr blendshape
-            ApplyBlendShapeWeight(smr, renderKey, needsOverwrite, "sliders");
+            ApplyBlendShapeWeight(smr, renderKey, needsOverwrite, blendShapeTempTagName);
 
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" mesh did ApplyInflation > {smr.name}");
             return true;
@@ -87,7 +87,7 @@ namespace KK_PregnancyPlus
                     continue;                
                 }
                 
-                ResetBlendShapeWeight(smr, renderKey, "sliders");
+                ResetBlendShapeWeight(smr, renderKey, blendShapeTempTagName);
             }
         }
 
@@ -193,7 +193,7 @@ namespace KK_PregnancyPlus
 
             if (smr == null) smr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderKey, false);
             //Re-trigger ApplyInflation to set the new smoothed mesh           
-            ApplyInflation(smr, renderKey, true, "sliders");            
+            ApplyInflation(smr, renderKey, true, blendShapeTempTagName);            
         }
 
 

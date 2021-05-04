@@ -116,7 +116,7 @@ namespace KK_PregnancyPlus
                 //If mesh fails to compute, skip (mesn.IsReadable = false will cause this) 
                 if (needsComputeVerts && !didCompute) continue;
 
-                var appliedMeshChanges = ApplyInflation(smr, GetMeshKey(smr), (!onlyInflationSizeChanged && sliderHaveChanged), "sliders");
+                var appliedMeshChanges = ApplyInflation(smr, GetMeshKey(smr), (!onlyInflationSizeChanged && sliderHaveChanged), blendShapeTempTagName);
                 if (appliedMeshChanges) anyMeshChanges = true;                
             }  
 

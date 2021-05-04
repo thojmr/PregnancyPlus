@@ -20,6 +20,8 @@ namespace KK_PregnancyPlus
         //Keep track of which meshes are given blendshapes for the GUI to make the slider list
         internal List<SkinnedMeshRenderer> meshWithBlendShapes = new List<SkinnedMeshRenderer>();
 
+        internal string blendShapeTempTagName = "[temp]";//Used to identify blendshapes created by the p+ sliders, and not the blendshape gui sliders (which are more permanent).
+
 
         //Allows us to identify which mesh a blendshape belongs to when loading character cards
         [MessagePackObject(keyAsPropertyName: true)]
