@@ -83,7 +83,7 @@ namespace KK_PregnancyPlus
                 var smr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderKey);
                 //Normally triggered when user changes clothes, the old clothes render wont be found
                 if (smr == null) {
-                    if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogWarning($" ResetInflation > smr was not found {renderKey}");
+                    if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" ResetInflation > smr was not found {renderKey}");
                     continue;                
                 }
                 

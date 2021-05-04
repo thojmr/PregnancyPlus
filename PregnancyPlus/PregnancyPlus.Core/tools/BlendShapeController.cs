@@ -146,6 +146,11 @@ namespace KK_PregnancyPlus
 
                 existingBlendShapes[i] = new BlendShape[frameCount];
 
+                if (frameCount == 0)
+                {
+                    if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" OverwriteBlendShape > frameCount == 0 for some reason");
+                }
+
                 //For each frame of the shape index
                 for (var f = 0; f < frameCount; f++) 
                 {
@@ -206,6 +211,9 @@ namespace KK_PregnancyPlus
         {
             if (!blendShape.isInitilized || weight < 0) return false;
 
+            //Once again if you don't force the mesh to update here, the blendshape below could have stale data
+            smr.sharedMesh = smr.sharedMesh;
+
             //Belly size goes from 0-40, but blendShapes have to be 0-100
             //Technically unity 2018x + can go above 100 when unclamped, but not any illusion games yet
             var lerpWeight = Mathf.Lerp(0, 100, weight/40);
@@ -216,7 +224,7 @@ namespace KK_PregnancyPlus
             var shapeWeight = smr.GetBlendShapeWeight(shapeIndex);            
             var shapeFrameCount = smr.sharedMesh.GetBlendShapeFrameCount(shapeIndex);
             var shapeName = smr.sharedMesh.GetBlendShapeName(shapeIndex);
-            var shapeCount = smr.sharedMesh.blendShapeCount;
+            var shapeCount = smr.sharedMesh.blendShapeCount;                 
 
             // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" ApplyBlendShapeWeight > shapeIndex {shapeIndex} shapeWeight {shapeWeight} shapeCount {shapeCount} shapeFrameCount {shapeFrameCount} lerpWeight {lerpWeight}");            
             smr.SetBlendShapeWeight(shapeIndex, lerpWeight);
