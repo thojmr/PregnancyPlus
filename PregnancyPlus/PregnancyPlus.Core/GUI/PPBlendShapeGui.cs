@@ -122,7 +122,7 @@ namespace KK_PregnancyPlus
 		{
 			foreach(var smr in smrs)
 			{
-				if (smr == null || smr.sharedMesh == null || smr.sharedMesh.blendShapeCount == 0) return true;
+				if (smr == null || smr.sharedMesh == null || smr.sharedMesh.blendShapeCount == 0) return true;			
 			}
 			
 			return false;

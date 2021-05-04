@@ -194,14 +194,31 @@ namespace KK_PregnancyPlus
             var blendShape = meshBlendShape.BlendShape; 
             
             foreach (var smr in smrs) 
-            {              
+            {   
+                //Fixes any stale data on mesh blendshapes           
+                smr.sharedMesh = smr.sharedMesh;
+
                 //If mesh matches, append the blend shape
                 if (smr.name == meshName && smr.sharedMesh.vertexCount == vertexCount) 
                 {
                     meshWithBlendShapes.Add(smr);
 
                     //Make sure the blendshape does not already exists
-                    if (BlendShapeAlreadyExists(smr, meshBlendShape.BlendShape)) continue;
+                    if (BlendShapeAlreadyExists(smr, meshBlendShape.BlendShape)) {
+                        //Just make sure the weights are correct incase char just reloaded
+                        //Try to find an existing blendshape by name
+                        BlendShapeController bsc = new BlendShapeController(smr, meshBlendShape.BlendShape.name);
+
+                        if (bsc.blendShape == null) {
+                            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogWarning(
+                                $"ApplyBlendShapeWeight > There was a problem finding the blendshape ${meshBlendShape.BlendShape.name}");
+                            continue;
+                        }
+                        
+                        //Update the weight to be the same as inflationSize value   
+                        bsc.ApplyBlendShapeWeight(smr, meshBlendShape.BlendShape.weight);
+                        continue;
+                    }
 
                     //Add the blendshape to the mesh
                     new BlendShapeController(blendShape, smr);
