@@ -181,35 +181,47 @@ namespace KK_PregnancyPlus
                 //Get all existing mesh keys
                 var keyList = new List<string>(originalVertices.Keys);
 
-                //For each mesh key, calculate the new smoothed mesh in parallel
-                var meshResults = ThreadingExtensions.RunParallel<string, Dictionary<String, Vector3[]>>(keyList, (_renderKey) => {                    
-                    // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" QueueUserWorkItem : {_renderKey}");
+                //Ill add this back laater once I do some more research
+                // //For each mesh key, calculate the new smoothed mesh in parallel
+                // var meshResults = ThreadingExtensions.RunParallel<string, Dictionary<String, Vector3[]>>(keyList, (_renderKey) => {                    
+                //     // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" QueueUserWorkItem : {_renderKey}");
 
-                    var smr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, _renderKey, false);
-                    if (smr == null) return null;
+                //     var smr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, _renderKey, false);
+                //     if (smr == null) return null;
 
-                    //Do the smoothing here, and get the new smoothed verts
-                    var newVerts = SmoothSingleMesh(smr, _renderKey);
+                //     //Do the smoothing here, and get the new smoothed verts
+                //     var newVerts = SmoothSingleMesh(smr, _renderKey);
 
-                    //Create returned data format
-                    var keyAndVertDict = new Dictionary<String, Vector3[]>();
-                    keyAndVertDict[_renderKey] = newVerts;
+                //     //Create returned data format
+                //     var keyAndVertDict = new Dictionary<String, Vector3[]>();
+                //     keyAndVertDict[_renderKey] = newVerts;
 
-                    return keyAndVertDict;
-                });
+                //     return keyAndVertDict;
+                // });
                 
-                //For each mesh result
-                foreach(var meshResult in meshResults) 
-                {
-                    if (meshResult == null) continue;
-                    var renderKeys = meshResult.Keys;//Only 1 key per result in this case                    
+                // //For each mesh result
+                // foreach(var meshResult in meshResults) 
+                // {
+                //     if (meshResult == null) continue;
+                //     var renderKeys = meshResult.Keys;//Only 1 key per result in this case                    
 
-                    //Get get the render key and apply the changes
-                    foreach(var renderKey in renderKeys) 
-                    {
-                        ApplySmoothResults(meshResult[renderKey], renderKey);
-                    }
-                    yield return null;//Allow UI updates after each mesh has finished updating, instead of locking ui until the very end
+                //     //Get get the render key and apply the changes
+                //     foreach(var renderKey in renderKeys) 
+                //     {
+                //         ApplySmoothResults(meshResult[renderKey], renderKey);
+                //     }
+                //     yield return null;//Allow UI updates after each mesh has finished updating, instead of locking ui until the very end
+                // }
+
+                //For every `active` meshRenderer key we have created, smooth the mesh
+                foreach(var renderKey in keyList) 
+                {
+                    var smr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderKey, false);
+                    var newVerts = SmoothSingleMesh(smr, renderKey);
+                    if (newVerts != null) inflatedVertices[renderKey] = newVerts;
+
+                    //Re-trigger ApplyInflation to set the new smoothed mesh
+                    ApplyInflation(smr, renderKey);
                 }
             } 
             //Only smooth the body mesh around the belly area
