@@ -93,6 +93,7 @@ namespace KK_PregnancyPlus
         /// <param name="blendShapeName">The blendshape name to search for</param>
         public BlendShapeController(SkinnedMeshRenderer smr, string blendShapeName)         
         {
+            //Once found you can use this controller to call any of its blendshape methods
             blendShape = GetBlendShapeByName(smr, blendShapeName);
         }
 

@@ -87,7 +87,7 @@ namespace KK_PregnancyPlus
 		/// <summary>
         /// Removed all blendshape sliders, and blendshapes from the character
         /// </summary>
-		internal void OnRemoveAllBlendShapes()
+		internal void OnRemoveAllGUIBlendShapes()
 		{
 			try 
 			{
@@ -99,7 +99,7 @@ namespace KK_PregnancyPlus
                     	$" OnRemoveAllBlendShapes > HSPE not found {e.Message} ");
 			}	
 
-			_charaInstance.OnRemoveAllBlendShapes();
+			_charaInstance.OnRemoveAllGUIBlendShapes();
 			guiSkinnedMeshRenderers = new List<SkinnedMeshRenderer>();
 			lastTouched = -1;
 		}

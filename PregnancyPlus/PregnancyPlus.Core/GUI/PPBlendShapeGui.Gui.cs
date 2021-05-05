@@ -89,7 +89,7 @@ namespace KK_PregnancyPlus
 			if (closeBtnCLicked) CloseWindow();
 			if (clearBtnCLicked) ClearAllSliderValues();
 			if (createBtnCLicked) _charaInstance.OnCreateBlendShapeSelected();
-			if (removeBtnCLicked) OnRemoveAllBlendShapes();
+			if (removeBtnCLicked) OnRemoveAllGUIBlendShapes();
 		}
 
 

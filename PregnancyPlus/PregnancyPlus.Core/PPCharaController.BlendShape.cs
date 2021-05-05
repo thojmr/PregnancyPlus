@@ -27,9 +27,9 @@ namespace KK_PregnancyPlus
         [MessagePackObject(keyAsPropertyName: true)]
         public class MeshBlendShape
         {
-            public string MeshName;//like smr.name
+            public string MeshName;//like SkinnedMeshRenderer.name
             public int VertCount;//To differentiate 2 meshes with the same names use vertex count comparison
-            public BlendShapeController.BlendShape BlendShape;//Just a single Frame for now, though its possible to have multiple frames
+            public BlendShapeController.BlendShape BlendShape;//Store just a single Frame for now, though its possible to have multiple frames.  Preg+ only uses 1
 
             public MeshBlendShape(string meshName, BlendShapeController.BlendShape blendShape, int vertCount) 
             {
@@ -55,7 +55,7 @@ namespace KK_PregnancyPlus
 
             //Get all cloth renderes and attempt to create blendshapes from preset inflatedVerticies
             var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);
-            meshBlendShapes = LoopAndCreateBlendShape(clothRenderers, meshBlendShapes, true);
+            meshBlendShapes = LoopAndCreateBlendShape(clothRenderers, meshBlendShapes);
 
             //do the same for body meshs
             var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody);
@@ -82,22 +82,39 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// When the user wants to remove all existing PregnancyPlus blendshapes
+        /// When the user wants to remove all existing PregnancyPlus GUI blendshapes
         /// </summary>
-        internal void OnRemoveAllBlendShapes()
+        internal void OnRemoveAllGUIBlendShapes()
         {
+            //Set all GUI blendshapes to 0 weight
+            foreach (var smr in meshWithBlendShapes)
+            {
+                if (smr == null) continue;
+
+                for (var i = 0; i < smr.sharedMesh.blendShapeCount; i++)
+                {
+                    //Search for GUI blendshape
+                    var name = smr.sharedMesh.GetBlendShapeName(i);
+                    if (name.EndsWith(PregnancyPlusPlugin.GUID))
+                    {
+                        //Set weight to 0
+                        var bsc = new BlendShapeController(smr, name);
+                        bsc.ApplyBlendShapeWeight(smr, 0);
+                    }
+                }
+            }
             meshWithBlendShapes = new List<SkinnedMeshRenderer>();
-            ClearBlendShapesFromData();
+            ClearBlendShapesFromCharData();
         }
 
 
         /// <summary>
-        /// Loop through each skinned mesh rendere and if it has inflated verts, create a blendshape from them
+        /// Loop through each skinned mesh rendere and if the char card has a blendshape for it, add it
         /// </summary>
         /// <param name="smrs">List of skinnedMeshRenderes</param>
         /// <param name="meshBlendShapes">the current list of MeshBlendShapes collected so far</param>
         /// <returns>Returns final list of MeshBlendShapes we want to store in char card</returns>
-        internal List<MeshBlendShape> LoopAndCreateBlendShape(List<SkinnedMeshRenderer> smrs, List<MeshBlendShape> meshBlendShapes, bool isClothingMesh = false) 
+        internal List<MeshBlendShape> LoopAndCreateBlendShape(List<SkinnedMeshRenderer> smrs, List<MeshBlendShape> meshBlendShapes) 
         {
             foreach(var smr in smrs) 
             {                
@@ -145,9 +162,9 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Clears any card data blendshapes
+        /// Clears any card data blendshapes (needs user save to apply though)
         /// </summary>
-        internal void ClearBlendShapesFromData() 
+        internal void ClearBlendShapesFromCharData() 
         {            
             infConfig.meshBlendShape = null;
         }
@@ -204,26 +221,24 @@ namespace KK_PregnancyPlus
                     meshWithBlendShapes.Add(smr);
 
                     //Make sure the blendshape does not already exists
-                    if (BlendShapeAlreadyExists(smr, meshBlendShape.BlendShape)) {
-                        //Just make sure the weights are correct incase char just reloaded
+                    if (BlendShapeAlreadyExists(smr, meshBlendShape.BlendShape.name)) {
+                        //If it does, make sure the weights are correct incase char just reloaded
                         //Try to find an existing blendshape by name
                         BlendShapeController bsc = new BlendShapeController(smr, meshBlendShape.BlendShape.name);
 
                         if (bsc.blendShape == null) {
                             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogWarning(
-                                $"ApplyBlendShapeWeight > There was a problem finding the blendshape ${meshBlendShape.BlendShape.name}");
+                                $"LoopMeshAndAddExistingBlendShape > There was a problem finding the blendshape ${meshBlendShape.BlendShape.name}");
                             continue;
                         }
                         
-                        //Update the weight to be the same as inflationSize value   
+                        //Update the weight to match the weight from the character card   
                         bsc.ApplyBlendShapeWeight(smr, meshBlendShape.BlendShape.weight);
                         continue;
                     }
 
                     //Add the blendshape to the mesh
                     new BlendShapeController(blendShape, smr);
-
-                    // LogMeshBlendShapes(smr);
                 }                
             }              
         }
@@ -232,9 +247,9 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Check whether the blendshape already exists
         /// </summary>
-        internal bool BlendShapeAlreadyExists(SkinnedMeshRenderer smr, BlendShapeController.BlendShape blendShape) 
+        internal bool BlendShapeAlreadyExists(SkinnedMeshRenderer smr, string blendShapeName) 
         {
-            var shapeIndex = smr.sharedMesh.GetBlendShapeIndex(blendShape.name);
+            var shapeIndex = smr.sharedMesh.GetBlendShapeIndex(blendShapeName);
             //If the shape exists then true
             return (shapeIndex >= 0);
         }
@@ -264,7 +279,7 @@ namespace KK_PregnancyPlus
 
         
         /// <summary>
-        /// This will create a blendshape frame for a mesh, that can be used in timeline, required there be a renderKey for inflatedVertices for this smr
+        /// This will create a blendshape frame for a mesh, there must be a matching inflatedVertices[renderKey] for the target mesh shape
         /// </summary>
         /// <param name="smr">Target mesh renderer to update (original shape)</param>
         /// <param name="renderKey">The Shared Mesh render name, used in dictionary keys to get the current verticie values</param>
@@ -282,22 +297,23 @@ namespace KK_PregnancyPlus
             } 
 
             //Make sure we have an existing belly shape to work with (can be null if user hasnt used sliders yet)
-            var exists = originalVertices.TryGetValue(renderKey, out var val);
+            var exists = inflatedVertices.TryGetValue(renderKey, out var val);
             if (!exists) 
             {
                 if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo(
-                     $"CreateBlendShape > smr '{renderKey}' does not exists, skipping");
+                     $"CreateBlendShape > smr '{renderKey}' inflatedVertices do not exists, skipping");
                 return null;
             }
 
-            if (originalVertices[renderKey].Length != meshCopyTarget.vertexCount) 
+            //Make sure the vertex count matches what the blendshape has (differs when swapping meshes)
+            if (inflatedVertices[renderKey].Length != meshCopyTarget.vertexCount) 
             {
                 PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_IncorrectVertCount, 
-                    $"CreateBlendShape > smr.sharedMesh '{renderKey}' has incorrect vert count {originalVertices[renderKey].Length}|{meshCopyTarget.vertexCount}");  
+                    $"CreateBlendShape > smr.sharedMesh '{renderKey}' has incorrect vert count {inflatedVertices[renderKey].Length}|{meshCopyTarget.vertexCount}");  
                 return null;
             }
 
-            //Calculate the original normals, but don't show them.  We just want it for the blendshape shape destination
+            //Calculate the new normals, but don't show them.  We just want it for the blendshape shape target
             meshCopyTarget.vertices = inflatedVertices[renderKey];
             meshCopyTarget.RecalculateBounds();
             NormalSolver.RecalculateNormals(meshCopyTarget, 40f, bellyVerticieIndexes[renderKey]);
@@ -334,7 +350,7 @@ namespace KK_PregnancyPlus
 
             if (bsc.blendShape == null) {
                 if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogWarning(
-                     $"UpdateBlendShapeWeight > There was a problem creating the blendshape ${blendShapeName}");
+                     $"ApplyBlendShapeWeight > There was a problem creating the blendshape ${blendShapeName}");
                 return false;
             }
             
@@ -344,10 +360,10 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Allows resetting a blendshape weight back to 0
+        /// Reset a blendshape weight back to 0
         /// </summary>
         /// <param name="smr">Target mesh renderer to update (original shape)</param>
-        /// <param name="renderKey">The Shared Mesh render name, used to calculate the blendshape name</param>
+        /// <param name="renderKey">The Shared Mesh renderkey name, used to calculate the blendshape name</param>
         /// <param name="blendShapeTag">Optional blend shape tag to append to the blend shape name, used for identification if needed</param>
         internal bool ResetBlendShapeWeight(SkinnedMeshRenderer smr, string renderKey, string blendShapeTag = null) {
             var blendShapeName = MakeBlendShapeName(renderKey, blendShapeTag);
