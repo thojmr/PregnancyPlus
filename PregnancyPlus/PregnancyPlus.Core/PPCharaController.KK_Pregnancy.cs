@@ -2,10 +2,14 @@
 using System.Collections.Generic;
 using KKAPI.Chara;
 using KKAPI.Maker;
+using KKAPI;
 using UnityEngine;
-#if HS2 || AI
+#if HS2
     using AIChara;
 #elif KK
+    using KKAPI.MainGame;
+#elif AI
+    using AIChara;
     using KKAPI.MainGame;
 #endif
 
@@ -95,8 +99,7 @@ namespace KK_PregnancyPlus
         /// </summary>
         public void ComputeInflationChange() 
         {
-            //TODO add AI
-            #if KK
+            #if KK || AI
                 //Only in HScene
                 if (!GameAPI.InsideHScene) return;
                 if (_inflationChange == TargetPregPlusSize) 

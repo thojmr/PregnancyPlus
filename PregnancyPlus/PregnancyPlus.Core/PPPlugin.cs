@@ -6,8 +6,8 @@ using KKAPI.Studio;
 using KKAPI.Chara;
 
 namespace KK_PregnancyPlus
-{
-    [BepInPlugin(GUID, GUID, "5.3.0")]    
+{       
+    [BepInPlugin(GUID, GUID, "5.4.4")]
     [BepInDependency("com.deathweasel.bepinex.uncensorselector", BepInDependency.DependencyFlags.SoftDependency)]
     #if KK
         [BepInDependency(KoikatuAPI.GUID, "1.14")]
@@ -17,7 +17,7 @@ namespace KK_PregnancyPlus
         [BepInDependency(KoikatuAPI.GUID, "1.15")]
         [BepInDependency("HS2PE", BepInDependency.DependencyFlags.SoftDependency)]
     #elif AI
-        [BepInDependency(KoikatuAPI.GUID, "1.15")]
+        [BepInDependency(KoikatuAPI.GUID, "1.17")]
         [BepInDependency("AIPE", BepInDependency.DependencyFlags.SoftDependency)]
         [BepInDependency("AI_Pregnancy", BepInDependency.DependencyFlags.SoftDependency)]
     #endif

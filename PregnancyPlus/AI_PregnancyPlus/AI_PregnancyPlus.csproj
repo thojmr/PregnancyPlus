@@ -44,11 +44,11 @@
       <HintPath>..\..\packages\IllusionLibs.BepInEx.Harmony.2.2.0.1\lib\net35\0Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Assembly-CSharp,  Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\IllusionLibs.HoneySelect2.Assembly-CSharp.2020.5.29.2\lib\net46\Assembly-CSharp.dll</HintPath>
+    <Reference Include="Assembly-CSharp, Version=0.0.0.0,  Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IllusionLibs.AIGirl.Assembly-CSharp.2020.5.29.2\lib\net46\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="BepInEx,  Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="BepInEx, Version=5.4.4, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\IllusionLibs.BepInEx.5.4.4\lib\net35\BepInEx.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
@@ -62,8 +62,8 @@
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
-    <Reference Include="AIAPI, Version=1.15,  Culture=neutral, processorArchitecture=MSIL" >
-      <HintPath>..\..\packages\IllusionModdingAPI.AIAPI.1.15.0\lib\net46\AIAPI.dll</HintPath>
+    <Reference Include="AIAPI, Version=1.17,  Culture=neutral, processorArchitecture=MSIL" >
+      <HintPath>..\..\packages\IllusionModdingAPI.AIAPI.1.17.0\lib\net46\AIAPI.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>

@@ -10,7 +10,10 @@ using KKAPI.Maker;
 using KKAPI.Studio;
 #if KK
     using KKAPI.MainGame;
-#elif HS2 || AI
+#elif HS2
+    using AIChara;
+#elif AI
+    using KKAPI.MainGame;
     using AIChara;
 #endif
 
@@ -79,7 +82,7 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $Start {charaFileName}");
             ReadAndSetCardData();      
 
-            #if KK
+            #if KK || AI
 
                 GameAPI.StartH += (object sender, EventArgs e) => 
                 { 
@@ -94,9 +97,7 @@ namespace KK_PregnancyPlus
                     if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $EndH {charaFileName}");
                     clearInflationStuff(true);
                 };
-
-            #elif AI
-                //TODO           
+         
             #endif
 
             base.Start();
