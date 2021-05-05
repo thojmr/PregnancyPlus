@@ -46,7 +46,9 @@ namespace KK_PregnancyPlus
 
             var hi = new Harmony(GUID);
             Hooks.InitHooks(hi);
-            Hooks_KK_Pregnancy.InitHooks(hi);
+            #if KK || AI
+                Hooks_KK_Pregnancy.InitHooks(hi);
+            #endif
 
             //Set up studio/malker GUI sliders
             PregnancyPlusGui.InitStudio(hi, this);

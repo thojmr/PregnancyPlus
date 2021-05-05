@@ -22,7 +22,9 @@ namespace KK_PregnancyPlus
         internal float _inflationStart = 0;
         internal float _inflationChange = 0f;//The current inflation size lerping towards the target size
         public float _targetPregPlusSize = 0f;
-        public float TargetPregPlusSize//The final size to inflate to
+        
+        //The final size to inflate to
+        public float TargetPregPlusSize
         {
             get => _targetPregPlusSize;
             set => _targetPregPlusSize = Mathf.Clamp(value, 0, 40);
@@ -165,12 +167,16 @@ namespace KK_PregnancyPlus
                 //These values looked decent on most default characters, but they can always be changed.
                 customInfConfig.inflationMultiplier = 0.3f;
                 customInfConfig.inflationStretchX = -0.15f;
-                customInfConfig.inflationTaperY = -0.02f;
-                customInfConfig.inflationShiftZ = -0.03f;
+                customInfConfig.inflationTaperY = -0.02f;                
                 customInfConfig.inflationTaperZ = -0.01f;
+                customInfConfig.inflationShiftZ = -0.03f;
 
             #else
-                //TODO
+                customInfConfig.inflationMultiplier = 0.13f * 5;
+                customInfConfig.inflationStretchX = -0.1f * 5;          
+                customInfConfig.inflationTaperY = -0.015f * 5;            
+                customInfConfig.inflationTaperZ = -0.01f * 5;
+                customInfConfig.inflationShiftZ = -0.5f * 5;
 
             #endif
 
