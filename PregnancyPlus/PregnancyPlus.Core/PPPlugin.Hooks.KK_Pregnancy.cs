@@ -22,6 +22,8 @@ namespace KK_PregnancyPlus
             {
                 #if KK
                     TryPatchPreggersInflation(harmonyInstance);
+                #elif AI
+                    //TODO
                 #endif
             }
 
@@ -100,7 +102,7 @@ namespace KK_PregnancyPlus
                     if (controller == null) return;
 
                     //Set the inflation amount on the characters controller
-                    controller.InflationChanged(inflationAmount, maxInflationSize.Value);
+                    controller.OnInflationChanged(inflationAmount, maxInflationSize.Value);
                 }
 
             #endif

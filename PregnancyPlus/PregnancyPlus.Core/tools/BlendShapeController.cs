@@ -254,7 +254,7 @@ namespace KK_PregnancyPlus
 
             //If the blendshape is not found return
             if (shapeIndex < 0) {
-                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" GetBlendShapeByName > not found: {blendShapeName}");
+                // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" GetBlendShapeByName > not found: {blendShapeName}");
                 return null;
             }
 

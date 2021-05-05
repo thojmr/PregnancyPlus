@@ -38,7 +38,7 @@ namespace KK_PregnancyPlus
                 //Only stop here, if no recalculation needed
                 if (!freshStart && !checkForNewMesh)  return false; 
             }
-            if (!bypassWhen0) ResetInflation();
+            if (!bypassWhen0 && !isDuringInflationScene) ResetInflation();
 
             if (!AllowedToInflate()) return false;//if outside studio/maker, make sure StoryMode is enabled first
             if (!infConfig.GameplayEnabled) return false;//Only if gameplay enabled
@@ -47,7 +47,7 @@ namespace KK_PregnancyPlus
             if (freshStart) CleanSlate();
 
             //Only continue when size above 0
-            if (infConfig.inflationSize <= 0 && !bypassWhen0) 
+            if (infConfig.inflationSize <= 0 && !bypassWhen0 && !isDuringInflationScene) 
             {
                 infConfigHistory.inflationSize = 0;
                 return false;                                

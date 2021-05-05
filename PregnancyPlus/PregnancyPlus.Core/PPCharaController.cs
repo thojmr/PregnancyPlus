@@ -8,7 +8,9 @@ using System.Linq;
 using System.Reflection;
 using KKAPI.Maker;
 using KKAPI.Studio;
-#if HS2 || AI
+#if KK
+    using KKAPI.MainGame;
+#elif HS2 || AI
     using AIChara;
 #endif
 
@@ -75,7 +77,27 @@ namespace KK_PregnancyPlus
             //Character card name used to detect switching characters  
             charaFileName = ChaFileControl.parameter.fullname;        
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $Start {charaFileName}");
-            ReadAndSetCardData();                       
+            ReadAndSetCardData();      
+
+            #if KK
+
+                GameAPI.StartH += (object sender, EventArgs e) => 
+                { 
+                    if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $StartH {charaFileName}");
+                    //Trigger inflation at current size to create any Preg+ blendshapes that may be used.  Kind of like like pre processing.
+                    MeshInflate(infConfig.inflationSize, false, false, true);
+                };
+
+                //When HScene ends, clear any inflation data
+                GameAPI.EndH += (object sender, EventArgs e) => 
+                { 
+                    if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $EndH {charaFileName}");
+                    clearInflationStuff(true);
+                };
+
+            #elif AI
+                //TODO           
+            #endif
 
             base.Start();
         }        
@@ -226,15 +248,35 @@ namespace KK_PregnancyPlus
             
             if (PregnancyPlusPlugin.StoryModeInflationIncrease.Value.IsDown()) 
             {
-                //Increase size by 2
-                var newVal = infConfig.inflationSize + 2;
-                MeshInflate(newVal);                
+                if (isDuringInflationScene) 
+                {
+                    //Need special logic to append size to the TargetPregPlusSize during inflation scene
+                    //Increase size by 2
+                    TargetPregPlusSize += 2;
+                    _inflationChange = TargetPregPlusSize;
+                    MeshInflate(TargetPregPlusSize);
+                }
+                else
+                {
+                    //Increase size by 2
+                    var newVal = infConfig.inflationSize + 2;
+                    MeshInflate(newVal);                
+                }
             }
 
             if (PregnancyPlusPlugin.StoryModeInflationDecrease.Value.IsDown()) 
             {
-                var newVal = infConfig.inflationSize - 2;
-                MeshInflate(newVal);
+                if (isDuringInflationScene) 
+                {
+                    TargetPregPlusSize -= 2;
+                    _inflationChange = TargetPregPlusSize;
+                    MeshInflate(TargetPregPlusSize);
+                }
+                else
+                {
+                    var newVal = infConfig.inflationSize - 2;
+                    MeshInflate(newVal);
+                }
             }
 
             if (PregnancyPlusPlugin.StoryModeInflationReset.Value.IsDown()) 

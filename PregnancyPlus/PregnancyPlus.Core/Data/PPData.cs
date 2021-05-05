@@ -112,11 +112,18 @@ namespace KK_PregnancyPlus
         }
 
 #region Save/Load (Thanks for the code Marco)
-
-        public bool HasAnyValue() {
+        
+        /// <summary>
+        /// Will compare current values to default values
+        /// </summary>
+        /// <param name="includeSize">When false, will ignore inflationSize comparison</param>
+        public bool HasAnyValue(bool includeSize = true) {
 
             foreach (var fieldInfo in _serializedFields)
             {
+                //When false, we want to ignore changes in inflationSize
+                if (!includeSize && fieldInfo.Name == "inflationSize") continue;
+
                 var value = fieldInfo.GetValue(this);
                 var defaultValue = fieldInfo.GetValue(_default);
                 if (!Equals(defaultValue, value)) {
