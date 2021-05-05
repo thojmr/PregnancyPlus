@@ -10,7 +10,7 @@ namespace KK_PregnancyPlus
     public class BlendShapeController
     {
         public BlendShape blendShape = new BlendShape();
-
+        public SkinnedMeshRenderer smr = null;
 
         //This format contains all the info a blendshape needs to be made.  It also server as the format we will save to a character card later
         [MessagePackObject(keyAsPropertyName: true)]
@@ -79,10 +79,11 @@ namespace KK_PregnancyPlus
         /// </summary>
         /// <param name="smr">The current active mesh</param>
         /// <param name="_blendShape">The blendshape we loaded from character card</param>
-        public BlendShapeController(BlendShape _blendShape, SkinnedMeshRenderer smr)         
+        public BlendShapeController(BlendShape _blendShape, SkinnedMeshRenderer _smr)         
         {
             blendShape = _blendShape;
-            AddBlendShapeToMesh(smr);
+            smr = _smr;
+            AddBlendShapeToMesh(_smr);
         }
 
 
@@ -91,10 +92,11 @@ namespace KK_PregnancyPlus
         /// </summary>
         /// <param name="smr">The mesh to search on</param>
         /// <param name="blendShapeName">The blendshape name to search for</param>
-        public BlendShapeController(SkinnedMeshRenderer smr, string blendShapeName)         
+        public BlendShapeController(SkinnedMeshRenderer _smr, string blendShapeName)         
         {
             //Once found you can use this controller to call any of its blendshape methods
-            blendShape = GetBlendShapeByName(smr, blendShapeName);
+            blendShape = GetBlendShapeByName(_smr, blendShapeName);
+            smr = _smr;
         }
 
 
@@ -211,6 +213,7 @@ namespace KK_PregnancyPlus
         public bool ApplyBlendShapeWeight(SkinnedMeshRenderer smr, float weight) 
         {
             if (!blendShape.isInitilized || weight < 0) return false;
+            if (smr == null) return false;
 
             //Once again if you don't force the mesh to update here, the blendshape below could have stale data
             smr.sharedMesh = smr.sharedMesh;
@@ -231,6 +234,12 @@ namespace KK_PregnancyPlus
             smr.SetBlendShapeWeight(shapeIndex, lerpWeight);
 
             return true;
+        }
+
+        //Override for when the smr is already included in this controller
+        public bool ApplyBlendShapeWeight(float weight) 
+        {
+            return ApplyBlendShapeWeight(smr, weight);
         }
 
 

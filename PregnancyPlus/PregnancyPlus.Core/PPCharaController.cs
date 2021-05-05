@@ -118,6 +118,8 @@ namespace KK_PregnancyPlus
                 if (Time.frameCount % 60 == 0) MeasureWaistAndSphere(ChaControl, true);
                 if (Time.frameCount % 60 == 0) MeshInflate(true, true);
             }
+
+            ComputeInflationChange();
         }
 
 
@@ -358,36 +360,6 @@ namespace KK_PregnancyPlus
                 }
             #endif
         }
-
-        
-        /// <summary>
-        /// fetch KK_Pregnancy Data.Week value for KK story mode integration (It works if you don't mind the clipping)
-        /// </summary>
-        internal void GetWeeksAndSetInflation(bool checkNewMesh = false, bool slidersChanged = false) 
-        {            
-
-            //If a card value is set for inflation size, use that first, otherwise check KK_Pregnancy for Weeks value
-            var cardData = GetCardData();
-            if (cardData.inflationSize > 0 && cardData.GameplayEnabled) 
-            {
-                MeshInflate(cardData, checkNewMesh, slidersChanged);
-                return;
-            }
-
-            var week = PregnancyPlusHelper.GetWeeksFromPregnancyPluginData(ChaControl, KK_PregnancyPluginName);
-            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" GetWeeksAndSetInflation {ChaControl.name} >  Week:{week} checkNewMesh:{checkNewMesh} slidersChanged:{slidersChanged}");
-            if (week < 0) {
-                //Fix for when character gives birth, we need to reset belly
-                if (infConfig.inflationSize > 0) MeshInflate(0);
-                return;
-            }
-
-            //Compute the additonal belly size added based on user configured vallue from 0-40
-            var additionalPregPlusSize = Mathf.Lerp(0, week, PregnancyPlusPlugin.MaxStoryModeBelly.Value/40);
-
-            MeshInflate(additionalPregPlusSize, checkNewMesh, slidersChanged);
-        }
-        
 
     }
 }

@@ -22,7 +22,7 @@ namespace KK_PregnancyPlus
         /// <param name="needsOverwrite">When false we don't have to overwrite the blendshape, and only have to set it's weight</param>
         /// <param name="blendShapeTag">string to append to the end of the blendshape name, for identification</param>
         /// <returns>Will return True if any verticies are changed</returns>
-        internal bool ApplyInflation(SkinnedMeshRenderer smr, string renderKey, bool needsOverwrite, string blendShapeTag = null) 
+        internal bool ApplyInflation(SkinnedMeshRenderer smr, string renderKey, bool needsOverwrite, string blendShapeTag = null, bool bypassWhen0 = false) 
         {
             if (smr == null) 
             {
@@ -33,7 +33,7 @@ namespace KK_PregnancyPlus
 
             var infSize = infConfig.inflationSize;
             //Only inflate if the value is above 0  
-            if (infSize.Equals(null) || infSize == 0) return false;      
+            if (!bypassWhen0 && (infSize.Equals(null) || infSize == 0)) return false;      
 
             //Some meshes are not readable and cant be touched...  Nothing I can do about this right now
             if (!smr.sharedMesh.isReadable) 

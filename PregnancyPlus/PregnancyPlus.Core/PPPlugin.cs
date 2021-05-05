@@ -7,15 +7,17 @@ using KKAPI.Chara;
 
 namespace KK_PregnancyPlus
 {
-    [BepInPlugin(GUID, GUID, "5.3.0")]
-    [BepInDependency(KoikatuAPI.GUID, "1.12")]
+    [BepInPlugin(GUID, GUID, "5.3.0")]    
     [BepInDependency("com.deathweasel.bepinex.uncensorselector", BepInDependency.DependencyFlags.SoftDependency)]
     #if KK
+        [BepInDependency(KoikatuAPI.GUID, "1.14")]
         [BepInDependency("KKPE", BepInDependency.DependencyFlags.SoftDependency)]
         [BepInDependency("KK_Pregnancy", BepInDependency.DependencyFlags.SoftDependency)]
     #elif HS2
+        [BepInDependency(KoikatuAPI.GUID, "1.15")]
         [BepInDependency("HS2PE", BepInDependency.DependencyFlags.SoftDependency)]
     #elif AI
+        [BepInDependency(KoikatuAPI.GUID, "1.15")]
         [BepInDependency("AIPE", BepInDependency.DependencyFlags.SoftDependency)]
         [BepInDependency("AI_Pregnancy", BepInDependency.DependencyFlags.SoftDependency)]
     #endif
@@ -44,6 +46,7 @@ namespace KK_PregnancyPlus
 
             var hi = new Harmony(GUID);
             Hooks.InitHooks(hi);
+            Hooks_KK_Pregnancy.InitHooks(hi);
 
             //Set up studio/malker GUI sliders
             PregnancyPlusGui.InitStudio(hi, this);

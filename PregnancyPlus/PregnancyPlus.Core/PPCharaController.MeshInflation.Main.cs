@@ -25,7 +25,7 @@ namespace KK_PregnancyPlus
         /// <param name="freshStart">Will recalculate verts like a first time run</param>
         /// <param name="pluginConfigSliderChanged">Will treat as if some slider values changed, which they did in global plugin config</param>
         /// <returns>Will return True if the mesh was altered and False if not</returns>
-        public bool MeshInflate(bool checkForNewMesh = false, bool freshStart = false, bool pluginConfigSliderChanged = false, bool visibilityUpdate = false)
+        public bool MeshInflate(bool checkForNewMesh = false, bool freshStart = false, bool pluginConfigSliderChanged = false, bool visibilityUpdate = false, bool bypassWhen0 = false )
         {
             if (ChaControl.objBodyBone == null) return false;//Make sure chatacter objs exists first  
             if (!PregnancyPlusPlugin.AllowMale.Value && ChaControl.sex == 0) return false;// Only female characters, unless plugin config says otherwise          
@@ -33,12 +33,12 @@ namespace KK_PregnancyPlus
             var sliderHaveChanged = NeedsMeshUpdate(pluginConfigSliderChanged);
             var onlyInflationSizeChanged = OnlyInflationSizeChanged();
             //Only continue if one of the config values changed
-            if (!sliderHaveChanged && !visibilityUpdate) 
+            if (!sliderHaveChanged && !visibilityUpdate && !bypassWhen0) 
             {
                 //Only stop here, if no recalculation needed
                 if (!freshStart && !checkForNewMesh)  return false; 
             }
-            ResetInflation();
+            if (!bypassWhen0) ResetInflation();
 
             if (!AllowedToInflate()) return false;//if outside studio/maker, make sure StoryMode is enabled first
             if (!infConfig.GameplayEnabled) return false;//Only if gameplay enabled
@@ -47,7 +47,7 @@ namespace KK_PregnancyPlus
             if (freshStart) CleanSlate();
 
             //Only continue when size above 0
-            if (infConfig.inflationSize <= 0) 
+            if (infConfig.inflationSize <= 0 && !bypassWhen0) 
             {
                 infConfigHistory.inflationSize = 0;
                 return false;                                
@@ -71,9 +71,9 @@ namespace KK_PregnancyPlus
 
             //Get and apply all clothes render mesh changes, then do body mesh too
             var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);            
-            anyMeshChanges = LoopAndApplyMeshChanges(clothRenderers, sliderHaveChanged, onlyInflationSizeChanged, anyMeshChanges, true, GetBodyMeshRenderer(), freshStart);          
+            anyMeshChanges = LoopAndApplyMeshChanges(clothRenderers, sliderHaveChanged, onlyInflationSizeChanged, anyMeshChanges, true, GetBodyMeshRenderer(), freshStart, bypassWhen0);          
             var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, true);
-            anyMeshChanges = LoopAndApplyMeshChanges(bodyRenderers, sliderHaveChanged, onlyInflationSizeChanged, anyMeshChanges);
+            anyMeshChanges = LoopAndApplyMeshChanges(bodyRenderers, sliderHaveChanged, onlyInflationSizeChanged, anyMeshChanges, false, null, false, bypassWhen0);
 
             RemoveMeshCollider();
 
@@ -99,7 +99,7 @@ namespace KK_PregnancyPlus
         /// <param name="isClothingMesh">If this smr is a cloth mesh</param>
         /// <returns>boolean true if any meshes were changed</returns>
         internal bool LoopAndApplyMeshChanges(List<SkinnedMeshRenderer> smrs, bool sliderHaveChanged, bool onlyInflationSizeChanged, bool anyMeshChanges, 
-                                              bool isClothingMesh = false, SkinnedMeshRenderer bodyMeshRenderer = null, bool freshStart = false) 
+                                              bool isClothingMesh = false, SkinnedMeshRenderer bodyMeshRenderer = null, bool freshStart = false, bool bypassWhen0 = false) 
         {
             foreach (var smr in smrs) 
             {           
@@ -116,7 +116,7 @@ namespace KK_PregnancyPlus
                 //If mesh fails to compute, skip (mesn.IsReadable = false will cause this) 
                 if (needsComputeVerts && !didCompute) continue;
 
-                var appliedMeshChanges = ApplyInflation(smr, GetMeshKey(smr), (!onlyInflationSizeChanged && sliderHaveChanged), blendShapeTempTagName);
+                var appliedMeshChanges = ApplyInflation(smr, GetMeshKey(smr), (!onlyInflationSizeChanged && sliderHaveChanged), blendShapeTempTagName, bypassWhen0);
                 if (appliedMeshChanges) anyMeshChanges = true;                
             }  
 

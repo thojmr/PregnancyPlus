@@ -29,12 +29,12 @@ namespace KK_PregnancyPlus
         /// <param name="inflationSize">Sets inflation size from 0 to 40, clamped</param>
         /// <param name="checkForNewMesh">Lets you force bypass the check for values changed to check for new meshes</param>
         /// <param name="pluginConfigSliderChanged">Will treat as if some slider values changed, which they did in global plugin config</param>
-        public bool MeshInflate(float inflationSize, bool checkForNewMesh = false, bool pluginConfigSliderChanged = false)
+        public bool MeshInflate(float inflationSize, bool checkForNewMesh = false, bool pluginConfigSliderChanged = false, bool bypassWhen0 = false)
         {                  
             //Allow an initial size to be passed in, and sets it to the config           
             infConfig.inflationSize = Mathf.Clamp(inflationSize, 0, 40);            
 
-            return MeshInflate(checkForNewMesh, false, pluginConfigSliderChanged);
+            return MeshInflate(checkForNewMesh, false, pluginConfigSliderChanged, false, bypassWhen0);
         }
 
         /// <summary>

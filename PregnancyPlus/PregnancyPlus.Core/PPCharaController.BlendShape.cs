@@ -374,6 +374,39 @@ namespace KK_PregnancyPlus
 
             return bsc.ApplyBlendShapeWeight(smr, 0);
         }
+
+
+        /// <summary>
+        /// Compute the blendshapes for a character to be used during inflation HScene (Does not apply the shape)
+        /// </summary>
+        /// <param name="smr">Target mesh renderer to update (original shape)</param>
+        internal List<BlendShapeController> ComputeInflationBlendShapes() {
+            var blendshapes = new List<BlendShapeController>();
+
+            //Trigger inflation at 0 size to create the blendshapes
+            MeshInflate(0, false, false, true);
+
+            var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);            
+            foreach(var smr in clothRenderers)
+            {
+                var blendShapeName = MakeBlendShapeName(GetMeshKey(smr), blendShapeTempTagName);
+                var blendshapeCtrl = new BlendShapeController(smr, blendShapeName);
+                if (blendshapeCtrl.blendShape != null) blendshapes.Add(blendshapeCtrl);
+            }
+
+            var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, true);
+            foreach(var smr in bodyRenderers)
+            {
+                var blendShapeName = MakeBlendShapeName(GetMeshKey(smr), blendShapeTempTagName);
+                var blendshapeCtrl = new BlendShapeController(smr, blendShapeName);
+                if (blendshapeCtrl.blendShape != null) blendshapes.Add(blendshapeCtrl);
+            }
+
+            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo(
+                     $"ComputeInflationBlendShapes > Found {blendshapes.Count} blendshapes ");
+
+            return blendshapes;
+        }
     }
 }
 

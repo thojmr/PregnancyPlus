@@ -126,6 +126,7 @@
     <Compile Include="..\PregnancyPlus.Core\PPCharaController.FilterVerts.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPCharaController.BlendShape.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPCharaController.AnimationCurve.cs" />
+    <Compile Include="..\PregnancyPlus.Core\PPCharaController.KK_Pregnancy.cs" />
     <Compile Include="..\PregnancyPlus.Core\GUI\PPGui.cs" />
     <Compile Include="..\PregnancyPlus.Core\GUI\PPBlendShapeGui.cs" />
     <Compile Include="..\PregnancyPlus.Core\GUI\PPBlendShapeGui.Style.cs" />
@@ -135,6 +136,7 @@
     <Compile Include="..\PregnancyPlus.Core\PPPlugin.cs" />
     <Compile Include="..\PregnancyPlus.Core\GUI\PPPlugin.PluginConfigGui.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPPlugin.Hooks.cs" />
+    <Compile Include="..\PregnancyPlus.Core\PPPlugin.Hooks.KK_Pregnancy.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPHelper.cs" />
     <Compile Include="..\PregnancyPlus.Core\Data\PPData.cs" />
     <Compile Include="..\PregnancyPlus.Core\tools\NormalsSolver.cs" />
