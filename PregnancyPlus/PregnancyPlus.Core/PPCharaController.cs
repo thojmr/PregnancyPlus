@@ -119,7 +119,10 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnReload {currentGameMode}"); 
             lastVisibleState = false;
             ClearOnReload();
-            ScrubBlendShapes();
+            #if AI || HS2
+                //Fix for the way AI addds new characters by copying existing character first.  This will remove the old blendshapes.
+                ScrubBlendShapes();
+            #endif
 
             //Check for swapping out character Game Object with new character
             var isNewCharFile = IsNewChar(ChaFileControl);

@@ -176,7 +176,7 @@ namespace KK_PregnancyPlus
             // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" SMR pos {smr.transform.position} rot {smr.transform.rotation} parent {smr.transform.parent}");
                         
             //set sphere center and allow for adjusting its position from the UI sliders  
-            Vector3 sphereCenter = GetSphereCenter(meshRootTf, isClothingMesh);
+            Vector3 sphereCenter = GetSphereCenter(meshRootTf);
             ApplyConditionalSphereCenterOffset(meshRootTf, isClothingMesh, sphereCenter, smr,  out sphereCenter, out bodySphereCenterOffset);  
 
             var rendererName = GetMeshKey(smr);         
@@ -321,7 +321,7 @@ namespace KK_PregnancyPlus
         /// </summary>
         /// <param name="boneOrMeshTf">The transform that defined the center of the sphere X, Y, and Z for KK and X, Z for HS2 with calculated Y</param>
         /// <param name="isClothingMesh"></param>
-        internal Vector3 GetSphereCenter(Transform boneOrMeshTf, bool isClothingMesh = false) 
+        internal Vector3 GetSphereCenter(Transform boneOrMeshTf) 
         { 
             
             //Sphere slider adjustments need to be transformed to local space first to eliminate any character rotation in world space   
