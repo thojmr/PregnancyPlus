@@ -184,6 +184,7 @@ namespace KK_PregnancyPlus
             //Unserialize the blendshape from characters card
             var meshBlendShapes = MessagePack.LZ4MessagePackSerializer.Deserialize<List<MeshBlendShape>>(data.meshBlendShape);
             if (meshBlendShapes == null || meshBlendShapes.Count <= 0) return;
+            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" MeshBlendShape count > {meshBlendShapes.Count} ");
 
             //For each stores meshBlendShape
             foreach(var meshBlendShape in meshBlendShapes)
@@ -239,7 +240,13 @@ namespace KK_PregnancyPlus
 
                     //Add the blendshape to the mesh
                     new BlendShapeController(blendShape, smr);
-                }                
+                } 
+                else if (smr.name == meshName && smr.sharedMesh.vertexCount != vertexCount)
+                {
+                    //When the mesh vertex count is different now, warn the user that their blendshape is not going to load
+                    PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_BodyMeshVertexChanged, 
+                        $" Mesh '{smr.name}' has a different vertex count, and no longer fits the BlendShape saved to this card.  Blendshape {meshBlendShape.BlendShape.name} skipped."); 
+                }               
             }              
         }
                 
