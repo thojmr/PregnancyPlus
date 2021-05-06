@@ -109,6 +109,36 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
+        /// When you want to start fresh and remove all (non GUI) Preg+ blendshapes completely.
+        /// </summary>
+        internal void ScrubBlendShapes()
+        {
+            var renderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);            
+            var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, true);
+            renderers.AddRange(bodyRenderers);
+
+            //Remove any Preg+ blendshapes
+            foreach (var smr in renderers)
+            {
+                for (var i = 0; i < smr.sharedMesh.blendShapeCount; i++)
+                {
+                    //Search for GUI blendshape
+                    var name = smr.sharedMesh.GetBlendShapeName(i);
+                    var blendShapePartialName = MakeBlendShapeName(GetMeshKey(smr), blendShapeTempTagName);
+
+                    if (name.EndsWith(blendShapePartialName))
+                    {
+                        //Remove the blendshape
+                        var bsc = new BlendShapeController(smr, name);
+                        bsc.RemoveBlendShape(smr);
+                    }
+                }
+            }
+
+        }
+
+
+        /// <summary>
         /// Loop through each skinned mesh rendere and if the char card has a blendshape for it, add it
         /// </summary>
         /// <param name="smrs">List of skinnedMeshRenderes</param>

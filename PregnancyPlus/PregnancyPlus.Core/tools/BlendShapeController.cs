@@ -135,44 +135,8 @@ namespace KK_PregnancyPlus
         private void OverwriteBlendShape(SkinnedMeshRenderer smr, BlendShape newBs) 
         {
             var smrMesh = smr.sharedMesh;
-            var existingBlendShapes = new Dictionary<int, BlendShape[]>();
             var bsCount = smrMesh.blendShapeCount;            
-
-            //For each shape index that exists
-            for (var i = 0; i < bsCount; i++) 
-            {
-                int frameCount = smrMesh.GetBlendShapeFrameCount(i);
-
-                Vector3[] deltaVertices = new Vector3 [smrMesh.vertexCount];
-                Vector3[] deltaNormals = new Vector3 [smrMesh.vertexCount];
-                Vector3[] deltaTangents = new Vector3 [smrMesh.tangents.Length];
-
-                existingBlendShapes[i] = new BlendShape[frameCount];
-
-                if (frameCount == 0)
-                {
-                    if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" OverwriteBlendShape > frameCount == 0 for some reason");
-                }
-
-                //For each frame of the shape index
-                for (var f = 0; f < frameCount; f++) 
-                {
-                    //Get the blendshape details
-                    smrMesh.GetBlendShapeFrameVertices(i, f, deltaVertices, deltaNormals, deltaTangents);
-                    var name = smrMesh.GetBlendShapeName(i);
-                    var weight = smrMesh.GetBlendShapeFrameWeight(i, f);
-
-                    //Copy the blendshape data
-                    var bsFrame = new BlendShape();
-                    bsFrame.verticies = deltaVertices;
-                    bsFrame.normals = deltaNormals;
-                    bsFrame.tangents = deltaTangents;
-                    bsFrame.weight = weight;
-                    bsFrame.name = name;
-                
-                    existingBlendShapes[i][f] = bsFrame;
-                }
-            }
+            var existingBlendShapes = CopyAllBlendShapeFrames(smrMesh);
 
             //Clear all blend shapes (because we cant just delete one.  Thanks unity!)
             smrMesh.ClearBlendShapes();
@@ -192,7 +156,8 @@ namespace KK_PregnancyPlus
                         continue;
                     }
                     //Otherwise just add back the old blend shapes, and weights in the same order
-                    smrMesh.AddBlendShapeFrame(existingBlendShapes[i][f].name, existingBlendShapes[i][f].weight, existingBlendShapes[i][f].verticies, existingBlendShapes[i][f].normals, existingBlendShapes[i][f].tangents);
+                    smrMesh.AddBlendShapeFrame(existingBlendShapes[i][f].name, existingBlendShapes[i][f].weight, existingBlendShapes[i][f].verticies, 
+                        existingBlendShapes[i][f].normals, existingBlendShapes[i][f].tangents);
                 }
             }
 
@@ -235,6 +200,7 @@ namespace KK_PregnancyPlus
 
             return true;
         }
+
 
         //Override for when the smr is already included in this controller
         public bool ApplyBlendShapeWeight(float weight) 
@@ -284,11 +250,92 @@ namespace KK_PregnancyPlus
             return bsFrame;
         }
 
+
+        /// <summary>
+        /// Remove a single blendshape from a mesh
+        /// </summary>
+        public bool RemoveBlendShape(SkinnedMeshRenderer smr) {
+
+            if (blendShape == null) return false;
+
+            var smrMesh = smr.sharedMesh;            
+            var bsCount = smrMesh.blendShapeCount;      
+            if (bsCount == 0) return true;
+                  
+            var existingBlendShapes = CopyAllBlendShapeFrames(smrMesh);
+
+            //Clear all blend shapes (because we cant just delete one.  Thanks unity!)
+            smrMesh.ClearBlendShapes();
+
+            //Add all of the copies back (excluding the one we are removing)
+            for (var i = 0; i < bsCount; i++)
+            {
+                //For each frame add it back in
+                for (var f = 0; f < existingBlendShapes[i].Length; f++) 
+                {
+                    //If this is the BS we want to remove, skip it
+                    if (existingBlendShapes[i][f].name == blendShape.name) continue;
+
+                    //Otherwise add back the old blend shapes, and weights in the same order (shifted around the removed one)
+                    smrMesh.AddBlendShapeFrame(existingBlendShapes[i][f].name, existingBlendShapes[i][f].weight, existingBlendShapes[i][f].verticies, 
+                        existingBlendShapes[i][f].normals, existingBlendShapes[i][f].tangents);
+                }
+            }
+
+            return true;
+        }
+
+
+        /// <summary>
+        /// Copy all existing blendshape frames on a mesh
+        /// </summary>
+        /// <param name="smrMesh">The mesh contining the blendshapes</param>
+        internal Dictionary<int, BlendShape[]> CopyAllBlendShapeFrames(Mesh smrMesh) 
+        {
+            var existingBlendShapes = new Dictionary<int, BlendShape[]>();
+            var bsCount = smrMesh.blendShapeCount;  
+
+            //For each shape index that exists
+            for (var i = 0; i < bsCount; i++) 
+            {
+                int frameCount = smrMesh.GetBlendShapeFrameCount(i);
+
+                Vector3[] deltaVertices = new Vector3 [smrMesh.vertexCount];
+                Vector3[] deltaNormals = new Vector3 [smrMesh.vertexCount];
+                Vector3[] deltaTangents = new Vector3 [smrMesh.tangents.Length];
+
+                existingBlendShapes[i] = new BlendShape[frameCount];
+
+                //For each frame of the shape index
+                for (var f = 0; f < frameCount; f++) 
+                {
+                    //Get the blendshape details
+                    smrMesh.GetBlendShapeFrameVertices(i, f, deltaVertices, deltaNormals, deltaTangents);
+                    var name = smrMesh.GetBlendShapeName(i);
+                    var weight = smrMesh.GetBlendShapeFrameWeight(i, f);
+
+                    //Copy the blendshape data
+                    var bsFrame = new BlendShape();
+                    bsFrame.verticies = deltaVertices;
+                    bsFrame.normals = deltaNormals;
+                    bsFrame.tangents = deltaTangents;
+                    bsFrame.weight = weight;
+                    bsFrame.name = name;
+                
+                    existingBlendShapes[i][f] = bsFrame;
+                }
+            }
+
+            return existingBlendShapes;
+        }
+
+
         public void ClearBlendShapes(SkinnedMeshRenderer smr) 
         {
             smr.sharedMesh.ClearBlendShapes();
             blendShape = new BlendShape();
         }
+
 
         //Just subtract the vectors to get deltas
         internal Vector3[] GetV3Deltas(Vector3[] origins, Vector3[] targets) 
@@ -303,6 +350,7 @@ namespace KK_PregnancyPlus
             return deltas;
         }
 
+
         internal Mesh CopyMesh(Mesh mesh)
         {
             Mesh newmesh = new Mesh();
@@ -315,6 +363,7 @@ namespace KK_PregnancyPlus
 
             return newmesh;
         }
+
 
         internal Vector3[] ConvertV4ToV3(Vector4[] v4s) 
         {

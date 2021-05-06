@@ -119,6 +119,7 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnReload {currentGameMode}"); 
             lastVisibleState = false;
             ClearOnReload();
+            ScrubBlendShapes();
 
             //Check for swapping out character Game Object with new character
             var isNewCharFile = IsNewChar(ChaFileControl);
