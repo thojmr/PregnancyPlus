@@ -8,7 +8,12 @@ using System.Linq;
 using System.Reflection;
 using KKAPI.Maker;
 using KKAPI.Studio;
-#if HS2 || AI
+#if KK
+    using KKAPI.MainGame;
+#elif HS2
+    using AIChara;
+#elif AI
+    using KKAPI.MainGame;
     using AIChara;
 #endif
 
@@ -39,7 +44,7 @@ namespace KK_PregnancyPlus
         public Dictionary<string, float[]> clothingOffsets = new Dictionary<string, float[]>();//The distance we want to offset each vertex fromt the body mesh when inflated
         public Dictionary<string, bool[]> bellyVerticieIndexes = new Dictionary<string, bool[]>();//List of verticie indexes that belong to the belly area
         public Dictionary<string, bool[]> alteredVerticieIndexes = new Dictionary<string, bool[]>();//List of verticie indexes that belong to the belly area and within the current belly radius
-
+        public List<string> ignoreMeshList = new List<string>();//List of mesh names/keys to ignore since they dont have belly verts
 
 
         //For fetching uncensor body guid data (bugfix for uncensor body vertex positions)
@@ -75,7 +80,25 @@ namespace KK_PregnancyPlus
             //Character card name used to detect switching characters  
             charaFileName = ChaFileControl.parameter.fullname;        
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $Start {charaFileName}");
-            ReadAndSetCardData();                       
+            ReadAndSetCardData();      
+
+            #if KK || AI
+
+                GameAPI.StartH += (object sender, EventArgs e) => 
+                { 
+                    if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $StartH {charaFileName}");
+                    //Trigger inflation at current size to create any Preg+ blendshapes that may be used.  Kind of like like pre processing.
+                    MeshInflate(infConfig.inflationSize, false, false, true);
+                };
+
+                //When HScene ends, clear any inflation data
+                GameAPI.EndH += (object sender, EventArgs e) => 
+                { 
+                    if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $EndH {charaFileName}");
+                    clearInflationStuff(true);
+                };
+         
+            #endif
 
             base.Start();
         }        
@@ -96,6 +119,7 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnReload {currentGameMode}"); 
             lastVisibleState = false;
             ClearOnReload();
+            ScrubBlendShapes();
 
             //Check for swapping out character Game Object with new character
             var isNewCharFile = IsNewChar(ChaFileControl);
@@ -118,6 +142,8 @@ namespace KK_PregnancyPlus
                 if (Time.frameCount % 60 == 0) MeasureWaistAndSphere(ChaControl, true);
                 if (Time.frameCount % 60 == 0) MeshInflate(true, true);
             }
+
+            ComputeInflationChange();
         }
 
 
@@ -224,15 +250,35 @@ namespace KK_PregnancyPlus
             
             if (PregnancyPlusPlugin.StoryModeInflationIncrease.Value.IsDown()) 
             {
-                //Increase size by 2
-                var newVal = infConfig.inflationSize + 2;
-                MeshInflate(newVal);                
+                if (isDuringInflationScene) 
+                {
+                    //Need special logic to append size to the TargetPregPlusSize during inflation scene
+                    //Increase size by 2
+                    TargetPregPlusSize += 2;
+                    _inflationChange = TargetPregPlusSize;
+                    MeshInflate(TargetPregPlusSize);
+                }
+                else
+                {
+                    //Increase size by 2
+                    var newVal = infConfig.inflationSize + 2;
+                    MeshInflate(newVal);                
+                }
             }
 
             if (PregnancyPlusPlugin.StoryModeInflationDecrease.Value.IsDown()) 
             {
-                var newVal = infConfig.inflationSize - 2;
-                MeshInflate(newVal);
+                if (isDuringInflationScene) 
+                {
+                    TargetPregPlusSize -= 2;
+                    _inflationChange = TargetPregPlusSize;
+                    MeshInflate(TargetPregPlusSize);
+                }
+                else
+                {
+                    var newVal = infConfig.inflationSize - 2;
+                    MeshInflate(newVal);
+                }
             }
 
             if (PregnancyPlusPlugin.StoryModeInflationReset.Value.IsDown()) 
@@ -251,7 +297,7 @@ namespace KK_PregnancyPlus
             //Wait for card data to load, and make sure this is the same character the clothes event triggered for
             if (!initialized || chaID != ChaControl.chaID) return;
 
-            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= ClothesStateChangeEvent {clothesKind}");
+            // if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= ClothesStateChangeEvent {clothesKind}");
 
             #if KK
                 var debounceTime = 0.1f;
@@ -330,7 +376,7 @@ namespace KK_PregnancyPlus
             //If guid is the latest, trigger method
             if (debounceGuid == guid) 
             {
-                if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" WaitForMeshToSettle checkNewMesh:{checkNewMesh} forceRecalcVerts:{forceRecalcVerts}");        
+                // if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" WaitForMeshToSettle checkNewMesh:{checkNewMesh} forceRecalcVerts:{forceRecalcVerts}");        
                 CheckMeshVisibility();
                 MeshInflate(checkNewMesh, forceRecalcVerts);
             }
@@ -358,36 +404,6 @@ namespace KK_PregnancyPlus
                 }
             #endif
         }
-
-        
-        /// <summary>
-        /// fetch KK_Pregnancy Data.Week value for KK story mode integration (It works if you don't mind the clipping)
-        /// </summary>
-        internal void GetWeeksAndSetInflation(bool checkNewMesh = false, bool slidersChanged = false) 
-        {            
-
-            //If a card value is set for inflation size, use that first, otherwise check KK_Pregnancy for Weeks value
-            var cardData = GetCardData();
-            if (cardData.inflationSize > 0 && cardData.GameplayEnabled) 
-            {
-                MeshInflate(cardData, checkNewMesh, slidersChanged);
-                return;
-            }
-
-            var week = PregnancyPlusHelper.GetWeeksFromPregnancyPluginData(ChaControl, KK_PregnancyPluginName);
-            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" GetWeeksAndSetInflation {ChaControl.name} >  Week:{week} checkNewMesh:{checkNewMesh} slidersChanged:{slidersChanged}");
-            if (week < 0) {
-                //Fix for when character gives birth, we need to reset belly
-                if (infConfig.inflationSize > 0) MeshInflate(0);
-                return;
-            }
-
-            //Compute the additonal belly size added based on user configured vallue from 0-40
-            var additionalPregPlusSize = Mathf.Lerp(0, week, PregnancyPlusPlugin.MaxStoryModeBelly.Value/40);
-
-            MeshInflate(additionalPregPlusSize, checkNewMesh, slidersChanged);
-        }
-        
 
     }
 }

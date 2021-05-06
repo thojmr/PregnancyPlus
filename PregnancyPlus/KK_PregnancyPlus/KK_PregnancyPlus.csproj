@@ -67,8 +67,8 @@
       <HintPath>..\..\packages\ABMX.KKABMX.4.3.0\lib\net35\KKABMX.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="KKAPI, Version=1.12.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\IllusionModdingAPI.KKAPI.1.12.3\lib\net35\KKAPI.dll</HintPath>
+    <Reference Include="KKAPI, Version=1.14.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IllusionModdingAPI.KKAPI.1.14.0\lib\net35\KKAPI.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Sirenix.Serialization, Version=1.0.5.1, Culture=neutral, processorArchitecture=MSIL">
@@ -101,6 +101,7 @@
     <Compile Include="..\PregnancyPlus.Core\PPCharaController.FilterVerts.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPCharaController.BlendShape.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPCharaController.AnimationCurve.cs" />
+    <Compile Include="..\PregnancyPlus.Core\PPCharaController.KK_Pregnancy.cs" />
     <Compile Include="..\PregnancyPlus.Core\GUI\PPGui.cs" />
     <Compile Include="..\PregnancyPlus.Core\GUI\PPBlendShapeGui.cs" />
     <Compile Include="..\PregnancyPlus.Core\GUI\PPBlendShapeGui.Style.cs" />
@@ -110,6 +111,7 @@
     <Compile Include="..\PregnancyPlus.Core\PPPlugin.cs" />
     <Compile Include="..\PregnancyPlus.Core\GUI\PPPlugin.PluginConfigGui.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPPlugin.Hooks.cs" />
+    <Compile Include="..\PregnancyPlus.Core\PPPlugin.Hooks.KK_Pregnancy.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPHelper.cs" />
     <Compile Include="..\PregnancyPlus.Core\Data\PPData.cs" />
     <Compile Include="..\PregnancyPlus.Core\tools\NormalsSolver.cs" />

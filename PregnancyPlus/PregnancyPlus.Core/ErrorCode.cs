@@ -10,6 +10,7 @@ public enum ErrorCode
     PregPlus_BadMeasurement,//When a part of the character fails to take measurement needed for belly placement.
     PregPlus_HSPENotFound,//When HSPE plugin is not found while using blendshapes (It's not a hard dependency, but still good to know when its not included)
     PregPlus_BodyMeshDisguisedAsCloth,//When a body mesh is detected that is nested under a cloth Game Object (like Squeeze Socks)
+    PregPlus_BodyMeshVertexChanged,//When a saved blendshape tries to loadd, but the mesh is no longer the same and can't load
 }
 
 /// <summary>

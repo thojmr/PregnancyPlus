@@ -33,14 +33,23 @@ namespace KK_PregnancyPlus
             {
                 PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_MeshNotReadable, 
                     $"GetFilteredVerticieIndexes > smr '{renderKey}' is not readable, skipping");
+                if (!ignoreMeshList.Contains(renderKey)) ignoreMeshList.Add(renderKey);
                 return false;
             }
 
             //return early if no bone weights found
-            if (sharedMesh.boneWeights.Length == 0) return false; 
+            if (sharedMesh.boneWeights.Length == 0) 
+            {
+                if (!ignoreMeshList.Contains(renderKey)) ignoreMeshList.Add(renderKey);//Ignore this mesh/key from now on
+                return false; 
+            }
 
             var indexesFound = GetFilteredBoneIndexes(bones, boneFilters, bellyBoneIndexes);
-            if (!indexesFound) return false;             
+            if (!indexesFound) 
+            {
+                if (!ignoreMeshList.Contains(renderKey)) ignoreMeshList.Add(renderKey);
+                return false;             
+            }
 
             //Create new mesh dictionary key for bone indexes
             bellyVerticieIndexes[renderKey] = new bool[sharedMesh.vertexCount];
@@ -82,8 +91,17 @@ namespace KK_PregnancyPlus
             //Dont need to remember this mesh if there are no belly verts in it
             if (!hasBellyVerticies) 
             {
+                if (!ignoreMeshList.Contains(renderKey)) ignoreMeshList.Add(renderKey);
                 // PregnancyPlusPlugin.Logger.LogInfo($"bellyVerticieIndexes > removing {renderKey}"); 
                 RemoveRenderKey(renderKey);
+            } 
+            else
+            {
+                //just in case a new mesh is added that is valid but also on ignore list, remove it from the list
+                if (ignoreMeshList.Contains(renderKey))
+                {
+                    ignoreMeshList.Remove(renderKey);
+                }
             }
 
             return hasBellyVerticies;

@@ -29,12 +29,12 @@ namespace KK_PregnancyPlus
         /// <param name="inflationSize">Sets inflation size from 0 to 40, clamped</param>
         /// <param name="checkForNewMesh">Lets you force bypass the check for values changed to check for new meshes</param>
         /// <param name="pluginConfigSliderChanged">Will treat as if some slider values changed, which they did in global plugin config</param>
-        public bool MeshInflate(float inflationSize, bool checkForNewMesh = false, bool pluginConfigSliderChanged = false)
+        public bool MeshInflate(float inflationSize, bool checkForNewMesh = false, bool pluginConfigSliderChanged = false, bool bypassWhen0 = false)
         {                  
             //Allow an initial size to be passed in, and sets it to the config           
             infConfig.inflationSize = Mathf.Clamp(inflationSize, 0, 40);            
 
-            return MeshInflate(checkForNewMesh, false, pluginConfigSliderChanged);
+            return MeshInflate(checkForNewMesh, false, pluginConfigSliderChanged, false, bypassWhen0);
         }
 
         /// <summary>
@@ -67,7 +67,11 @@ namespace KK_PregnancyPlus
         /// </summary>
         internal bool NeedsComputeVerts(SkinnedMeshRenderer smr, bool sliderHaveChanged, bool onlyInflationSizeChanged) 
         {
-            var renderKey = GetMeshKey(smr);
+            var renderKey = GetMeshKey(smr);       
+
+            //If mesh is on ignore list, skip it
+            if (ignoreMeshList.Contains(renderKey)) return false;                 
+
             //Do a quick check to see if we need to fetch the bone indexes again.  ex: on second call we should allready have them
             //This saves a lot on compute apparently!            
             var isInitialized = bellyVerticieIndexes.TryGetValue(renderKey, out bool[] existingValues);

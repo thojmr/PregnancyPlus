@@ -87,7 +87,7 @@ namespace KK_PregnancyPlus
 		/// <summary>
         /// Removed all blendshape sliders, and blendshapes from the character
         /// </summary>
-		internal void OnRemoveAllBlendShapes()
+		internal void OnRemoveAllGUIBlendShapes()
 		{
 			try 
 			{
@@ -99,7 +99,7 @@ namespace KK_PregnancyPlus
                     	$" OnRemoveAllBlendShapes > HSPE not found {e.Message} ");
 			}	
 
-			_charaInstance.OnRemoveAllBlendShapes();
+			_charaInstance.OnRemoveAllGUIBlendShapes();
 			guiSkinnedMeshRenderers = new List<SkinnedMeshRenderer>();
 			lastTouched = -1;
 		}
@@ -122,7 +122,7 @@ namespace KK_PregnancyPlus
 		{
 			foreach(var smr in smrs)
 			{
-				if (smr == null || smr.sharedMesh == null || smr.sharedMesh.blendShapeCount == 0) return true;
+				if (smr == null || smr.sharedMesh == null || smr.sharedMesh.blendShapeCount == 0) return true;			
 			}
 			
 			return false;
@@ -225,7 +225,7 @@ namespace KK_PregnancyPlus
 			for (int i = 0; i < count; i++)
 			{
 				var name = sharedMesh.GetBlendShapeName(i);
-				if (name.Contains(searchName)) return i;
+				if (name.EndsWith(searchName)) return i;
 			}
 
 			return -1;

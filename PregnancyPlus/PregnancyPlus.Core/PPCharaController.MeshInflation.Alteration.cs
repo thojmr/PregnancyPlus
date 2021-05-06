@@ -15,13 +15,14 @@ namespace KK_PregnancyPlus
     {   
 
         /// <summary>
-        /// This will update all verticies with a lerp from originalVertices to inflatedVertices depending on the inflationSize config
-        /// Only modifies belly verticies, and if none are found, no action taken.
+        /// This will update a mesh blendshape, calculated from the current slider selection
         /// </summary>
         /// <param name="mesh">Target mesh to update</param>
         /// <param name="renderKey">The Shared Mesh render name, used in dictionary keys to get the current verticie values</param>
+        /// <param name="needsOverwrite">When false we don't have to overwrite the blendshape, and only have to set it's weight</param>
+        /// <param name="blendShapeTag">string to append to the end of the blendshape name, for identification</param>
         /// <returns>Will return True if any verticies are changed</returns>
-        internal bool ApplyInflation(SkinnedMeshRenderer smr, string renderKey) 
+        internal bool ApplyInflation(SkinnedMeshRenderer smr, string renderKey, bool needsOverwrite, string blendShapeTag = null, bool bypassWhen0 = false) 
         {
             if (smr == null) 
             {
@@ -31,17 +32,19 @@ namespace KK_PregnancyPlus
             }
 
             var infSize = infConfig.inflationSize;
+
+            //When during inflation scene, use the inflation scene size value (ususally triggered by clothing change)
+            if (isDuringInflationScene && !bypassWhen0)
+            {
+                if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"ApplyInflation > using TargetPregPlusSize instead {TargetPregPlusSize}");
+                infSize = TargetPregPlusSize;
+            }
+
             //Only inflate if the value is above 0  
-            if (infSize.Equals(null) || infSize == 0) return false;      
-
-            //Create an instance of sharedMesh so we don't modify the mesh shared between characters
-            var meshCopy = (Mesh)UnityEngine.Object.Instantiate(smr.sharedMesh);    
-            smr.sharedMesh = meshCopy;
-
-            var sharedMesh = smr.sharedMesh;
+            if (!bypassWhen0 && (infSize.Equals(null) || infSize == 0)) return false;      
 
             //Some meshes are not readable and cant be touched...  Nothing I can do about this right now
-            if (!sharedMesh.isReadable) 
+            if (!smr.sharedMesh.isReadable) 
             {
                 PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_MeshNotReadable, 
                     $"ApplyInflation > smr '{renderKey}' is not readable, skipping");
@@ -52,47 +55,24 @@ namespace KK_PregnancyPlus
             var exists = originalVertices.TryGetValue(renderKey, out var val);
             if (!exists) 
             {
-                if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo(
-                     $"ApplyInflation > smr '{renderKey}' does not exists, skipping");
+                // if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo(
+                //      $"ApplyInflation > smr '{renderKey}' does not exists, skipping");
                 RemoveRenderKey(renderKey);
                 return false;
             }
 
-            //Get computed mesh values
-            var origVert = originalVertices[renderKey];
-            var currentVert = currentVertices[renderKey];
-            var bellyVertIndex = bellyVerticieIndexes[renderKey];
-
-            if (bellyVertIndex.Length == 0) return false;
-            infConfigHistory.inflationSize = infSize;
-
-            var currentVertLength = currentVert.Length;
-            //Apply lerp morph for each changed verticie
-            for (int i = 0; i < currentVertLength; i++)
-            {
-                //If not a belly index verticie then skip the morph
-                if (!PregnancyPlusPlugin.DebugVerts.Value && !bellyVertIndex[i]) continue;
-
-                //Set the lerp size of the belly based on the users slider value (if clothing, it will include clothing offset)
-                currentVert[i] = Vector3.Lerp(origVert[i], inflatedVertices[renderKey][i], (infSize/40));
-            }
-
             //Check that the mesh did not change behind the scenes.  It will have a different vert count if it did (possible to be the same though...)
-            if (currentVert.Length != sharedMesh.vertexCount) 
+            if (inflatedVertices[renderKey].Length != smr.sharedMesh.vertexCount) 
             {
                 PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_IncorrectVertCount, 
-                    $"ApplyInflation > smr.sharedMesh '{renderKey}' has incorrect vert count {currentVert.Length}|{sharedMesh.vertexCount}");
+                    $"ApplyInflation > smr.sharedMesh '{renderKey}' has incorrect vert count {inflatedVertices[renderKey].Length}|{smr.sharedMesh.vertexCount}");
                 return false;
             }
 
+            //Create or update the smr blendshape
+            ApplyBlendShapeWeight(smr, renderKey, needsOverwrite, blendShapeTempTagName);
+
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" mesh did ApplyInflation > {smr.name}");
-
-            sharedMesh.vertices = currentVert;
-            sharedMesh.RecalculateBounds();
-            NormalSolver.RecalculateNormals(sharedMesh, 40f, alteredVerticieIndexes[renderKey]);
-            //sharedMesh.RecalculateNormals();  //old way that leaves skin seams at UV boundaries
-            sharedMesh.RecalculateTangents();
-
             return true;
         }    
 
@@ -111,41 +91,11 @@ namespace KK_PregnancyPlus
                 var smr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderKey);
                 //Normally triggered when user changes clothes, the old clothes render wont be found
                 if (smr == null) {
-                    if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogWarning($" ResetInflation > smr was not found {renderKey}");
+                    if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" ResetInflation > smr was not found {renderKey}");
                     continue;                
                 }
-
-                //Create an instance of sharedMesh so we don't modify the mesh shared between characters, that was a fun issue
-                Mesh meshCopy = (Mesh)UnityEngine.Object.Instantiate(smr.sharedMesh);
-                smr.sharedMesh = meshCopy;
-
-                var sharedMesh = smr.sharedMesh;
-                var hasValue = originalVertices.TryGetValue(renderKey, out Vector3[] origVerts); 
-
-                //On change clothes original verts become useless, so skip this
-                if (!hasValue) return;   
-
-                //Some meshes are not readable and cant be touched...
-                if (!sharedMesh.isReadable) {
-                    PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_MeshNotReadable, 
-                        $"ResetInflation > smr '{renderKey}' is not readable, skipping");
-                    continue;
-                } 
-
-                if (!sharedMesh || origVerts.Equals(null) || origVerts.Length == 0) continue;
                 
-                if (origVerts.Length != sharedMesh.vertexCount) 
-                {
-                    PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_IncorrectVertCount, 
-                        $"ResetInflation > smr '{renderKey}' has incorrect vert count {origVerts.Length}|{sharedMesh.vertexCount}");
-                    continue;
-                }
-
-                sharedMesh.vertices = origVerts;
-                sharedMesh.RecalculateBounds();
-                NormalSolver.RecalculateNormals(sharedMesh, 40f, alteredVerticieIndexes[renderKey]);
-                //sharedMesh.RecalculateNormals(); //old way that leaves skin seams
-                sharedMesh.RecalculateTangents();
+                ResetBlendShapeWeight(smr, renderKey, blendShapeTempTagName);
             }
         }
 
@@ -218,10 +168,8 @@ namespace KK_PregnancyPlus
                 {
                     var smr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderKey, false);
                     var newVerts = SmoothSingleMesh(smr, renderKey);
-                    if (newVerts != null) inflatedVertices[renderKey] = newVerts;
-
                     //Re-trigger ApplyInflation to set the new smoothed mesh
-                    ApplyInflation(smr, renderKey);
+                    ApplySmoothResults(newVerts, renderKey, smr);
                 }
             } 
             //Only smooth the body mesh around the belly area
@@ -236,11 +184,8 @@ namespace KK_PregnancyPlus
                 var bodySmr = PregnancyPlusHelper.GetMeshRendererByName(ChaControl, meshName);
                 var renderKey = GetMeshKey(bodySmr);
 
-                var newVerts = SmoothSingleMesh(bodySmr, renderKey);
-                if (newVerts != null) inflatedVertices[renderKey] = newVerts;
-
-                //Re-trigger ApplyInflation to set the new smoothed mesh
-                ApplyInflation(bodySmr, renderKey);
+                var newVerts = SmoothSingleMesh(bodySmr, renderKey);     
+                ApplySmoothResults(newVerts, renderKey, bodySmr);
             }
 
             yield return null;
@@ -250,13 +195,13 @@ namespace KK_PregnancyPlus
         /// <summary>   
         /// Update characters mesh with the new smoothed results
         /// </summary>
-        internal void ApplySmoothResults(Vector3[] newMesh, string renderKey) {
+        internal void ApplySmoothResults(Vector3[] newMesh, string renderKey, SkinnedMeshRenderer smr = null) {
             //Set the new smoothed mesh verts
             if (newMesh != null) inflatedVertices[renderKey] = newMesh;
 
-            var smr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderKey, false);
+            if (smr == null) smr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderKey, false);
             //Re-trigger ApplyInflation to set the new smoothed mesh           
-            ApplyInflation(smr, renderKey);
+            ApplyInflation(smr, renderKey, true, blendShapeTempTagName);            
         }
 
 
@@ -274,8 +219,23 @@ namespace KK_PregnancyPlus
                 return null;
             }
 
+            //Make a copy of the mesh. We dont want to affect the existing for this
+            var meshCopyTarget = PregnancyPlusHelper.CopyMesh(smr.sharedMesh);   
+            if (!meshCopyTarget.isReadable) 
+            {
+                PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_MeshNotReadable, 
+                    $"SmoothSingleMesh > smr '{renderKey}' is not readable, skipping");                     
+                return null;
+            } 
+
+            //Calculate the original normals, but don't show them.  We just want it for the blendshape target
+            meshCopyTarget.vertices = inflatedVertices[renderKey];
+            meshCopyTarget.RecalculateBounds();
+            NormalSolver.RecalculateNormals(meshCopyTarget, 40f, bellyVerticieIndexes[renderKey]);
+            meshCopyTarget.RecalculateTangents();
+
             //Get the new smoothed mesh verticies (compute only the belly verts)
-            return SmoothMesh.Start(smr.sharedMesh, alteredVerticieIndexes[renderKey]);
+            return SmoothMesh.Start(meshCopyTarget, alteredVerticieIndexes[renderKey]);
         }
 
     }

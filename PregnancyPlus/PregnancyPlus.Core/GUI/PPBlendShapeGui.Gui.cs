@@ -42,7 +42,16 @@ namespace KK_PregnancyPlus
 				anyMeshEmpty = IsAnyMeshEmpty(guiSkinnedMeshRenderers);
 				//When a mesh becomes empty, reset sliders
 				if (anyMeshEmpty && !lastAnyMeshEmpty)
-				{
+				{					
+					//Log empty meshes
+					if (PregnancyPlusPlugin.DebugLog.Value)  
+					{
+						foreach (var smr in guiSkinnedMeshRenderers)
+						{
+							var name = smr != null ? smr.name : "<NUll smr>";
+							PregnancyPlusPlugin.Logger.LogInfo($" IsAnyMeshEmpty > {name} is empty ");
+						}						
+					}
 					ResetHspeBlendShapes(guiSkinnedMeshRenderers);
 				}
 				lastAnyMeshEmpty = anyMeshEmpty;
@@ -80,7 +89,7 @@ namespace KK_PregnancyPlus
 			if (closeBtnCLicked) CloseWindow();
 			if (clearBtnCLicked) ClearAllSliderValues();
 			if (createBtnCLicked) _charaInstance.OnCreateBlendShapeSelected();
-			if (removeBtnCLicked) OnRemoveAllBlendShapes();
+			if (removeBtnCLicked) OnRemoveAllGUIBlendShapes();
 		}
 
 
