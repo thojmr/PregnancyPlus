@@ -45,7 +45,7 @@ namespace KK_PregnancyPlus
         {            
             //Debug config options
             MakeBalloon = Config.Bind<bool>("Debug", "Balloon mode (Debug mode)", false,
-                new ConfigDescription("Debug mesh mode, disable to go back to the original style.  This will disable some sliders.",
+                new ConfigDescription("Debug mesh mode, disable to go back to normal.  This will disable some Preg+ sliders temporarily.",
                     null,
                     new ConfigurationManagerAttributes { Order = 10 })
                 );
@@ -94,14 +94,14 @@ namespace KK_PregnancyPlus
                 var additionalSliderText = " for all pregnant characters";
 
                 var maxBellySizeTitle = "KK_Pregnancy Integration";
-                var maxBellySizeDescription = "The maximum additional belly size/shape that this plugin will add to the original KK_Pregnancy belly. The character must be pregnant.\r\n0 will result in the original KK_Pregnancy belly, while 40 will be the original + the full Preg+ size/shape.";
+                var maxBellySizeDescription = "The maximum additional belly size/shape that this plugin will add to the original KK_Pregnancy belly. The character must be pregnant or inflated.\r\n0 will result in the original KK_Pregnancy belly, while 40 will be the original + the full Preg+ size/shape.";
             
             #elif AI
                 var storyConfigTitle = "Story/Main-Game Mode";     
                 var additionalSliderText = " for all pregnant characters";
 
                 var maxBellySizeTitle = "AI_Pregnancy Integration";
-                var maxBellySizeDescription = "The maximum additional belly size/shape that this plugin will add to the original AI_Pregnancy belly. The character must be pregnant.\r\n0 will result in the original AI_Pregnancy belly, while 40 will be the original + the full Preg+ size/shape.";
+                var maxBellySizeDescription = "The maximum additional belly size/shape that this plugin will add to the original AI_Pregnancy belly. The character must be pregnant or inflated.\r\n0 will result in the original AI_Pregnancy belly, while 40 will be the original + the full Preg+ size/shape.";
 
             #elif HS2            
                 var storyConfigTitle = "Story/Main-Game Mode";
