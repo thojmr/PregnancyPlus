@@ -28,7 +28,7 @@ The belly shape will persist in any game mode when slider values are saved to th
 - When using the KK/AI_Pregnancy `inflation` or `pregnancy` features, any saved Pregnancy+ belly sliders will be added in addition to KK/AI_Pregnancy's shape, but only both pregnancy plugins are installed.  You can control the amount of Pregnancy+ belly shape applied on top of the KK/AI_Pregnancy belly with the "Max Additional Belly Size" slider in plugin config. 0 being no additional Preg+ slider effect, and max being the full Preg+ slider effect.  You can use the plugin config sliders to further adjust the results for all pregnant characters at once.
     - This can be used to tweak the final pregnant shape, or make the max size larger than what KK/AI_Pregnancy allows.
     - Toggle this feature off by setting "Max Additional Belly Size" to 0.
-- *Key thing to note* If you just want to alter the KK/AI_Pregnancy shape.  Make sure to set the "Inflation Size" slider to 0 before saving character card.  When it is above 0 it will always be visible in Main Game even when not pregnant. 
+- *Key thing to note*: If you just want to alter the KK/AI_Pregnancy shape.  Make sure to set the "Inflation Size" slider to 0 before saving character card.  When it is above 0 it will always be visible in Main Game even when not pregnant. 
 
 ## Koikatsu Only Features
 - Studio Timeline integration via blendshapes.  Here's how to:
