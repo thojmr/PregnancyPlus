@@ -21,33 +21,25 @@ namespace KK_PregnancyPlus
         /// If size 0 is used it will clear all active mesh inflations
         /// This will not run twice for the same parameters, a change of config value is required
         /// </summary>
-        /// <param name="checkForNewMesh">Lets you force bypass the check for values changed to check for new meshes</param>
-        /// <param name="freshStart">Will recalculate verts like a first time run</param>
-        /// <param name="pluginConfigSliderChanged">Will treat as if some slider values changed, which they did in global plugin config</param>
+        /// <param name="meshInflateFlags">Contains any flags needed for mesh computation</param>
         /// <returns>Will return True if the mesh was altered and False if not</returns>
-        public bool MeshInflate(bool checkForNewMesh = false, bool freshStart = false, bool pluginConfigSliderChanged = false, bool visibilityUpdate = false, bool bypassWhen0 = false )
+        public bool MeshInflate(MeshInflateFlags meshInflateFlags)
         {
             if (ChaControl.objBodyBone == null) return false;//Make sure chatacter objs exists first  
             if (!PregnancyPlusPlugin.AllowMale.Value && ChaControl.sex == 0) return false;// Only female characters, unless plugin config says otherwise          
 
-            var sliderHaveChanged = NeedsMeshUpdate(pluginConfigSliderChanged);
-            var onlyInflationSizeChanged = OnlyInflationSizeChanged();
-            //Only continue if one of the config values changed
-            if (!sliderHaveChanged && !visibilityUpdate && !bypassWhen0) 
-            {
-                //Only stop here, if no recalculation needed
-                if (!freshStart && !checkForNewMesh)  return false; 
-            }
-            if (!bypassWhen0 && !isDuringInflationScene) ResetInflation();
+            //Only continue if one of the config values changed, or we need to recompute a mesh
+            if (!meshInflateFlags.NeedsToRun) return false;
+            if (!meshInflateFlags.bypassWhen0 && !isDuringInflationScene) ResetInflation();
 
             if (!AllowedToInflate()) return false;//if outside studio/maker, make sure StoryMode is enabled first
             if (!infConfig.GameplayEnabled) return false;//Only if gameplay enabled
 
             //Resets all stored vert values, so the script will have to recalculate all from base body
-            if (freshStart) CleanSlate();
+            if (meshInflateFlags.freshStart) CleanSlate();
 
             //Only continue when size above 0
-            if (infConfig.inflationSize <= 0 && !bypassWhen0 && !isDuringInflationScene) 
+            if (infConfig.inflationSize <= 0 && !meshInflateFlags.bypassWhen0 && !isDuringInflationScene) 
             {
                 infConfigHistory.inflationSize = 0;
                 return false;                                
@@ -55,15 +47,15 @@ namespace KK_PregnancyPlus
             
             if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value)  PregnancyPlusPlugin.Logger.LogInfo($" ---------- ");
             if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value)  PregnancyPlusPlugin.Logger.LogInfo($" inflationSize > {infConfig.inflationSize} for {charaFileName} ");            
-            // if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" flags1: checkForNewMesh {checkForNewMesh},  freshStart {freshStart}, pluginConfigSliderChanged {pluginConfigSliderChanged}, visibilityUpdate {visibilityUpdate}");
-            // if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" flags2: sliderHaveChanged {sliderHaveChanged},  onlyInflationSizeChanged {onlyInflationSizeChanged}");
+            meshInflateFlags.Log();
+            if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value)  PregnancyPlusPlugin.Logger.LogInfo($" ");
 
             //Get the measurements that determine the base belly size
             var hasMeasuerments = MeasureWaistAndSphere(ChaControl);                     
             if (!hasMeasuerments) 
             {
                 PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_BadMeasurement, 
-                    $"Could not get belly measurements from character");
+                    $"Could not get one or more belly measurements from character");
                 return false;
             }
             
@@ -71,9 +63,9 @@ namespace KK_PregnancyPlus
 
             //Get and apply all clothes render mesh changes, then do body mesh too
             var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);            
-            anyMeshChanges = LoopAndApplyMeshChanges(clothRenderers, sliderHaveChanged, onlyInflationSizeChanged, anyMeshChanges, true, GetBodyMeshRenderer(), freshStart, bypassWhen0);          
+            anyMeshChanges = LoopAndApplyMeshChanges(clothRenderers, meshInflateFlags, anyMeshChanges, true, GetBodyMeshRenderer());          
             var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, true);
-            anyMeshChanges = LoopAndApplyMeshChanges(bodyRenderers, sliderHaveChanged, onlyInflationSizeChanged, anyMeshChanges, false, null, false, bypassWhen0);
+            anyMeshChanges = LoopAndApplyMeshChanges(bodyRenderers, meshInflateFlags, anyMeshChanges);
 
             RemoveMeshCollider();
 
@@ -94,35 +86,59 @@ namespace KK_PregnancyPlus
         /// Loop through each skinned mesh rendere and get its belly verts, then apply inflation when needed
         /// </summary>
         /// <param name="smrs">List of skinnedMeshRenderes</param>
-        /// <param name="sliderHaveChanged">If any Plugin Config sliders changed</param>
+        /// <param name="meshInflateFlags">Contains any flags needed for mesh computation</param>
         /// <param name="anyMeshChanges">If any mesh changes have happened so far</param>
         /// <param name="isClothingMesh">If this smr is a cloth mesh</param>
         /// <returns>boolean true if any meshes were changed</returns>
-        internal bool LoopAndApplyMeshChanges(List<SkinnedMeshRenderer> smrs, bool sliderHaveChanged, bool onlyInflationSizeChanged, bool anyMeshChanges, 
-                                              bool isClothingMesh = false, SkinnedMeshRenderer bodyMeshRenderer = null, bool freshStart = false, bool bypassWhen0 = false) 
+        internal bool LoopAndApplyMeshChanges(List<SkinnedMeshRenderer> smrs, MeshInflateFlags meshInflateFlags, bool anyMeshChanges, 
+                                              bool isClothingMesh = false, SkinnedMeshRenderer bodyMeshRenderer = null) 
         {
             foreach (var smr in smrs) 
             {           
                 var didCompute = false;  
 
                 //Dont recompute verts if no sliders have changed or clothing added
-                var needsComputeVerts = NeedsComputeVerts(smr, sliderHaveChanged, onlyInflationSizeChanged);
+                var needsComputeVerts = NeedsComputeVerts(smr, GetMeshKey(smr), meshInflateFlags);
                 if (needsComputeVerts)
                 {
-                    // if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"   needsComputeVerts {smr.name}");
-                    didCompute = ComputeMeshVerts(smr, isClothingMesh, bodyMeshRenderer, freshStart);                                                                                   
+                    didCompute = ComputeMeshVerts(smr, isClothingMesh, bodyMeshRenderer, meshInflateFlags.freshStart);                                                                                   
                 }
 
                 //If mesh fails to compute, skip (mesn.IsReadable = false will cause this) 
                 if (needsComputeVerts && !didCompute) continue;
 
-                var overwrite = (!onlyInflationSizeChanged && sliderHaveChanged) || freshStart;
-                var appliedMeshChanges = ApplyInflation(smr, GetMeshKey(smr), overwrite, blendShapeTempTagName, bypassWhen0);
+                var appliedMeshChanges = ApplyInflation(smr, GetMeshKey(smr), meshInflateFlags.OverWriteMesh, blendShapeTempTagName, meshInflateFlags.bypassWhen0);
                 if (appliedMeshChanges) anyMeshChanges = true;                
             }  
 
             return anyMeshChanges;
         }
+
+
+        /// <summary>
+        /// See if we already have this mesh's indexes stored, if the slider values haven't changed then we dont need to recompute, just apply existing cumputed verts
+        /// </summary>
+        public bool NeedsComputeVerts(SkinnedMeshRenderer smr, string renderKey, MeshInflateFlags meshInflateFlags) 
+        {    
+            //If mesh is on ignore list, skip it
+            if (ignoreMeshList.Contains(renderKey)) return false;                 
+
+            //Do a quick check to see if we need to fetch the bone indexes again.  ex: on second call we should allready have them
+            //This saves a lot on compute apparently!            
+            var isInitialized = bellyVerticieIndexes.TryGetValue(renderKey, out bool[] existingValues);
+            if (isInitialized)
+            {
+                //If the vertex count has not changed then we can skip this if no critical sliders changed
+                if (existingValues.Length == smr.sharedMesh.vertexCount) 
+                {
+                    if (meshInflateFlags.OnlyInflationSizeChanged) return false;
+                    return meshInflateFlags.SliderHaveChanged;
+                }
+            }
+
+            //When no mesh found key, or incorrect vert count, the mesh changed so we need to recompute
+            return true;
+        } 
 
 
         /// <summary>
@@ -143,7 +159,7 @@ namespace KK_PregnancyPlus
             if (!hasVerticies) return false; 
 
             if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" ");
-            if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($"  ComputeMeshVerts > {smr.name}"); 
+            if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" ComputeMeshVerts for {smr.name}"); 
             return GetInflatedVerticies(smr, bellyInfo.SphereRadius, bellyInfo.WaistWidth, isClothingMesh, bodyMeshRenderer, freshStart);
         }
 

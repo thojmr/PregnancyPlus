@@ -42,8 +42,8 @@ namespace KK_PregnancyPlus
             //If a card value is set for inflation size, use that first, otherwise check KK_Pregnancy for Weeks value
             var cardData = GetCardData();
             if (cardData.inflationSize > 0 && cardData.GameplayEnabled) 
-            {
-                MeshInflate(cardData, checkNewMesh, slidersChanged);
+            {                
+                MeshInflate(cardData, new MeshInflateFlags(this, _checkForNewMesh: checkNewMesh, _pluginConfigSliderChanged: slidersChanged));
                 return;
             }
 
@@ -62,8 +62,8 @@ namespace KK_PregnancyPlus
 
             //Compute the additonal belly size added based on user configured vallue from 0-40
             var additionalPregPlusSize = Mathf.Lerp(0, weeks, PregnancyPlusPlugin.MaxStoryModeBelly.Value/40);
-
-            MeshInflate(additionalPregPlusSize, checkNewMesh, slidersChanged);
+            
+            MeshInflate(additionalPregPlusSize, new MeshInflateFlags(this, _checkForNewMesh: checkNewMesh, _pluginConfigSliderChanged: slidersChanged));
         }
         
 

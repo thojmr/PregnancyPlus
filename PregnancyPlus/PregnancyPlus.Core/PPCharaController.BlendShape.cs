@@ -286,7 +286,7 @@ namespace KK_PregnancyPlus
         /// </summary>
         internal bool BlendShapeAlreadyExists(SkinnedMeshRenderer smr, string blendShapeName) 
         {
-            var shapeIndex = smr.sharedMesh.GetBlendShapeIndex(blendShapeName);
+            var shapeIndex = new BlendShapeController().GetBlendShapeIndex(smr, blendShapeName);
             //If the shape exists then true
             return (shapeIndex >= 0);
         }
@@ -422,8 +422,8 @@ namespace KK_PregnancyPlus
         internal List<BlendShapeController> ComputeInflationBlendShapes() {
             var blendshapes = new List<BlendShapeController>();
 
-            //Trigger inflation at 0 size to create the blendshapes
-            MeshInflate(0, false, false, true);
+            //Trigger inflation at 0 size to create the blendshapes            
+            MeshInflate(0, new MeshInflateFlags(this, _bypassWhen0: true));
 
             var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);            
             foreach(var smr in clothRenderers)

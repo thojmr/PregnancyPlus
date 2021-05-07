@@ -120,7 +120,8 @@
     <Compile Include="..\PregnancyPlus.Core\tools\Smoothing\SmoothMeshUtils.cs" />
     <Compile Include="..\PregnancyPlus.Core\tools\Smoothing\SmoothFilter.cs" />
     <Compile Include="..\PregnancyPlus.Core\tools\Smoothing\SmoothMesh.cs" />
-    <Compile Include="..\PregnancyPlus.Core\ErrorCode.cs" />
+    <Compile Include="..\PregnancyPlus.Core\Tools\ErrorCode.cs" />
+    <Compile Include="..\PregnancyPlus.Core\Tools\MeshInflateFlags.cs" />
     <Compile Include="..\..\..\#DebugTools\DebugTools.cs" />
   </ItemGroup>
 

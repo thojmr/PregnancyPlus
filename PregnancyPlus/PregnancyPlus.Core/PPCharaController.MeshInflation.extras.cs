@@ -27,28 +27,30 @@ namespace KK_PregnancyPlus
         /// For quickly setting the size, without worrying about the other config params
         /// </summary>
         /// <param name="inflationSize">Sets inflation size from 0 to 40, clamped</param>
-        /// <param name="checkForNewMesh">Lets you force bypass the check for values changed to check for new meshes</param>
-        /// <param name="pluginConfigSliderChanged">Will treat as if some slider values changed, which they did in global plugin config</param>
-        public bool MeshInflate(float inflationSize, bool checkForNewMesh = false, bool pluginConfigSliderChanged = false, bool bypassWhen0 = false)
+        /// <param name="meshInflateFlags">Contains any flags needed for mesh computation</param>
+        public bool MeshInflate(float inflationSize, MeshInflateFlags meshInflateFlags = null)
         {                  
             //Allow an initial size to be passed in, and sets it to the config           
-            infConfig.inflationSize = Mathf.Clamp(inflationSize, 0, 40);            
+            infConfig.inflationSize = Mathf.Clamp(inflationSize, 0, 40);         
+            if (meshInflateFlags == null) meshInflateFlags = new MeshInflateFlags(this);
+            meshInflateFlags.infConfig = infConfig;//Update the new config value here too
 
-            return MeshInflate(checkForNewMesh, false, pluginConfigSliderChanged, false, bypassWhen0);
+            return MeshInflate(meshInflateFlags);
         }
 
         /// <summary>
         /// An overload for MeshInflate() that allows you to pass existing card data as the first param
         /// </summary>
         /// <param name="cardData">Some prexisting PregnancyPlusData that we want to activate</param>
-        /// <param name="checkForNewMesh">Lets you force bypass the check for values changed to check for new meshes</param>
-        /// <param name="pluginConfigSliderChanged">Will treat as if some slider values changed, which they did in global plugin config</param>
-        public bool MeshInflate(PregnancyPlusData cardData, bool checkForNewMesh = false, bool forceRecalc = false, bool pluginConfigSliderChanged = false)
+        /// <param name="meshInflateFlags">Contains any flags needed for mesh computation</param>
+        public bool MeshInflate(PregnancyPlusData cardData, MeshInflateFlags meshInflateFlags = null)
         {                  
             //Allow an initial size to be passed in, and sets it to the config           
             infConfig = cardData;          
+            if (meshInflateFlags == null) meshInflateFlags = new MeshInflateFlags(this);
+            meshInflateFlags.infConfig = infConfig;//Update the new config value here too
 
-            return MeshInflate(checkForNewMesh, forceRecalc, pluginConfigSliderChanged);
+            return MeshInflate(meshInflateFlags);
         }
 
 
@@ -60,34 +62,6 @@ namespace KK_PregnancyPlus
             var storyModeEnabled = PregnancyPlusPlugin.StoryMode != null ? PregnancyPlusPlugin.StoryMode.Value : false;
             return StudioAPI.InsideStudio || MakerAPI.InsideMaker || (storyModeEnabled && infConfig.GameplayEnabled);
         }
-
-
-        /// <summary>
-        /// See if we already have this mesh's indexes stored, if the slider values haven't changed then we dont need to recompute, just apply existing cumputed verts
-        /// </summary>
-        internal bool NeedsComputeVerts(SkinnedMeshRenderer smr, bool sliderHaveChanged, bool onlyInflationSizeChanged) 
-        {
-            var renderKey = GetMeshKey(smr);       
-
-            //If mesh is on ignore list, skip it
-            if (ignoreMeshList.Contains(renderKey)) return false;                 
-
-            //Do a quick check to see if we need to fetch the bone indexes again.  ex: on second call we should allready have them
-            //This saves a lot on compute apparently!            
-            var isInitialized = bellyVerticieIndexes.TryGetValue(renderKey, out bool[] existingValues);
-            if (isInitialized)
-            {
-                //If the vertex count has not changed then we can skip this if no critical sliders changed
-                if (existingValues.Length == smr.sharedMesh.vertexCount) 
-                {
-                    if (onlyInflationSizeChanged) return false;
-                    return sliderHaveChanged;
-                }
-            }
-
-            //When no mesh found key, or incorrect vert count, the mesh changed so we need to recompute
-            return true;
-        } 
 
 
         /// <summary>
@@ -148,27 +122,7 @@ namespace KK_PregnancyPlus
     
             distanceSquared = heading.x * heading.x + heading.y * heading.y + heading.z * heading.z;
             return Mathf.Sqrt(distanceSquared);
-        }
-       
-
-        /// <summary>   
-        /// Compares current to last slider values, if they havent changed it returns false
-        /// </summary>        
-        internal bool NeedsMeshUpdate(bool pluginConfigSliderChanged = false) 
-        {
-            if (pluginConfigSliderChanged) return true;
-            return infConfig.Equals(infConfigHistory);
-        }
-
-
-        /// <summary>   
-        /// Whether or not the infation size was the only changed value
-        /// </summary>        
-        internal bool OnlyInflationSizeChanged(bool pluginConfigSliderChanged = false) 
-        {
-            if (pluginConfigSliderChanged) return true;
-            return infConfig.InflationSizeOnlyChange(infConfigHistory);
-        }
+        }    
 
 
         /// <summary>   

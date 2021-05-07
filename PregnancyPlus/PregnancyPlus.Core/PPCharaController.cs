@@ -88,7 +88,7 @@ namespace KK_PregnancyPlus
                 { 
                     if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $StartH {charaFileName}");
                     //Trigger inflation at current size to create any Preg+ blendshapes that may be used.  Kind of like like pre processing.
-                    MeshInflate(infConfig.inflationSize, false, false, true);
+                    MeshInflate(infConfig.inflationSize, new MeshInflateFlags(this, _bypassWhen0: true));
                 };
 
                 //When HScene ends, clear any inflation data
@@ -143,7 +143,7 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.DebugAnimations.Value)
             {
                 if (Time.frameCount % 60 == 0) MeasureWaistAndSphere(ChaControl, true);
-                if (Time.frameCount % 60 == 0) MeshInflate(true, true);
+                if (Time.frameCount % 60 == 0) MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: true, _freshStart: true));
             }
 
             ComputeInflationChange();
@@ -191,10 +191,12 @@ namespace KK_PregnancyPlus
             if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) yield break;
             
             #if KK || AI
-                GetWeeksAndSetInflation(true);                                 
+                GetWeeksAndSetInflation(true);  
+
             #elif HS2
                 //For HS2 AI, we set global belly size from plugin config, or character card                    
-                MeshInflate(true);                                       
+                MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: true));   
+
             #endif                                           
         }
 
@@ -210,7 +212,7 @@ namespace KK_PregnancyPlus
             if (StudioAPI.InsideStudio || (MakerAPI.InsideMaker && MakerAPI.InsideAndLoaded))
             {
                 //If either are fully loaded, start mesh inflate
-                MeshInflate(true, true);    
+                MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: true, _freshStart: true));    
             }
             else if (MakerAPI.InsideMaker && !MakerAPI.InsideAndLoaded)
             {
@@ -324,8 +326,9 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= CheckVisibilityState {charaFileName} {newState}");
 
             lastVisibleState = true;
+
             //Re trigger mesh inflation when character first becomes visible
-            MeshInflate(false, false, false, true);
+            MeshInflate(new MeshInflateFlags(this, _visibilityUpdate: true));
         }
 
         
@@ -380,8 +383,8 @@ namespace KK_PregnancyPlus
             if (debounceGuid == guid) 
             {
                 // if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" WaitForMeshToSettle checkNewMesh:{checkNewMesh} forceRecalcVerts:{forceRecalcVerts}");        
-                CheckMeshVisibility();
-                MeshInflate(checkNewMesh, forceRecalcVerts);
+                CheckMeshVisibility(); 
+                MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: checkNewMesh, _freshStart: forceRecalcVerts));
             }
         }
 

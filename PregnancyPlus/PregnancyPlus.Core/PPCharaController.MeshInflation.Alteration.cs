@@ -21,6 +21,7 @@ namespace KK_PregnancyPlus
         /// <param name="renderKey">The Shared Mesh render name, used in dictionary keys to get the current verticie values</param>
         /// <param name="needsOverwrite">When false we don't have to overwrite the blendshape, and only have to set it's weight</param>
         /// <param name="blendShapeTag">string to append to the end of the blendshape name, for identification</param>
+        /// <param name="bypassWhen0">When true, continue through when inflation size is 0</param>
         /// <returns>Will return True if any verticies are changed</returns>
         internal bool ApplyInflation(SkinnedMeshRenderer smr, string renderKey, bool needsOverwrite, string blendShapeTag = null, bool bypassWhen0 = false) 
         {
@@ -72,7 +73,7 @@ namespace KK_PregnancyPlus
             //Create or update the smr blendshape
             ApplyBlendShapeWeight(smr, renderKey, needsOverwrite, blendShapeTempTagName);
 
-            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" mesh did ApplyInflation > {smr.name}");
+            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" mesh did ApplyInflation to {smr.name}");
             return true;
         }    
 
@@ -123,7 +124,7 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" ApplySmoothing({includeClothMesh})");
 
             //Trigger mesh recalculation to overwrite last smoothing pass changes if any existed
-            MeshInflate(true, true);
+            MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: true, _freshStart: true));
 
             //Smooth all mesh around the belly area including clothing
             if (includeClothMesh)

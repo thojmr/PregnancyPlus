@@ -42,7 +42,7 @@ namespace KK_PregnancyPlus
             [IgnoreMember]
             public string log 
             {
-                get { return $"name {name} weight {_weight} vertexCount {vertexCount} isInitilized {isInitilized}"; }
+                get { return $"name {name} weight {_weight} vertexCount {vertexCount}"; }
             }
         }
 
@@ -97,6 +97,11 @@ namespace KK_PregnancyPlus
             //Once found you can use this controller to call any of its blendshape methods
             blendShape = GetBlendShapeByName(_smr, blendShapeName);
             smr = _smr;
+        }
+
+        //use this just to access any methods inside
+        public BlendShapeController() {
+
         }
 
 
@@ -186,7 +191,7 @@ namespace KK_PregnancyPlus
             //Belly size goes from 0-40, but blendShapes have to be 0-100
             //Technically unity 2018x + can go above 100 when unclamped, but not any illusion games yet
             var lerpWeight = Mathf.Lerp(0, 100, weight/40);
-            var shapeIndex = smr.sharedMesh.GetBlendShapeIndex(blendShape.name);
+            var shapeIndex = GetBlendShapeIndex(smr, blendShape.name);
             //If the blendshape is not found, return
             if (shapeIndex < 0) return false;
 
@@ -214,18 +219,33 @@ namespace KK_PregnancyPlus
         /// </summary>
         /// <param name="smr">The skinned mesh renderer to search for the blend shape</param>
         /// <param name="blendShapeName">The blendshape name to search for</param>
-        internal BlendShape GetBlendShapeByName(SkinnedMeshRenderer smr, string blendShapeName) {
+        internal BlendShape GetBlendShapeByName(SkinnedMeshRenderer smr, string blendShapeName) 
+        {
+            if (smr == null) 
+            {
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" GetBlendShapeByName > smr should not be mull!");
+                return null;
+            }
+
+            if (smr.sharedMesh.blendShapeCount <= 0) 
+            {
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" GetBlendShapeByName > no blendshapaes on {smr.name}");
+                return null;
+            }
+
             //Check whether the blendshape exists
-            var shapeIndex = smr.sharedMesh.GetBlendShapeIndex(blendShapeName);
+            var shapeIndex = GetBlendShapeIndex(smr, blendShapeName);
 
             //If the blendshape is not found return
-            if (shapeIndex < 0) {
-                // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" GetBlendShapeByName > not found: {blendShapeName}");
+            if (shapeIndex < 0) 
+            {
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" GetBlendShapeByName > not found {blendShapeName}");
                 return null;
             }
 
             var shapeFrameCount = smr.sharedMesh.GetBlendShapeFrameCount(shapeIndex);
-            if (shapeFrameCount <= 0) {
+            if (shapeFrameCount <= 0) 
+            {
                 if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" GetBlendShapeByName > frame count <= 0: {blendShapeName}");
                 return null;
             }
@@ -252,10 +272,33 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
+        /// Unity blendshape API for "sharedMesh.GetBlendShapeIndex(string)" sometimes fails to match the name, so do it manually...
+        /// </summary>
+        public int GetBlendShapeIndex(SkinnedMeshRenderer smr, string blendShapeName) 
+        {
+            var shapeIndex = -1;
+            //For each existing blend shape
+            for (var i = 0; i < smr.sharedMesh.blendShapeCount; i++)
+            {
+                //Get it's name
+                var bsName = smr.sharedMesh.GetBlendShapeName(i);                
+                //See if the name matches the passed in param
+                if (bsName == blendShapeName) 
+                {
+                    shapeIndex = i;
+                    break;
+                }                
+            }
+
+            return shapeIndex;
+        }
+
+
+        /// <summary>
         /// Remove a single blendshape from a mesh
         /// </summary>
-        public bool RemoveBlendShape(SkinnedMeshRenderer smr) {
-
+        public bool RemoveBlendShape(SkinnedMeshRenderer smr) 
+        {
             if (blendShape == null) return false;
 
             var smrMesh = smr.sharedMesh;            
