@@ -99,7 +99,7 @@ namespace KK_PregnancyPlus
             smr = _smr;
         }
 
-        //use this just to access any methods inside
+        //use this constructor just to access any methods inside without having to set up a blendshape
         public BlendShapeController() {
 
         }
@@ -109,9 +109,17 @@ namespace KK_PregnancyPlus
         /// This will apply the previously created BlendShape object to an existing skinned mesh renderer
         /// </summary>
         /// <param name="smr">The skinned mesh renderer to attach the blend shape</param>
-        public void AddBlendShapeToMesh(SkinnedMeshRenderer smr) 
+        public bool AddBlendShapeToMesh(SkinnedMeshRenderer smr) 
         {
-            if (!blendShape.isInitilized) return;
+            if (!blendShape.isInitilized) return false;
+            if (blendShape.vertexCount != smr.sharedMesh.vertexCount 
+                || blendShape.verticies.Length != smr.sharedMesh.vertexCount
+                || blendShape.normals.Length != smr.sharedMesh.vertexCount
+                || blendShape.tangents.Length != smr.sharedMesh.vertexCount) 
+            {
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" AddBlendShape > missmatch vertex count: smr {smr.sharedMesh.vertexCount} -> blendshape {blendShape.vertexCount} skipping"); 
+                return false;
+            }
 
             //Not going to try to debug this unity problem with blendshapes not being found by name, just always overwright the existing blendshape...
             if (smr.sharedMesh.blendShapeCount > 0) 
@@ -121,14 +129,16 @@ namespace KK_PregnancyPlus
                 OverwriteBlendShape(smr, blendShape);
 
                 //Fix for some shared mesh properties not updating after AddBlendShapeFrame
-                smr.sharedMesh = smr.sharedMesh; 
-                return;
+                smr.sharedMesh = smr.sharedMesh;
+                return true;
             }
 
             if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" AddBlendShape > {blendShape.log}");
             smr.sharedMesh.AddBlendShapeFrame(blendShape.name, blendShape.weight, blendShape.verticies, blendShape.normals, blendShape.tangents);    
             //Fix for some shared mesh properties not updating after AddBlendShapeFrame
-            smr.sharedMesh = smr.sharedMesh; //I hate this line of code              
+            smr.sharedMesh = smr.sharedMesh; //I hate this line of code        
+
+            return true;      
         }
 
 
@@ -276,21 +286,26 @@ namespace KK_PregnancyPlus
         /// </summary>
         public int GetBlendShapeIndex(SkinnedMeshRenderer smr, string blendShapeName) 
         {
-            var shapeIndex = -1;
+            var noShapeIndex = -1;
+            if (smr == null) 
+            {
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" GetBlendShapeIndex > smr should not be mull!");
+                return noShapeIndex;
+            }
+
             //For each existing blend shape
             for (var i = 0; i < smr.sharedMesh.blendShapeCount; i++)
             {
-                //Get it's name
+                //Get this mesh blendshapes name
                 var bsName = smr.sharedMesh.GetBlendShapeName(i);                
-                //See if the name matches the passed in param
+                //See if the name matches
                 if (bsName == blendShapeName) 
                 {
-                    shapeIndex = i;
-                    break;
+                    return i;
                 }                
             }
 
-            return shapeIndex;
+            return noShapeIndex;
         }
 
 
