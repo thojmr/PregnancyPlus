@@ -353,7 +353,7 @@ namespace KK_PregnancyPlus
             //Calculate the new normals, but don't show them.  We just want it for the blendshape shape target
             meshCopyTarget.vertices = inflatedVertices[renderKey];
             meshCopyTarget.RecalculateBounds();
-            NormalSolver.RecalculateNormals(meshCopyTarget, 40f, bellyVerticieIndexes[renderKey]);
+            NormalSolver.RecalculateNormals(meshCopyTarget, 40f, alteredVerticieIndexes[renderKey]);
             meshCopyTarget.RecalculateTangents();
 
             // LogMeshBlendShapes(smr);
