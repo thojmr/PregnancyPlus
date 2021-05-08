@@ -156,3 +156,4 @@ If sucessfull you should see a KK_PregnancyPlus.dll file nested in .\bin\
 - Acessories won't automatically move with the mesh as they do when you manipulate bones
 - It has bigger impact on performance (only when changing a slider) because of the computation it has to perform. However once the shape is calculated the performance is equally as fast as bone manipulation.
 - Unity doesn't have great blendshape support in older versions like KK is running on.
+- Since blendshapes are tied to a single mesh, if the mesh creator updates the mesh/uncensor with new verticies, the blendshape will become invalid, and a new blendshape will need to be made.
