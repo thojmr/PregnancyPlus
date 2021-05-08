@@ -275,7 +275,7 @@ namespace KK_PregnancyPlus
                 {
                     //When the mesh vertex count is different now, warn the user that their blendshape is not going to load
                     PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_BodyMeshVertexChanged, 
-                        $" Mesh '{smr.name}' has a different vertex count, and no longer fits the BlendShape saved to this card.  Blendshape {meshBlendShape.BlendShape.name} skipped."); 
+                        $" Mesh '{smr.name}' has a different vertex count, and no longer fits the BlendShape saved to this card {smr.sharedMesh.vertexCount} => {vertexCount}.  Blendshape {meshBlendShape.BlendShape.name} skipped."); 
                 }               
             }              
         }

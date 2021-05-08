@@ -14,7 +14,7 @@ namespace KK_PregnancyPlus
 
         //This format contains all the info a blendshape needs to be made.  It also server as the format we will save to a character card later
         [MessagePackObject(keyAsPropertyName: true)]
-        public class BlendShape 
+        public class BlendShape //This is technically a blendshape frame, but w/e.  Its already set in stone
         {
             public string name;
             private float _weight = 100;
@@ -98,11 +98,11 @@ namespace KK_PregnancyPlus
             blendShape = GetBlendShapeByName(_smr, blendShapeName);
             smr = _smr;
         }
-
-        //use this constructor just to access any methods inside without having to set up a blendshape
-        public BlendShapeController() {
-
-        }
+        
+        /// <summary>
+        /// Use this constructor just to access any methods inside without having to set up a blendshape
+        /// </summary>
+        public BlendShapeController() { }
 
 
         /// <summary>
@@ -117,7 +117,7 @@ namespace KK_PregnancyPlus
                 || blendShape.normals.Length != smr.sharedMesh.vertexCount
                 || blendShape.tangents.Length != smr.sharedMesh.vertexCount) 
             {
-                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" AddBlendShape > missmatch vertex count: smr {smr.sharedMesh.vertexCount} -> blendshape {blendShape.vertexCount} skipping"); 
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" AddBlendShape > missmatch vertex count on {smr.name}: smr {smr.sharedMesh.vertexCount} -> blendshape {blendShape.vertexCount} skipping"); 
                 return false;
             }
 
