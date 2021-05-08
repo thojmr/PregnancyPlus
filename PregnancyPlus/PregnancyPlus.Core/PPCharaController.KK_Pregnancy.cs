@@ -104,11 +104,15 @@ namespace KK_PregnancyPlus
         {
             #if KK || AI
                 //Only in HScene
-                if (!GameAPI.InsideHScene) return;
+                if (!GameAPI.InsideHScene) 
+                {
+                    if (_inflationChange > 0 || TargetPregPlusSize > 0) ClearInflationStuff();
+                    return;
+                }
                 if (_inflationChange == TargetPregPlusSize) 
                 {
                     //When inflation is done lerping, do a soft clear of values
-                    clearInflationStuff();
+                    ClearInflationStuff();
                     return;
                 } 
                 
@@ -145,7 +149,7 @@ namespace KK_PregnancyPlus
         /// Reset inflation values between inflations, or a full reset when done with HScene
         /// </summary>
         /// <param name="fullReset">Used on HScne end to reset all temporary inflation stuff</param>   
-        public void clearInflationStuff(bool fullReset = false) 
+        public void ClearInflationStuff(bool fullReset = false) 
         {
             timeElapsed = 0;
             _inflationStartSize = _inflationChange;            
