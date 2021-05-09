@@ -77,9 +77,14 @@ namespace KK_PregnancyPlus
         /// </summary>
         public void LogErrorCode(int charId, ErrorCode errorCode, string message)
         {
-            if (!debugLog && ErrorCodeExists(charId, errorCode)) return;
+            if (!debugLog && ErrorCodeExists(charId, errorCode)) 
+            {
+                //Always log Error Codes when debug is true
+                if (PregnancyPlusPlugin.DebugLog.Value) logger.LogWarning($"{errorCode} > {message}");
+                return;
+            }
             AppendErrorCode(charId, errorCode);
-            logger.LogWarning($"{errorCode} > {message}");        
+            logger.LogWarning($"{errorCode} > {message}");       
         }
     }
 }

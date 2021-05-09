@@ -124,6 +124,9 @@ namespace KK_PregnancyPlus
                 return false;
             }
 
+            //Create instance on character to prevent changes leaking to other characters
+            smr.sharedMesh = (Mesh)UnityEngine.Object.Instantiate(smr.sharedMesh); 
+
             //Not going to try to debug this unity problem with blendshapes not being found by name, just always overwright the existing blendshape...
             if (smr.sharedMesh.blendShapeCount > 0) 
             {
@@ -214,7 +217,7 @@ namespace KK_PregnancyPlus
             var shapeName = smr.sharedMesh.GetBlendShapeName(shapeIndex);
             var shapeCount = smr.sharedMesh.blendShapeCount;                 
 
-            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" ApplyBlendShapeWeight > shapeIndex {shapeIndex} shapeWeight {shapeWeight} shapeCount {shapeCount} shapeFrameCount {shapeFrameCount} lerpWeight {lerpWeight}");            
+            // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" ApplyBlendShapeWeight {smr.name} > shapeIndex {shapeIndex} shapeWeight {shapeWeight} shapeCount {shapeCount} shapeFrameCount {shapeFrameCount} lerpWeight {lerpWeight}");            
             smr.SetBlendShapeWeight(shapeIndex, lerpWeight);
 
             return true;
