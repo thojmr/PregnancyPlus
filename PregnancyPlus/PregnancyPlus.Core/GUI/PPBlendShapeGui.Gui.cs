@@ -102,16 +102,18 @@ namespace KK_PregnancyPlus
 			int kkBsIndex = -1;
 			string sliderLabel = "<Empty Mesh>";
 
-			var smrIsEmpty = guiSkinnedMeshRenderers[i] == null || guiSkinnedMeshRenderers[i].sharedMesh == null || guiSkinnedMeshRenderers[i].sharedMesh.blendShapeCount == 0;
+			var guiSmr = PregnancyPlusHelper.GetMeshRendererByName(_charaInstance.ChaControl, guiSkinnedMeshRenderers[i].name, guiSkinnedMeshRenderers[i].vertexCount);
+			var smrIsEmpty = guiSmr == null || guiSmr.sharedMesh == null || guiSmr.sharedMesh.blendShapeCount == 0;
+
 			//Get slider details
 			if (!smrIsEmpty) 
 			{
-				smrName = guiSkinnedMeshRenderers[i].name;			
+				smrName = guiSmr.name;			
 				//Find the index of the Preg+ blendshape
-				kkBsIndex = GetBlendShapeIndexFromName(guiSkinnedMeshRenderers[i].sharedMesh);
+				kkBsIndex = GetBlendShapeIndexFromName(guiSmr.sharedMesh);
 				if (kkBsIndex >= 0)
 				{
-					sliderLabel = guiSkinnedMeshRenderers[i].sharedMesh.GetBlendShapeName(kkBsIndex);
+					sliderLabel = guiSmr.sharedMesh.GetBlendShapeName(kkBsIndex);
 				}
 			}
 
@@ -154,15 +156,16 @@ namespace KK_PregnancyPlus
 			//Don't need to check for slider changes when null (The Gui will close soon anyway)
 			if (smrName == null) return;
 
-			//Only update slider on changes
+			//When user changed slider value
 			if (_sliderValues[smrName] != _sliderValuesHistory[smrName]) 
 			{					
 				lastTouched = i;
 				// if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" BlendShapeSlider changed {smrName} > kkBsIndex {kkBsIndex}  val {_sliderValues[smrName]}");
 
-				//If there are no blendshapes for this mesh anymore just reset HSPE
-				if (kkBsIndex < 0) {
-					ResetHspeBlendShapes(new List<SkinnedMeshRenderer>() { guiSkinnedMeshRenderers[i] });
+				//If there are no blendshapes for this mesh anymore just reset it in HSPE
+				if (kkBsIndex < 0) 
+				{
+					ResetHspeBlendShapes(new List<MeshIdentifier> { guiSkinnedMeshRenderers[i] });
 					_sliderValuesHistory[smrName] = _sliderValues[smrName];
 					return;
 				}
@@ -170,7 +173,7 @@ namespace KK_PregnancyPlus
 				try 
 				{					
 					//We want to use HSPE when we can because changes to it will integrate with Timeline and VNGE
-					HSPEExists = SetHspeBlendShapeWeight(guiSkinnedMeshRenderers[i], kkBsIndex, _sliderValues[smrName]);
+					HSPEExists = SetHspeBlendShapeWeight(guiSmr, kkBsIndex, _sliderValues[smrName]);
 				}	
 				catch (Exception e)
 				{
@@ -183,9 +186,15 @@ namespace KK_PregnancyPlus
 				if (!HSPEExists) 
 				{
 					//If HSPE not found adjust the weight the normal way, that won't integrate with VNGE, or Timeline, but is still visible to the user
-					guiSkinnedMeshRenderers[i].SetBlendShapeWeight(kkBsIndex, _sliderValues[smrName]);
+					guiSmr.SetBlendShapeWeight(kkBsIndex, _sliderValues[smrName]);
 				}				
 			}
+			//If the user changed the blendshape weight in KKPE (or elsewhere), update the GUI to match
+			else if (_sliderValues[smrName] != guiSmr.GetBlendShapeWeight(kkBsIndex)) 
+			{
+				_sliderValues[smrName] = _sliderValuesHistory[smrName] = guiSmr.GetBlendShapeWeight(kkBsIndex);
+			}
+			
 			_sliderValuesHistory[smrName] = _sliderValues[smrName];
 		}
 

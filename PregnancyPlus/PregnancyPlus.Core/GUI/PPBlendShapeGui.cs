@@ -10,7 +10,7 @@ namespace KK_PregnancyPlus
 {
     public partial class PregnancyPlusBlendShapeGui
     {
-		public List<SkinnedMeshRenderer> guiSkinnedMeshRenderers = new List<SkinnedMeshRenderer>();//All SMR's that have P+ blend shapes
+		public List<MeshIdentifier> guiSkinnedMeshRenderers = new List<MeshIdentifier>();//All SMR's that have P+ blend shapes
 		public const int guiWindowId = 7639;
 		public Rect windowRect = new Rect((float)(Screen.width - 450), (float)(Screen.height / 2 - 50), 250f, 15f);
 		public bool blendShapeWindowShow = false;//Shows/hides the GUI
@@ -61,13 +61,13 @@ namespace KK_PregnancyPlus
 		/// <summary>
         /// Open the GUI and set the default init state
         /// </summary>
-		internal void OpenBlendShapeGui(List<SkinnedMeshRenderer> smrs, PregnancyPlusCharaController charaInstance) 
+		internal void OpenBlendShapeGui(List<MeshIdentifier> smrIdentifiers, PregnancyPlusCharaController charaInstance) 
 		{
 			if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" OpenBlendShapeGui ");		
 
 			_charaInstance = charaInstance;				
-			OnGuiInit(smrs);
-			guiSkinnedMeshRenderers = smrs;
+			OnGuiInit(smrIdentifiers);
+			guiSkinnedMeshRenderers = smrIdentifiers;
 			anyMeshEmpty = IsAnyMeshEmpty(guiSkinnedMeshRenderers);
 			blendShapeWindowShow = true;//Trigger gui to show			
 		}
@@ -76,10 +76,10 @@ namespace KK_PregnancyPlus
 		/// <summary>
         /// When a new mesh is added and the blendshape created add them all here
         /// </summary>
-		internal void OnSkinnedMeshRendererBlendShapesCreated(List<SkinnedMeshRenderer> smrs)
+		internal void OnSkinnedMeshRendererBlendShapesCreated(List<MeshIdentifier> smrIdentifiers)
 		{
-			OnGuiInit(smrs);
-			guiSkinnedMeshRenderers = smrs;			
+			OnGuiInit(smrIdentifiers);
+			guiSkinnedMeshRenderers = smrIdentifiers;			
 			anyMeshEmpty = IsAnyMeshEmpty(guiSkinnedMeshRenderers);
 		}
 		
@@ -100,7 +100,7 @@ namespace KK_PregnancyPlus
 			}	
 
 			_charaInstance.OnRemoveAllGUIBlendShapes();
-			guiSkinnedMeshRenderers = new List<SkinnedMeshRenderer>();
+			guiSkinnedMeshRenderers = new List<MeshIdentifier>();
 			lastTouched = -1;
 		}
 
@@ -118,10 +118,11 @@ namespace KK_PregnancyPlus
         /// Check to make sure at least one mesh is not null  (things like chaning uncensor can cause mesh to change and become null in this context)
 		/// When any are null we probably want to warn the user
         /// </summary>
-		internal bool IsAnyMeshEmpty(List<SkinnedMeshRenderer> smrs)
+		internal bool IsAnyMeshEmpty(List<MeshIdentifier> smrIdentifiers)
 		{
-			foreach(var smr in smrs)
+			foreach(var smrIdentifier in smrIdentifiers)
 			{
+				var smr = PregnancyPlusHelper.GetMeshRendererByName(_charaInstance.ChaControl, smrIdentifier.name);
 				if (smr == null || smr.sharedMesh == null || smr.sharedMesh.blendShapeCount == 0) return true;			
 			}
 			
@@ -138,14 +139,15 @@ namespace KK_PregnancyPlus
 			try 
 			{
 				//We need to reset the HSPE sliders to avoid potential console errors
-				ResetHspeBlendShapes(guiSkinnedMeshRenderers);
+				//TODO do we still need this?
+				// ResetHspeBlendShapes(guiSkinnedMeshRenderers);
 			}	
 			catch (Exception e)
 			{
 				PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(-1, ErrorCode.PregPlus_HSPENotFound, 
                     	$" CloseWindow > HSPE not found {e.Message} ");
 			}
-			guiSkinnedMeshRenderers = new List<SkinnedMeshRenderer>();
+			guiSkinnedMeshRenderers = new List<MeshIdentifier>();
 			lastTouched = -1;
 		}
 
@@ -153,10 +155,10 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Initilize sliders on first window open, or smrs appended
         /// </summary>
-		public void OnGuiInit(List<SkinnedMeshRenderer> smrs) 
+		public void OnGuiInit(List<MeshIdentifier> smrIdentifiers) 
 		{
-			_sliderValues = BuildSliderListValues(smrs, _sliderValues);
-			_sliderValuesHistory = BuildSliderListValues(smrs, _sliderValuesHistory);
+			_sliderValues = BuildSliderListValues(smrIdentifiers, _sliderValues);
+			_sliderValuesHistory = BuildSliderListValues(smrIdentifiers, _sliderValuesHistory);
 		}
 
 
@@ -188,14 +190,15 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// set the default sliderValue dictionary values
         /// </summary>
-		internal Dictionary<string, float> BuildSliderListValues(List<SkinnedMeshRenderer> smrs, Dictionary<string, float> sliderValues, bool clearAll = false) 
+		internal Dictionary<string, float> BuildSliderListValues(List<MeshIdentifier> smrIdentifiers, Dictionary<string, float> sliderValues, bool clearAll = false) 
 		{
-			if (smrs == null || smrs.Count <= 0 ) return new Dictionary<string, float>();
+			if (smrIdentifiers == null || smrIdentifiers.Count <= 0 ) return new Dictionary<string, float>();
 			if (sliderValues == null) sliderValues = new Dictionary<string, float>();
 
 			//For each smr get the smr key and the starting slider value
-			foreach (var smr in smrs)
+			foreach (var smrIdentifier in smrIdentifiers)
 			{
+				var smr = PregnancyPlusHelper.GetMeshRendererByName(_charaInstance.ChaControl, smrIdentifier.name, smrIdentifier.vertexCount);
 				if (smr == null) continue;
 				float existingWeight = 0;
 
@@ -275,9 +278,9 @@ namespace KK_PregnancyPlus
         /// Reset HSPE blendshape when character changes
         /// </summary>
 		/// <returns>Will return True if HSPE was found</returns>
-		internal bool ResetHspeBlendShapes(List<SkinnedMeshRenderer> smrs) 
+		internal bool ResetHspeBlendShapes(List<MeshIdentifier> smrIdentifiers) 
         {
-			if (smrs == null || smrs.Count <= 0) return true;
+			if (smrIdentifiers == null || smrIdentifiers.Count <= 0) return true;
 
 			var bsModule = GetHspeBlenShapeModule();
 			if (bsModule == null) return false;
@@ -290,8 +293,9 @@ namespace KK_PregnancyPlus
 			if (SetMeshRendererNotDirty == null) return false;
 
 			//reset all active smrs in HSPE
-			foreach(var smr in smrs)
+			foreach(var smrIdentifier in smrIdentifiers)
 			{	
+				var smr = PregnancyPlusHelper.GetMeshRendererByName(_charaInstance.ChaControl, smrIdentifier.name, smrIdentifier.vertexCount);
 				if (smr == null) continue;
 				SetMeshRendererNotDirty.Invoke(bsModule, new object[] { smr } );	
 			}

@@ -187,7 +187,7 @@ namespace KK_PregnancyPlus
         /// </summary>
         public void ClearOnReload()
         {
-            meshWithBlendShapes = new List<SkinnedMeshRenderer>();
+            meshWithBlendShapes = new List<MeshIdentifier>();
             blendShapeGui.CloseBlendShapeGui();
         }
 

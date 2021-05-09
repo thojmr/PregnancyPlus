@@ -11,6 +11,21 @@ using AIChara;
 
 namespace KK_PregnancyPlus
 {
+    //Stores the values to uniqoely identify a skinned mesh renderer
+    public class MeshIdentifier {            
+        public string name;
+        public int vertexCount;
+
+        public string RenderKey {
+            get { return $"{name}_{vertexCount}"; }
+        }
+
+        public MeshIdentifier(string _name, int _vertexCount) {
+            name = _name;
+            vertexCount = _vertexCount;
+        }
+    }
+
     internal static class PregnancyPlusHelper
     {        
 
@@ -32,10 +47,15 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Search all SMR's for a matchtching name
         /// </summary>
-        internal static SkinnedMeshRenderer GetMeshRendererByName(ChaControl chaControl, string smrName) 
+        /// <param name="vertexCount">When vertex count is included, the result must match on name AND count</param>
+        internal static SkinnedMeshRenderer GetMeshRendererByName(ChaControl chaControl, string smrName, int vertexCount = -1) 
         {
             var renderers = chaControl.GetComponentsInChildren<SkinnedMeshRenderer>(true);//Even search inactive renderers
-            var renderer = renderers.FirstOrDefault(x => x.name == smrName);
+
+            SkinnedMeshRenderer renderer;
+            if (vertexCount > 0) renderer = renderers.FirstOrDefault(x => x.name == smrName && x.sharedMesh.vertexCount == vertexCount);
+            else renderer = renderers.FirstOrDefault(x => x.name == smrName);
+
             return renderer;
         }
 
@@ -43,7 +63,11 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Craft smr render key from the name and instance id, used to identify a stored mesh inflation
         /// </summary>
-        internal static string KeyFromNameAndVerts(SkinnedMeshRenderer smr) => $"{smr.name}_{smr.sharedMesh.vertexCount}";
+        internal static string KeyFromNameAndVerts(SkinnedMeshRenderer smr) 
+        {        
+            var meshIdentifier = new MeshIdentifier(smr.name, smr.sharedMesh.vertexCount);
+            return meshIdentifier.RenderKey;
+        }
 
 
         /// <summary>

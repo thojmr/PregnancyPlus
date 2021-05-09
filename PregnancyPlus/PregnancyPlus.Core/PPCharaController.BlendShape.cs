@@ -18,7 +18,7 @@ namespace KK_PregnancyPlus
     {           
 
         //Keep track of which meshes are given blendshapes for the GUI to make the slider list
-        internal List<SkinnedMeshRenderer> meshWithBlendShapes = new List<SkinnedMeshRenderer>();
+        internal List<MeshIdentifier> meshWithBlendShapes = new List<MeshIdentifier>();
 
         internal string blendShapeTempTagName = "[temp]";//Used to identify blendshapes created by the p+ sliders, and not the blendshape gui sliders (which are more permanent).
 
@@ -51,7 +51,7 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" OnCreateBlendShapeSelected ");
 
             var meshBlendShapes = new List<MeshBlendShape>();
-            meshWithBlendShapes = new List<SkinnedMeshRenderer>();
+            meshWithBlendShapes = new List<MeshIdentifier>();
 
             //Get all cloth renderes and attempt to create blendshapes from preset inflatedVerticies
             var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);
@@ -87,8 +87,9 @@ namespace KK_PregnancyPlus
         internal void OnRemoveAllGUIBlendShapes()
         {
             //Set all GUI blendshapes to 0 weight
-            foreach (var smr in meshWithBlendShapes)
+            foreach (var smrIdentifier in meshWithBlendShapes)
             {
+                var smr = PregnancyPlusHelper.GetMeshRendererByName(ChaControl, smrIdentifier.name, smrIdentifier.vertexCount);
                 if (smr == null) continue;
 
                 for (var i = 0; i < smr.sharedMesh.blendShapeCount; i++)
@@ -103,7 +104,7 @@ namespace KK_PregnancyPlus
                     }
                 }
             }
-            meshWithBlendShapes = new List<SkinnedMeshRenderer>();
+            meshWithBlendShapes = new List<MeshIdentifier>();
             ClearBlendShapesFromCharData();
         }
 
@@ -160,7 +161,7 @@ namespace KK_PregnancyPlus
                 if (meshBlendShape != null) 
                 {
                     meshBlendShapes.Add(meshBlendShape);                
-                    meshWithBlendShapes.Add(smr);
+                    meshWithBlendShapes.Add(new MeshIdentifier(smr.name, smr.sharedMesh.vertexCount));
                 }
 
                 // LogMeshBlendShapes(smr);
@@ -209,7 +210,7 @@ namespace KK_PregnancyPlus
             if (data.meshBlendShape == null) return;
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" MeshBlendShape size > {data.meshBlendShape.Length/1024}KB ");
 
-            meshWithBlendShapes = new List<SkinnedMeshRenderer>();
+            meshWithBlendShapes = new List<MeshIdentifier>();
 
             //Unserialize the blendshape from characters card
             var meshBlendShapes = MessagePack.LZ4MessagePackSerializer.Deserialize<List<MeshBlendShape>>(data.meshBlendShape);
@@ -249,7 +250,7 @@ namespace KK_PregnancyPlus
                 //If mesh matches, append the blend shape
                 if (smr.name == meshName && smr.sharedMesh.vertexCount == vertexCount) 
                 {
-                    meshWithBlendShapes.Add(smr);
+                    meshWithBlendShapes.Add(new MeshIdentifier(smr.name, smr.sharedMesh.vertexCount));
 
                     //Make sure the blendshape does not already exists
                     if (BlendShapeAlreadyExists(smr, meshBlendShape.BlendShape.name)) {
