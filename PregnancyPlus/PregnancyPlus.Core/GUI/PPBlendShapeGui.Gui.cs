@@ -71,8 +71,8 @@ namespace KK_PregnancyPlus
 				if (anyMeshEmpty) GUILayout.Label("One or more blendshapes no longer match their mesh and need to be recreated with 'Create New'.  Things like changing Uncensor, or clothing, can cause this.", _labelErrorTextStyle, new GUILayoutOption[0]);
 
 				createBtnCLicked = GUILayout.Button("Create New", new GUILayoutOption[0]);
-				clearBtnCLicked = GUILayout.Button("Reset Sliders", new GUILayoutOption[0]);
-				removeBtnCLicked = GUILayout.Button("Remove P+ BlendShapes", new GUILayoutOption[0]);
+				clearBtnCLicked = GUILayout.Button("Reset BlendShape Sliders", new GUILayoutOption[0]);
+				removeBtnCLicked = GUILayout.Button("Remove BlendShapes", new GUILayoutOption[0]);
 			}			
 			else 
 			{
