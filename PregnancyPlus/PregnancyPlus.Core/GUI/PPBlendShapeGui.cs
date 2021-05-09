@@ -89,6 +89,7 @@ namespace KK_PregnancyPlus
         /// </summary>
 		internal void OnRemoveAllGUIBlendShapes()
 		{
+			if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" OnRemoveAllGUIBlendShapes ");
 			try 
 			{
 				ResetHspeBlendShapes(guiSkinnedMeshRenderers);

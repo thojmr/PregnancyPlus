@@ -74,6 +74,34 @@ namespace KK_PregnancyPlus
         }
 
 
+        /// <summary>
+        /// Before saving card, get current GUI blendshape weights, since use may have changed some
+        /// </summary>
+        internal void CaptureNewBlendshapeWeights() 
+        {
+            var meshBlendShapes = new List<MeshBlendShape>();
+
+            //For each active GUI blendshape
+            foreach(var meshWithBlendShape in meshWithBlendShapes)
+            {
+                //Get the smr, and the blendshape if any still exist
+                var smr = PregnancyPlusHelper.GetMeshRendererByName(ChaControl, meshWithBlendShape.name, meshWithBlendShape.vertexCount);
+                var bsc = new BlendShapeController(smr, MakeBlendShapeName(GetMeshKey(smr)));
+
+                if (smr == null || bsc == null) continue;
+
+                //Return the blendshape format that can be saved to character card
+                var meshBlendShape = ConvertToMeshBlendShape(smr.name, bsc.blendShape);
+                if (meshBlendShape == null) continue;
+
+                if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" CaptureNewBlendshapeWeights > {meshBlendShape.MeshName} weight:{meshBlendShape.BlendShape.weight}");                
+                meshBlendShapes.Add(meshBlendShape);                              
+            }
+            
+            AddBlendShapesToData(meshBlendShapes);
+        }
+
+
         internal void OnOpenBlendShapeSelected()
         {
             //GUI blendshape popup, with existing blendshapes if any exists
@@ -156,6 +184,7 @@ namespace KK_PregnancyPlus
                 if (!exists || inflatedVertices[renderKey].Length < 0) continue;
 
                 var blendShapeCtrl = CreateBlendShape(smr, renderKey);
+
                 //Return the blendshape format that can be saved to character card
                 var meshBlendShape = ConvertToMeshBlendShape(smr.name, blendShapeCtrl.blendShape);
                 if (meshBlendShape != null) 
@@ -215,7 +244,7 @@ namespace KK_PregnancyPlus
             //Unserialize the blendshape from characters card
             var meshBlendShapes = MessagePack.LZ4MessagePackSerializer.Deserialize<List<MeshBlendShape>>(data.meshBlendShape);
             if (meshBlendShapes == null || meshBlendShapes.Count <= 0) return;
-            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" MeshBlendShape count > {meshBlendShapes.Count} ");
+            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" MeshBlendShape count > {meshBlendShapes.Count} ");            
 
             //For each stores meshBlendShape
             foreach(var meshBlendShape in meshBlendShapes)
@@ -256,21 +285,22 @@ namespace KK_PregnancyPlus
                     if (BlendShapeAlreadyExists(smr, meshBlendShape.BlendShape.name)) {
                         //If it does, make sure the weights are correct incase char just reloaded
                         //Try to find an existing blendshape by name
-                        BlendShapeController bsc = new BlendShapeController(smr, meshBlendShape.BlendShape.name);
+                        BlendShapeController _bsc = new BlendShapeController(smr, meshBlendShape.BlendShape.name);
 
-                        if (bsc.blendShape == null) {
+                        if (_bsc.blendShape == null) {
                             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogWarning(
                                 $"LoopMeshAndAddExistingBlendShape > There was a problem finding the blendshape ${meshBlendShape.BlendShape.name}");
                             continue;
                         }
                         
                         //Update the weight to match the weight from the character card   
-                        bsc.ApplyBlendShapeWeight(smr, meshBlendShape.BlendShape.weight);
+                        _bsc.ApplyBlendShapeWeight(smr, meshBlendShape.BlendShape.weight, false);
                         continue;
                     }
 
-                    //Add the blendshape to the mesh
-                    new BlendShapeController(blendShape, smr);
+                    //Add the blendshape to the mesh, and set weight
+                    var bsc = new BlendShapeController(blendShape, smr);
+                    bsc.ApplyBlendShapeWeight(smr, meshBlendShape.BlendShape.weight, false);
                 } 
                 else if (smr.name == meshName && smr.sharedMesh.vertexCount != vertexCount)
                 {
@@ -306,7 +336,7 @@ namespace KK_PregnancyPlus
                 Vector3[] deltaTangents = new Vector3 [smr.sharedMesh.tangents.Length];
 
                 var name = smr.sharedMesh.GetBlendShapeName(i);
-                var weight = smr.sharedMesh.GetBlendShapeFrameWeight(i, 0);
+                var weight = smr.GetBlendShapeWeight(i);
                 var frameCount = smr.sharedMesh.GetBlendShapeFrameCount(i);
                 smr.sharedMesh.GetBlendShapeFrameVertices(i, 0, deltaVertices, deltaNormals, deltaTangents);
 

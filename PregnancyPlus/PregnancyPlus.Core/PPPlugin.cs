@@ -68,13 +68,13 @@ namespace KK_PregnancyPlus
             var handlers = CharacterApi.GetRegisteredBehaviour(GUID);
             if (handlers == null || handlers.Instances == null) return;
 
-            // #if !DEBUG  //Tired of the errors caused by ScriptEngine here
+            #if !DEBUG  //Tired of the errors caused by ScriptEngine here
                 foreach (PregnancyPlusCharaController charCustFunCtrl in handlers.Instances)
                 {         
                     //Update any active gui windows
                     charCustFunCtrl.blendShapeGui.OnGUI(this);                                                    
                 }
-            // #endif
+            #endif
         }
     
     }

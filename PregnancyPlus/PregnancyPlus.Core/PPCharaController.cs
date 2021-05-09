@@ -73,12 +73,16 @@ namespace KK_PregnancyPlus
             //only allow saving card inside maker or studio
             if (!StudioAPI.InsideStudio && !MakerAPI.InsideMaker) return;
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnCardBeingSaved ");
+
+            CaptureNewBlendshapeWeights();
             SetExtendedData(infConfig.Save());
         }
 
 
         protected override void Start() 
         {  
+            uncensorChanged = false;
+            
             //Character card name used to detect switching characters  
             charaFileName = ChaFileControl.parameter.fullname;        
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $Start {charaFileName}");
@@ -136,7 +140,7 @@ namespace KK_PregnancyPlus
             ReadAndSetCardData();
 
             // When changing a character (swapping in place) in studio carry over belly sliders
-            if (StudioAPI.InsideStudio && !infConfig.HasAnyValue() && infConfigHistory.HasAnyValue())
+            if (StudioAPI.InsideStudio && !infConfig.HasAnyValue() && infConfigHistory.HasAnyValue() && !infConfig.HasBlendShape())
             {
                 if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" -Character changed in place, preserving belly shape"); 
                 infConfig = infConfigHistory;

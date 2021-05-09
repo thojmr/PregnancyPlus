@@ -17,10 +17,16 @@ namespace KK_PregnancyPlus
         public class BlendShape //This is technically a blendshape frame, but w/e.  Its already set in stone
         {
             public string name;
-            private float _weight = 100;
+            private float _frameWeight = 100;//The range that _weight has to stay within
+            public float frameWeight
+            {
+                set { _frameWeight = Mathf.Clamp(value, 0, 100); }
+                get { return _frameWeight <= 0 ? 100 : _frameWeight; }//Fix for old cards not having frameWeight prop, set them to 100
+            }
+            private float _weight = 100;//The current weight
             public float weight 
             {
-                set { _weight = Mathf.Clamp(value, 0, 100); }
+                set { _weight = value; }
                 get { return _weight; }
             }
             public Vector3[] verticies;
@@ -57,12 +63,9 @@ namespace KK_PregnancyPlus
         {
             if (!blendShape.isInitilized) 
             {
-                var maxShapeSize = 100f;
-
                 //Create blend shape deltas from both meshes
                 blendShape = new BlendShape();
                 blendShape.name = blendShapeName;
-                blendShape.weight = maxShapeSize;
 
                 //Get delta diffs of the two meshes for the blend shape
                 blendShape.verticies = GetV3Deltas(originalSmrMesh.vertices, targetSmrMesh.vertices);
@@ -134,7 +137,7 @@ namespace KK_PregnancyPlus
             }
 
             if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" AddBlendShape > {blendShape.log}");
-            smr.sharedMesh.AddBlendShapeFrame(blendShape.name, blendShape.weight, blendShape.verticies, blendShape.normals, blendShape.tangents);    
+            smr.sharedMesh.AddBlendShapeFrame(blendShape.name, blendShape.frameWeight, blendShape.verticies, blendShape.normals, blendShape.tangents);    
             //Fix for some shared mesh properties not updating after AddBlendShapeFrame
             smr.sharedMesh = smr.sharedMesh; //I hate this line of code        
 
@@ -151,7 +154,7 @@ namespace KK_PregnancyPlus
         {
             var smrMesh = smr.sharedMesh;
             var bsCount = smrMesh.blendShapeCount;            
-            var existingBlendShapes = CopyAllBlendShapeFrames(smrMesh);
+            var existingBlendShapes = CopyAllBlendShapeFrames(smr);
 
             //Clear all blend shapes (because we cant just delete one.  Thanks unity!)
             smrMesh.ClearBlendShapes();
@@ -167,11 +170,11 @@ namespace KK_PregnancyPlus
                     if (existingBlendShapes[i][f].name == newBs.name) 
                     {
                         found = true;
-                        smrMesh.AddBlendShapeFrame(newBs.name, existingBlendShapes[i][f].weight, newBs.verticies, newBs.normals, newBs.tangents);    
+                        smrMesh.AddBlendShapeFrame(newBs.name, existingBlendShapes[i][f].frameWeight, newBs.verticies, newBs.normals, newBs.tangents);    
                         continue;
                     }
                     //Otherwise just add back the old blend shapes, and weights in the same order
-                    smrMesh.AddBlendShapeFrame(existingBlendShapes[i][f].name, existingBlendShapes[i][f].weight, existingBlendShapes[i][f].verticies, 
+                    smrMesh.AddBlendShapeFrame(existingBlendShapes[i][f].name, existingBlendShapes[i][f].frameWeight, existingBlendShapes[i][f].verticies, 
                         existingBlendShapes[i][f].normals, existingBlendShapes[i][f].tangents);
                 }
             }
@@ -179,7 +182,7 @@ namespace KK_PregnancyPlus
             //If not found then just add it as per normal
             if (!found) 
             {
-                smrMesh.AddBlendShapeFrame(newBs.name, newBs.weight, newBs.verticies, newBs.normals, newBs.tangents);    
+                smrMesh.AddBlendShapeFrame(newBs.name, newBs.frameWeight, newBs.verticies, newBs.normals, newBs.tangents);    
             }
         }
 
@@ -189,8 +192,9 @@ namespace KK_PregnancyPlus
         /// </summary>
         /// <param name="smr">The skinned mesh renderer to update the blend shape weight</param>
         /// <param name="weight">Float value from 0-40 that will increase the blend to the target shape as the number grows</param>
+        /// <param name="floatLerp">When true, will conver the weight from 0-40 weeks to 0-100 blendshape weight, otherwise it expects the value to be 0-100 scale</param>
         /// <returns>boolean true if the blend shape exists</returns>
-        public bool ApplyBlendShapeWeight(SkinnedMeshRenderer smr, float weight) 
+        public bool ApplyBlendShapeWeight(SkinnedMeshRenderer smr, float weight, bool floatLerp = true) 
         {
             if (!blendShape.isInitilized || weight < 0) return false;
             if (smr == null) return false;
@@ -200,7 +204,7 @@ namespace KK_PregnancyPlus
 
             //Belly size goes from 0-40, but blendShapes have to be 0-100
             //Technically unity 2018x + can go above 100 when unclamped, but not any illusion games yet
-            var lerpWeight = Mathf.Lerp(0, 100, weight/40);
+            var lerpWeight = floatLerp ? Mathf.Lerp(0, 100, weight/40) : weight;
             var shapeIndex = GetBlendShapeIndex(smr, blendShape.name);
             //If the blendshape is not found, return
             if (shapeIndex < 0) return false;
@@ -210,7 +214,7 @@ namespace KK_PregnancyPlus
             var shapeName = smr.sharedMesh.GetBlendShapeName(shapeIndex);
             var shapeCount = smr.sharedMesh.blendShapeCount;                 
 
-            // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" ApplyBlendShapeWeight > shapeIndex {shapeIndex} shapeWeight {shapeWeight} shapeCount {shapeCount} shapeFrameCount {shapeFrameCount} lerpWeight {lerpWeight}");            
+            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" ApplyBlendShapeWeight > shapeIndex {shapeIndex} shapeWeight {shapeWeight} shapeCount {shapeCount} shapeFrameCount {shapeFrameCount} lerpWeight {lerpWeight}");            
             smr.SetBlendShapeWeight(shapeIndex, lerpWeight);
 
             return true;
@@ -267,7 +271,8 @@ namespace KK_PregnancyPlus
             //Get the blendshape details
             smr.sharedMesh.GetBlendShapeFrameVertices(shapeIndex, 0, deltaVertices, deltaNormals, deltaTangents);
             var name = smr.sharedMesh.GetBlendShapeName(shapeIndex);
-            var weight = smr.sharedMesh.GetBlendShapeFrameWeight(shapeIndex, 0);
+            var frameWeight = smr.sharedMesh.GetBlendShapeFrameWeight(shapeIndex, 0);
+            var weight = smr.GetBlendShapeWeight(shapeIndex);
 
             //Copy the blendshape data for the first frame
             var bsFrame = new BlendShape();
@@ -275,6 +280,7 @@ namespace KK_PregnancyPlus
             bsFrame.normals = deltaNormals;
             bsFrame.tangents = deltaTangents;
             bsFrame.weight = weight;
+            bsFrame.frameWeight = frameWeight;
             bsFrame.name = name;
 
             return bsFrame;
@@ -320,7 +326,7 @@ namespace KK_PregnancyPlus
             var bsCount = smrMesh.blendShapeCount;      
             if (bsCount == 0) return true;
                   
-            var existingBlendShapes = CopyAllBlendShapeFrames(smrMesh);
+            var existingBlendShapes = CopyAllBlendShapeFrames(smr);
 
             //Clear all blend shapes (because we cant just delete one.  Thanks unity!)
             smrMesh.ClearBlendShapes();
@@ -335,7 +341,7 @@ namespace KK_PregnancyPlus
                     if (existingBlendShapes[i][f].name == blendShape.name) continue;
 
                     //Otherwise add back the old blend shapes, and weights in the same order (shifted around the removed one)
-                    smrMesh.AddBlendShapeFrame(existingBlendShapes[i][f].name, existingBlendShapes[i][f].weight, existingBlendShapes[i][f].verticies, 
+                    smrMesh.AddBlendShapeFrame(existingBlendShapes[i][f].name, existingBlendShapes[i][f].frameWeight, existingBlendShapes[i][f].verticies, 
                         existingBlendShapes[i][f].normals, existingBlendShapes[i][f].tangents);
                 }
             }
@@ -348,14 +354,16 @@ namespace KK_PregnancyPlus
         /// Copy all existing blendshape frames on a mesh
         /// </summary>
         /// <param name="smrMesh">The mesh contining the blendshapes</param>
-        internal Dictionary<int, BlendShape[]> CopyAllBlendShapeFrames(Mesh smrMesh) 
+        internal Dictionary<int, BlendShape[]> CopyAllBlendShapeFrames(SkinnedMeshRenderer smr) 
         {
             var existingBlendShapes = new Dictionary<int, BlendShape[]>();
+            var smrMesh = smr.sharedMesh;            
             var bsCount = smrMesh.blendShapeCount;  
 
             //For each shape index that exists
             for (var i = 0; i < bsCount; i++) 
             {
+                var weight = smr.GetBlendShapeWeight(i);
                 int frameCount = smrMesh.GetBlendShapeFrameCount(i);
 
                 Vector3[] deltaVertices = new Vector3 [smrMesh.vertexCount];
@@ -370,7 +378,7 @@ namespace KK_PregnancyPlus
                     //Get the blendshape details
                     smrMesh.GetBlendShapeFrameVertices(i, f, deltaVertices, deltaNormals, deltaTangents);
                     var name = smrMesh.GetBlendShapeName(i);
-                    var weight = smrMesh.GetBlendShapeFrameWeight(i, f);
+                    var frameWeight = smrMesh.GetBlendShapeFrameWeight(i, f);
 
                     //Copy the blendshape data
                     var bsFrame = new BlendShape();
@@ -378,6 +386,7 @@ namespace KK_PregnancyPlus
                     bsFrame.normals = deltaNormals;
                     bsFrame.tangents = deltaTangents;
                     bsFrame.weight = weight;
+                    bsFrame.frameWeight = frameWeight;
                     bsFrame.name = name;
                 
                     existingBlendShapes[i][f] = bsFrame;
