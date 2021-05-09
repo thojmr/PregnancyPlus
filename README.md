@@ -81,7 +81,7 @@ You can grab the latest plugin release [here](https://github.com/thojmr/KK_Pregn
 This plugin works in Koikatsu, Honey Select 2, and AI.  Grab the KK zip for Koikatsu, HS2 zip for Honey Select 2, and AI zip for AI [here](https://github.com/thojmr/KK_PregnancyPlus/releases)
 
 ## How to install
-1. Make sure you have at least BepInEx 5.4.4 and KKAPI 1.17
+1. Make sure you have at least BepInEx 5.4.4 and KKAPI 1.17 for PregnancyPlus v3.0+
 2. Download the latest release of the plugin you want [here](https://github.com/thojmr/KK_PregnancyPlus/releases).
 3. Extract the zip archive into your root game directory. The plugin .dll will end up inside your BepInEx\plugins\ directory.
     - like {root game}/BepInEx/plugins/XX_PregnancyPlus.dll
