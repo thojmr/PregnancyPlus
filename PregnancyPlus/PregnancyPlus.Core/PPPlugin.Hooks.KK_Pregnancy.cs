@@ -21,10 +21,12 @@ namespace KK_PregnancyPlus
                 internal static string pluginName = "AI_Pregnancy";
             #endif
 
+
             public static void InitHooks(Harmony harmonyInstance)
             {            
                 TryPatchPreggersInflation(harmonyInstance);            
             }
+
 
             /// <summary>
             /// Manually Hook the KK_Pregnancy AddInflation method to trigger Preg+ inflation as well
@@ -47,6 +49,7 @@ namespace KK_PregnancyPlus
                     return;                        
                 }
                 
+                //If the AddInflation method is found, then patch it
                 hi.Patch(AddInflationMethod,
                         postfix: new HarmonyMethod(typeof(Hooks_KK_Pregnancy), nameof(Hooks_KK_Pregnancy.InflationChangePatch)));     
 
@@ -60,9 +63,11 @@ namespace KK_PregnancyPlus
                     return;                        
                 }     
 
+                //If the DrainInflation method is found, then patch it
                 hi.Patch(DrainInflationMethod,
                     postfix: new HarmonyMethod(typeof(Hooks_KK_Pregnancy), nameof(Hooks_KK_Pregnancy.InflationChangePatch)));                                       
             }
+
 
             /// <summary>
             /// Harmony patch that gets the characters new InflationAmount from KK_Pregnancy

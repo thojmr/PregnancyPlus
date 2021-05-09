@@ -46,13 +46,14 @@ namespace KK_PregnancyPlus
 
             var hi = new Harmony(GUID);
             Hooks.InitHooks(hi);
+            Hooks_Uncensor.InitHooks(hi);
             #if KK || AI
                 Hooks_KK_Pregnancy.InitHooks(hi);
             #endif
 
             //Set up studio/malker GUI sliders
             PregnancyPlusGui.InitStudio(hi, this);
-            PregnancyPlusGui.InitMaker(hi, this);            
+            PregnancyPlusGui.InitMaker(hi, this);       
         }
 
     
@@ -67,13 +68,13 @@ namespace KK_PregnancyPlus
             var handlers = CharacterApi.GetRegisteredBehaviour(GUID);
             if (handlers == null || handlers.Instances == null) return;
 
-            #if !DEBUG  //Tired of the errors caused by ScriptEngine here
+            // #if !DEBUG  //Tired of the errors caused by ScriptEngine here
                 foreach (PregnancyPlusCharaController charCustFunCtrl in handlers.Instances)
                 {         
                     //Update any active gui windows
                     charCustFunCtrl.blendShapeGui.OnGUI(this);                                                    
                 }
-            #endif
+            // #endif
         }
     
     }

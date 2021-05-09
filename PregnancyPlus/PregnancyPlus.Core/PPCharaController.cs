@@ -29,6 +29,7 @@ namespace KK_PregnancyPlus
         public BellyInfo bellyInfo;
         public string charaFileName = null;
         public bool lastVisibleState = false;//Track last mesh render state, to determine when to re-apply preg+ shape in main game
+        public bool uncensorChanged = false;
 
         public PregnancyPlusBlendShapeGui blendShapeGui = new PregnancyPlusBlendShapeGui();
 
@@ -118,7 +119,7 @@ namespace KK_PregnancyPlus
         protected override void OnReload(GameMode currentGameMode)
         {
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnReload {currentGameMode}"); 
-            lastVisibleState = false;
+            lastVisibleState = false;            
             ClearOnReload();
             #if AI || HS2
                 //Fix for the way AI addds new characters by copying existing character first.  This will remove the old blendshapes.
@@ -131,14 +132,35 @@ namespace KK_PregnancyPlus
 
             ReadAndSetCardData();
 
+            // When changing a character (swapping in place) in studio carry over belly sliders
+            if (StudioAPI.InsideStudio && !infConfig.HasAnyValue() && infConfigHistory.HasAnyValue())
+            {
+                if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" -Character changed in place, preserving belly shape"); 
+                infConfig = infConfigHistory;
+            }
+
+            //If the uncensor changed just before this Reload(), then is was probably a character swap.
+            //TODO If there are saved blendshapes on this character, force switch to that uncensor, to load the blendshapes.  This will preserve belly shape in custom scenes
+            if (uncensorChanged)
+            {
+                uncensorChanged = false;
+
+                //When in maker or studio we want to reset inflation values when uncensor changes to reset clothes
+                if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) ResetInflation();        
+            }
+            //Load any saved blendshapes from card
+            LoadBlendShapes(infConfig);
+            
+
             StartCoroutine(ReloadStoryInflation(0.5f));     
-            StartCoroutine(ReloadStudioMakerInflation(1.5f));  //Give time for character to load, and settle  
+            StartCoroutine(ReloadStudioMakerInflation(1f));  //Give time for character to load, and settle  
         }
 
 
         protected override void Update()
         {
             WatchForUserKeyPress();
+            ComputeInflationChange();
 
             //just for debugging belly during animations, very compute heavy for Update()
             if (PregnancyPlusPlugin.DebugAnimations.Value)
@@ -146,8 +168,6 @@ namespace KK_PregnancyPlus
                 if (Time.frameCount % 60 == 0) MeasureWaistAndSphere(ChaControl, true);
                 if (Time.frameCount % 60 == 0) MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: true, _freshStart: true));
             }
-
-            ComputeInflationChange();
         }
 
 
@@ -166,6 +186,29 @@ namespace KK_PregnancyPlus
         {
             meshWithBlendShapes = new List<SkinnedMeshRenderer>();
             blendShapeGui.CloseBlendShapeGui();
+        }
+
+
+        /// <summary>
+        /// After Uncensor changes, if Reload() is not called within the time below, try to reload the blendshape manually. Since we know the change was from user interacing with dropdown
+        /// </summary>
+        internal IEnumerator UserTriggeredUncensorChange() {
+            yield return new WaitForSeconds(0.1f);
+            if (!uncensorChanged) yield break;
+
+            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" -UserTriggeredUncensorChange");
+            uncensorChanged = false;
+
+            ClearOnReload();
+
+            //When in maker or studio we want to reset inflation values when uncensor changes to reset clothes
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) ResetInflation();
+
+            //Load any blendshapes from card.  If the uncensor matches the blendshapes they will load to the character visibly
+            LoadBlendShapes(infConfig);
+
+            StartCoroutine(ReloadStoryInflation(0.5f));     
+            StartCoroutine(ReloadStudioMakerInflation(1.5f));  //Give time for character to load, and settle 
         }
 
 
@@ -294,44 +337,6 @@ namespace KK_PregnancyPlus
             }            
         }
 
-
-        /// <summary>
-        /// Triggered when clothing state is changed, i.e. pulled aside or taken off.
-        /// </summary>
-        internal void ClothesStateChangeEvent(int chaID, int clothesKind, bool forceRecalcVerts = false)
-        {
-            //Wait for card data to load, and make sure this is the same character the clothes event triggered for
-            if (!initialized || chaID != ChaControl.chaID) return;
-
-            // if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= ClothesStateChangeEvent {clothesKind}");
-
-            #if KK
-                var debounceTime = 0.1f;
-            #elif HS2 || AI
-                var debounceTime = 0.15f;
-            #endif
-            //Force recalc because of some cloth items in HS2 Maker that don't seem to want to follow the rules
-            StartCoroutine(WaitForMeshToSettle(debounceTime, true, forceRecalcVerts));
-        }
-
-
-        /// <summary>
-        /// Check whether the characters visibility state has changed, via chaControl hook
-        /// </summary>
-        internal void CheckVisibilityState(bool newState)
-        {
-            //If the character was already visible, ignore this until next reload
-            if (lastVisibleState) return;
-            if (!newState) return;
-
-            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= CheckVisibilityState {charaFileName} {newState}");
-
-            lastVisibleState = true;
-
-            //Re trigger mesh inflation when character first becomes visible
-            MeshInflate(new MeshInflateFlags(this, _visibilityUpdate: true));
-        }
-
         
         /// <summary>
         /// Get card data and update this characters infConfig with it
@@ -340,9 +345,7 @@ namespace KK_PregnancyPlus
         {
             infConfig = GetCardData();
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" ReadAndSetCardData > {infConfig.ValuesToString()}");
-            
-            //Load any blendshapes from card
-            LoadBlendShapes(infConfig);
+                        
             initialized = true; 
         }
 
