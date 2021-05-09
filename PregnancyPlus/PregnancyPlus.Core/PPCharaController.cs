@@ -30,6 +30,7 @@ namespace KK_PregnancyPlus
         public string charaFileName = null;
         public bool lastVisibleState = false;//Track last mesh render state, to determine when to re-apply preg+ shape in main game
         public bool uncensorChanged = false;
+        public bool isReloading = false;
 
         public PregnancyPlusBlendShapeGui blendShapeGui = new PregnancyPlusBlendShapeGui();
 
@@ -119,7 +120,9 @@ namespace KK_PregnancyPlus
         protected override void OnReload(GameMode currentGameMode)
         {
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnReload {currentGameMode}"); 
+            isReloading = true;
             lastVisibleState = false;            
+
             ClearOnReload();
             #if AI || HS2
                 //Fix for the way AI addds new characters by copying existing character first.  This will remove the old blendshapes.
@@ -194,6 +197,7 @@ namespace KK_PregnancyPlus
         /// </summary>
         internal IEnumerator UserTriggeredUncensorChange() {
             yield return new WaitForSeconds(0.1f);
+            //If Reload() was already called the blendshape stuff is already taken care of. skip the rest of this
             if (!uncensorChanged) yield break;
 
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" -UserTriggeredUncensorChange");
@@ -241,7 +245,8 @@ namespace KK_PregnancyPlus
                 //For HS2 AI, we set global belly size from plugin config, or character card                    
                 MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: true));   
 
-            #endif                                           
+            #endif      
+            isReloading = false;                                     
         }
 
 
@@ -262,7 +267,8 @@ namespace KK_PregnancyPlus
             {
                 StartCoroutine(WaitForMakerLoad());
             }
-            
+
+            isReloading = false;
         }
 
 
@@ -383,6 +389,8 @@ namespace KK_PregnancyPlus
             debounceGuid = guid;
 
             yield return new WaitForSeconds(waitTime);
+            if (isReloading) yield return new WaitForSeconds(0.1f);//Continue waiting when char is reloading
+
             //If guid is the latest, trigger method
             if (debounceGuid == guid) 
             {

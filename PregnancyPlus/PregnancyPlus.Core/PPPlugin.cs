@@ -24,7 +24,7 @@ namespace KK_PregnancyPlus
     public partial class PregnancyPlusPlugin : BaseUnityPlugin
     {
         public const string GUID = "KK_PregnancyPlus";
-        public const string Version = "3.1";
+        public const string Version = "3.2";
         internal static new ManualLogSource Logger { get; private set; }
    
 
@@ -68,13 +68,13 @@ namespace KK_PregnancyPlus
             var handlers = CharacterApi.GetRegisteredBehaviour(GUID);
             if (handlers == null || handlers.Instances == null) return;
 
-            // #if !DEBUG  //Tired of the errors caused by ScriptEngine here
+            #if !DEBUG  //Tired of the errors caused by ScriptEngine here
                 foreach (PregnancyPlusCharaController charCustFunCtrl in handlers.Instances)
                 {         
                     //Update any active gui windows
                     charCustFunCtrl.blendShapeGui.OnGUI(this);                                                    
                 }
-            // #endif
+            #endif
         }
     
     }
