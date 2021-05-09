@@ -82,9 +82,9 @@ This plugin works in Koikatsu, Honey Select 2, and AI.  Grab the KK zip for Koik
 
 ## How to install
 1. Make sure you have at least BepInEx 5.4.4 and KKAPI 1.17
-2. Download the latest release of the plugin you want.
+2. Download the latest release of the plugin you want [here](https://github.com/thojmr/KK_PregnancyPlus/releases).
 3. Extract the zip archive into your root game directory. The plugin .dll will end up inside your BepInEx\plugins\ directory.
-    - Should look like {root game}/BepInEx/plugins/XX_PregnancyPlus.dll
+    - like {root game}/BepInEx/plugins/XX_PregnancyPlus.dll
 4. Check if there are no warnings on game startup, if the plugin loaded it should appear in Plugin Config.
 
 ## (Developers only) Compiling with Visual Studio 2019 (The official way)
