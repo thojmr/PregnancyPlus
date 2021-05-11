@@ -121,6 +121,7 @@ namespace KK_PregnancyPlus
             //Check that inflationConfig has a value
             if (!infConfig.HasAnyValue()) yield return null;
             if (infConfig.inflationSize == 0) yield return null;
+            yield return new WaitForEndOfFrame();
             if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" ApplySmoothing({includeClothMesh})");
 
             //Trigger mesh recalculation to overwrite last smoothing pass changes if any existed

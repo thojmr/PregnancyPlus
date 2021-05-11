@@ -31,7 +31,6 @@ namespace KK_PregnancyPlus
         public bool lastVisibleState = false;//Track last mesh render state, to determine when to re-apply preg+ shape in main game
         public bool uncensorChanged = false;
         public bool isReloading = false;
-        public bool reloadStudioMakerInflation = false;//Used to trigger MeshInflate from Coroutine on next Updaate()
 
         public PregnancyPlusBlendShapeGui blendShapeGui = new PregnancyPlusBlendShapeGui();
 
@@ -109,6 +108,12 @@ namespace KK_PregnancyPlus
          
             #endif
 
+            // CharacterApi.CharacterReloaded += (object sender, CharaReloadEventArgs e) =>  
+            // {  
+            //     if (e.ReloadedCharacter == null || e.ReloadedCharacter.name != ChaControl.name) return;            
+            //     if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= OnCharacterReloaded ");
+            // };
+
             base.Start();
         }        
 
@@ -162,7 +167,7 @@ namespace KK_PregnancyPlus
             
 
             StartCoroutine(ReloadStoryInflation(0.5f, "Reload-story"));     
-            StartCoroutine(ReloadStudioMakerInflation(1f, reMeasure: true, "Reload"));  //Give time for character to load, and settle  
+            StartCoroutine(ReloadStudioMakerInflation(1.5f, reMeasure: true, "Reload"));  //Give time for character to load, and settle  
         }
 
 
@@ -175,14 +180,6 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.DebugAnimations.Value)
             {
                 if (Time.frameCount % 60 == 0) MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: true, _freshStart: true, _reMeasure: true), "Update");
-            }
-
-            //For some reaason this same method called from a Coroutine while character is being swaped, isnt able to measure the bones correctly
-            //So this is a hack to make it work, and we all know the most permanent changes are temporary ones
-            if (reloadStudioMakerInflation)
-            {
-                MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: true, _freshStart: true, _reMeasure: true), "ReloadStudioMakerInflation");
-                reloadStudioMakerInflation = false;
             }
         }
 
@@ -208,7 +205,8 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// After Uncensor changes, if Reload() is not called within the time below, try to reload the blendshape manually. Since we know the change was from user interacing with dropdown
         /// </summary>
-        internal IEnumerator UserTriggeredUncensorChange() {
+        internal IEnumerator UserTriggeredUncensorChange() 
+        {
             yield return new WaitForSeconds(0.1f);
             //If Reload() was already called the blendshape stuff is already taken care of. skip the rest of this
             if (!uncensorChanged) yield break;
@@ -246,6 +244,8 @@ namespace KK_PregnancyPlus
         internal IEnumerator ReloadStoryInflation(float time, string callee)
         {
             yield return new WaitForSeconds(time);
+            //Waiting until end of frame lets bones settle so we can take accurate measurements
+            yield return new WaitForEndOfFrame();
 
             //Only reload when story mode enabled.
             if (PregnancyPlusPlugin.StoryMode != null && !PregnancyPlusPlugin.StoryMode.Value) yield break;            
@@ -269,15 +269,15 @@ namespace KK_PregnancyPlus
         internal IEnumerator ReloadStudioMakerInflation(float time, bool reMeasure, string callee)
         {                        
             yield return new WaitForSeconds(time);
+            //Waiting until end of frame lets bones settle so we can take accurate measurements
+            yield return new WaitForEndOfFrame();
 
             if (!StudioAPI.InsideStudio && !MakerAPI.InsideMaker) yield break;   
 
             if (StudioAPI.InsideStudio || (MakerAPI.InsideMaker && MakerAPI.InsideAndLoaded))
             {
-                //If either are fully loaded, start mesh inflate (This always resulted in bad measurement when called here.  Moved to Update() )
-                // MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: true, _freshStart: true, _reMeasure: true), callee);    
-                reloadStudioMakerInflation = true;
-                yield return null;
+                //If either are fully loaded, start mesh inflate
+                MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: true, _freshStart: true, _reMeasure: true), callee);    
                 isReloading = false;//Allow cloth mesh events to continue triggering MeshInflate
             }
             else if (MakerAPI.InsideMaker && !MakerAPI.InsideAndLoaded)
@@ -406,16 +406,15 @@ namespace KK_PregnancyPlus
             debounceGuid = guid;
 
             yield return new WaitForSeconds(waitTime);
-            while (isReloading)
-            {
-                yield return new WaitForSeconds(0.1f);//Continue waiting when char is reloading
-            } 
+            yield return new WaitWhile(() => isReloading);
+            yield return new WaitForSeconds(0.1f);
 
             //If guid is the latest, trigger method
             if (debounceGuid == guid)
             {
                 // if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" WaitForMeshToSettle checkNewMesh:{checkNewMesh} forceRecalcVerts:{forceRecalcVerts}");        
                 CheckMeshVisibility(); 
+                yield return new WaitForEndOfFrame();
                 MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: checkNewMesh, _freshStart: forceRecalcVerts), "WaitForClothMeshToSettle");
             }
         }

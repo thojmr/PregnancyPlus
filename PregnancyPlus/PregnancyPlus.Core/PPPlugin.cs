@@ -7,7 +7,7 @@ using KKAPI.Chara;
 
 namespace KK_PregnancyPlus
 {       
-    [BepInPlugin(GUID, GUID, "5.4.4")]
+    [BepInPlugin(GUID, GUID, Version)]
     [BepInDependency("com.deathweasel.bepinex.uncensorselector", BepInDependency.DependencyFlags.SoftDependency)]
     #if KK
         [BepInDependency(KoikatuAPI.GUID, "1.14")]
