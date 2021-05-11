@@ -91,7 +91,8 @@ namespace KK_PregnancyPlus
             {
                 var smr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderKey);
                 //Normally triggered when user changes clothes, the old clothes render wont be found
-                if (smr == null) {
+                if (smr == null) 
+                {
                     // if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" ResetInflation > smr was not found {renderKey}");
                     continue;                
                 }
@@ -197,7 +198,8 @@ namespace KK_PregnancyPlus
         /// <summary>   
         /// Update characters mesh with the new smoothed results
         /// </summary>
-        internal void ApplySmoothResults(Vector3[] newMesh, string renderKey, SkinnedMeshRenderer smr = null) {
+        internal void ApplySmoothResults(Vector3[] newMesh, string renderKey, SkinnedMeshRenderer smr = null) 
+        {
             //Set the new smoothed mesh verts
             if (newMesh != null) inflatedVertices[renderKey] = newMesh;
 

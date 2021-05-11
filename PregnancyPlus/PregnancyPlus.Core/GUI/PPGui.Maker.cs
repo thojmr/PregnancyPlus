@@ -242,14 +242,16 @@ namespace KK_PregnancyPlus
         }
 
         //On any slider change, trigger mesh inflaiton update
-        internal static void OnMakerSettingsChanged(PregnancyPlusCharaController controller) {
+        internal static void OnMakerSettingsChanged(PregnancyPlusCharaController controller) 
+        {
             // if (!MakerAPI.InsideAndLoaded) return;
             if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" OnMakerSettingsChanged ");                
             controller.MeshInflate(new MeshInflateFlags(controller, _checkForNewMesh: true), "OnMakerSettingsChanged");  
         }
 
 
-        internal static void OnClothingOffsetVersionChanged(PregnancyPlusCharaController controller) {
+        internal static void OnClothingOffsetVersionChanged(PregnancyPlusCharaController controller) 
+        {
             if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" OnClothingOffsetVersionChanged {controller.infConfig.clothingOffsetVersion}");            
             controller.MeshInflate(new MeshInflateFlags(controller, _checkForNewMesh: true, _freshStart: true), "OnClothingOffsetVersionChanged");                                                                     
         }

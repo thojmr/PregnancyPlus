@@ -419,7 +419,8 @@ namespace KK_PregnancyPlus
             //If not found then create it
             if (bsc.blendShape == null || needsOverwrite) bsc = CreateBlendShape(smr, renderKey, blendShapeTag);
 
-            if (bsc.blendShape == null) {
+            if (bsc.blendShape == null) 
+            {
                 if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogWarning(
                      $"ApplyBlendShapeWeight > There was a problem creating the blendshape ${blendShapeName}");
                 return false;
@@ -438,7 +439,8 @@ namespace KK_PregnancyPlus
         /// <param name="smr">Target mesh renderer to update (original shape)</param>
         /// <param name="renderKey">The Shared Mesh renderkey name, used to calculate the blendshape name</param>
         /// <param name="blendShapeTag">Optional blend shape tag to append to the blend shape name, used for identification if needed</param>
-        internal bool ResetBlendShapeWeight(SkinnedMeshRenderer smr, string renderKey, string blendShapeTag = null) {
+        internal bool ResetBlendShapeWeight(SkinnedMeshRenderer smr, string renderKey, string blendShapeTag = null) 
+        {
             var blendShapeName = MakeBlendShapeName(renderKey, blendShapeTag);
 
             //Try to find an existing blendshape by name
@@ -453,7 +455,8 @@ namespace KK_PregnancyPlus
         /// Compute the blendshapes for a character to be used during inflation HScene (Does not apply the shape)
         /// </summary>
         /// <param name="smr">Target mesh renderer to update (original shape)</param>
-        internal List<BlendShapeController> ComputeInflationBlendShapes() {
+        internal List<BlendShapeController> ComputeInflationBlendShapes() 
+        {
             var blendshapes = new List<BlendShapeController>();
 
             //Trigger inflation at 0 size to create the blendshapes            

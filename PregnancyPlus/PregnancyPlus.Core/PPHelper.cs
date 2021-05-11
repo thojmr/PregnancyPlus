@@ -20,7 +20,8 @@ namespace KK_PregnancyPlus
             get { return $"{name}_{vertexCount}"; }
         }
 
-        public MeshIdentifier(string _name, int _vertexCount) {
+        public MeshIdentifier(string _name, int _vertexCount) 
+        {
             name = _name;
             vertexCount = _vertexCount;
         }
@@ -84,7 +85,8 @@ namespace KK_PregnancyPlus
                 if (chaControlObj == null) continue;
 
                 var skinnedItems = GetMeshRenderers(chaControlObj, findAll);
-                if (skinnedItems != null && skinnedItems.Count > 0) {
+                if (skinnedItems != null && skinnedItems.Count > 0) 
+                {
                     renderers.AddRange(skinnedItems);
                 }
             }

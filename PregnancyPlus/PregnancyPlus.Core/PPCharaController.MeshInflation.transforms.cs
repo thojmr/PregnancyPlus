@@ -168,7 +168,8 @@ namespace KK_PregnancyPlus
         /// <summary>   
         /// This will add a fat fold across the middle of the belly
         /// </summary>        
-        internal Vector3 GetUserFatFoldTransform(Transform meshRootTf, Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 sphereCenterLs, float sphereRadius) {
+        internal Vector3 GetUserFatFoldTransform(Transform meshRootTf, Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 sphereCenterLs, float sphereRadius) 
+        {
             var origSmoothVectorLs = smoothedVectorLs;
             var inflationFatFold = GetInflationFatFold();
             var scaledSphereRadius = bellyInfo.ScaledRadius(BellyDir.y);
@@ -178,13 +179,15 @@ namespace KK_PregnancyPlus
 
             var resultVert = smoothedVectorLs;
             //Make V shape in the middle of the belly horizontally
-            if (svDistFromCenter <= scaledSphereRadius) {        
+            if (svDistFromCenter <= scaledSphereRadius) 
+            {        
                 //The closer to Y = 0 the more inwards the pull            
                 smoothedVectorLs = Vector3.Slerp(originalVerticeLs, smoothedVectorLs, svDistFromCenter/scaledSphereRadius + (inflationFatFold -1));
             }
 
             //Shrink skin above center line.  Want it bigger down below the line to look more realistic
-            if (smoothedVectorLs.y > sphereCenterLs.y) {                    
+            if (smoothedVectorLs.y > sphereCenterLs.y) 
+            {                    
                 //As the verts get higher, move them back towards their original position
                 smoothedVectorLs = Vector3.Slerp(smoothedVectorLs, originalVerticeLs, svDistFromCenter/(scaledSphereRadius * 1.5f));
             }

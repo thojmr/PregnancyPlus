@@ -83,7 +83,8 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Calculate the initial sphere radius by taking the smaller of the wasit width or waist to rib height. This is pre InflationMultiplier
         /// </summary>
-        internal float GetSphereRadius(float wasitToRibDist, float wasitWidth, Vector3 charScale) {
+        internal float GetSphereRadius(float wasitToRibDist, float wasitWidth, Vector3 charScale) 
+        {
             //The float numbers are just arbitrary numbers that ended up looking porportional
             return Math.Min(wasitToRibDist/1.25f, wasitWidth/1.3f) * charScale.y;
         }
@@ -128,7 +129,8 @@ namespace KK_PregnancyPlus
         /// <summary>   
         /// Clear all inflations and remove the known mesh verts
         /// </summary>   
-        public void CleanSlate() {
+        public void CleanSlate() 
+        {
             ResetInflation();
             var keyList = new List<string>(originalVertices.Keys);
             RemoveRenderKeys(keyList);

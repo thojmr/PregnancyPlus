@@ -36,7 +36,8 @@ namespace KK_PregnancyPlus
             return this.MemberwiseClone();
         }
 
-        public string ValuesToString() {
+        public string ValuesToString() 
+        {
             return $" inflationSize {inflationSize} GameplayEnabled {GameplayEnabled} clothingOffsetVersion {clothingOffsetVersion}";
         }
 
@@ -117,8 +118,8 @@ namespace KK_PregnancyPlus
         /// Will compare current values to default values
         /// </summary>
         /// <param name="includeSize">When false, will ignore inflationSize comparison</param>
-        public bool HasAnyValue(bool includeSize = true) {
-
+        public bool HasAnyValue(bool includeSize = true) 
+        {
             foreach (var fieldInfo in _serializedFields)
             {
                 //When false, we want to ignore changes in inflationSize
@@ -126,7 +127,8 @@ namespace KK_PregnancyPlus
 
                 var value = fieldInfo.GetValue(this);
                 var defaultValue = fieldInfo.GetValue(_default);
-                if (!Equals(defaultValue, value)) {
+                if (!Equals(defaultValue, value)) 
+                {
                     return true;
                 }
             }

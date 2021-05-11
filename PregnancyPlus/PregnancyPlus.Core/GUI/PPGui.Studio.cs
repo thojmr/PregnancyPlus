@@ -359,7 +359,8 @@ namespace KK_PregnancyPlus
                 var sliders = itemGo.GetComponentsInChildren<UnityEngine.UI.Slider>();
 
                 //For each slider component (should just be one per subItem) set to 0
-                foreach(var slider in sliders) {
+                foreach(var slider in sliders) 
+                {
                     slider.value = resetTo;
                 }
             }
@@ -379,7 +380,8 @@ namespace KK_PregnancyPlus
                 var sliders = itemGo.GetComponentsInChildren<UnityEngine.UI.Slider>();
 
                 //For each slider component (should just be one per subItem) set to 0
-                foreach(var slider in sliders) {
+                foreach(var slider in sliders) 
+                {
                     if (slider.name == "Slider " + sliderName) slider.value = resetTo;
                 }
             }
