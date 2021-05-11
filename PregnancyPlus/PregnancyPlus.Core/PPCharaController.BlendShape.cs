@@ -454,7 +454,7 @@ namespace KK_PregnancyPlus
             var blendshapes = new List<BlendShapeController>();
 
             //Trigger inflation at 0 size to create the blendshapes            
-            MeshInflate(0, new MeshInflateFlags(this, _bypassWhen0: true));
+            MeshInflate(0, "ComputeInflationBlendShapes", new MeshInflateFlags(this, _bypassWhen0: true));
 
             var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);            
             foreach(var smr in clothRenderers)

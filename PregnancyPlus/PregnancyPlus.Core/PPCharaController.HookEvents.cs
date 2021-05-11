@@ -33,7 +33,7 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= CheckVisibilityState {charaFileName} {newState}");
 
             //Re trigger mesh inflation when character first becomes visible
-            MeshInflate(new MeshInflateFlags(this, _visibilityUpdate: true));
+            MeshInflate(new MeshInflateFlags(this, _visibilityUpdate: true), "CheckVisibilityState");
         }
 
 
@@ -54,7 +54,7 @@ namespace KK_PregnancyPlus
             #endif
 
             //Force recalc because of some cloth items in HS2 Maker that don't seem to want to follow the rules
-            StartCoroutine(WaitForMeshToSettle(debounceTime, checkNewMesh: true, forceRecalcVerts));
+            StartCoroutine(WaitForClothMeshToSettle(debounceTime, checkNewMesh: true, forceRecalcVerts));
         }
 
 

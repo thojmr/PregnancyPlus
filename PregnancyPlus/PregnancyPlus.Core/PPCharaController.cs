@@ -31,6 +31,7 @@ namespace KK_PregnancyPlus
         public bool lastVisibleState = false;//Track last mesh render state, to determine when to re-apply preg+ shape in main game
         public bool uncensorChanged = false;
         public bool isReloading = false;
+        public bool reloadStudioMakerInflation = false;//Used to trigger MeshInflate from Coroutine on next Updaate()
 
         public PregnancyPlusBlendShapeGui blendShapeGui = new PregnancyPlusBlendShapeGui();
 
@@ -47,6 +48,7 @@ namespace KK_PregnancyPlus
         public Dictionary<string, bool[]> bellyVerticieIndexes = new Dictionary<string, bool[]>();//List of verticie indexes that belong to the belly area
         public Dictionary<string, bool[]> alteredVerticieIndexes = new Dictionary<string, bool[]>();//List of verticie indexes that belong to the belly area and within the current belly radius
         public List<string> ignoreMeshList = new List<string>();//List of mesh names/keys to ignore since they dont have belly verts
+
 
 
         //For fetching uncensor body guid data (bugfix for uncensor body vertex positions)
@@ -81,9 +83,9 @@ namespace KK_PregnancyPlus
 
         protected override void Start() 
         {  
-            uncensorChanged = false;
+            uncensorChanged = false;//reset value to signify its not a change made manually by the user
             
-            //Character card name used to detect switching characters  
+            //Character card name 
             charaFileName = ChaFileControl.parameter.fullname;        
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $Start {charaFileName}");
             ReadAndSetCardData();      
@@ -95,7 +97,7 @@ namespace KK_PregnancyPlus
                 { 
                     if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $StartH {charaFileName}");
                     //Trigger inflation at current size to create any Preg+ blendshapes that may be used.  Kind of like like pre processing.
-                    MeshInflate(infConfig.inflationSize, new MeshInflateFlags(this, _bypassWhen0: true));
+                    MeshInflate(infConfig.inflationSize, "GameAPI.StartH", new MeshInflateFlags(this, _bypassWhen0: true));
                 };
 
                 //When HScene ends, clear any inflation data
@@ -159,8 +161,8 @@ namespace KK_PregnancyPlus
             LoadBlendShapes(infConfig);
             
 
-            StartCoroutine(ReloadStoryInflation(0.5f));     
-            StartCoroutine(ReloadStudioMakerInflation(1f));  //Give time for character to load, and settle  
+            StartCoroutine(ReloadStoryInflation(0.5f, "Reload-story"));     
+            StartCoroutine(ReloadStudioMakerInflation(1f, reMeasure: true, "Reload"));  //Give time for character to load, and settle  
         }
 
 
@@ -172,8 +174,15 @@ namespace KK_PregnancyPlus
             //just for debugging belly during animations, very compute heavy for Update()
             if (PregnancyPlusPlugin.DebugAnimations.Value)
             {
-                if (Time.frameCount % 60 == 0) MeasureWaistAndSphere(ChaControl, true);
-                if (Time.frameCount % 60 == 0) MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: true, _freshStart: true));
+                if (Time.frameCount % 60 == 0) MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: true, _freshStart: true, _reMeasure: true), "Update");
+            }
+
+            //For some reaason this same method called from a Coroutine while character is being swaped, isnt able to measure the bones correctly
+            //So this is a hack to make it work, and we all know the most permanent changes are temporary ones
+            if (reloadStudioMakerInflation)
+            {
+                MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: true, _freshStart: true, _reMeasure: true), "ReloadStudioMakerInflation");
+                reloadStudioMakerInflation = false;
             }
         }
 
@@ -215,8 +224,8 @@ namespace KK_PregnancyPlus
             //Load any blendshapes from card.  If the uncensor matches the blendshapes they will load to the character visibly
             LoadBlendShapes(infConfig);
 
-            StartCoroutine(ReloadStoryInflation(0.5f));     
-            StartCoroutine(ReloadStudioMakerInflation(1.5f));  //Give time for character to load, and settle 
+            StartCoroutine(ReloadStoryInflation(0.5f, "OnUncensorChanged-story"));     
+            StartCoroutine(ReloadStudioMakerInflation(1f, reMeasure: false, "OnUncensorChanged"));  //Give time for character to load, and settle 
         }
 
 
@@ -234,7 +243,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Triggered by OnReload but only for logic in Story mode
         /// </summary>
-        internal IEnumerator ReloadStoryInflation(float time)
+        internal IEnumerator ReloadStoryInflation(float time, string callee)
         {
             yield return new WaitForSeconds(time);
 
@@ -247,7 +256,7 @@ namespace KK_PregnancyPlus
 
             #elif HS2
                 //For HS2 AI, we set global belly size from plugin config, or character card                    
-                MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: true));   
+                MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: true), callee);   
 
             #endif      
             isReloading = false;                                     
@@ -257,22 +266,24 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Triggered by OnReload but only for logic in Studio or Maker
         /// </summary>
-        internal IEnumerator ReloadStudioMakerInflation(float time)
+        internal IEnumerator ReloadStudioMakerInflation(float time, bool reMeasure, string callee)
         {                        
             yield return new WaitForSeconds(time);
+
             if (!StudioAPI.InsideStudio && !MakerAPI.InsideMaker) yield break;   
 
             if (StudioAPI.InsideStudio || (MakerAPI.InsideMaker && MakerAPI.InsideAndLoaded))
             {
-                //If either are fully loaded, start mesh inflate
-                MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: true, _freshStart: true));    
+                //If either are fully loaded, start mesh inflate (This always resulted in bad measurement when called here.  Moved to Update() )
+                // MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: true, _freshStart: true, _reMeasure: true), callee);    
+                reloadStudioMakerInflation = true;
+                yield return null;
+                isReloading = false;//Allow cloth mesh events to continue triggering MeshInflate
             }
             else if (MakerAPI.InsideMaker && !MakerAPI.InsideAndLoaded)
             {
                 StartCoroutine(WaitForMakerLoad());
             }
-
-            isReloading = false;
         }
 
 
@@ -289,6 +300,8 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" WaitForMakerLoad done, setting initial sliders");         
             //Restore sliders to current state
             PregnancyPlusGui.OnRestore(PregnancyPlusGui.sliders, GetCardData());
+            yield return null;
+            isReloading = false;//Allow cloth mesh events to continue triggering MeshInflate
         }
 
 
@@ -315,13 +328,13 @@ namespace KK_PregnancyPlus
                     //Increase size by 2
                     TargetPregPlusSize += 2;
                     _inflationChange = TargetPregPlusSize;
-                    MeshInflate(TargetPregPlusSize);
+                    MeshInflate(TargetPregPlusSize, "WatchForUserKeyPress");
                 }
                 else
                 {
                     //Increase size by 2
                     var newVal = infConfig.inflationSize + 2;
-                    MeshInflate(newVal);                
+                    MeshInflate(newVal, "WatchForUserKeyPress");                
                 }
             }
 
@@ -331,19 +344,19 @@ namespace KK_PregnancyPlus
                 {
                     TargetPregPlusSize -= 2;
                     _inflationChange = TargetPregPlusSize;
-                    MeshInflate(TargetPregPlusSize);
+                    MeshInflate(TargetPregPlusSize, "WatchForUserKeyPress");
                 }
                 else
                 {
                     var newVal = infConfig.inflationSize - 2;
-                    MeshInflate(newVal);
+                    MeshInflate(newVal, "WatchForUserKeyPress");
                 }
             }
 
             if (PregnancyPlusPlugin.StoryModeInflationReset.Value.IsDown()) 
             {
                 //reset size
-                MeshInflate(0);
+                MeshInflate(0, "WatchForUserKeyPress");
             }            
         }
 
@@ -379,28 +392,31 @@ namespace KK_PregnancyPlus
             if (!initialized) return;
 
             //When clothing changes, reload inflation state
-            StartCoroutine(WaitForMeshToSettle(0.05f, true));
+            StartCoroutine(WaitForClothMeshToSettle(0.05f, true));
         } 
 
         
         /// <summary>
         /// After clothes change you have to wait a second if you want mesh shadows to calculate correctly (longer in HS2, AI)
         /// </summary>
-        internal IEnumerator WaitForMeshToSettle(float waitTime = 0.05f, bool checkNewMesh = false, bool forceRecalcVerts = false)
+        internal IEnumerator WaitForClothMeshToSettle(float waitTime = 0.05f, bool checkNewMesh = false, bool forceRecalcVerts = false)
         {   
-            //Allows us to debounce when multiple back to back request
+            //Allows us to debounce when there are multiple back to back request
             var guid = Guid.NewGuid();
             debounceGuid = guid;
 
             yield return new WaitForSeconds(waitTime);
-            if (isReloading) yield return new WaitForSeconds(0.1f);//Continue waiting when char is reloading
+            while (isReloading)
+            {
+                yield return new WaitForSeconds(0.1f);//Continue waiting when char is reloading
+            } 
 
             //If guid is the latest, trigger method
-            if (debounceGuid == guid) 
+            if (debounceGuid == guid)
             {
                 // if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" WaitForMeshToSettle checkNewMesh:{checkNewMesh} forceRecalcVerts:{forceRecalcVerts}");        
                 CheckMeshVisibility(); 
-                MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: checkNewMesh, _freshStart: forceRecalcVerts));
+                MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: checkNewMesh, _freshStart: forceRecalcVerts), "WaitForClothMeshToSettle");
             }
         }
 

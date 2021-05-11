@@ -248,7 +248,7 @@ namespace KK_PregnancyPlus
                         charCustFunCtrl.GetWeeksAndSetInflation(true);                     
 
                     #elif HS2 //In HS2 we set the belly size based on the plugin config slider
-                        charCustFunCtrl.MeshInflate(new MeshInflateFlags(charCustFunCtrl, _checkForNewMesh: true));                     
+                        charCustFunCtrl.MeshInflate(new MeshInflateFlags(charCustFunCtrl, _checkForNewMesh: true), "StoryMode_SettingsChanged");                     
 
                     #endif                    
                 }
@@ -279,7 +279,7 @@ namespace KK_PregnancyPlus
 
                     #elif HS2
                         //Need to recalculate mesh position when sliders change here
-                        charCustFunCtrl.MeshInflate(new MeshInflateFlags(charCustFunCtrl, _pluginConfigSliderChanged: true));       
+                        charCustFunCtrl.MeshInflate(new MeshInflateFlags(charCustFunCtrl, _pluginConfigSliderChanged: true), "InflationConfig_SettingsChanged");       
 
                     #endif             
                 }                             
@@ -294,7 +294,7 @@ namespace KK_PregnancyPlus
             foreach (PregnancyPlusCharaController charCustFunCtrl in handlers.Instances)
             {                 
                 //Force recalculate all verts.  With balloon active it will automatically calaulcate the correct new boundaries
-                charCustFunCtrl.MeshInflate(new MeshInflateFlags(charCustFunCtrl, _checkForNewMesh: true, _freshStart: true));                                       
+                charCustFunCtrl.MeshInflate(new MeshInflateFlags(charCustFunCtrl, _checkForNewMesh: true, _freshStart: true), "MakeBalloon_SettingsChanged");                                       
             }    
         }
 
@@ -307,7 +307,7 @@ namespace KK_PregnancyPlus
             foreach (PregnancyPlusCharaController charCustFunCtrl in handlers.Instances)
             {                 
                 //Force recalculate all verts.  With MeshDebug active it will automatically calaulcate the correct new debug shape
-                charCustFunCtrl.MeshInflate(new MeshInflateFlags(charCustFunCtrl, _checkForNewMesh: true, _freshStart: true));                                       
+                charCustFunCtrl.MeshInflate(new MeshInflateFlags(charCustFunCtrl, _checkForNewMesh: true, _freshStart: true), "DebugVerts_SettingsChanged");                                       
             }    
         }
 

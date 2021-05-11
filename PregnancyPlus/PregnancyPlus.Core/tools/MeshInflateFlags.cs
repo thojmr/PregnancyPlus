@@ -1,8 +1,8 @@
 namespace KK_PregnancyPlus
 {
     //These are the flags needed to determine whether we need to compute a mesh shape, and or how to do it
-    public class MeshInflateFlags {
-
+    public class MeshInflateFlags 
+    {
         //Check for any newly added meshes
         public bool checkForNewMesh = false;
         //Start from scratch, recalculating all meshes
@@ -13,6 +13,7 @@ namespace KK_PregnancyPlus
         public bool visibilityUpdate = false;
         //Allows calling mesh inflate with 0 inflationSize.  Used to pre compute the current shape now, for faster performance later
         public bool bypassWhen0 = false;        
+        public bool reMeasure = false;
         internal PregnancyPlusData infConfig = null;
         internal PregnancyPlusData infConfigHistory = null;
 
@@ -21,7 +22,8 @@ namespace KK_PregnancyPlus
 
 
         //When any slider values have actually changed, we need to recompute the belly shape
-        public bool SliderHaveChanged {
+        public bool SliderHaveChanged 
+        {
             get 
             {
                 if (pluginConfigSliderChanged) return true;            
@@ -31,7 +33,8 @@ namespace KK_PregnancyPlus
         }
 
         //When only the InflationSize slider has changed.  We don't need to recompute the shape, just alter the blendhsape weight
-        public bool OnlyInflationSizeChanged {
+        public bool OnlyInflationSizeChanged 
+        {
             get 
             { 
                 if (pluginConfigSliderChanged) return true;
@@ -40,7 +43,8 @@ namespace KK_PregnancyPlus
         }
         
         //Whether we need to overwrite the mesh blendshape with a new shape
-        public bool OverWriteMesh {            
+        public bool OverWriteMesh 
+        {            
             get { return (!OnlyInflationSizeChanged && SliderHaveChanged) || freshStart; }
         }
 
@@ -65,8 +69,8 @@ namespace KK_PregnancyPlus
         /// Pass infConfig values to constructor to be used later in slider value comparisons
         /// </summary>
         public MeshInflateFlags(PregnancyPlusCharaController ppcc, bool _checkForNewMesh = false, bool _freshStart = false, bool _pluginConfigSliderChanged = false, 
-                                bool _visibilityUpdate = false, bool _bypassWhen0 = false) {
-
+                                bool _visibilityUpdate = false, bool _bypassWhen0 = false, bool _reMeasure = false) 
+        {
             infConfig = ppcc.infConfig;
             infConfigHistory = ppcc.infConfigHistory;
 
@@ -75,10 +79,12 @@ namespace KK_PregnancyPlus
             pluginConfigSliderChanged = _pluginConfigSliderChanged;
             visibilityUpdate = _visibilityUpdate;
             bypassWhen0 = _bypassWhen0;
+            reMeasure = _reMeasure;
         }
 
 
-        public void Log() {
+        public void Log() 
+        {
             //When a flag is true, log it
             var fieldsLogString = "";
             if (checkForNewMesh) fieldsLogString += $" checkForNewMesh T,";
@@ -86,6 +92,7 @@ namespace KK_PregnancyPlus
             if (pluginConfigSliderChanged) fieldsLogString += $" pluginConfigSliderChanged T,";
             if (visibilityUpdate) fieldsLogString += $" visibilityUpdate T,";
             if (bypassWhen0) fieldsLogString += $" bypassWhen0 T,";
+            if (reMeasure) fieldsLogString += $" reMeasure T,";
 
             var propsLogString = "";
             if (SliderHaveChanged) propsLogString += $" SliderHaveChanged T,";

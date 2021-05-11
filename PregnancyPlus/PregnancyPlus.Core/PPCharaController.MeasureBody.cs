@@ -158,7 +158,6 @@ namespace KK_PregnancyPlus
         /// <returns>Boolean if all measurements are valid</returns>
         internal bool MeasureWaistAndSphere(ChaControl chaControl, bool forceRecalc = false) 
         { 
-
             var bodyTopScale = PregnancyPlusHelper.GetBodyTopScale(ChaControl);
             var nHeightScale = PregnancyPlusHelper.GetN_HeightScale(ChaControl);
             var charScale = ChaControl.transform.localScale;
@@ -166,16 +165,18 @@ namespace KK_PregnancyPlus
             var needsWaistRecalc = bellyInfo != null ? bellyInfo.NeedsBoneDistanceRecalc(bodyTopScale, nHeightScale, charScale) : true;
             var needsSphereRecalc = bellyInfo != null ? bellyInfo.NeedsSphereRecalc(infConfig, GetInflationMultiplier()) : true;
 
+            if (forceRecalc) bellyInfo = null;
+
             //We should reuse existing measurements when we can, because characters waise bone distance chan change with animation, which affects belly size.
             if (bellyInfo != null)
             {
-                if (!forceRecalc && needsSphereRecalc && !needsWaistRecalc)//Sphere radius calc needed
+                if (needsSphereRecalc && !needsWaistRecalc)//Sphere radius calc needed
                 {
                     var _valid = MeasureSphere(chaControl, bodyTopScale, nHeightScale, totalScale);
                     if (PregnancyPlusPlugin.DebugCalcs.Value)  PregnancyPlusPlugin.Logger.LogInfo(bellyInfo.Log()); 
                     return _valid;
                 }
-                else if (!forceRecalc && needsWaistRecalc && !needsSphereRecalc)//Measurements needed which also requires sphere recalc
+                else if (needsWaistRecalc && !needsSphereRecalc)//Measurements needed which also requires sphere recalc
                 {
                     var _valid = MeasureWaist(chaControl, charScale, nHeightScale, 
                                         out float _waistToRibDist, out float _waistToBackThickness, out float _waistWidth, out float _bellyToBreastDist);
@@ -189,7 +190,7 @@ namespace KK_PregnancyPlus
                     if (PregnancyPlusPlugin.DebugCalcs.Value)  PregnancyPlusPlugin.Logger.LogInfo(bellyInfo.Log());                                             
                     return _valid;
                 }
-                else if (!forceRecalc && !needsSphereRecalc && !needsWaistRecalc)//No changed needed
+                else if (!needsSphereRecalc && !needsWaistRecalc)//No changed needed
                 {
                     //Just return the original measurements and sphere radius when no updates needed
                     if (PregnancyPlusPlugin.DebugCalcs.Value)  PregnancyPlusPlugin.Logger.LogInfo(bellyInfo.Log()); 

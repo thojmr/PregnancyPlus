@@ -23,7 +23,7 @@ namespace KK_PregnancyPlus
         /// </summary>
         /// <param name="meshInflateFlags">Contains any flags needed for mesh computation</param>
         /// <returns>Will return True if the mesh was altered and False if not</returns>
-        public bool MeshInflate(MeshInflateFlags meshInflateFlags)
+        public bool MeshInflate(MeshInflateFlags meshInflateFlags, string callee)
         {
             if (ChaControl.objBodyBone == null) return false;//Make sure chatacter objs exists first  
             if (!PregnancyPlusPlugin.AllowMale.Value && ChaControl.sex == 0) return false;// Only female characters, unless plugin config says otherwise          
@@ -45,13 +45,13 @@ namespace KK_PregnancyPlus
                 return false;                                
             }
             
-            if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value)  PregnancyPlusPlugin.Logger.LogInfo($" ---------- ");
+            if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value)  PregnancyPlusPlugin.Logger.LogInfo($" ---------- {callee}() ");
             if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value)  PregnancyPlusPlugin.Logger.LogInfo($" inflationSize > {infConfig.inflationSize} for {charaFileName} ");            
             meshInflateFlags.Log();
             if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value)  PregnancyPlusPlugin.Logger.LogInfo($" ");
 
             //Get the measurements that determine the base belly size
-            var hasMeasuerments = MeasureWaistAndSphere(ChaControl);                     
+            var hasMeasuerments = MeasureWaistAndSphere(ChaControl, meshInflateFlags.reMeasure);                     
             if (!hasMeasuerments) 
             {
                 PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_BadMeasurement, 

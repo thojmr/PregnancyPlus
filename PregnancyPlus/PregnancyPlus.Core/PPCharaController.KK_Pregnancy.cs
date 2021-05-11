@@ -43,7 +43,7 @@ namespace KK_PregnancyPlus
             var cardData = GetCardData();
             if (cardData.inflationSize > 0 && cardData.GameplayEnabled) 
             {                
-                MeshInflate(cardData, new MeshInflateFlags(this, _checkForNewMesh: checkNewMesh, _pluginConfigSliderChanged: slidersChanged));
+                MeshInflate(cardData, "GetWeeksAndSetInflation", new MeshInflateFlags(this, _checkForNewMesh: checkNewMesh, _pluginConfigSliderChanged: slidersChanged));
                 return;
             }
 
@@ -53,7 +53,7 @@ namespace KK_PregnancyPlus
             if (weeks < 0) 
             {
                 //Fix for when character gives birth, we potentially need to reset belly
-                if (infConfig.inflationSize > 0) MeshInflate(0);
+                if (infConfig.inflationSize > 0) MeshInflate(0, "GetWeeksAndSetInflation");
                 return;
             }
 
@@ -63,7 +63,7 @@ namespace KK_PregnancyPlus
             //Compute the additonal belly size added based on user configured vallue from 0-40
             var additionalPregPlusSize = Mathf.Lerp(0, weeks, PregnancyPlusPlugin.MaxStoryModeBelly.Value/40);
             
-            MeshInflate(additionalPregPlusSize, new MeshInflateFlags(this, _checkForNewMesh: checkNewMesh, _pluginConfigSliderChanged: slidersChanged));
+            MeshInflate(additionalPregPlusSize, "GetWeeksAndSetInflation", new MeshInflateFlags(this, _checkForNewMesh: checkNewMesh, _pluginConfigSliderChanged: slidersChanged));
         }
         
 

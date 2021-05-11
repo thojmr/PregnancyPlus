@@ -92,7 +92,7 @@ namespace KK_PregnancyPlus
                         {  
                             if (ctrl.infConfig.inflationSize == f) continue;    
                             ctrl.infConfig.inflationSize = f;       
-                            ctrl.MeshInflate(new MeshInflateFlags(ctrl));                             
+                            ctrl.MeshInflate(new MeshInflateFlags(ctrl), "StudioSlider");                             
                         }
                     });
 
@@ -110,7 +110,7 @@ namespace KK_PregnancyPlus
                         {  
                             if (ctrl.infConfig.inflationMultiplier == f) continue;     
                             ctrl.infConfig.inflationMultiplier = f;    
-                            ctrl.MeshInflate(new MeshInflateFlags(ctrl));                             
+                            ctrl.MeshInflate(new MeshInflateFlags(ctrl), "StudioSlider");                             
                         }
                     });     
 
@@ -128,7 +128,7 @@ namespace KK_PregnancyPlus
                         {  
                             if (ctrl.infConfig.inflationRoundness == f) continue;                    
                             ctrl.infConfig.inflationRoundness = f;
-                            ctrl.MeshInflate(new MeshInflateFlags(ctrl));                             
+                            ctrl.MeshInflate(new MeshInflateFlags(ctrl), "StudioSlider");                             
                         }
                     });                                
 
@@ -146,7 +146,7 @@ namespace KK_PregnancyPlus
                         {  
                             if (ctrl.infConfig.inflationMoveY == f) continue;                    
                             ctrl.infConfig.inflationMoveY = f;
-                            ctrl.MeshInflate(new MeshInflateFlags(ctrl));                             
+                            ctrl.MeshInflate(new MeshInflateFlags(ctrl), "StudioSlider");                             
                         }
                     });
             
@@ -164,7 +164,7 @@ namespace KK_PregnancyPlus
                         {  
                             if (ctrl.infConfig.inflationMoveZ == f) continue;   
                             ctrl.infConfig.inflationMoveZ = f;     
-                            ctrl.MeshInflate(new MeshInflateFlags(ctrl));                             
+                            ctrl.MeshInflate(new MeshInflateFlags(ctrl), "StudioSlider");                             
                         }
                     });
 
@@ -182,7 +182,7 @@ namespace KK_PregnancyPlus
                         {  
                             if (ctrl.infConfig.inflationStretchX == f) continue;                    
                             ctrl.infConfig.inflationStretchX = f;
-                            ctrl.MeshInflate(new MeshInflateFlags(ctrl));                             
+                            ctrl.MeshInflate(new MeshInflateFlags(ctrl), "StudioSlider");                             
                         }
                     });
 
@@ -200,7 +200,7 @@ namespace KK_PregnancyPlus
                         {  
                             if (ctrl.infConfig.inflationStretchY == f) continue;                    
                             ctrl.infConfig.inflationStretchY = f;
-                            ctrl.MeshInflate(new MeshInflateFlags(ctrl));                             
+                            ctrl.MeshInflate(new MeshInflateFlags(ctrl), "StudioSlider");                             
                         }
                     });        
             
@@ -218,7 +218,7 @@ namespace KK_PregnancyPlus
                         {  
                             if (ctrl.infConfig.inflationShiftY == f) continue;                    
                             ctrl.infConfig.inflationShiftY = f;
-                            ctrl.MeshInflate(new MeshInflateFlags(ctrl));                             
+                            ctrl.MeshInflate(new MeshInflateFlags(ctrl), "StudioSlider");                             
                         }
                     });
 
@@ -236,7 +236,7 @@ namespace KK_PregnancyPlus
                         {  
                             if (ctrl.infConfig.inflationShiftZ == f) continue;                    
                             ctrl.infConfig.inflationShiftZ = f;
-                            ctrl.MeshInflate(new MeshInflateFlags(ctrl));                             
+                            ctrl.MeshInflate(new MeshInflateFlags(ctrl), "StudioSlider");                             
                         }
                     });
 
@@ -254,7 +254,7 @@ namespace KK_PregnancyPlus
                         {  
                             if (ctrl.infConfig.inflationTaperY == f) continue;                    
                             ctrl.infConfig.inflationTaperY = f;
-                            ctrl.MeshInflate(new MeshInflateFlags(ctrl));                             
+                            ctrl.MeshInflate(new MeshInflateFlags(ctrl), "StudioSlider");                             
                         }
                     });
 
@@ -272,7 +272,7 @@ namespace KK_PregnancyPlus
                         {  
                             if (ctrl.infConfig.inflationTaperZ == f) continue;                    
                             ctrl.infConfig.inflationTaperZ = f;
-                            ctrl.MeshInflate(new MeshInflateFlags(ctrl));                             
+                            ctrl.MeshInflate(new MeshInflateFlags(ctrl), "StudioSlider");                             
                         }
                     });       
 
@@ -290,7 +290,7 @@ namespace KK_PregnancyPlus
                         {  
                             if (ctrl.infConfig.inflationClothOffset == f) continue;                    
                             ctrl.infConfig.inflationClothOffset = f;
-                            ctrl.MeshInflate(new MeshInflateFlags(ctrl));                             
+                            ctrl.MeshInflate(new MeshInflateFlags(ctrl), "StudioSlider");                             
                         }
                     });
                     
@@ -308,7 +308,7 @@ namespace KK_PregnancyPlus
                         {  
                             if (ctrl.infConfig.inflationFatFold == f) continue;                    
                             ctrl.infConfig.inflationFatFold = f;
-                            ctrl.MeshInflate(new MeshInflateFlags(ctrl));                             
+                            ctrl.MeshInflate(new MeshInflateFlags(ctrl), "StudioSlider");                             
                         }
                     });
 

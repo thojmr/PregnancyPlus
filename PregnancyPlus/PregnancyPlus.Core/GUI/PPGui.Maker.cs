@@ -245,13 +245,13 @@ namespace KK_PregnancyPlus
         internal static void OnMakerSettingsChanged(PregnancyPlusCharaController controller) {
             // if (!MakerAPI.InsideAndLoaded) return;
             if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" OnMakerSettingsChanged ");                
-            controller.MeshInflate(new MeshInflateFlags(controller, _checkForNewMesh: true));                                                                     
+            controller.MeshInflate(new MeshInflateFlags(controller, _checkForNewMesh: true), "OnMakerSettingsChanged");  
         }
 
 
         internal static void OnClothingOffsetVersionChanged(PregnancyPlusCharaController controller) {
             if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" OnClothingOffsetVersionChanged {controller.infConfig.clothingOffsetVersion}");            
-            controller.MeshInflate(new MeshInflateFlags(controller, _checkForNewMesh: true, _freshStart: true));                                                                     
+            controller.MeshInflate(new MeshInflateFlags(controller, _checkForNewMesh: true, _freshStart: true), "OnClothingOffsetVersionChanged");                                                                     
         }
 
 

@@ -124,7 +124,7 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" ApplySmoothing({includeClothMesh})");
 
             //Trigger mesh recalculation to overwrite last smoothing pass changes if any existed
-            MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: true, _freshStart: true));
+            MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: true, _freshStart: true), "ApplySmoothingCoroutine");
 
             //Smooth all mesh around the belly area including clothing
             if (includeClothMesh)
