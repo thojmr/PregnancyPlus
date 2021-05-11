@@ -30,8 +30,9 @@ namespace KK_PregnancyPlus
 
             //Only for main game
             if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return;
+            if (isReloading) return;
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= CheckVisibilityState {charaFileName} {newState}");
-
+            
             //Re trigger mesh inflation when character first becomes visible
             MeshInflate(new MeshInflateFlags(this, _visibilityUpdate: true), "CheckVisibilityState");
         }
@@ -40,7 +41,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Triggered when clothing state is changed, i.e. pulled aside or taken off.
         /// </summary>
-        internal void ClothesStateChangeEvent(int chaID, int clothesKind, bool forceRecalcVerts = false)
+        internal void ClothesStateChangeEvent(int chaID, int clothesKind)
         {
             //Wait for card data to load, and make sure this is the same character the clothes event triggered for
             if (!initialized || chaID != ChaControl.chaID) return;
@@ -54,7 +55,7 @@ namespace KK_PregnancyPlus
             #endif
 
             //Force recalc because of some cloth items in HS2 Maker that don't seem to want to follow the rules
-            StartCoroutine(WaitForClothMeshToSettle(debounceTime, checkNewMesh: true, forceRecalcVerts));
+            StartCoroutine(WaitForClothMeshToSettle(debounceTime, checkNewMesh: true));
         }
 
 

@@ -282,12 +282,14 @@ namespace KK_PregnancyPlus
                     meshWithBlendShapes.Add(new MeshIdentifier(smr.name, smr.sharedMesh.vertexCount));
 
                     //Make sure the blendshape does not already exists
-                    if (BlendShapeAlreadyExists(smr, meshBlendShape.BlendShape.name)) {
+                    if (BlendShapeAlreadyExists(smr, meshBlendShape.BlendShape.name)) 
+                    {
                         //If it does, make sure the weights are correct incase char just reloaded
                         //Try to find an existing blendshape by name
                         BlendShapeController _bsc = new BlendShapeController(smr, meshBlendShape.BlendShape.name);
 
-                        if (_bsc.blendShape == null) {
+                        if (_bsc.blendShape == null) 
+                        {
                             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogWarning(
                                 $"LoopMeshAndAddExistingBlendShape > There was a problem finding the blendshape ${meshBlendShape.BlendShape.name}");
                             continue;
@@ -395,7 +397,8 @@ namespace KK_PregnancyPlus
             return new BlendShapeController(smr.sharedMesh, meshCopyTarget, blendShapeName, smr);            
         }  
 
-        internal string MakeBlendShapeName(string renderKey, string blendShapeTag = null) {
+        internal string MakeBlendShapeName(string renderKey, string blendShapeTag = null) 
+        {
             return blendShapeTag == null ? $"{renderKey}_{PregnancyPlusPlugin.GUID}" : $"{renderKey}_{PregnancyPlusPlugin.GUID}_{blendShapeTag}";
         }
 
@@ -407,8 +410,8 @@ namespace KK_PregnancyPlus
         /// <param name="renderKey">The Shared Mesh render name, used in dictionary keys to get the current verticie values</param>
         /// <param name="needsOverwrite">Whether the blendshape needs to be remade because the mesh shape was altered</param>
         /// <param name="blendShapeTag">Optional blend shape tag to append to the blend shape name, used for identification if needed</param>
-        internal bool ApplyBlendShapeWeight(SkinnedMeshRenderer smr, string renderKey, bool needsOverwrite, string blendShapeTag = null) {
-
+        internal bool ApplyBlendShapeWeight(SkinnedMeshRenderer smr, string renderKey, bool needsOverwrite, string blendShapeTag = null) 
+        {
             var blendShapeName = MakeBlendShapeName(renderKey, blendShapeTag);
             //Try to find an existing blendshape by name
             BlendShapeController bsc = new BlendShapeController(smr, blendShapeName);

@@ -30,7 +30,7 @@ namespace KK_PregnancyPlus
         public string charaFileName = null;
         public bool lastVisibleState = false;//Track last mesh render state, to determine when to re-apply preg+ shape in main game
         public bool uncensorChanged = false;
-        public bool isReloading = false;
+        public bool isReloading = false;//While character.Reload() is processing prevent other MeshInflate() instances
 
         public PregnancyPlusBlendShapeGui blendShapeGui = new PregnancyPlusBlendShapeGui();
 
@@ -184,7 +184,8 @@ namespace KK_PregnancyPlus
         }
 
 
-        protected override void OnDestroy() {
+        protected override void OnDestroy() 
+        {
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnDestroy {charaFileName}"); 
         }
         
@@ -232,7 +233,8 @@ namespace KK_PregnancyPlus
         ///  We want to keep current slider settings when this happens
         /// </summary>
         internal bool IsNewChar(ChaFileControl chaFileControl) 
-        {   var isNew = (charaFileName != chaFileControl.parameter.fullname);
+        {   
+            var isNew = (charaFileName != chaFileControl.parameter.fullname);
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" IsNewChar {charaFileName} -> {chaFileControl.parameter.fullname}"); 
             return isNew;
         }
@@ -243,14 +245,22 @@ namespace KK_PregnancyPlus
         /// </summary>
         internal IEnumerator ReloadStoryInflation(float time, string callee)
         {
+            //Only reload when story mode enabled.
+            if (PregnancyPlusPlugin.StoryMode != null && !PregnancyPlusPlugin.StoryMode.Value) 
+            {
+                isReloading = false; 
+                yield break;         
+            }   
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) 
+            {
+                isReloading = false; 
+                yield break;
+            }
+
             yield return new WaitForSeconds(time);
             //Waiting until end of frame lets bones settle so we can take accurate measurements
             yield return new WaitForEndOfFrame();
 
-            //Only reload when story mode enabled.
-            if (PregnancyPlusPlugin.StoryMode != null && !PregnancyPlusPlugin.StoryMode.Value) yield break;            
-            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) yield break;
-            
             #if KK || AI
                 GetWeeksAndSetInflation(true);  
 
@@ -268,11 +278,15 @@ namespace KK_PregnancyPlus
         /// </summary>
         internal IEnumerator ReloadStudioMakerInflation(float time, bool reMeasure, string callee)
         {                        
+            if (!StudioAPI.InsideStudio && !MakerAPI.InsideMaker) 
+            {
+                isReloading = false;
+                yield break;   
+            }
+
             yield return new WaitForSeconds(time);
             //Waiting until end of frame lets bones settle so we can take accurate measurements
             yield return new WaitForEndOfFrame();
-
-            if (!StudioAPI.InsideStudio && !MakerAPI.InsideMaker) yield break;   
 
             if (StudioAPI.InsideStudio || (MakerAPI.InsideMaker && MakerAPI.InsideAndLoaded))
             {
@@ -306,7 +320,7 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Watch for user keypressed to trigger belly infaltion + or -
+        /// Watch for user keypressed to trigger belly infaltion manually
         /// </summary>
         internal void WatchForUserKeyPress() 
         {
