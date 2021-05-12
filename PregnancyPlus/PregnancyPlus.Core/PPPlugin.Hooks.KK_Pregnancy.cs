@@ -4,14 +4,16 @@ using KKAPI.Studio;
 using System;
 using KKAPI.Chara;
 using BepInEx.Configuration;
-
+#if HS2 || AI
+    using AIChara;
+#endif
 
 namespace KK_PregnancyPlus
 {
     public partial class PregnancyPlusPlugin
     {
         //Contains all the hooks for KK/AI_Pregnancy integration
-        private static class Hooks_KK_Pregnancy
+        public static class Hooks_KK_Pregnancy
         {
 
             //Used to identifiy the assembly class methods during reflection
@@ -104,6 +106,26 @@ namespace KK_PregnancyPlus
 
                 //Set the inflation amount on the characters controller
                 controller.OnInflationChanged(inflationAmount, maxInflationSize.Value);
+            }
+
+
+
+            /// <summary>   
+            /// Will fetch number of weeks from KK_Pregnancy data for a character
+            /// </summary>  
+            internal static int GetWeeksFromPregnancyPluginData(ChaControl chaControl, string targetBehaviorId)
+            {
+                var kkPregCtrlInst = PregnancyPlusHelper.GetCharacterBehaviorController<CharaCustomFunctionController>(chaControl, targetBehaviorId);
+                if (kkPregCtrlInst == null) return -1;
+
+                //Get the pregnancy data object
+                var data = kkPregCtrlInst.GetType().GetProperty("Data")?.GetValue(kkPregCtrlInst, null);
+                if (data == null) return -1;
+
+                var week = Traverse.Create(data).Field("Week").GetValue<int>();
+                if (week.Equals(null) || week < -1) return -1;
+
+                return week;
             }
 
         }

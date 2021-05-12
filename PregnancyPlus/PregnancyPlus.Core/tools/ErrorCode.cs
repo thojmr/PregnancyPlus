@@ -12,6 +12,7 @@ namespace KK_PregnancyPlus
         PregPlus_HSPENotFound,//When HSPE plugin is not found while using blendshapes (It's not a hard dependency, but still good to know when its not included)
         PregPlus_BodyMeshDisguisedAsCloth,//When a body mesh is detected that is nested under a cloth Game Object (like Squeeze Socks)
         PregPlus_BodyMeshVertexChanged,//When a saved blendshape tries to loadd, but the mesh is no longer the same and can't load
+        PregPlus_BodyUncensorChanged,//When a saved blendshape tries to load, but the uncensor body no longer matches, so it can't
     }
 
     /// <summary>

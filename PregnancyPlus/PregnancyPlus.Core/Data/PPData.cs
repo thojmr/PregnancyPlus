@@ -38,7 +38,7 @@ namespace KK_PregnancyPlus
 
         public string ValuesToString() 
         {
-            return $" inflationSize {inflationSize} GameplayEnabled {GameplayEnabled} clothingOffsetVersion {clothingOffsetVersion}";
+            return $" inflationSize {inflationSize} GameplayEnabled {GameplayEnabled} clothingOffsetVersion {clothingOffsetVersion} BS {HasBlendShape()}";
         }
 
         //Allow comparison between all public properties of two PregnancyPlusData objects (excluding clothingOffsetVersion)

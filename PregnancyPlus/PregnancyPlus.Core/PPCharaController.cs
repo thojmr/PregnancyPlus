@@ -31,6 +31,7 @@ namespace KK_PregnancyPlus
         public bool lastVisibleState = false;//Track last mesh render state, to determine when to re-apply preg+ shape in main game
         public bool uncensorChanged = false;
         public bool isReloading = false;//While character.Reload() is processing prevent other MeshInflate() instances
+        internal bool ignoreNextUncensorHook = false;//When we want to ignore a single uncensor hook event
 
         public PregnancyPlusBlendShapeGui blendShapeGui = new PregnancyPlusBlendShapeGui();
 
@@ -86,6 +87,7 @@ namespace KK_PregnancyPlus
             
             //Character card name 
             charaFileName = ChaFileControl.parameter.fullname;        
+            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" ");
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $Start {charaFileName}");
             ReadAndSetCardData();      
 
@@ -130,7 +132,8 @@ namespace KK_PregnancyPlus
 
         protected override void OnReload(GameMode currentGameMode)
         {
-            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnReload {currentGameMode}"); 
+            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" ");
+            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnReload {currentGameMode}");
             isReloading = true;
             lastVisibleState = false;            
 
@@ -146,25 +149,29 @@ namespace KK_PregnancyPlus
 
             ReadAndSetCardData();
 
-            // When changing a character (swapping in place) in studio carry over belly sliders
+            // When changing a character (swapping in place) in studio carry over belly sliders/blendshapes
             if (StudioAPI.InsideStudio && !infConfig.HasAnyValue() && infConfigHistory.HasAnyValue() && !infConfig.HasBlendShape())
             {
-                if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" -Character changed in place, preserving belly shape"); 
+                if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" -Character changed in place, preserving belly shape");
                 infConfig = infConfigHistory;
             }
 
             //If the uncensor changed just before this Reload(), then is was probably a character swap.
-            //TODO If there are saved blendshapes on this character, force switch to that uncensor, to load the blendshapes.  This will preserve belly shape in custom scenes
             if (uncensorChanged)
             {
                 uncensorChanged = false;
 
                 //When in maker or studio we want to reset inflation values when uncensor changes to reset clothes
                 if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) ResetInflation();        
-            }
-            //Load any saved blendshapes from card
-            LoadBlendShapes(infConfig);
-            
+                //Load any saved blendshapes from card, and can trigger uncensor change when necessary
+                //Give any existing uncensor changes time to process first, incase we need to auto swap uncensors
+                StartCoroutine(ILoadBlendshapes(0.1f, true));
+            }   
+            else 
+            {
+                //Load any saved blendshapes from card, and can trigger uncensor change when necessary
+                LoadBlendShapes(infConfig);
+            }         
 
             StartCoroutine(ReloadStoryInflation(0.5f, "Reload-story"));     
             StartCoroutine(ReloadStudioMakerInflation(1.5f, reMeasure: true, "Reload"));  //Give time for character to load, and settle  
@@ -191,6 +198,17 @@ namespace KK_PregnancyPlus
         
 
 #endregion overrides/hooks
+
+
+        /// <summary>
+        /// Whhen we want to delay loading blendshapes
+        /// </summary>
+        internal IEnumerator ILoadBlendshapes(float waitforSeconds, bool checkUncensor = false) 
+        {   
+            yield return new WaitForSeconds(waitforSeconds);
+            yield return new WaitForEndOfFrame();
+            LoadBlendShapes(infConfig, checkUncensor);
+        }
 
 
         /// <summary>

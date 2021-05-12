@@ -47,23 +47,27 @@ namespace KK_PregnancyPlus
                 return;
             }
 
-            var weeks = PregnancyPlusHelper.GetWeeksFromPregnancyPluginData(ChaControl, KK_PregnancyPluginName);
-            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" GetWeeksAndSetInflation {ChaControl.name} >  Week:{weeks} checkNewMesh:{checkNewMesh} slidersChanged:{slidersChanged}");
+            #if AI || KK
             
-            if (weeks < 0) 
-            {
-                //Fix for when character gives birth, we potentially need to reset belly
-                if (infConfig.inflationSize > 0) MeshInflate(0, "GetWeeksAndSetInflation");
-                return;
-            }
+                var weeks = PregnancyPlusPlugin.Hooks_KK_Pregnancy.GetWeeksFromPregnancyPluginData(ChaControl, KK_PregnancyPluginName);
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" GetWeeksAndSetInflation {ChaControl.name} >  Week:{weeks} checkNewMesh:{checkNewMesh} slidersChanged:{slidersChanged}");
+                
+                if (weeks < 0) 
+                {
+                    //Fix for when character gives birth, we potentially need to reset belly
+                    if (infConfig.inflationSize > 0) MeshInflate(0, "GetWeeksAndSetInflation");
+                    return;
+                }
 
-            //If no infConfig is set for this character, use a predefined one for the best KK_Pregnancy look, since the default shape tend to look a little strange.
-            if (!infConfig.HasAnyValue(false)) infConfig = GetDefaultShapeFor_KK_Pregnancy();
+                //If no infConfig is set for this character, use a predefined one for the best KK_Pregnancy look, since the default shape tend to look a little strange.
+                if (!infConfig.HasAnyValue(false)) infConfig = GetDefaultShapeFor_KK_Pregnancy();
 
-            //Compute the additonal belly size added based on user configured vallue from 0-40
-            var additionalPregPlusSize = Mathf.Lerp(0, weeks, PregnancyPlusPlugin.MaxStoryModeBelly.Value/40);
-            
-            MeshInflate(additionalPregPlusSize, "GetWeeksAndSetInflation", new MeshInflateFlags(this, _checkForNewMesh: checkNewMesh, _pluginConfigSliderChanged: slidersChanged));
+                //Compute the additonal belly size added based on user configured vallue from 0-40
+                var additionalPregPlusSize = Mathf.Lerp(0, weeks, PregnancyPlusPlugin.MaxStoryModeBelly.Value/40);
+                
+                MeshInflate(additionalPregPlusSize, "GetWeeksAndSetInflation", new MeshInflateFlags(this, _checkForNewMesh: checkNewMesh, _pluginConfigSliderChanged: slidersChanged));
+
+            #endif
         }
         
 

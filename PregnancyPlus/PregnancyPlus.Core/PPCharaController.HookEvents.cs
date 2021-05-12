@@ -64,6 +64,12 @@ namespace KK_PregnancyPlus
         /// </summary>
         internal void OnUncensorChanged() 
         {
+            if (ignoreNextUncensorHook)
+            {
+                ignoreNextUncensorHook = false;
+                return;
+            }
+            
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= OnUncensorChanged {charaFileName}");
             //When first loading character, we dont care about uncensor changes
             if (!initialized) return;

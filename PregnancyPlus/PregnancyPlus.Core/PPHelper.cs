@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
 #if HS2 || AI
-using AIChara;
+    using AIChara;
 #endif
 
 namespace KK_PregnancyPlus
@@ -108,46 +108,6 @@ namespace KK_PregnancyPlus
             }
 
             return renderers;
-        }
-
-
-        /// <summary>   
-        /// Will fetch number of weeks from KK_Pregnancy data for this character
-        /// </summary>  
-        internal static int GetWeeksFromPregnancyPluginData(ChaControl chaControl, string targetBehaviorId)
-        {
-            var kkPregCtrlInst = PregnancyPlusHelper.GetCharacterBehaviorController<CharaCustomFunctionController>(chaControl, targetBehaviorId);
-            if (kkPregCtrlInst == null) return -1;
-
-            //Get the pregnancy data object
-            var data = kkPregCtrlInst.GetType().GetProperty("Data")?.GetValue(kkPregCtrlInst, null);
-            if (data == null) return -1;
-
-            var week = Traverse.Create(data).Field("Week").GetValue<int>();
-            if (week.Equals(null) || week < -1) return -1;
-
-            return week;
-        }
-
-
-        /// <summary>   
-        /// If the current characters mesh is set by the Uncensor plugin we need to know this to correctly shift the mesh's localspace vertex positions
-        /// The LS positions for uncensor match that of HS2 and AI, but not the defulat KK body mesh (This took forever to track down!)
-        /// </summary>  
-        internal static bool IsUncensorBody(ChaControl chaControl, string UncensorCOMName) 
-        {
-            //grab the active uncensor controller of it exists
-            var uncensorController = PregnancyPlusHelper.GetCharacterBehaviorController<CharaCustomFunctionController>(chaControl, UncensorCOMName);
-            if (uncensorController == null) return false;
-
-            //Get the body type name, and see if it is the default mesh name
-            var bodyData = uncensorController.GetType().GetProperty("BodyData")?.GetValue(uncensorController, null);
-            if (bodyData == null) return false;
-
-            var bodyGUID = Traverse.Create(bodyData).Field("BodyGUID")?.GetValue<string>();
-            if (bodyGUID == null) return false;
-
-            return bodyGUID != PregnancyPlusCharaController.DefaultBodyFemaleGUID && bodyGUID != PregnancyPlusCharaController.DefaultBodyMaleGUID;
         }
 
 

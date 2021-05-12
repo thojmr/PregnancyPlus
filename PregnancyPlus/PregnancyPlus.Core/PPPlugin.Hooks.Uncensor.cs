@@ -1,14 +1,18 @@
 ﻿using HarmonyLib;
 using System;
+using System.Collections.Generic;
+using System.Reflection;
 using KKAPI.Chara;
-
+#if HS2 || AI
+    using AIChara;
+#endif
 
 namespace KK_PregnancyPlus
 {
     public partial class PregnancyPlusPlugin
     {
         //Contains all the hooks for detecting uncensor changes
-        private static class Hooks_Uncensor
+        public static class Hooks_Uncensor
         {
 
             //Used to identifiy the assembly class methods during reflection
@@ -73,6 +77,125 @@ namespace KK_PregnancyPlus
 
                 //Let the character controller know the uncensor mesh changed
                 controller.OnUncensorChanged();
+            }
+
+
+
+
+            /// <summary>   
+            /// Check whether the currently loaded body mesh is an uncensor mesh
+            /// If the current characters mesh is set by the Uncensor plugin we need to know this to correctly shift the mesh's localspace vertex positions
+            /// </summary>  
+            public static bool IsUncensorBody(ChaControl chaControl, string UncensorCOMName) 
+            {
+                //grab the active uncensor controller of it exists
+                var bodyGUID = GetUncensorBodyGuid(chaControl, UncensorCOMName);
+                if (bodyGUID == null) return false;
+
+                return bodyGUID != PregnancyPlusCharaController.DefaultBodyFemaleGUID && bodyGUID != PregnancyPlusCharaController.DefaultBodyMaleGUID;
+            }
+
+
+            /// <summary>   
+            /// Gets the active uncensor body GUID
+            /// </summary>  
+            public static string GetUncensorBodyGuid(ChaControl chaControl, string UncensorCOMName) 
+            {
+                //grab the active uncensor controller of it exists
+                var uncensorController = PregnancyPlusHelper.GetCharacterBehaviorController<CharaCustomFunctionController>(chaControl, UncensorCOMName);
+                if (uncensorController == null) return null;
+
+                //Get the body type name, and see if it is the default mesh name
+                var bodyData = uncensorController.GetType().GetProperty("BodyData")?.GetValue(uncensorController, null);
+                if (bodyData == null)
+                { 
+                    PregnancyPlusPlugin.Logger.LogWarning(
+                        $"Could not find {pluginName}.UncensorSelector.UncensorSelectorController.BodyData - something isn't right, please report this");
+                    return null;
+                }
+
+                var bodyGUID = Traverse.Create(bodyData).Field("BodyGUID")?.GetValue<string>();
+                if (bodyGUID == null) 
+                {
+                    PregnancyPlusPlugin.Logger.LogWarning(
+                        $"Could not find {pluginName}.UncensorSelector.UncensorSelectorController.BodyData.BodyGUID - something isn't right, please report this");
+                     return null;
+                }
+
+                return bodyGUID;
+            }
+
+
+            /// <summary>   
+            /// No worky
+            /// Get the current list of uncensor body ids to choose from
+            /// </summary>  
+            public static string[] GetUncensorBodyIdList() 
+            {
+                var uncensorSelector = Type.GetType($"KK_Plugins.UncensorSelector, {pluginName}", false);
+                if (uncensorSelector == null)
+                {
+                    PregnancyPlusPlugin.Logger.LogInfo(
+                        $"Could not find {pluginName}.UncensorSelector - Not an issue");
+                        return new string[0];
+                }
+
+                var GetConfigBodyList = uncensorSelector.GetMethod("GetConfigBodyList", BindingFlags.NonPublic | BindingFlags.Instance);
+                if (GetConfigBodyList == null)
+                {
+                    PregnancyPlusPlugin.Logger.LogWarning(
+                        $"Could not find {pluginName}.UncensorSelector.GetConfigBodyList - something isn't right, please report this");
+                    return new string[0];                      
+                }
+
+                // var BodyConfigListFull = uncensorSelector.GetField("BodyConfigListFull", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(new Dictionary<string, string>());
+                // if (BodyConfigListFull == null)
+                // {
+                //     PregnancyPlusPlugin.Logger.LogWarning(
+                //         $"Could not find {pluginName}.UncensorSelector.BodyConfigListFull - something isn't right, please report this");
+                //     return new string[0];                      
+                // }
+
+                // var fullBodyList = (Dictionary<string, string>) BodyConfigListFull;
+
+                var bodyList = GetConfigBodyList.Invoke(uncensorSelector, null);
+                // var bodyList = fullBodyList.Values;
+                // return bodyList;
+                return (string[]) bodyList;
+            }
+
+
+            /// <summary>   
+            /// Change to a specific uncensor
+            /// </summary>  
+            public static bool ChangeUncensorTo(ChaControl chaControl, string UncensorCOMName, string bodyGUID) 
+            {
+                //grab the active uncensor controller of it exists
+                var uncensorController = PregnancyPlusHelper.GetCharacterBehaviorController<CharaCustomFunctionController>(chaControl, UncensorCOMName);
+                if (uncensorController == null) return false;            
+
+                //Set the body GUID value
+                var bodyList = Traverse.Create(uncensorController).Property("BodyGUID").SetValue(bodyGUID);
+                if (bodyList == null) 
+                {
+                    PregnancyPlusPlugin.Logger.LogWarning(
+                        $"Could not set {pluginName}.UncensorSelector.UncensorSelectorController.BodyGUID - something isn't right, please report this");
+                    return false;
+                }
+
+                //Get UncensorChange method, to trigger
+                var updateUncensor = Traverse.Create(uncensorController).Method("UpdateUncensor");
+                if (updateUncensor == null) 
+                {
+                    PregnancyPlusPlugin.Logger.LogWarning(
+                        $"Could not find method {pluginName}.UncensorSelector.UncensorSelectorController.UpdateUncensor - something isn't right, please report this");
+                    return false;
+                }
+
+                //Trigger uncensor change
+                updateUncensor.GetValue(new object[0]);
+
+                return true;
             }
 
         }

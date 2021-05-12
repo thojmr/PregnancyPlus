@@ -362,7 +362,7 @@ namespace KK_PregnancyPlus
             //Fixes for different mesh localspace positions/rotations between KK and HS2/AI
             #if KK            
                 //When mesh is the default kk body, we have to adjust the mesh to match some strange offset that comes up
-                var isDefaultBody = !PregnancyPlusHelper.IsUncensorBody(ChaControl, UncensorCOMName);
+                var isDefaultBody = !PregnancyPlusPlugin.Hooks_Uncensor.IsUncensorBody(ChaControl, UncensorCOMName);
                 //When the mesh shares similar local vertex positions as the default body, do the same
                 var isLikeDefaultBody = smr.localBounds.center.y < 0 && smr.sharedMesh.bounds.center.y < 0;
                 var defaultBodyOffsetFix = 0.0277f * bellyInfo.TotalCharScale.y * bellyInfo.NHeightScale.y;//Where does this offset even come from?
