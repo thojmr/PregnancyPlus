@@ -26,6 +26,7 @@ namespace KK_PregnancyPlus
         public float inflationRoundness = 0;
         public int clothingOffsetVersion = 1;//Tracks which clothing offset vserion this character was made with  v1 == 0, v2 == 1
         public byte[] meshBlendShape = null;//Type: List<MeshBlendShape> once Deserialized
+        public string pluginVersion = null;
 
 #endregion
 
@@ -38,7 +39,7 @@ namespace KK_PregnancyPlus
 
         public string ValuesToString() 
         {
-            return $" inflationSize {inflationSize} GameplayEnabled {GameplayEnabled} clothingOffsetVersion {clothingOffsetVersion} BS {HasBlendShape()}";
+            return $"v{GetPluginVersion()} inflationSize {inflationSize} GameplayEnabled {GameplayEnabled} clothingOffsetVersion {clothingOffsetVersion} BS {HasBlendShape()}";
         }
 
         //Allow comparison between all public properties of two PregnancyPlusData objects (excluding clothingOffsetVersion)
@@ -110,6 +111,15 @@ namespace KK_PregnancyPlus
                 inflationFatFold.GetHashCode();
 
             return hashCode;            
+        }
+
+        /// <summary>   
+        /// The plugin version this card was saved with
+        /// </summary>
+        public string GetPluginVersion() 
+        {
+            //Anything before v3.6 will be null
+            return pluginVersion != null ? pluginVersion : "0";
         }
 
 #region Save/Load (Thanks for the code Marco)
@@ -202,6 +212,16 @@ namespace KK_PregnancyPlus
             if (anyValuesChanged && !result.data.ContainsKey("clothingOffsetVersion")) 
             {
                 result.data.Add("clothingOffsetVersion", clothingOffsetVersion);                             
+            }
+
+            //Update plugin version on saving card, helps with debugging
+            if (!result.data.ContainsKey("pluginVersion")) 
+            {                
+                result.data.Add("pluginVersion", PregnancyPlusPlugin.Version);
+            }
+            else 
+            {
+                result.data["pluginVersion"] = PregnancyPlusPlugin.Version;
             }
 
             return result.data.Count > 0 ? result : null;

@@ -179,7 +179,7 @@ namespace KK_PregnancyPlus
                 customInfConfig.inflationMultiplier = 0.3f;
                 customInfConfig.inflationStretchX = -0.15f;
                 customInfConfig.inflationTaperY = -0.02f;                
-                customInfConfig.inflationTaperZ = -0.01f;
+                customInfConfig.inflationTaperZ = -0.003f;
                 customInfConfig.inflationShiftZ = -0.03f;
 
             #else
