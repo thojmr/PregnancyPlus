@@ -32,6 +32,7 @@ namespace KK_PregnancyPlus
         public bool uncensorChanged = false;
         public bool isReloading = false;//While character.Reload() is processing prevent other MeshInflate() instances
         internal bool ignoreNextUncensorHook = false;//When we want to ignore a single uncensor hook event
+        internal string initialUncensorGUID;//Track the original guid when one is not present on saved blendshape, but the mesh matches the bledshaape
 
         public PregnancyPlusBlendShapeGui blendShapeGui = new PregnancyPlusBlendShapeGui();
 
@@ -150,7 +151,8 @@ namespace KK_PregnancyPlus
             ReadAndSetCardData();
 
             // When changing a character (swapping in place) in studio carry over belly sliders/blendshapes
-            if (StudioAPI.InsideStudio && !infConfig.HasAnyValue() && infConfigHistory.HasAnyValue() && !infConfig.HasBlendShape())
+            //TODO there has to be a better way to detect swapping characters
+            if (StudioAPI.InsideStudio && !infConfig.HasAnyValue() && infConfigHistory.HasAnyValue())
             {
                 if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" -Character changed in place, preserving belly shape");
                 infConfig = infConfigHistory;
@@ -266,12 +268,11 @@ namespace KK_PregnancyPlus
             //Only reload when story mode enabled.
             if (PregnancyPlusPlugin.StoryMode != null && !PregnancyPlusPlugin.StoryMode.Value) 
             {
-                isReloading = false; 
+                isReloading = false;
                 yield break;         
             }   
             if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) 
             {
-                isReloading = false; 
                 yield break;
             }
 
@@ -298,7 +299,6 @@ namespace KK_PregnancyPlus
         {                        
             if (!StudioAPI.InsideStudio && !MakerAPI.InsideMaker) 
             {
-                isReloading = false;
                 yield break;   
             }
 

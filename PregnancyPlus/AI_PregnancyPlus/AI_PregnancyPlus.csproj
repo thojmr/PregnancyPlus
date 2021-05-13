@@ -126,6 +126,7 @@
     <Compile Include="..\PregnancyPlus.Core\PPCharaController.FilterVerts.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPCharaController.BlendShape.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPCharaController.AnimationCurve.cs" />
+    <Compile Include="..\PregnancyPlus.Core\PPCharaController.Legacy.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPCharaController.KK_Pregnancy.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPCharaController.HookEvents.cs" />
     <Compile Include="..\PregnancyPlus.Core\GUI\PPGui.cs" />

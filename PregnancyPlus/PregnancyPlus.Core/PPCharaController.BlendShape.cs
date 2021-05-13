@@ -55,7 +55,7 @@ namespace KK_PregnancyPlus
             var meshBlendShapes = new List<MeshBlendShape>();
             meshWithBlendShapes = new List<MeshIdentifier>();
 
-            var uncensorGUID = PregnancyPlusPlugin.Hooks_Uncensor.GetUncensorBodyGuid(ChaControl, UncensorCOMName);
+            var uncensorGUID = GetUncensorGuid();
 
             //Get all cloth renderes and attempt to create blendshapes from preset inflatedVerticies
             var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);
@@ -84,12 +84,19 @@ namespace KK_PregnancyPlus
         internal void CaptureNewBlendshapeWeights() 
         {
             var meshBlendShapes = LoadBlendShapesFromCardData(infConfig.meshBlendShape);
-            if (meshBlendShapes == null) return;
-            var uncensorGUID = PregnancyPlusPlugin.Hooks_Uncensor.GetUncensorBodyGuid(ChaControl, UncensorCOMName);
+            if (meshBlendShapes.Count <= 0) return;
+            var uncensorGUID = GetUncensorGuid();
 
             //For each active GUI blendshape
             foreach(var meshBlendShape in meshBlendShapes)
             {
+                if (meshBlendShape == null || meshBlendShape.BlendShape == null)
+                {
+                    if (PregnancyPlusPlugin.DebugLog.Value)  
+                        PregnancyPlusPlugin.Logger.LogInfo($" Found a null saved BlendShape.  Is it corrupt?"); 
+                    continue;
+                }
+
                 //Get the smr, and the blendshape if any still exist
                 var smr = PregnancyPlusHelper.GetMeshRendererByName(ChaControl, meshBlendShape.MeshName, meshBlendShape.VertCount);
                 //If the mesh was changed keep old blendshape data, in case its swaped back later
@@ -97,7 +104,7 @@ namespace KK_PregnancyPlus
 
                 //Get existing blend shape from mesh
                 var bsc = new BlendShapeController(smr, MakeBlendShapeName(GetMeshKey(smr)));
-                if (bsc == null) continue;
+                if (bsc.blendShape == null) continue;
 
                 if (PregnancyPlusPlugin.DebugLog.Value && meshBlendShape.BlendShape.weight != bsc.blendShape.weight)  
                     PregnancyPlusPlugin.Logger.LogInfo($" CaptureNewBlendshapeWeights > {meshBlendShape.MeshName} weight:{bsc.blendShape.weight}");  
@@ -105,17 +112,29 @@ namespace KK_PregnancyPlus
                 //Update with new or existing weight
                 meshBlendShape.BlendShape.weight = bsc.blendShape.weight;        
 
-                //For old blendshape data (when null), if blendshape matches the mesh, then save the current uncensorGUID     
-                if (meshBlendShape.UncensorGUID == null && meshBlendShape.VertCount == smr.sharedMesh.vertexCount && meshBlendShape.MeshName.Contains("_body_")) 
-                {
-                    if (PregnancyPlusPlugin.DebugLog.Value)  
-                        PregnancyPlusPlugin.Logger.LogInfo($" CaptureNewBlendshapeWeights > appending uncensorGUID {uncensorGUID} to {smr.name} since there was not one already"); 
-
-                    meshBlendShape.UncensorGUID = uncensorGUID;
-                }
+                Legacy_CheckNullUncensorGuid(meshBlendShapes, meshBlendShape, smr, uncensorGUID);
             }
             
             AddBlendShapesToData(meshBlendShapes);
+        }
+
+
+        internal void AddUncensorGUID(List<MeshBlendShape> meshBlendShapes, string uncensorGUID) 
+        {
+            foreach(var meshBlendShape in meshBlendShapes)
+            {
+                meshBlendShape.UncensorGUID = uncensorGUID;
+            }
+        }
+
+
+        /// <summary>
+        /// Get current uncensor GUID
+        /// </summary>
+        internal string GetUncensorGuid() 
+        {
+            var uncensorGUID = PregnancyPlusPlugin.Hooks_Uncensor.GetUncensorBodyGuid(ChaControl, UncensorCOMName);
+            return uncensorGUID;
         }
 
 
@@ -262,10 +281,10 @@ namespace KK_PregnancyPlus
 
             //Unserialize the blendshape from characters card
             var meshBlendShapes = LoadBlendShapesFromCardData(data.meshBlendShape);
-            if (meshBlendShapes == null || meshBlendShapes.Count <= 0) return;
+            if (meshBlendShapes.Count <= 0) return;
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" MeshBlendShape count > {meshBlendShapes.Count} ");            
             
-            var uncensorGUID = PregnancyPlusPlugin.Hooks_Uncensor.GetUncensorBodyGuid(ChaControl, UncensorCOMName);
+            var uncensorGUID = GetUncensorGuid();
             //When the saved body blendshape does not match the uncensor, change to that uncensor
             NeedsUncensorChanged(meshBlendShapes, uncensorGUID, checkUncensor);
 
@@ -282,8 +301,14 @@ namespace KK_PregnancyPlus
             }            
         }
 
-        internal List<MeshBlendShape> LoadBlendShapesFromCardData(byte[] meshBlendShapesByte) {
-            return MessagePack.LZ4MessagePackSerializer.Deserialize<List<MeshBlendShape>>(meshBlendShapesByte);
+        internal List<MeshBlendShape> LoadBlendShapesFromCardData(byte[] meshBlendShapesByte) 
+        {
+            if (meshBlendShapesByte == null) return new List<MeshBlendShape>();
+
+            var meshBlendShapes = MessagePack.LZ4MessagePackSerializer.Deserialize<List<MeshBlendShape>>(meshBlendShapesByte);
+            if (meshBlendShapes == null) return new List<MeshBlendShape>();
+
+            return meshBlendShapes;
         }
 
 
@@ -294,7 +319,7 @@ namespace KK_PregnancyPlus
         /// <param name="updateUncensor">When true the uncensor will be changed to match the stored body blendshape when weight is present</param>
         internal bool NeedsUncensorChanged(List<MeshBlendShape> meshBlendShapes, string uncensorGUID, bool updateUncensor = false) 
         {
-            bool hasWeights = false;
+            bool hasWeights = false;            
 
             foreach(var meshBlendShape in meshBlendShapes)
             {
@@ -302,29 +327,43 @@ namespace KK_PregnancyPlus
                 if (meshBlendShape.BlendShape.name.Contains("_body_") && meshBlendShape.BlendShape.weight > 0) 
                 {
                     hasWeights = true;
-                    break;
                 }
             }
 
             //If no weights present then we can skip this check
             if (!hasWeights) return false;
+
+            var validUncensorGUID = meshBlendShapes[0].UncensorGUID != null ? meshBlendShapes[0].UncensorGUID : initialUncensorGUID;
             //Skip when old card data doesnt have the uncensor GUID (pre v3.6), or if the uncensors already match
-            if (meshBlendShapes[0].UncensorGUID == null || uncensorGUID == meshBlendShapes[0].UncensorGUID) return false;
+            if (validUncensorGUID == null || uncensorGUID == validUncensorGUID) 
+            {                  
+                Legacy_CheckInitialUncensorGuid(meshBlendShapes, uncensorGUID);
+                return false;
+            }
 
             //If we dont want to allow uncensor changes automatically, just log the warning
             if (!updateUncensor)
             {
                 PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_BodyUncensorChanged, 
-                        $" !BlendShape uncensorGUID '{meshBlendShapes[0].UncensorGUID}' does not match the current uncensor '{uncensorGUID}' for the body BlendShape.  Skipping"); 
+                        $" !BlendShape uncensorGUID '{validUncensorGUID}' does not match the current uncensor '{uncensorGUID}' for the body BlendShape.  Skipping"); 
                 return false;
             }
 
+            return TriggerUncensorChange(validUncensorGUID, uncensorGUID);
+        }
+
+
+        /// <summary>
+        /// Triggers an uncensor change
+        /// </summary>
+        internal bool TriggerUncensorChange(string validUncensorGUID, string uncensorGUID)
+        {
             if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo(
-                    $" Stored uncensorGUID '{meshBlendShapes[0].UncensorGUID}' does not match the current uncensor '{uncensorGUID}'. Attempting uncensor swap");
+                    $" Stored uncensorGUID '{validUncensorGUID}' does not match the current uncensor '{uncensorGUID}'. Attempting uncensor swap");
 
             ignoreNextUncensorHook = true;
             //Change body to the stored uncensorGUID
-            PregnancyPlusPlugin.Hooks_Uncensor.ChangeUncensorTo(ChaControl, UncensorCOMName, meshBlendShapes[0].UncensorGUID);
+            PregnancyPlusPlugin.Hooks_Uncensor.ChangeUncensorTo(ChaControl, UncensorCOMName, validUncensorGUID);
             return true;
         }
 

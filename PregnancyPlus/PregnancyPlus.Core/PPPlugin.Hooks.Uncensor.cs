@@ -126,43 +126,39 @@ namespace KK_PregnancyPlus
             }
 
 
-            /// <summary>   
-            /// No worky
-            /// Get the current list of uncensor body ids to choose from
-            /// </summary>  
-            public static string[] GetUncensorBodyIdList() 
-            {
-                var uncensorSelector = Type.GetType($"KK_Plugins.UncensorSelector, {pluginName}", false);
-                if (uncensorSelector == null)
-                {
-                    PregnancyPlusPlugin.Logger.LogInfo(
-                        $"Could not find {pluginName}.UncensorSelector - Not an issue");
-                        return new string[0];
-                }
+            // /// <summary>   
+            // /// TODO I don't think there is an easy way to get vertex count of meshes we havent loaded yet
+            // /// Get key value list of uncensor GUID's and uncensor mesh Vert counts
+            // /// </summary>  
+            // public static Dictionary<string, string> GetUncensorBodyDict() 
+            // {
+            //     var uncensorSelector = Type.GetType($"KK_Plugins.UncensorSelector, {pluginName}", false);
+            //     if (uncensorSelector == null)
+            //     {
+            //         PregnancyPlusPlugin.Logger.LogInfo(
+            //             $"Could not find {pluginName}.UncensorSelector - Not an issue");
+            //             return new Dictionary<string, string>();
+            //     }
 
-                var GetConfigBodyList = uncensorSelector.GetMethod("GetConfigBodyList", BindingFlags.NonPublic | BindingFlags.Instance);
-                if (GetConfigBodyList == null)
-                {
-                    PregnancyPlusPlugin.Logger.LogWarning(
-                        $"Could not find {pluginName}.UncensorSelector.GetConfigBodyList - something isn't right, please report this");
-                    return new string[0];                      
-                }
+            //     var BodyDictionary = uncensorSelector.GetField("BodyDictionary");
+            //     if (BodyDictionary == null)
+            //     {
+            //         PregnancyPlusPlugin.Logger.LogWarning(
+            //             $"Could not find {pluginName}.UncensorSelector.BodyDictionary - something isn't right, please report this");
+            //         return new Dictionary<string, string>();                      
+            //     }
 
-                // var BodyConfigListFull = uncensorSelector.GetField("BodyConfigListFull", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(new Dictionary<string, string>());
-                // if (BodyConfigListFull == null)
-                // {
-                //     PregnancyPlusPlugin.Logger.LogWarning(
-                //         $"Could not find {pluginName}.UncensorSelector.BodyConfigListFull - something isn't right, please report this");
-                //     return new string[0];                      
-                // }
+            //     // var fullBodyList = (Dictionary<string, string>) BodyConfigListFull;
 
-                // var fullBodyList = (Dictionary<string, string>) BodyConfigListFull;
-
-                var bodyList = GetConfigBodyList.Invoke(uncensorSelector, null);
-                // var bodyList = fullBodyList.Values;
-                // return bodyList;
-                return (string[]) bodyList;
-            }
+            //     var bodyDict = new Dictionary<string, string>();
+            //     foreach(var key in BodyDictionary.Keys)
+            //     {
+            //         bodyDict[key] = BodyDictionary[key].VertexCont;
+            //     }
+            //     // var bodyList = fullBodyList.Values;
+            //     // return bodyList;
+            //     return (string[]) bodyDict;
+            // }
 
 
             /// <summary>   
