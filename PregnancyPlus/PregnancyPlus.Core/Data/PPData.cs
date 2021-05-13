@@ -190,7 +190,12 @@ namespace KK_PregnancyPlus
             return result;
         }
 
-        public PluginData Save()
+
+        /// <summary>
+        /// Get PluginData to save to character card
+        /// </summary>
+        /// <param name="hotSwap">When we just want to update a single prop and re-save</param>
+        public PluginData Save(bool hotSwap = false)
         {
             var result = new PluginData { version = 1 };
             var anyValuesChanged = false;
@@ -207,6 +212,9 @@ namespace KK_PregnancyPlus
                     anyValuesChanged = true;
                 }
             }
+
+            //When we don't want to change any of the below values (just replace a single val or two)
+            if (hotSwap) return result.data.Count > 0 ? result : null;
 
             //always save clolthing offset version if any values above set
             if (anyValuesChanged && !result.data.ContainsKey("clothingOffsetVersion")) 

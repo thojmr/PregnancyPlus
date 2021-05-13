@@ -228,7 +228,7 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Just fetch the data for comparison
+        /// Read the card data
         /// </summary>
         internal PregnancyPlusData GetCardData()
         {

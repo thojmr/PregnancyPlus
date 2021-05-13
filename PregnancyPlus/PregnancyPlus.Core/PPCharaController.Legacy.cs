@@ -42,12 +42,20 @@ namespace KK_PregnancyPlus
                 hasMatchingMesh = true;                                    
             }
 
-            //When all blendshape uncensorGUID's are empty set the initialUncensorGUID to be used in its place
-            if (guidsAllNull && initialUncensorGUID == null && hasMatchingMesh) 
+            //When all blendshape uncensorGUID's are empty set the current GUID to the card data
+            if (guidsAllNull && hasMatchingMesh) 
             {
                 if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo(
-                    $" meshBlendShape.UncensorGUID is null but the mesh matches.  setting initialUncensorGUID to {uncensorGUID} ");
-                initialUncensorGUID = uncensorGUID;
+                    $" meshBlendShape.UncensorGUID is null but the mesh matches.  setting {uncensorGUID} to card ");
+
+                //Get current card state, incase we made some changes that have not been saved
+                var tempInfConfig = GetCardData();
+                AddUncensorGUID(meshBlendShapes, uncensorGUID);
+                //Re-pack the blendshapes that have the new uncensorGUID
+                AddBlendShapesToData(tempInfConfig, meshBlendShapes);
+
+                //Update old saved card.  HotSwap makes it like a quick save, instead of a full one
+                SetExtendedData(tempInfConfig.Save(hotSwap: true));
             }
         }
 

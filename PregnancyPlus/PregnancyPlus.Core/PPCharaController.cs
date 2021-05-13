@@ -32,8 +32,6 @@ namespace KK_PregnancyPlus
         public bool uncensorChanged = false;
         public bool isReloading = false;//While character.Reload() is processing prevent other MeshInflate() instances
         internal bool ignoreNextUncensorHook = false;//When we want to ignore a single uncensor hook event
-        internal string initialUncensorGUID;//Track the original guid when one is not present on saved blendshape, but the mesh matches the bledshaape
-
         public PregnancyPlusBlendShapeGui blendShapeGui = new PregnancyPlusBlendShapeGui();
 
         //Holds the user entered slider values

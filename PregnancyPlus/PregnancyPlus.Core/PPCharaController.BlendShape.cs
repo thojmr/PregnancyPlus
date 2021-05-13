@@ -66,7 +66,7 @@ namespace KK_PregnancyPlus
             meshBlendShapes = LoopAndCreateBlendShape(bodyRenderers, meshBlendShapes, uncensorGUID);
 
             //Save any meshBlendShapes to card
-            if (!temporary) AddBlendShapesToData(meshBlendShapes);
+            if (!temporary) AddBlendShapesToData(infConfig, meshBlendShapes);
 
             //Reset belly size to 0 so the blendshape can be used with out interference
             PregnancyPlusGui.ResetSlider(PregnancyPlusGui.inflationSize, 0);
@@ -115,7 +115,7 @@ namespace KK_PregnancyPlus
                 Legacy_CheckNullUncensorGuid(meshBlendShapes, meshBlendShape, smr, uncensorGUID);
             }
             
-            AddBlendShapesToData(meshBlendShapes);
+            AddBlendShapesToData(infConfig, meshBlendShapes);
         }
 
 
@@ -252,9 +252,9 @@ namespace KK_PregnancyPlus
         /// Sets a custom meshBlendShape object to character data
         /// </summary>
         /// <param name="meshBlendShapes">the list of MeshBlendShapes we want to save</param>
-        internal void AddBlendShapesToData(List<MeshBlendShape> meshBlendShapes) 
+        internal void AddBlendShapesToData(PregnancyPlusData _infConfig, List<MeshBlendShape> meshBlendShapes) 
         {            
-            infConfig.meshBlendShape = MessagePack.LZ4MessagePackSerializer.Serialize(meshBlendShapes);
+            _infConfig.meshBlendShape = MessagePack.LZ4MessagePackSerializer.Serialize(meshBlendShapes);
         }
 
 
@@ -333,7 +333,7 @@ namespace KK_PregnancyPlus
             //If no weights present then we can skip this check
             if (!hasWeights) return false;
 
-            var validUncensorGUID = meshBlendShapes[0].UncensorGUID != null ? meshBlendShapes[0].UncensorGUID : initialUncensorGUID;
+            var validUncensorGUID = meshBlendShapes[0].UncensorGUID;
             //Skip when old card data doesnt have the uncensor GUID (pre v3.6), or if the uncensors already match
             if (validUncensorGUID == null || uncensorGUID == validUncensorGUID) 
             {                  
