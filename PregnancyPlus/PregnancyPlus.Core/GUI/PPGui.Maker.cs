@@ -17,7 +17,7 @@ namespace KK_PregnancyPlus
 
 
         //Slider input titles, and GameObject identifiers
-        private static string inflationSizeMaker = "Inflation Size";
+        private static string inflationSizeMaker = "Pregnancy +";
         private static string inflationMultiplierMaker = "Inflation Multiplier";
         private static string inflationMoveYMaker = "Move Y";
         private static string inflationMoveZMaker = "Move Z";
