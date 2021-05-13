@@ -48,7 +48,7 @@ namespace KK_PregnancyPlus
             [IgnoreMember]
             public string log 
             {
-                get { return $"name {name} weight {_weight} vertexCount {vertexCount}"; }
+                get { return $"name {name} weight {_weight} frameWeight {_frameWeight} vertexCount {vertexCount}"; }
             }
         }
 
