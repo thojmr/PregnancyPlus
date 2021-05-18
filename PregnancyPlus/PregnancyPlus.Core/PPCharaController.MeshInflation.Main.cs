@@ -160,7 +160,7 @@ namespace KK_PregnancyPlus
 
             if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" ");
             if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" ComputeMeshVerts for {smr.name}"); 
-            return GetInflatedVerticies(smr, bellyInfo.SphereRadius, bellyInfo.WaistWidth, isClothingMesh, bodyMeshRenderer, freshStart);
+            return GetInflatedVerticies(smr, bellyInfo.SphereRadius, bellyInfo.WaistWidth, isClothingMesh, bodyMeshRenderer);
         }
 
 
@@ -173,7 +173,7 @@ namespace KK_PregnancyPlus
         /// <param name="isClothingMesh">Clothing requires a few tweaks to match skin morphs</param>
         /// <returns>Will return True if mesh verticies > 0 were found  Some meshes wont have any verticies for the belly area, returning false</returns>
         internal bool GetInflatedVerticies(SkinnedMeshRenderer smr, float sphereRadius, float waistWidth, bool isClothingMesh, 
-                                           SkinnedMeshRenderer bodySmr, bool freshStart) 
+                                           SkinnedMeshRenderer bodySmr) 
         {
             Vector3 bodySphereCenterOffset = Vector3.zero;//For defaultt KK body mesh custom offset correction
 
@@ -199,13 +199,16 @@ namespace KK_PregnancyPlus
             var rendererName = GetMeshKey(smr);         
             originalVertices[rendererName] = smr.sharedMesh.vertices;
             inflatedVertices[rendererName] = smr.sharedMesh.vertices;
+            alteredVerticieIndexes[rendererName] = new bool[smr.sharedMesh.vertexCount];
+
             //Get the cloth offset for each cloth vertex via raycast to skin
             var clothOffsets = DoClothMeasurement(smr, bodySmr, sphereCenter);
             if (clothOffsets == null) clothOffsets = new float[originalVertices[rendererName].Length];
             
             var origVerts = originalVertices[rendererName];
             var inflatedVerts = inflatedVertices[rendererName];
-            var bellyVertIndex = bellyVerticieIndexes[rendererName];    
+            var bellyVertIndex = bellyVerticieIndexes[rendererName];
+            var alteredVerts = alteredVerticieIndexes[rendererName];
 
             #if DEBUG
                 var bellyVertsCount = 0;
@@ -242,15 +245,17 @@ namespace KK_PregnancyPlus
                 if (bellyVertIndex[i] || PregnancyPlusPlugin.DebugVerts.Value) 
                 {                    
                     var origVertWs = smr.transform.TransformPoint(origVerts[i]);//Convert to worldspace 
-                    var vertDistance = FastDistance(origVertWs, sphereCenter);
-
-                    CalculateNormalsBoundary(vertDistance, vertNormalCaluRadius, i, rendererName);
+                    var vertDistance = FastDistance(origVertWs, sphereCenter);                    
 
                     //Ignore verts outside the sphere radius
                     if (vertDistance <= vertNormalCaluRadius || PregnancyPlusPlugin.DebugVerts.Value) 
                     {
                         Vector3 inflatedVertWs;                    
-                        Vector3 verticieToSpherePos;                                                                                    
+                        Vector3 verticieToSpherePos;        
+
+                        // If the vert is within the calculated normals radius, then consider it as an altered vert that needs normal recalculation when applying inflation
+                        //  Hopefully this will reduce breast shadows for smaller bellies
+                        if (vertDistance <= vertNormalCaluRadius) alteredVerts[i] = true;                                                                          
 
                         //Shift each belly vertex away from sphere center in a sphere pattern
                         if (!isClothingMesh) 
@@ -478,7 +483,7 @@ namespace KK_PregnancyPlus
 
             //**** All of the below are post mesh change checks to make sure the vertex position don't go outside of bounds
 
-            //Smoothed back to workdspace
+            //Smoothed vert back to worldspace
             var smoothedVectorWs = meshRootTf.TransformPoint(smoothedVectorLs);
             var currentVectorDistance = Math.Abs(FastDistance(sphereCenterWs, smoothedVectorWs));
             var pmCurrentVectorDistance = Math.Abs(FastDistance(preMorphSphereCenterWs, smoothedVectorWs));     
@@ -495,10 +500,10 @@ namespace KK_PregnancyPlus
                 return originalVerticeWs;
             }
 
-            //Don't allow any morphs to shrink towards the characters core any more than the original distance
+            //Don't allow any morphs to shrink towards the characters core line any more than the original distance
             if (currentCoreDist < origCoreDist) 
             {
-                //Since this is just an XZ distance plane check, don't modify the new y value
+                //Since this is just an XZ distance line check, don't modify the new y value
                 return new Vector3(originalVerticeWs.x, smoothedVectorWs.y, originalVerticeWs.z);
             }
 

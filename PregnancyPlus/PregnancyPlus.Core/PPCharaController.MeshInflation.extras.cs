@@ -165,23 +165,6 @@ namespace KK_PregnancyPlus
             return PregnancyPlusHelper.KeyFromNameAndVerts(smr);
         }
 
-
-        /// <summary>
-        /// If the vert is within the calculated normals radius, then consider it as an altered vert that needs normal recalculation when applying inflation
-        ///  Hopefully this will reduce breast shadows for smaller bellies
-        /// </summary>
-        public void CalculateNormalsBoundary(float vertDistance, float vertNormalCaluRadius, int i, string renderKey)
-        {
-            if (vertDistance < vertNormalCaluRadius)
-            {
-                alteredVerticieIndexes[renderKey][i] = true;
-            }
-            else 
-            {
-                alteredVerticieIndexes[renderKey][i] = false;
-            }
-        }
-
     }
 }
 
