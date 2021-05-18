@@ -198,15 +198,13 @@ namespace KK_PregnancyPlus
 
             var rendererName = GetMeshKey(smr);         
             originalVertices[rendererName] = smr.sharedMesh.vertices;
-            inflatedVertices[rendererName] = new Vector3[originalVertices[rendererName].Length];
-            currentVertices[rendererName] = new Vector3[originalVertices[rendererName].Length];
+            inflatedVertices[rendererName] = smr.sharedMesh.vertices;
             //Get the cloth offset for each cloth vertex via raycast to skin
             var clothOffsets = DoClothMeasurement(smr, bodySmr, sphereCenter);
             if (clothOffsets == null) clothOffsets = new float[originalVertices[rendererName].Length];
             
             var origVerts = originalVertices[rendererName];
             var inflatedVerts = inflatedVertices[rendererName];
-            var currentVerts = currentVertices[rendererName];
             var bellyVertIndex = bellyVerticieIndexes[rendererName];    
 
             #if DEBUG
@@ -274,17 +272,7 @@ namespace KK_PregnancyPlus
                                                                  topExtentPosLs);                    
                         inflatedVerts[i] = smr.transform.InverseTransformPoint(inflatedVertWs);//Convert back to local space
                     }
-                    else 
-                    {                        
-                        inflatedVerts[i] = origVert;
-                    }
-                }
-                else 
-                {
-                    inflatedVerts[i] = origVert;
-                }
-                
-                currentVerts[i] = origVert;
+                }               
             }      
 
             return true;                 

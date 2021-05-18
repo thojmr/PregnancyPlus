@@ -136,6 +136,11 @@ namespace KK_PregnancyPlus
                 clothingOffsets[renderKey] = new float[origVerts.Length];
                 clothOffsets = clothingOffsets[renderKey];
             }
+            //If we have already computed these for this mesh, just return the existing values
+            else if (!needsRecomputeOffsets && clothingOffsetsHasValue)
+            {
+                return clothingOffsets[renderKey];
+            }
 
             //Lerp the final offset based on the inflation size.  Since clothes will be most flatteded at the largest size (40), and no change needed at default belly size
             var rayCastDist = bellyInfo.OriginalSphereRadius/2;            

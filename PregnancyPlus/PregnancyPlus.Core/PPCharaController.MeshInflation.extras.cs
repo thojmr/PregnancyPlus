@@ -151,7 +151,6 @@ namespace KK_PregnancyPlus
         {
             if (originalVertices.ContainsKey(keyToRemove)) originalVertices.Remove(keyToRemove);
             if (inflatedVertices.ContainsKey(keyToRemove)) inflatedVertices.Remove(keyToRemove);
-            if (currentVertices.ContainsKey(keyToRemove)) currentVertices.Remove(keyToRemove);
             if (bellyVerticieIndexes.ContainsKey(keyToRemove)) bellyVerticieIndexes.Remove(keyToRemove);        
             if (alteredVerticieIndexes.ContainsKey(keyToRemove)) alteredVerticieIndexes.Remove(keyToRemove);  
             if (clothingOffsets.ContainsKey(keyToRemove)) clothingOffsets.Remove(keyToRemove);  
