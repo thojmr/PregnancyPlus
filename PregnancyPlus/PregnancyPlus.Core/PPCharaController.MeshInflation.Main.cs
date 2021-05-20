@@ -245,7 +245,7 @@ namespace KK_PregnancyPlus
                 if (bellyVertIndex[i] || PregnancyPlusPlugin.DebugVerts.Value) 
                 {                    
                     var origVertWs = smr.transform.TransformPoint(origVerts[i]);//Convert to worldspace 
-                    var vertDistance = FastDistance(origVertWs, sphereCenter);                    
+                    var vertDistance = Vector3.Distance(origVertWs, sphereCenter);                    
 
                     //Ignore verts outside the sphere radius
                     if (vertDistance <= vertNormalCaluRadius || PregnancyPlusPlugin.DebugVerts.Value) 
@@ -302,7 +302,7 @@ namespace KK_PregnancyPlus
                 {
                     // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($"$ GetMeshRoot pos {kkMeshRoot.transform.position}");
                     // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($"$ char pos {ChaControl.transform.position}");
-                    var distanceMoved = FastDistance(ChaControl.transform.position, kkMeshRoot.transform.position);
+                    var distanceMoved = Vector3.Distance(ChaControl.transform.position, kkMeshRoot.transform.position);
                     if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" MeshRoot moved to charRoot by {distanceMoved}f");
 
                     //Set the meshroot.pos to the chaControl.pos to make it more in line with HS2/AI, and KK Uncensor mesh
@@ -396,10 +396,10 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.MakeBalloon.Value || PregnancyPlusPlugin.DebugVerts.Value) return inflatedVerticieWs;                       
             
             //get the smoothing distance limits so we don't have weird polygons and shapes on the edges, and prevents morphs from shrinking past original skin boundary
-            var pmSkinToCenterDist = Math.Abs(FastDistance(preMorphSphereCenterWs, originalVerticeWs));
-            var pmInflatedToCenterDist = Math.Abs(FastDistance(preMorphSphereCenterWs, inflatedVerticieWs));
-            var skinToCenterDist = Math.Abs(FastDistance(sphereCenterWs, originalVerticeWs));
-            var inflatedToCenterDist = Math.Abs(FastDistance(sphereCenterWs, inflatedVerticieWs));
+            var pmSkinToCenterDist = Math.Abs(Vector3.Distance(preMorphSphereCenterWs, originalVerticeWs));
+            var pmInflatedToCenterDist = Math.Abs(Vector3.Distance(preMorphSphereCenterWs, inflatedVerticieWs));
+            var skinToCenterDist = Math.Abs(Vector3.Distance(sphereCenterWs, originalVerticeWs));
+            var inflatedToCenterDist = Math.Abs(Vector3.Distance(sphereCenterWs, inflatedVerticieWs));
             
             // PregnancyPlusPlugin.Logger.LogInfo($" preMorphSphereCenter {preMorphSphereCenter} sphereCenterWs {sphereCenterWs} meshRootTf.pos {meshRootTf.position}");
 
@@ -485,14 +485,14 @@ namespace KK_PregnancyPlus
 
             //Smoothed vert back to worldspace
             var smoothedVectorWs = meshRootTf.TransformPoint(smoothedVectorLs);
-            var currentVectorDistance = Math.Abs(FastDistance(sphereCenterWs, smoothedVectorWs));
-            var pmCurrentVectorDistance = Math.Abs(FastDistance(preMorphSphereCenterWs, smoothedVectorWs));     
+            var currentVectorDistance = Math.Abs(Vector3.Distance(sphereCenterWs, smoothedVectorWs));
+            var pmCurrentVectorDistance = Math.Abs(Vector3.Distance(preMorphSphereCenterWs, smoothedVectorWs));     
             //Get core point on the same y plane as the original vert
             var coreLineVertWs = meshRootTf.position + meshRootTf.up * (meshRootTf.InverseTransformPoint(originalVerticeWs).y * bellyInfo.TotalCharScale.y);
-            var origCoreDist = Math.Abs(FastDistance(originalVerticeWs, coreLineVertWs));//Get line from feet to head that verts must respect distance from
+            var origCoreDist = Math.Abs(Vector3.Distance(originalVerticeWs, coreLineVertWs));//Get line from feet to head that verts must respect distance from
             //Get core point on the same y plane as the smoothed vert
             var coreLineSmoothedVertWs = meshRootTf.position + meshRootTf.up * (meshRootTf.InverseTransformPoint(smoothedVectorWs).y * bellyInfo.TotalCharScale.y);       
-            var currentCoreDist = Math.Abs(FastDistance(smoothedVectorWs, coreLineSmoothedVertWs)); 
+            var currentCoreDist = Math.Abs(Vector3.Distance(smoothedVectorWs, coreLineSmoothedVertWs)); 
 
             //Don't allow any morphs to shrink towards the sphere center more than its original distance, only outward morphs allowed
             if (skinToCenterDist > currentVectorDistance || pmSkinToCenterDist > pmCurrentVectorDistance) 

@@ -236,7 +236,7 @@ namespace KK_PregnancyPlus
         public float GetEdgeLerp(Vector3 origVertWs, Vector3 center, float offset)
         {
             //Get the distance the original cloth vert is from the sphere radius
-            var distancePastRadius = FastDistance(origVertWs, center) - bellyInfo.SphereRadius;
+            var distancePastRadius = Vector3.Distance(origVertWs, center) - bellyInfo.SphereRadius;
             //The further the vert is outside the radius, the less it is offset (begin lerp just before the radius is reached for best results)
             var edgeLerpOffset = Mathf.Lerp(offset, 0, (distancePastRadius - bellyInfo.WaistWidth/15)/(bellyInfo.WaistWidth/10));
 
@@ -284,7 +284,7 @@ namespace KK_PregnancyPlus
             var shrinkedOffset = offset + (bellyInfo.ScaledWaistWidth/100 * inflationOffset);
 
             // //The closer the cloth is to the end of the sphere radius, the less we want to move it on offset
-            var clothFromEndDistLerp = FastDistance(sphereCenterWs, origVertWS)/sphereRadius;    
+            var clothFromEndDistLerp = Vector3.Distance(sphereCenterWs, origVertWS)/sphereRadius;    
             // diving by 3 just gave the best results      
             var lerpedOffset = Mathf.Lerp(shrinkedOffset, shrinkedOffset/3, clothFromEndDistLerp);
 
@@ -333,9 +333,9 @@ namespace KK_PregnancyPlus
 
             //The total radial distance after removing the distance we want to ignore
             var totatDist = (sphereRadius - awayFromCenter);
-            var chothToEndDist = FastDistance(origVertWS, inflatedVerWS);
+            var chothToEndDist = Vector3.Distance(origVertWS, inflatedVerWS);
             //The closer the cloth is to the end of the sphere radius, the less we want to move it on offset
-            var clothFromEndDistLerp = FastDistance(sphereCenterWs, origVertWS)/sphereRadius;
+            var clothFromEndDistLerp = Vector3.Distance(sphereCenterWs, origVertWS)/sphereRadius;
             //Get the positon on a line that this vector exists between flattenExtensStartAt -> to sphereRadius. Then shrink it down to a thin layer
             var offset = (totatDist - chothToEndDist) * shrinkBy;            
             var lerpedOffset = Mathf.Lerp(offset, offset/5, clothFromEndDistLerp);

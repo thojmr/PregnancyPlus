@@ -111,18 +111,17 @@ namespace KK_PregnancyPlus
 
 
 
-        internal float FastDistance(Vector3 firstPosition, Vector3 secondPosition) 
+        /// <summary>   
+        /// Calculate the magnitude of a vector, which is faster than Vector3.distance, but does not return a true distance
+        /// </summary> 
+        internal float FastMagnitude(Vector3 firstPosition, Vector3 secondPosition) 
         {
-            //Calculates distance faster than vector3.distance.
-            Vector3 heading;
-            float distanceSquared;
-    
+            Vector3 heading;    
             heading.x = firstPosition.x - secondPosition.x;
             heading.y = firstPosition.y - secondPosition.y;
             heading.z = firstPosition.z - secondPosition.z;
     
-            distanceSquared = heading.x * heading.x + heading.y * heading.y + heading.z * heading.z;
-            return Mathf.Sqrt(distanceSquared);
+            return heading.x * heading.x + heading.y * heading.y + heading.z * heading.z;
         }    
 
 
