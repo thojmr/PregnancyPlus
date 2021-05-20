@@ -37,7 +37,7 @@ namespace KK_PregnancyPlus
         {
             get 
             { 
-                if (pluginConfigSliderChanged) return true;
+                if (pluginConfigSliderChanged) return false;
                 return infConfig.InflationSizeOnlyChange(infConfigHistory);   
             }
         }
