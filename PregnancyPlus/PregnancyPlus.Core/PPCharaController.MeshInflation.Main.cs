@@ -121,15 +121,16 @@ namespace KK_PregnancyPlus
         public bool NeedsComputeVerts(SkinnedMeshRenderer smr, string renderKey, MeshInflateFlags meshInflateFlags) 
         {    
             //If mesh is on ignore list, skip it
-            if (ignoreMeshList.Contains(renderKey)) return false;                 
+            if (ignoreMeshList.Contains(renderKey)) return false;           
+            if (meshInflateFlags.freshStart) return true;
 
             //Do a quick check to see if we need to fetch the bone indexes again.  ex: on second call we should allready have them
             //This saves a lot on compute apparently!            
-            var isInitialized = bellyVerticieIndexes.TryGetValue(renderKey, out bool[] existingValues);
+            var isInitialized = md.TryGetValue(renderKey, out MeshData _md);
             if (isInitialized)
             {
                 //If the vertex count has not changed then we can skip this if no critical sliders changed
-                if (existingValues.Length == smr.sharedMesh.vertexCount) 
+                if (_md.bellyVerticieIndexes.Length == smr.sharedMesh.vertexCount) 
                 {
                     if (meshInflateFlags.OnlyInflationSizeChanged) return false;
                     return meshInflateFlags.SliderHaveChanged;
@@ -197,18 +198,18 @@ namespace KK_PregnancyPlus
             ApplyConditionalSphereCenterOffset(meshRootTf, isClothingMesh, sphereCenter, smr,  out sphereCenter, out bodySphereCenterOffset);  
 
             var rendererName = GetMeshKey(smr);         
-            originalVertices[rendererName] = smr.sharedMesh.vertices;
-            inflatedVertices[rendererName] = smr.sharedMesh.vertices;
-            alteredVerticieIndexes[rendererName] = new bool[smr.sharedMesh.vertexCount];
+            md[rendererName].originalVertices = smr.sharedMesh.vertices;
+            md[rendererName].inflatedVertices = smr.sharedMesh.vertices;
+            md[rendererName].alteredVerticieIndexes = new bool[smr.sharedMesh.vertexCount];
 
             //Get the cloth offset for each cloth vertex via raycast to skin
             var clothOffsets = DoClothMeasurement(smr, bodySmr, sphereCenter);
-            if (clothOffsets == null) clothOffsets = new float[originalVertices[rendererName].Length];
+            if (clothOffsets == null) clothOffsets = new float[md[rendererName].originalVertices.Length];
             
-            var origVerts = originalVertices[rendererName];
-            var inflatedVerts = inflatedVertices[rendererName];
-            var bellyVertIndex = bellyVerticieIndexes[rendererName];
-            var alteredVerts = alteredVerticieIndexes[rendererName];
+            var origVerts = md[rendererName].originalVertices;
+            var inflatedVerts = md[rendererName].inflatedVertices;
+            var bellyVertIndex = md[rendererName].bellyVerticieIndexes;
+            var alteredVerts = md[rendererName].alteredVerticieIndexes;
 
             #if DEBUG
                 var bellyVertsCount = 0;

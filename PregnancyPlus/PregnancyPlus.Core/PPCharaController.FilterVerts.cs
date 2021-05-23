@@ -50,12 +50,10 @@ namespace KK_PregnancyPlus
                 if (!ignoreMeshList.Contains(renderKey)) ignoreMeshList.Add(renderKey);
                 return false;             
             }
-
-            //Create new mesh dictionary key for bone indexes
-            bellyVerticieIndexes[renderKey] = new bool[sharedMesh.vertexCount];
-            alteredVerticieIndexes[renderKey] = new bool[sharedMesh.vertexCount];            
-            var bellyVertIndex = bellyVerticieIndexes[renderKey];
-
+            
+            //Create new mesh dictionary key for bone indexes, or overwrite existing
+            md[renderKey] = new MeshData(sharedMesh.vertexCount);           
+            var bellyVertIndex = md[renderKey].bellyVerticieIndexes;
             var verticies = sharedMesh.vertices;
 
             //The distance backwards from characters center that verts are allowed to be modified

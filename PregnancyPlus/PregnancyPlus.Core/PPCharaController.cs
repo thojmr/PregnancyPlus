@@ -39,12 +39,8 @@ namespace KK_PregnancyPlus
         internal PregnancyPlusData infConfigHistory = new PregnancyPlusData();        
 
 
-        //Keeps track of all belly verticies, the dicts are indexed by the (meshRenderer.name + the vertex count) to make the indexes unique
-        public Dictionary<string, Vector3[]> originalVertices = new Dictionary<string, Vector3[]>();
-        public Dictionary<string, Vector3[]> inflatedVertices = new Dictionary<string, Vector3[]>();//Max extended mesh verts, after all slider calculations        
-        public Dictionary<string, float[]> clothingOffsets = new Dictionary<string, float[]>();//The distance we want to offset each vertex fromt the body mesh when inflated
-        public Dictionary<string, bool[]> bellyVerticieIndexes = new Dictionary<string, bool[]>();//List of verticie indexes that belong to the belly area
-        public Dictionary<string, bool[]> alteredVerticieIndexes = new Dictionary<string, bool[]>();//List of verticie indexes that belong to the belly area and within the current belly radius
+        //Keeps track of all belly verticie data for preg+, the dict is indexed by the (meshRenderer.name + the vertex count) to make the mesh indexes unique
+        public Dictionary<string, MeshData> md = new Dictionary<string, MeshData>();
         public List<string> ignoreMeshList = new List<string>();//List of mesh names/keys to ignore since they dont have belly verts
 
 

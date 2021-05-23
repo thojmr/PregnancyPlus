@@ -124,22 +124,24 @@ namespace KK_PregnancyPlus
 
             //Get the pre calculated preg verts for this mesh
             var renderKey = GetMeshKey(clothSmr);        
-            originalVertices.TryGetValue(renderKey, out Vector3[] origVerts);            
-            if (origVerts == null || origVerts.Length <= 0) return null;//Hopefully this never happens
+            md.TryGetValue(renderKey, out MeshData _md);            
+            if (!_md.HasOriginalVerts) return null;//Hopefully this never happens
+            var origVerts = md[renderKey].originalVertices;
 
-            var alteredVertIndexes = bellyVerticieIndexes[renderKey];
+            var alteredVertIndexes = md[renderKey].bellyVerticieIndexes;
 
             //Check for existing offset values, init if none found
-            var clothingOffsetsHasValue = clothingOffsets.TryGetValue(renderKey, out float[] clothOffsets);
+            var clothingOffsetsHasValue = md[renderKey].HasClothingOffsets;
+            var clothOffsets = new float[0];
             if (!clothingOffsetsHasValue) 
             {
-                clothingOffsets[renderKey] = new float[origVerts.Length];
-                clothOffsets = clothingOffsets[renderKey];
+                md[renderKey].clothingOffsets = new float[origVerts.Length];
+                clothOffsets = md[renderKey].clothingOffsets;
             }
             //If we have already computed these for this mesh, just return the existing values
             else if (!needsRecomputeOffsets && clothingOffsetsHasValue)
             {
-                return clothingOffsets[renderKey];
+                return md[renderKey].clothingOffsets;
             }
 
             //Lerp the final offset based on the inflation size.  Since clothes will be most flatteded at the largest size (40), and no change needed at default belly size

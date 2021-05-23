@@ -215,10 +215,10 @@ namespace KK_PregnancyPlus
             foreach(var smr in smrs) 
             {                
                 var renderKey = GetMeshKey(smr);
-                var exists = inflatedVertices.ContainsKey(renderKey);
+                var exists = md.ContainsKey(renderKey);
 
                 //Dont create blend shape if no inflated verts exists
-                if (!exists || inflatedVertices[renderKey].Length < 0) continue;
+                if (!exists || !md[renderKey].HasInflatedVerts) continue;
 
                 var blendShapeCtrl = CreateBlendShape(smr, renderKey);
 
@@ -464,26 +464,26 @@ namespace KK_PregnancyPlus
             } 
 
             //Make sure we have an existing belly shape to work with (can be null if user hasnt used sliders yet)
-            var exists = inflatedVertices.TryGetValue(renderKey, out var val);
-            if (!exists) 
+            var exists = md.TryGetValue(renderKey, out MeshData _md);
+            if (!exists || !_md.HasInflatedVerts) 
             {
                 if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo(
-                     $"CreateBlendShape > smr '{renderKey}' inflatedVertices do not exists, skipping");
+                     $"CreateBlendShape > smr '{renderKey}' meshData do not exists, skipping");
                 return null;
             }
 
             //Make sure the vertex count matches what the blendshape has (differs when swapping meshes)
-            if (inflatedVertices[renderKey].Length != meshCopyTarget.vertexCount) 
+            if (md[renderKey].VertexCount != meshCopyTarget.vertexCount) 
             {
                 PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_IncorrectVertCount, 
-                    $"CreateBlendShape > smr.sharedMesh '{renderKey}' has incorrect vert count {inflatedVertices[renderKey].Length}|{meshCopyTarget.vertexCount}");  
+                    $"CreateBlendShape > smr.sharedMesh '{renderKey}' has incorrect vert count {md[renderKey].inflatedVertices.Length}|{meshCopyTarget.vertexCount}");  
                 return null;
             }
 
             //Calculate the new normals, but don't show them.  We just want it for the blendshape shape target
-            meshCopyTarget.vertices = inflatedVertices[renderKey];
+            meshCopyTarget.vertices = md[renderKey].inflatedVertices;
             meshCopyTarget.RecalculateBounds();
-            NormalSolver.RecalculateNormals(meshCopyTarget, 40f, alteredVerticieIndexes[renderKey]);
+            NormalSolver.RecalculateNormals(meshCopyTarget, 40f, md[renderKey].alteredVerticieIndexes);
             meshCopyTarget.RecalculateTangents();
 
             // LogMeshBlendShapes(smr);

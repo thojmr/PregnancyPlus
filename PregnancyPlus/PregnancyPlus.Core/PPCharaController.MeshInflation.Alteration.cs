@@ -53,8 +53,8 @@ namespace KK_PregnancyPlus
             } 
 
             //Check key exists in dict, remove it if it does not
-            var exists = originalVertices.TryGetValue(renderKey, out var val);
-            if (!exists) 
+            var exists = md.TryGetValue(renderKey, out MeshData _md);
+            if (!exists || !_md.HasOriginalVerts) 
             {
                 // if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo(
                 //      $"ApplyInflation > smr '{renderKey}' does not exists, skipping");
@@ -63,10 +63,10 @@ namespace KK_PregnancyPlus
             }
 
             //Check that the mesh did not change behind the scenes.  It will have a different vert count if it did (possible to be the same though...)
-            if (inflatedVertices[renderKey].Length != smr.sharedMesh.vertexCount) 
+            if (md[renderKey].VertexCount != smr.sharedMesh.vertexCount) 
             {
                 PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_IncorrectVertCount, 
-                    $"ApplyInflation > smr.sharedMesh '{renderKey}' has incorrect vert count {inflatedVertices[renderKey].Length}|{smr.sharedMesh.vertexCount}");
+                    $"ApplyInflation > smr.sharedMesh '{renderKey}' has incorrect vert count {md[renderKey].inflatedVertices.Length}|{smr.sharedMesh.vertexCount}");
                 return false;
             }
 
@@ -84,7 +84,7 @@ namespace KK_PregnancyPlus
         internal void ResetInflation() 
         {   
             //Resets all mesh inflations
-            var keyList = new List<string>(originalVertices.Keys);
+            var keyList = new List<string>(md.Keys);
 
             //For every active meshRenderer key we have created
             foreach(var renderKey in keyList) 
@@ -132,7 +132,7 @@ namespace KK_PregnancyPlus
             if (includeClothMesh)
             {
                 //Get all existing mesh keys
-                var keyList = new List<string>(originalVertices.Keys);
+                var keyList = new List<string>(md.Keys);
 
                 //Ill add this back laater once I do some more research
                 // //For each mesh key, calculate the new smoothed mesh in parallel
@@ -201,7 +201,7 @@ namespace KK_PregnancyPlus
         internal void ApplySmoothResults(Vector3[] newMesh, string renderKey, SkinnedMeshRenderer smr = null) 
         {
             //Set the new smoothed mesh verts
-            if (newMesh != null) inflatedVertices[renderKey] = newMesh;
+            if (newMesh != null) md[renderKey].inflatedVertices = newMesh;
 
             if (smr == null) smr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderKey, false);
             //Re-trigger ApplyInflation to set the new smoothed mesh           
@@ -217,7 +217,7 @@ namespace KK_PregnancyPlus
             if (smr == null || renderKey == null) return null;
             
             //Check that this mesh has computed inflated verticies            
-            if (!inflatedVertices.ContainsKey(renderKey)) 
+            if (!md.ContainsKey(renderKey) || ! md[renderKey].HasInflatedVerts) 
             {
                 if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" No inflated verts found for SmoothSingleMesh");
                 return null;
@@ -233,13 +233,13 @@ namespace KK_PregnancyPlus
             } 
 
             //Calculate the original normals, but don't show them.  We just want it for the blendshape target
-            meshCopyTarget.vertices = inflatedVertices[renderKey];
+            meshCopyTarget.vertices = md[renderKey].inflatedVertices;
             meshCopyTarget.RecalculateBounds();
-            NormalSolver.RecalculateNormals(meshCopyTarget, 40f, alteredVerticieIndexes[renderKey]);
+            NormalSolver.RecalculateNormals(meshCopyTarget, 40f, md[renderKey].alteredVerticieIndexes);
             meshCopyTarget.RecalculateTangents();
 
             //Get the new smoothed mesh verticies (compute only the belly verts)
-            return SmoothMesh.Start(meshCopyTarget, alteredVerticieIndexes[renderKey]);
+            return SmoothMesh.Start(meshCopyTarget, md[renderKey].alteredVerticieIndexes);
         }
 
     }
