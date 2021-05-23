@@ -57,7 +57,7 @@ namespace KK_PregnancyPlus
             var verticies = sharedMesh.vertices;
 
             //The distance backwards from characters center that verts are allowed to be modified
-            var backExtent = bellyInfo.ZLimit;
+            var backExtent = -bellyInfo.ZLimit;
             
             var c = 0;
             var meshBoneWeights = sharedMesh.boneWeights;
@@ -75,7 +75,7 @@ namespace KK_PregnancyPlus
                     {
                         //Make sure to exclude verticies on characters back, we only want to modify the front.  No back bellies!
                         //add all vertexes in debug mode
-                        if (verticies[c].z >= 0 - backExtent || PregnancyPlusPlugin.MakeBalloon.Value) 
+                        if (verticies[c].z >= backExtent || PregnancyPlusPlugin.MakeBalloon.Value) 
                         {
                             bellyVertIndex[c] = true;
                             hasBellyVerticies = true;
@@ -114,7 +114,6 @@ namespace KK_PregnancyPlus
         /// <returns>Returns false if no bones found, or no indexes found</returns>
         internal bool GetFilteredBoneIndexes(Transform[] bones, string[] boneFilters, List<int> bellyBoneIndexes) 
         {
-            //Don't even know if this is possible, so why not
             if (bones.Length <= 0) return false;
             var hasBoneFilters = boneFilters != null && boneFilters.Length > 0;
 

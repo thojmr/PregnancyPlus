@@ -314,7 +314,7 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Calculates the length of a set of chained bones from bottom up.  It will only caluculate the true Y distance, so it effectively ignores any animations (behaves like a TPose measurement).false  Should include bones scales as well
+        /// Calculates the length of a set of chained bones from bottom up.  It will only caluculate the true Y distance, so it effectively ignores any animations (behaves like a TPose measurement).  Will include bones scales as well
         /// </summary>
         /// <param name="chaControl">The character to fetch bones from</param>
         /// <param name="boneStart">The starting (bottom of tree) bone name</param>

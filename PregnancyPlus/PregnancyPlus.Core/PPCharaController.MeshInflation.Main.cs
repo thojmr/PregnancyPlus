@@ -240,8 +240,6 @@ namespace KK_PregnancyPlus
             //Set each verticies inflated postion, with some constraints (SculptInflatedVerticie) to make it look more natural
             for (int i = 0; i < vertsLength; i++)
             {
-                var origVert = origVerts[i];
-
                 //Only care about inflating belly verticies
                 if (bellyVertIndex[i] || PregnancyPlusPlugin.DebugVerts.Value) 
                 {                    
