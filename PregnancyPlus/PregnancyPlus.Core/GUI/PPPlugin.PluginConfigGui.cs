@@ -25,6 +25,7 @@ namespace KK_PregnancyPlus
         public static ConfigEntry<float> StoryModeInflationClothOffset { get; private set; }    
         public static ConfigEntry<float> StoryModeInflationFatFold { get; private set; }    
         public static ConfigEntry<float> StoryModeInflationRoundness { get; private set; }    
+        public static ConfigEntry<float> StoryModeInflationDrop { get; private set; }    
 
 
         //Debug config options
@@ -186,18 +187,25 @@ namespace KK_PregnancyPlus
                     new ConfigurationManagerAttributes { Order = 9 })
                 );
             StoryModeInflationTaperZ.SettingChanged += InflationConfig_SettingsChanged;  
+            
+            StoryModeInflationDrop = Config.Bind<float>(storyConfigTitle, "Global Drop Adjustment", 0, 
+                new ConfigDescription("Allows you to increase the 'Drop' amount in story mode for" + additionalSliderText,
+                    new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationDrop[0], PregnancyPlusGui.SliderRange.inflationDrop[1]),
+                    new ConfigurationManagerAttributes { Order = 8 })
+                );
+            StoryModeInflationDrop.SettingChanged += InflationConfig_SettingsChanged;  
 
             StoryModeInflationClothOffset = Config.Bind<float>(storyConfigTitle, "Global Cloth Offset Adjustment", 0, 
                 new ConfigDescription("Allows you to increase or decrease the cloth layer distance to reduce clipping",
                     new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationClothOffset[0], PregnancyPlusGui.SliderRange.inflationClothOffset[1]),
-                    new ConfigurationManagerAttributes { Order = 8 })
+                    new ConfigurationManagerAttributes { Order = 7 })
                 );
             StoryModeInflationClothOffset.SettingChanged += InflationConfig_SettingsChanged; 
 
             StoryModeInflationFatFold = Config.Bind<float>(storyConfigTitle, "Global Fat Fold Adjustment", 0, 
                 new ConfigDescription("Allows you to increase or decrease the fat fold size, 0 for none",
                     new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationFatFold[0], PregnancyPlusGui.SliderRange.inflationFatFold[1]),
-                    new ConfigurationManagerAttributes { Order = 7 })
+                    new ConfigurationManagerAttributes { Order = 6 })
                 );
             StoryModeInflationFatFold.SettingChanged += InflationConfig_SettingsChanged;  
                     

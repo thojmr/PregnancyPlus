@@ -43,6 +43,7 @@
             public readonly static float[] inflationShiftZ = {-0.15f * rmAltHS2x2, 0.15f * rmAltHS2x2};
             public readonly static float[] inflationTaperY = {-0.075f * rmAltHS2x2, 0.075f * rmAltHS2x2};
             public readonly static float[] inflationTaperZ = {-0.075f * rmAltHS2x2, 0.075f * rmAltHS2x2};            
+            public readonly static float[] inflationDrop = { 0, 1f };            
             public readonly static float[] inflationClothOffset = {-2 * rmKKx10, 2 * rmKKx10};
             public readonly static float[] inflationFatFold = {0, 2f};
             public readonly static float[] inflationRoundness = {-0.75f, 0.75f};

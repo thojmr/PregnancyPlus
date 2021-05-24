@@ -31,6 +31,7 @@ namespace KK_PregnancyPlus
         private static string inflationFatFoldMaker = "Fat Fold";
         private static string inflationClothingOffsetVersionMaker = "Clothing Offset Version";
         private static string inflationRoundnessMaker = "Roundness";
+        private static string inflationDropMaker = "Drop";
 
         internal static void InitMaker(Harmony hi, PregnancyPlusPlugin instance)
         {
@@ -179,6 +180,16 @@ namespace KK_PregnancyPlus
             });
             e.AddControl(new MakerText("Taper the front of the belly in at the top and out at the bottom.  Gives the belly an angle at the front.", cat, _pluginInstance) { TextColor = hintColor });
             sliders.Add(taperZ);
+
+
+            var drop = e.AddControl(new MakerSlider(cat, inflationDropMaker, SliderRange.inflationDrop[0], SliderRange.inflationDrop[1], ppDataDefaults.inflationDrop, _pluginInstance));
+            drop.BindToFunctionController<PregnancyPlusCharaController, float>(controller => controller.infConfig.inflationDrop, (controller, value) => {
+                var oldVal = controller.infConfig.inflationDrop;
+                controller.infConfig.inflationDrop = value;
+                if (oldVal != value) OnMakerSettingsChanged(controller);
+            });
+            e.AddControl(new MakerText("Give the belly the 'Dropped' effect", cat, _pluginInstance) { TextColor = hintColor });
+            sliders.Add(drop);
 
 
             var clothOffset = e.AddControl(new MakerSlider(cat, inflationClothOffsetMaker, SliderRange.inflationClothOffset[0] * scaleLimits, SliderRange.inflationClothOffset[1] * scaleLimits, ppDataDefaults.inflationClothOffset, _pluginInstance));
@@ -365,6 +376,10 @@ namespace KK_PregnancyPlus
 
                     case var _ when settingName == inflationRoundnessMaker:
                         slider.SetValue(_infConfig.inflationRoundness);
+                        continue;
+
+                    case var _ when settingName == inflationDropMaker:
+                        slider.SetValue(_infConfig.inflationDrop);
                         continue;
 
                     default:

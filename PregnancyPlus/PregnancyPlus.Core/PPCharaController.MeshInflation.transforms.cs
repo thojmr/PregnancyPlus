@@ -218,6 +218,17 @@ namespace KK_PregnancyPlus
         }
 
 
+        /// <summary>   
+        /// This Drop the belly down
+        /// </summary>
+        internal Vector3 GetUserDropTransform(Transform meshRootTf, Vector3 smoothedVectorLs, Vector3 sphereCenterLs, float skinToCenterDist, float sphereRadius) 
+        {                     
+            //Move the verts closest to sphere center Z more slowly than verts at the belly button.  Otherwise you stretch the ones near the body too much
+            var lerpZ = Mathf.Lerp(0, GetInflationDrop(), (smoothedVectorLs.z - sphereCenterLs.z)/(bellyInfo.ScaledRadius(BellyDir.z) * 1.5f));
+            return smoothedVectorLs + meshRootTf.up * -(sphereRadius * lerpZ);
+        }
+
+
         /// <summary>
         /// Dampen any mesh changed near edged of the belly (sides, top, and bottom) to prevent too much vertex stretching.  The more forward the vertex is from Z the more it's allowd to be altered by sliders
         /// </summary>        
@@ -328,6 +339,13 @@ namespace KK_PregnancyPlus
             if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationTaperZ;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationTaperZ != null ? PregnancyPlusPlugin.StoryModeInflationTaperZ.Value : 0;
             return (infConfig.inflationTaperZ + globalOverrideVal);
+        }
+
+        internal float GetInflationDrop() 
+        {
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationDrop;
+            var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationDrop != null ? PregnancyPlusPlugin.StoryModeInflationDrop.Value : 0;
+            return (infConfig.inflationDrop + globalOverrideVal);
         }
 
         internal float GetInflationClothOffset() 

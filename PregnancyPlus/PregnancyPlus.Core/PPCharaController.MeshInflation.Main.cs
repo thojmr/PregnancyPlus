@@ -452,6 +452,12 @@ namespace KK_PregnancyPlus
             if (GetInflationFatFold() > 0) 
             {
                 smoothedVectorLs = GetUserFatFoldTransform(meshRootTf, originalVerticeLs, smoothedVectorLs, sphereCenterLs, sphereRadius);
+            }            
+
+            //If the user has selected a drop slider value
+            if (GetInflationDrop() > 0) 
+            {
+                smoothedVectorLs = GetUserDropTransform(meshRootTf, smoothedVectorLs, sphereCenterLs, skinToCenterDist, sphereRadius);
             }
 
 
