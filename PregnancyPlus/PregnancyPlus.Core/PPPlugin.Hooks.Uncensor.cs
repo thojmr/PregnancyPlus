@@ -27,7 +27,17 @@ namespace KK_PregnancyPlus
 
             public static void InitHooks(Harmony harmonyInstance)
             {            
-                TryPatchUncensorChange(harmonyInstance);            
+                try
+                {
+                    TryPatchUncensorChange(harmonyInstance);       
+                }
+                catch(MissingMethodException e)
+                {
+                    //Caused by ScriptEngine reloads, so Ignore this error
+                    PregnancyPlusPlugin.Logger.LogWarning(
+                        $" Hooks_Uncensor MissingMethodException, this is not an issue, just a warning");
+                    return;
+                }                         
             }
 
 

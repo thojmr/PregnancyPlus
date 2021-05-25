@@ -25,8 +25,18 @@ namespace KK_PregnancyPlus
 
 
             public static void InitHooks(Harmony harmonyInstance)
-            {            
-                TryPatchPreggersInflation(harmonyInstance);            
+            {                                    
+                try
+                {
+                    TryPatchPreggersInflation(harmonyInstance);
+                }
+                catch(MissingMethodException e)
+                {
+                    //Caused by ScriptEngine reloads, so Ignore this error
+                    PregnancyPlusPlugin.Logger.LogWarning(
+                        $" Hooks_KK_Pregnancy MissingMethodException, this is not an issue, just a warning");
+                    return;
+                }  
             }
 
 
