@@ -1,6 +1,7 @@
 ﻿using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
+using System;
 using KKAPI;
 using KKAPI.Studio;
 using KKAPI.Chara;
@@ -68,13 +69,24 @@ namespace KK_PregnancyPlus
             var handlers = CharacterApi.GetRegisteredBehaviour(GUID);
             if (handlers == null || handlers.Instances == null) return;
 
-            #if !DEBUG  //Tired of the errors caused by ScriptEngine here
-                foreach (PregnancyPlusCharaController charCustFunCtrl in handlers.Instances)
-                {         
-                    //Update any active gui windows
-                    charCustFunCtrl.blendShapeGui.OnGUI(this);                                                    
-                }
-            #endif
+            //For each character controller, update GUI
+            foreach (var charCustFunCtrl in handlers.Instances)
+            {            
+                PregnancyPlusCharaController ctrl;                          
+                try 
+                {
+                    //Try casting.  ScriptEngine reloads will cause errors here otherwise
+                    ctrl = (PregnancyPlusCharaController) charCustFunCtrl;
+                }      
+                catch(Exception e)
+                {
+                    //If fails to cast then the charController is old and can be skipped
+                    continue;
+                }    
+
+                //Update any active gui windows
+                ctrl.blendShapeGui.OnGUI(this);                                                                                 
+            }
         }
     
     }
