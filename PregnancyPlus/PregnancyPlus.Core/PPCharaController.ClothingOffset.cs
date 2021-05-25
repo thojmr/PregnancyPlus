@@ -69,21 +69,6 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Get the main body mesh renderer for a character
-        /// </summary>
-        public SkinnedMeshRenderer GetBodyMeshRenderer()
-        {
-            #if KK
-                var meshName = "o_body_a";
-            #elif HS2 || AI
-                var meshName = "o_body_cf";
-            #endif
-            var bodyMeshRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, true);
-            return bodyMeshRenderers.Find(x => x.name == meshName);
-        }
-
-
-        /// <summary>
         /// Raycast from the clothing vert to the sphere center and get the distance if it hits the mesh collider
         /// </summary>
         public float RayCastToCenter(Vector3 clothVertWs, Vector3 sphereCenter, float maxDistance)
