@@ -22,6 +22,7 @@ namespace KK_PregnancyPlus
         public float inflationMultiplier = 0;
         public float inflationClothOffset = 0;
         public float inflationFatFold = 0;
+        public float inflationFatFoldHeight = 0;
         public bool GameplayEnabled = true;
         public float inflationRoundness = 0;
         public float inflationDrop = 0;
@@ -63,6 +64,7 @@ namespace KK_PregnancyPlus
             if (inflationMultiplier != otherData.inflationMultiplier) hasChanges = true;
             if (inflationClothOffset != otherData.inflationClothOffset) hasChanges = true;
             if (inflationFatFold != otherData.inflationFatFold) hasChanges = true;           
+            if (inflationFatFoldHeight != otherData.inflationFatFoldHeight) hasChanges = true;           
             if (inflationRoundness != otherData.inflationRoundness) hasChanges = true;                      
             if (inflationDrop != otherData.inflationDrop) hasChanges = true;                      
 
@@ -90,6 +92,7 @@ namespace KK_PregnancyPlus
             if (inflationMultiplier != otherData.inflationMultiplier) inflationSizeOnlyChanges = false;
             if (inflationClothOffset != otherData.inflationClothOffset) inflationSizeOnlyChanges = false;
             if (inflationFatFold != otherData.inflationFatFold) inflationSizeOnlyChanges = false;           
+            if (inflationFatFoldHeight != otherData.inflationFatFoldHeight) inflationSizeOnlyChanges = false;           
             if (inflationRoundness != otherData.inflationRoundness) inflationSizeOnlyChanges = false;                      
             if (inflationDrop != otherData.inflationDrop) inflationSizeOnlyChanges = false;                      
 
@@ -112,7 +115,8 @@ namespace KK_PregnancyPlus
                 inflationRoundness.GetHashCode() +
                 inflationDrop.GetHashCode() +
                 clothingOffsetVersion.GetHashCode() +
-                inflationFatFold.GetHashCode();
+                inflationFatFold.GetHashCode() +
+                inflationFatFoldHeight.GetHashCode();
 
             return hashCode;            
         }

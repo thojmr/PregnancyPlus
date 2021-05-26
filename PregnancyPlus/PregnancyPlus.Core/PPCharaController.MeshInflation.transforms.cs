@@ -171,11 +171,12 @@ namespace KK_PregnancyPlus
         internal Vector3 GetUserFatFoldTransform(Transform meshRootTf, Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 sphereCenterLs, float sphereRadius) 
         {
             var origSmoothVectorLs = smoothedVectorLs;
-            var inflationFatFold = GetInflationFatFold();
+            var inflationFatFold = GetInflationFatFold();            
             var scaledSphereRadius = bellyInfo.ScaledRadius(BellyDir.y);
+            var inflationFatFoldHeightOffset = GetInflationFatFoldHeight() * scaledSphereRadius;
 
             //Define how hight and low from center we want to pull the skin inward
-            var svDistFromCenter = Math.Abs(smoothedVectorLs.y - sphereCenterLs.y);
+            var svDistFromCenter = Math.Abs(smoothedVectorLs.y - (sphereCenterLs.y + inflationFatFoldHeightOffset));
 
             var resultVert = smoothedVectorLs;
             //Make V shape in the middle of the belly horizontally
@@ -186,7 +187,7 @@ namespace KK_PregnancyPlus
             }
 
             //Shrink skin above center line.  Want it bigger down below the line to look more realistic
-            if (smoothedVectorLs.y > sphereCenterLs.y) 
+            if (smoothedVectorLs.y > (sphereCenterLs.y + inflationFatFoldHeightOffset)) 
             {                    
                 //As the verts get higher, move them back towards their original position
                 smoothedVectorLs = Vector3.Slerp(smoothedVectorLs, originalVerticeLs, svDistFromCenter/(scaledSphereRadius * 1.5f));
@@ -360,6 +361,14 @@ namespace KK_PregnancyPlus
             if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationFatFold;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationFatFold != null ? PregnancyPlusPlugin.StoryModeInflationFatFold.Value : 0;
             return (infConfig.inflationFatFold + globalOverrideVal);
+        }
+
+
+        internal float GetInflationFatFoldHeight() 
+        {
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationFatFoldHeight;
+            var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationFatFoldHeight != null ? PregnancyPlusPlugin.StoryModeInflationFatFoldHeight.Value : 0;
+            return (infConfig.inflationFatFoldHeight + globalOverrideVal);
         }
 
 

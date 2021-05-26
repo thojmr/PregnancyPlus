@@ -46,6 +46,7 @@
             public readonly static float[] inflationDrop = { 0, 1f };            
             public readonly static float[] inflationClothOffset = {-2 * rmKKx10, 2 * rmKKx10};
             public readonly static float[] inflationFatFold = {0, 2f};
+            public readonly static float[] inflationFatFoldHeight = {-1, 1f};
             public readonly static float[] inflationRoundness = {-0.75f, 0.75f};
         }
 

@@ -29,6 +29,7 @@ namespace KK_PregnancyPlus
         private static string inflationTaperZMaker = "Taper Z";
         private static string inflationClothOffsetMaker = "Cloth Offset";
         private static string inflationFatFoldMaker = "Fat Fold";
+        private static string inflationFatFoldHeightMaker = "Fat Fold Height";
         private static string inflationClothingOffsetVersionMaker = "Clothing Offset Version";
         private static string inflationRoundnessMaker = "Roundness";
         private static string inflationDropMaker = "Drop";
@@ -212,6 +213,16 @@ namespace KK_PregnancyPlus
             sliders.Add(fatFold);
 
 
+            var fatFoldHeight = e.AddControl(new MakerSlider(cat, inflationFatFoldHeightMaker, SliderRange.inflationFatFoldHeight[0], SliderRange.inflationFatFoldHeight[1], ppDataDefaults.inflationFatFoldHeight, _pluginInstance));
+            fatFoldHeight.BindToFunctionController<PregnancyPlusCharaController, float>(controller => controller.infConfig.inflationFatFoldHeight, (controller, value) => {
+                var oldVal = controller.infConfig.inflationFatFoldHeight;
+                controller.infConfig.inflationFatFoldHeight = value;
+                if (oldVal != value) OnMakerSettingsChanged(controller);
+            });
+            e.AddControl(new MakerText("Control the vertical position of the fat fold crease.  0 for default.", cat, _pluginInstance) { TextColor = hintColor });
+            sliders.Add(fatFoldHeight);
+
+
             var clothOffsetVersion = e.AddControl(new MakerDropdown(inflationClothingOffsetVersionMaker, new string[2] {"V1", "V2 experimental"}, cat, 1, _pluginInstance));
             clothOffsetVersion.BindToFunctionController<PregnancyPlusCharaController, int>(controller => controller.infConfig.clothingOffsetVersion, (controller, value) => {
                 var oldVal = controller.infConfig.clothingOffsetVersion;
@@ -372,6 +383,10 @@ namespace KK_PregnancyPlus
 
                     case var _ when settingName == inflationFatFoldMaker:
                         slider.SetValue(_infConfig.inflationFatFold);
+                        continue;
+
+                    case var _ when settingName == inflationFatFoldHeightMaker:
+                        slider.SetValue(_infConfig.inflationFatFoldHeight);
                         continue;
 
                     case var _ when settingName == inflationRoundnessMaker:

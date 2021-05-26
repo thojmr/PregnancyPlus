@@ -24,6 +24,7 @@ namespace KK_PregnancyPlus
         public static ConfigEntry<float> StoryModeInflationTaperZ { get; private set; }        
         public static ConfigEntry<float> StoryModeInflationClothOffset { get; private set; }    
         public static ConfigEntry<float> StoryModeInflationFatFold { get; private set; }    
+        public static ConfigEntry<float> StoryModeInflationFatFoldHeight { get; private set; }    
         public static ConfigEntry<float> StoryModeInflationRoundness { get; private set; }    
         public static ConfigEntry<float> StoryModeInflationDrop { get; private set; }    
 
@@ -208,6 +209,14 @@ namespace KK_PregnancyPlus
                     new ConfigurationManagerAttributes { Order = 6 })
                 );
             StoryModeInflationFatFold.SettingChanged += InflationConfig_SettingsChanged;  
+
+
+            StoryModeInflationFatFoldHeight = Config.Bind<float>(storyConfigTitle, "Global Fat Fold Height Adjustment", 0, 
+                new ConfigDescription("Allows you to raise or lower the fat fold crease position, 0 is default",
+                    new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationFatFoldHeight[0], PregnancyPlusGui.SliderRange.inflationFatFoldHeight[1]),
+                    new ConfigurationManagerAttributes { Order = 5 })
+                );
+            StoryModeInflationFatFoldHeight.SettingChanged += InflationConfig_SettingsChanged;  
                     
 
             #if KK || AI
