@@ -167,11 +167,11 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Set a default belly shape for KK_Pregnancy integration, when one is not already set by the user on the character card
+        /// Set a default belly shape for KK_Pregnancy integration, when one is not already set on the character's card
         /// </summary>
         public PregnancyPlusData GetDefaultShapeFor_KK_Pregnancy() 
         {
-            PregnancyPlusPlugin.Logger.LogInfo($" GetDefaultInflationShape>  Loading a Default belly shape");
+            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" GetDefaultInflationShape>  Loading a Default belly shape");
             var customInfConfig = new PregnancyPlusData();
             
             #if KK
@@ -181,6 +181,7 @@ namespace KK_PregnancyPlus
                 customInfConfig.inflationTaperY = -0.02f;                
                 customInfConfig.inflationTaperZ = -0.003f;
                 customInfConfig.inflationShiftZ = -0.03f;
+                customInfConfig.inflationDrop = 0.15f;
 
             #else
                 customInfConfig.inflationMultiplier = 0.13f * 5;
@@ -190,6 +191,7 @@ namespace KK_PregnancyPlus
                 customInfConfig.inflationTaperZ = -0.02f * 5;
                 customInfConfig.inflationShiftZ = -0.1f * 5;
                 customInfConfig.inflationMoveZ = -0.1f * 5;
+                customInfConfig.inflationDrop = 0.15f;
 
             #endif
 
