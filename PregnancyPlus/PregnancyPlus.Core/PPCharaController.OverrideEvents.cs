@@ -269,7 +269,7 @@ namespace KK_PregnancyPlus
                 // if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" WaitForMeshToSettle checkNewMesh:{checkNewMesh} forceRecalcVerts:{forceRecalcVerts}");        
                 CheckMeshVisibility(); 
                 yield return new WaitForEndOfFrame();
-                MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: checkNewMesh, _freshStart: forceRecalcVerts), "WaitForClothMeshToSettle");
+                MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: checkNewMesh, _freshStart: forceRecalcVerts), "WaitForClothMeshToSettle");                
             }
         }
 

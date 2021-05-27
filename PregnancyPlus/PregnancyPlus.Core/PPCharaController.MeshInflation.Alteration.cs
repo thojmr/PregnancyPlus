@@ -37,8 +37,8 @@ namespace KK_PregnancyPlus
             //When during inflation scene, use the inflation scene size value (ususally triggered by clothing change)
             if (isDuringInflationScene && !bypassWhen0)
             {
-                if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"ApplyInflation > using TargetPregPlusSize instead {TargetPregPlusSize}");
-                infSize = TargetPregPlusSize;
+                if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"ApplyInflation > using CurrentInflationChange instead {CurrentInflationChange}");
+                infSize = CurrentInflationChange;
             }
 
             //Only inflate if the value is above 0  

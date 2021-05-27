@@ -19,7 +19,8 @@ namespace KK_PregnancyPlus
     {                    
         internal float _inflationStartSize = 0;
         internal float _inflationChange = 0f;//The current inflation size
-        public float _targetPregPlusSize = 0f;//The final desired inflation size
+        internal float _targetPregPlusSize = 0f;//The final desired inflation size
+        internal int currentWeeks = 0;
         
         //The final size to inflate to
         public float TargetPregPlusSize
@@ -27,10 +28,16 @@ namespace KK_PregnancyPlus
             get => _targetPregPlusSize;
             set => _targetPregPlusSize = Mathf.Clamp(value, 0, 40);
         }
+
+        public float CurrentInflationChange
+        {
+            get => _inflationChange;
+        }
+
         internal float timeElapsed = 0f;
         internal List<BlendShapeController> blendShapeCtrlList = new List<BlendShapeController>();//Holds the list of blendshapes we want to alter during inflation
 
-        public bool isDuringInflationScene => TargetPregPlusSize > 0 || _inflationChange > 0;
+        public bool isDuringInflationScene => TargetPregPlusSize > 0 || CurrentInflationChange > 0;
 
 
         /// <summary>
@@ -52,6 +59,9 @@ namespace KK_PregnancyPlus
                 var weeks = PregnancyPlusPlugin.Hooks_KK_Pregnancy.GetWeeksFromPregnancyPluginData(ChaControl, KK_PregnancyPluginName);
                 if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" GetWeeksAndSetInflation {ChaControl.name} >  Week:{weeks} checkNewMesh:{checkNewMesh} slidersChanged:{slidersChanged}");
                 
+                //Set the initial target size to be the current week.  Otherwise inflation would always start at 0 weeks.
+                currentWeeks = weeks;
+
                 if (weeks < 0) 
                 {
                     //Fix for when character gives birth, we potentially need to reset belly
@@ -87,6 +97,9 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.MaxStoryModeBelly.Value == 0) return;
             //No additional preg+ inflation until the KKinflation amount is >= the current inflation.config.  We want both sizes to grow together.
             if (infConfig.inflationSize > kkInflationSize) return;
+
+            //When char is already pregnant, make that the starting inflation size
+            if (currentWeeks > _inflationStartSize) _inflationStartSize = _inflationChange = TargetPregPlusSize = currentWeeks;
 
             //If no infConfig is set for this character, use a predefined one for the best KK_Pregnancy look, since the default shape tend to look a little strange.
             if (!infConfig.HasAnyValue(false)) infConfig = GetDefaultShapeFor_KK_Pregnancy();            
@@ -146,6 +159,19 @@ namespace KK_PregnancyPlus
                 var success = blendShapeCtrl.ApplyBlendShapeWeight(inflationWeight);
                 if (!success && PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" QuickInflate > an smr was null, skipping mesh");
             }
+        }
+
+
+        /// <summary>
+        /// When clothing changes in the middle of inflation, append it to the quick list so it will change shape with the other meshes
+        /// </summary>
+        public void AppendToQuickInflateList(SkinnedMeshRenderer smr)
+        {
+            var blendShapeName = MakeBlendShapeName(GetMeshKey(smr), blendShapeTempTagName);
+            var blendshapeCtrl = new BlendShapeController(smr, blendShapeName);
+            if (blendshapeCtrl.blendShape == null) return;
+
+            blendShapeCtrlList.Add(blendshapeCtrl);
         }
 
 

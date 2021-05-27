@@ -523,7 +523,7 @@ namespace KK_PregnancyPlus
                 return false;
             }
             
-            var size = isDuringInflationScene ? TargetPregPlusSize : infConfig.inflationSize;
+            var size = isDuringInflationScene ? CurrentInflationChange : infConfig.inflationSize;
 
             //Update the weight to be the same as inflationSize value   
             return bsc.ApplyBlendShapeWeight(smr, size);

@@ -108,6 +108,9 @@ namespace KK_PregnancyPlus
                 if (needsComputeVerts && !didCompute) continue;
 
                 var appliedMeshChanges = ApplyInflation(smr, GetMeshKey(smr), meshInflateFlags.OverWriteMesh, blendShapeTempTagName, meshInflateFlags.bypassWhen0);
+
+                //When inflation is actively happening as clothing changes, make sure the new clothing grows too
+                if (didCompute && isDuringInflationScene) AppendToQuickInflateList(smr);
                 if (appliedMeshChanges) anyMeshChanges = true;                
             }  
 
