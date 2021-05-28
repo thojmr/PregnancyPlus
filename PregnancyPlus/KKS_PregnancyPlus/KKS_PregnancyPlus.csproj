@@ -1,0 +1,138 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{930A00A6-2935-4EA0-81F0-B16D3E71B77D}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>KKS_PregnancyPlus</RootNamespace>
+    <AssemblyName>KKS_PregnancyPlus</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>embedded</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\bin\KKS_PregnancyPlus\BepInEx\plugins</OutputPath>
+    <DefineConstants>TRACE;DEBUG;KK</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>embedded</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\..\bin\KKS_PregnancyPlus\BepInEx\plugins</OutputPath>
+    <DefineConstants>TRACE;KK</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DebugSymbols>true</DebugSymbols>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="0Harmony, Version=2.3.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IllusionLibs.BepInEx.Harmony.2.3.2\lib\net35\0Harmony.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IllusionLibs.Koikatu.Assembly-CSharp.2019.4.27\lib\net35\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Assembly-CSharp-firstpass, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IllusionLibs.Koikatu.Assembly-CSharp-firstpass.2019.4.27\lib\net35\Assembly-CSharp-firstpass.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="BepInEx, Version=5.4.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IllusionLibs.BepInEx.5.4.4\lib\net35\BepInEx.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="BepInEx.Harmony, Version=2.3.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IllusionLibs.BepInEx.Harmony.2.3.2\lib\net35\BepInEx.Harmony.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ExtensibleSaveFormat, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\ExtensibleSaveFormat.Koikatu.15.1.2\lib\net35\ExtensibleSaveFormat.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="KKABMX, Version=4.4.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\ABMX.KKABMX.4.4.1\lib\net35\KKABMX.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="KKAPI, Version=1.19.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IllusionModdingAPI.KKAPI.1.19.0\lib\net35\KKAPI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Sirenix.Serialization, Version=1.0.5.1, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IllusionLibs.Koikatu.Sirenix.Serialization.2019.4.27\lib\net35\Sirenix.Serialization.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Core" />
+    <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IllusionLibs.Koikatu.UnityEngine.5.6.2\lib\net35\UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IllusionLibs.Koikatu.UnityEngine.UI.5.6.2\lib\net35\UnityEngine.UI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="KKPE, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\KKPE.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>    
+    <Compile Include="..\PregnancyPlus.Core\PPCharaController.cs" />
+    <Compile Include="..\PregnancyPlus.Core\PPCharaController.OverrideEvents.cs" />
+    <Compile Include="..\PregnancyPlus.Core\PPCharaController.MeshInflation.Extras.cs" />
+    <Compile Include="..\PregnancyPlus.Core\PPCharaController.MeshInflation.Transforms.cs" />
+    <Compile Include="..\PregnancyPlus.Core\PPCharaController.MeshInflation.Alteration.cs" />
+    <Compile Include="..\PregnancyPlus.Core\PPCharaController.MeshInflation.Main.cs" />
+    <Compile Include="..\PregnancyPlus.Core\PPCharaController.MeasureBody.cs" />
+    <Compile Include="..\PregnancyPlus.Core\PPCharaController.ClothingOffset.cs" />
+    <Compile Include="..\PregnancyPlus.Core\PPCharaController.FilterVerts.cs" />
+    <Compile Include="..\PregnancyPlus.Core\PPCharaController.BlendShape.cs" />
+    <Compile Include="..\PregnancyPlus.Core\PPCharaController.AnimationCurve.cs" />
+    <Compile Include="..\PregnancyPlus.Core\PPCharaController.Legacy.cs" />
+    <Compile Include="..\PregnancyPlus.Core\PPCharaController.KK_Pregnancy.cs" />
+    <Compile Include="..\PregnancyPlus.Core\PPCharaController.HookEvents.cs" />
+    <Compile Include="..\PregnancyPlus.Core\GUI\PPGui.cs" />
+    <Compile Include="..\PregnancyPlus.Core\GUI\PPBlendShapeGui.cs" />
+    <Compile Include="..\PregnancyPlus.Core\GUI\PPBlendShapeGui.Style.cs" />
+    <Compile Include="..\PregnancyPlus.Core\GUI\PPBlendShapeGui.Gui.cs" />
+    <Compile Include="..\PregnancyPlus.Core\GUI\PPGui.Studio.cs" />
+    <Compile Include="..\PregnancyPlus.Core\GUI\PPGui.Maker.cs" />
+    <Compile Include="..\PregnancyPlus.Core\PPPlugin.cs" />
+    <Compile Include="..\PregnancyPlus.Core\GUI\PPPlugin.PluginConfigGui.cs" />
+    <Compile Include="..\PregnancyPlus.Core\PPPlugin.Hooks.cs" />
+    <Compile Include="..\PregnancyPlus.Core\PPPlugin.Hooks.KK_Pregnancy.cs" />
+    <Compile Include="..\PregnancyPlus.Core\PPPlugin.Hooks.Uncensor.cs" />
+    <Compile Include="..\PregnancyPlus.Core\PPHelper.cs" />
+    <Compile Include="..\PregnancyPlus.Core\Data\PPData.cs" />
+    <Compile Include="..\PregnancyPlus.Core\tools\NormalsSolver.cs" />
+    <Compile Include="..\PregnancyPlus.Core\tools\BlendShapeController.cs" />
+    <Compile Include="..\PregnancyPlus.Core\tools\ConfigurationManagerAttributes.cs" />
+    <Compile Include="..\PregnancyPlus.Core\tools\Smoothing\SmoothMeshUtils.cs" />
+    <Compile Include="..\PregnancyPlus.Core\tools\Smoothing\SmoothFilter.cs" />
+    <Compile Include="..\PregnancyPlus.Core\tools\Smoothing\SmoothMesh.cs" />
+    <Compile Include="..\PregnancyPlus.Core\Tools\ErrorCode.cs" />
+    <Compile Include="..\PregnancyPlus.Core\Tools\MeshInflateFlags.cs" />
+    <Compile Include="..\PregnancyPlus.Core\Tools\MeshData.cs" />
+    <Compile Include="..\..\..\#DebugTools\DebugTools.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup> 
+  
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
