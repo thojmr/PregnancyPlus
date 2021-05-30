@@ -121,7 +121,7 @@ namespace KK_PregnancyPlus
         {
             #if KK || AI
                 //Only in HScene
-                #if !KKS//TODO remove later                
+                #if !KKS//TODO remove later when KKS fully releases               
                 if (!GameAPI.InsideHScene) 
                 {
                     if (_inflationChange > 0 || TargetPregPlusSize > 0) ClearInflationStuff();

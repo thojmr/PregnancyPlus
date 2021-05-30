@@ -88,21 +88,20 @@ namespace KK_PregnancyPlus
             #if KK || AI
 
                 //When HScene starts, pre compute inflated size blendshape
-                #if !KKS
-                //TODO undo later
-                GameAPI.StartH += (object sender, EventArgs e) => 
-                { 
-                    if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $StartH {charaFileName}");
-                    //Trigger inflation at current size to create any Preg+ blendshapes that may be used.  Kind of like like pre processing.
-                    MeshInflate(infConfig.inflationSize, "GameAPI.StartH", new MeshInflateFlags(this, _bypassWhen0: true));
-                };
+                #if !KKS //TODO add gameAPI later when KKS releases fully
+                    GameAPI.StartH += (object sender, EventArgs e) => 
+                    { 
+                        if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $StartH {charaFileName}");
+                        //Trigger inflation at current size to create any Preg+ blendshapes that may be used.  Kind of like like pre processing.
+                        MeshInflate(infConfig.inflationSize, "GameAPI.StartH", new MeshInflateFlags(this, _bypassWhen0: true));
+                    };
 
-                //When HScene ends, clear any inflation data
-                GameAPI.EndH += (object sender, EventArgs e) => 
-                { 
-                    if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $EndH {charaFileName}");
-                    ClearInflationStuff(true);
-                };
+                    //When HScene ends, clear any inflation data
+                    GameAPI.EndH += (object sender, EventArgs e) => 
+                    { 
+                        if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $EndH {charaFileName}");
+                        ClearInflationStuff(true);
+                    };
                 #endif
          
             #endif

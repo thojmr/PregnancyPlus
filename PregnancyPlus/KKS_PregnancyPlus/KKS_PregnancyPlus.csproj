@@ -59,12 +59,12 @@
       <HintPath>..\..\packages\IllusionLibs.BepInEx.Harmony.2.3.2\lib\net35\BepInEx.Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="KKS_ExtensibleSaveFormat, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\KKS_ExtensibleSaveFormat.dll</HintPath>
+    <Reference Include="KKS_ExtensibleSaveFormat, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\ExtensibleSaveFormat.KoikatsuSunshine.16.3.0\lib\net46\KKS_ExtensibleSaveFormat.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="KKSAPI, Version=1.19.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\KKSAPI.dll</HintPath>
+    <Reference Include="KKSAPI, Version=1.20.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IllusionModdingAPI.KKSAPI.1.20.0\lib\net46\KKSAPI.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Sirenix.Serialization, Culture=neutral, processorArchitecture=MSIL">
