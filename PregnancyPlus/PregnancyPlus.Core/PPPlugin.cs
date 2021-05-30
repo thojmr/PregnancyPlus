@@ -10,7 +10,11 @@ namespace KK_PregnancyPlus
 {       
     [BepInPlugin(GUID, GUID, Version)]
     [BepInDependency("com.deathweasel.bepinex.uncensorselector", BepInDependency.DependencyFlags.SoftDependency)]
-    #if KK
+    #if KKS
+        [BepInDependency(KoikatuAPI.GUID, "1.20")]
+        [BepInDependency("KKPE", BepInDependency.DependencyFlags.SoftDependency)]
+        [BepInDependency("KK_Pregnancy", BepInDependency.DependencyFlags.SoftDependency)]
+    #elif KK
         [BepInDependency(KoikatuAPI.GUID, "1.14")]
         [BepInDependency("KKPE", BepInDependency.DependencyFlags.SoftDependency)]
         [BepInDependency("KK_Pregnancy", BepInDependency.DependencyFlags.SoftDependency)]
