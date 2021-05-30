@@ -121,11 +121,13 @@ namespace KK_PregnancyPlus
         {
             #if KK || AI
                 //Only in HScene
+                #if !KKS//TODO remove later                
                 if (!GameAPI.InsideHScene) 
                 {
                     if (_inflationChange > 0 || TargetPregPlusSize > 0) ClearInflationStuff();
                     return;
                 }
+                #endif
                 if (_inflationChange == TargetPregPlusSize) 
                 {
                     //When inflation is done lerping, do a soft clear of values

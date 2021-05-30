@@ -88,6 +88,8 @@ namespace KK_PregnancyPlus
             #if KK || AI
 
                 //When HScene starts, pre compute inflated size blendshape
+                #if !KKS
+                //TODO undo later
                 GameAPI.StartH += (object sender, EventArgs e) => 
                 { 
                     if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $StartH {charaFileName}");
@@ -101,6 +103,7 @@ namespace KK_PregnancyPlus
                     if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $EndH {charaFileName}");
                     ClearInflationStuff(true);
                 };
+                #endif
          
             #endif
 
