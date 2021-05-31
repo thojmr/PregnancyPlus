@@ -101,7 +101,7 @@ namespace KK_PregnancyPlus
                 var needsComputeVerts = NeedsComputeVerts(smr, GetMeshKey(smr), meshInflateFlags);
                 if (needsComputeVerts)
                 {
-                    didCompute = ComputeMeshVerts(smr, isClothingMesh, bodyMeshRenderer, meshInflateFlags.freshStart);                                                                                   
+                    didCompute = ComputeMeshVerts(smr, isClothingMesh, bodyMeshRenderer);                                                                                   
                 }
 
                 //If mesh fails to compute, skip (mesn.IsReadable = false will cause this) 
@@ -148,7 +148,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Just a helper function to combine searching for verts in a mesh, and then applying the transforms
         /// </summary>
-        internal bool ComputeMeshVerts(SkinnedMeshRenderer smr, bool isClothingMesh, SkinnedMeshRenderer bodyMeshRenderer, bool freshStart) 
+        internal bool ComputeMeshVerts(SkinnedMeshRenderer smr, bool isClothingMesh, SkinnedMeshRenderer bodyMeshRenderer) 
         {
             //The list of bones to get verticies for
             #if KK            
@@ -181,7 +181,11 @@ namespace KK_PregnancyPlus
         {
             Vector3 bodySphereCenterOffset = Vector3.zero;//For defaultt KK body mesh custom offset correction
 
-            if (smr == null) return false;
+            if (smr == null) 
+            {
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" GetInflatedVerticies smr was null"); 
+                return false;
+            }
 
             //Found out body mesh can be nested under cloth game objects...   Make sure to flag it as non-clothing
             if (isClothingMesh && BodyNestedUnderCloth(smr, bodySmr)) 
@@ -192,7 +196,11 @@ namespace KK_PregnancyPlus
             }
 
             var meshRootTf = GetMeshRoot();
-            if (meshRootTf == null) return false;
+            if (meshRootTf == null) 
+            {
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" GetInflatedVerticies meshRootTf was null"); 
+                return false;
+            }
             
             // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" SMR pos {smr.transform.position} rot {smr.transform.rotation} parent {smr.transform.parent}");
                         

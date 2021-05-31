@@ -69,17 +69,6 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Raycast from the clothing vert to the sphere center and get the distance if it hits the mesh collider
-        /// </summary>
-        public float RayCastToCenter(Vector3 clothVertWs, Vector3 sphereCenter, float maxDistance)
-        {
-            //Get the direction of the raycast to move
-            var direction = sphereCenter - clothVertWs;
-            return RayCastToCenter(clothVertWs, maxDistance, direction);
-        }
-
-
-        /// <summary>
         /// Raycast from the clothing vert to the direction passed and get the distance if it hits the mesh collider
         /// </summary>
         public float RayCastToCenter(Vector3 clothVertWs, float maxDistance, Vector3 direction)
@@ -113,7 +102,7 @@ namespace KK_PregnancyPlus
             if (!_md.HasOriginalVerts) return null;//Hopefully this never happens
             var origVerts = md[renderKey].originalVertices;
 
-            var alteredVertIndexes = md[renderKey].bellyVerticieIndexes;
+            var bellyVerticieIndexes = md[renderKey].bellyVerticieIndexes;
 
             //Check for existing offset values, init if none found
             var clothingOffsetsHasValue = md[renderKey].HasClothingOffsets;
@@ -143,7 +132,7 @@ namespace KK_PregnancyPlus
             for (var i = 0; i < origVerts.Length; i++)
             {
                 //Skip untouched verts
-                if (!alteredVertIndexes[i]) 
+                if (!bellyVerticieIndexes[i]) 
                 {
                     clothOffsets[i] = 0;
                     continue;
@@ -177,20 +166,22 @@ namespace KK_PregnancyPlus
         /// </summary>
         public float GetClosestRayCast(Vector3 clothVertWs, Vector3 sphereCenter, float maxDistance)
         {
-            var lowestDist = maxDistance;
+            var lowestDist = maxDistance;            
 
             //For each bone we want to raycast to
             foreach(var bonePosition in rayCastTargetPositions)
             {
-                var _currentDist = RayCastToCenter(clothVertWs, bonePosition, maxDistance);
+                var _direction = bonePosition - clothVertWs;
+                var _currentDist = RayCastToCenter(clothVertWs, maxDistance, _direction);
+                //Get closest raycast hit
                 if (_currentDist < lowestDist) lowestDist = _currentDist;
             }
 
             //Also check raycast to the current sphereCenter
-            var currentDist = RayCastToCenter(clothVertWs, sphereCenter, maxDistance);
+            var direction = sphereCenter - clothVertWs;
+            var currentDist = RayCastToCenter(clothVertWs, maxDistance, direction);
             if (currentDist < lowestDist) lowestDist = currentDist;
-            
-            
+                        
             return lowestDist;
         }
 
