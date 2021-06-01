@@ -142,7 +142,7 @@ namespace KK_PregnancyPlus
                 var origVertWs = clothSmr.transform.TransformPoint(origVerts[i]);
                 
                 //Get raycast hit distance to the mesh collider on the skin
-                var dist = GetClosestRayCast(origVertWs, sphereCenter, rayCastDist);
+                GetClosestRayCast(origVertWs, sphereCenter, rayCastDist, out float dist, out Vector3 direction);
 
                 //Ignore any distance that didnt hit the mesh collider
                 if (dist >= rayCastDist) 
@@ -154,7 +154,8 @@ namespace KK_PregnancyPlus
                 //Always add a min distance to the final offset to prevent skin tight clothing clipping
                 clothOffsets[i] = dist + minOffset;    
 
-                // DebugTools.DrawLine(offsetPos, inflatedVertWs, 0.1f);           
+                // var dest = origVerts[i] + (direction.normalized * clothOffsets[i]);
+                // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLineAndAttach(clothSmr.transform, origVertWs, origVertWs + direction, Vector3.zero, false);           
             }           
 
             return clothOffsets;
@@ -164,25 +165,36 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Get the lowest distance of the cloth mesh to skin mesh based on a number of different raycast
         /// </summary>
-        public float GetClosestRayCast(Vector3 clothVertWs, Vector3 sphereCenter, float maxDistance)
+        public float GetClosestRayCast(Vector3 clothVertWs, Vector3 sphereCenter, float maxDistance, out float dist, out Vector3 direction)
         {
-            var lowestDist = maxDistance;            
+            var lowestDist = maxDistance;    
+            direction = Vector3.zero;        
+            dist = maxDistance;
 
             //For each bone we want to raycast to
             foreach(var bonePosition in rayCastTargetPositions)
             {
-                var _direction = bonePosition - clothVertWs;
-                var _currentDist = RayCastToCenter(clothVertWs, maxDistance, _direction);
+                var _dir = bonePosition - clothVertWs;
+                var _currentDist = RayCastToCenter(clothVertWs, maxDistance, _dir);
                 //Get closest raycast hit
-                if (_currentDist < lowestDist) lowestDist = _currentDist;
+                if (_currentDist < lowestDist) 
+                {
+                    lowestDist = _currentDist;
+                    direction = _dir;
+                }
             }
 
             //Also check raycast to the current sphereCenter
-            var direction = sphereCenter - clothVertWs;
-            var currentDist = RayCastToCenter(clothVertWs, maxDistance, direction);
-            if (currentDist < lowestDist) lowestDist = currentDist;
-                        
-            return lowestDist;
+            var _direction = sphereCenter - clothVertWs;
+            var currentDist = RayCastToCenter(clothVertWs, maxDistance, _direction);
+            if (currentDist < lowestDist) 
+            {
+                lowestDist = currentDist;
+                direction = _direction;
+            }
+
+            dist = lowestDist;  
+            return dist;
         }
 
 
@@ -203,7 +215,11 @@ namespace KK_PregnancyPlus
         {
             for (int i = 0; i < rayCastTargetNames.Length; i++)
             {
-                rayCastTargetPositions[i] = PregnancyPlusHelper.GetBone(ChaControl, rayCastTargetNames[i]).position;
+                var bone = PregnancyPlusHelper.GetBone(ChaControl, rayCastTargetNames[i]);
+                //Calculate the bone position including the nHeight y scale since that will align the bones to the mesh better
+                var scaledBonePosition = bone.position + bone.transform.up * (1 - bellyInfo.NHeightScale.y) * bone.position.y;                
+                rayCastTargetPositions[i] = scaledBonePosition;
+                // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphere(0.1f, scaledBonePosition); 
             }            
         }
 
