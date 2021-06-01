@@ -142,6 +142,8 @@ namespace KK_PregnancyPlus
             {
                 //When false, we want to ignore changes in inflationSize
                 if (!includeSize && fieldInfo.Name == "inflationSize") continue;
+                //Skip the below fields always
+                if (fieldInfo.Name == "pluginVersion") continue;
 
                 var value = fieldInfo.GetValue(this);
                 var defaultValue = fieldInfo.GetValue(_default);
