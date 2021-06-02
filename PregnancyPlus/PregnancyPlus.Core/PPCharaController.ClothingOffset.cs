@@ -37,16 +37,41 @@ namespace KK_PregnancyPlus
         {        
             //If not passed in, fetch it
             bodySmr = bodySmr != null ? bodySmr : GetBodyMeshRenderer();
-            if (bodySmr == null) return null;
+            if (bodySmr == null) return null;            
 
             //Skip when the collider already exists
             var colliderExists = bodySmr.transform.gameObject.GetComponent<MeshCollider>();
             if (colliderExists != null) return null;
 
+            //Check for body mesh data dict
+            var hasData = md.TryGetValue(GetMeshKey(bodySmr), out MeshData _md);
+
+            //When the mesh has a y offset, we need to shift the mesh collider to match it (like KK uncensor meshes)
+            var yOffsetDir = hasData ? bodySmr.transform.up * _md.yOffset : Vector3.zero; 
+            Vector3[] shiftedVerts = null;
+
+            //Shift verticies in y direction before making the collider mesh
+            if (yOffsetDir != Vector3.zero)
+            {
+                var originalVerts = bodySmr.sharedMesh.vertices;
+
+                //Create mesh instance
+                bodySmr.sharedMesh = bodySmr.sharedMesh;
+                shiftedVerts = new Vector3[originalVerts.Length];
+
+                for (int i = 0; i < originalVerts.Length; i++)
+                {
+                    shiftedVerts[i] = originalVerts[i] - yOffsetDir;
+                }
+            }
+
             //Create the collider component
             var collider = bodySmr.transform.gameObject.AddComponent<MeshCollider>();
             //Copy the current base body mesh to use as the collider
             var meshCopy = (Mesh)UnityEngine.Object.Instantiate(bodySmr.sharedMesh); 
+
+            //If the verts were shifted use them for the mesh collider
+            if (yOffsetDir != Vector3.zero) meshCopy.vertices = shiftedVerts;
 
             collider.sharedMesh = meshCopy;
 
@@ -140,7 +165,7 @@ namespace KK_PregnancyPlus
                     continue;
                 }
 
-                //Convert to worldspace since thats where the mesh collider lives
+                //Convert to worldspace since thats where the mesh collider lives, apply any offset needed to align meshes to same y height
                 var origVertWs = clothSmr.transform.TransformPoint(origVerts[i] + yOffsetDir);
                 
                 //Get raycast hit distance to the mesh collider on the skin

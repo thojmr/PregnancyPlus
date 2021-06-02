@@ -33,7 +33,7 @@ public static class SmoothMesh
         clone.bounds = mesh.bounds;
         clone.colors = mesh.colors;
         clone.name = mesh.name;
-        //TODO : Are we missing anything?
+        //Are we missing any props?
         return clone;
     }
 }

@@ -61,11 +61,11 @@ namespace KK_PregnancyPlus
             
             var anyMeshChanges = false;            
 
-            //Get and apply all clothes render mesh changes, then do body mesh too
-            var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);            
-            anyMeshChanges = LoopAndApplyMeshChanges(clothRenderers, meshInflateFlags, anyMeshChanges, true, GetBodyMeshRenderer());          
+            //Get all mesh renderers, calculate, and apply inflation changes
             var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, true);
             anyMeshChanges = LoopAndApplyMeshChanges(bodyRenderers, meshInflateFlags, anyMeshChanges);
+            var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);            
+            anyMeshChanges = LoopAndApplyMeshChanges(clothRenderers, meshInflateFlags, anyMeshChanges, true, GetBodyMeshRenderer());          
 
             RemoveMeshCollider();
 
