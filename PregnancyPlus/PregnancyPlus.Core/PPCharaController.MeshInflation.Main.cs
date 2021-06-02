@@ -195,6 +195,7 @@ namespace KK_PregnancyPlus
                 isClothingMesh = false;            
             }
 
+            //TODO does canging this to ChaControl.tf throw off any transforms below?
             var meshRootTf = GetMeshRoot(smr);
             if (meshRootTf == null) 
             {
@@ -276,7 +277,7 @@ namespace KK_PregnancyPlus
                         else 
                         {   
                             //Reduce cloth flattening at largest inflation values                     
-                            float reduceClothFlattenOffset = GetClothesFixOffset(meshRootTf, sphereCenter, sphereRadius, waistWidth, origVertWs, smr.name, clothOffsets[i]);
+                            float reduceClothFlattenOffset = GetClothesFixOffset(sphereCenter, sphereRadius, waistWidth, origVertWs, smr.name, clothOffsets[i]);
                             verticieToSpherePos = (origVertWs - sphereCenter).normalized * (sphereRadius + reduceClothFlattenOffset) + sphereCenter;                            
                         }     
 
@@ -301,32 +302,10 @@ namespace KK_PregnancyPlus
         /// Get the root position of the mesh, so we can calculate the true position of its mesh verticies later
         /// </summary>
         internal Transform GetMeshRoot(SkinnedMeshRenderer smr) 
-        {                
-            //In KK the meshroot position sometimes doesnt align with other mesh roots (poorly imported mesh I guess)                
-            #if KK
-                //Male vs female body bone string
-                var bodyBone = ChaControl.sex == 0 ? "p_cm_body_00.cf_o_root" : "p_cf_body_00.cf_o_root";
-
-                //Get normal mesh root attachment position, and if its not near 0,0,0 fix it so that it is (Match it to the chacontrol y pos)
-                GameObject trueMeshRoot = null;
-                var parentBone = smr.transform.parent;
-
-                //Find the parent mesh root bone
-                while (parentBone)
-                {
-                    if (parentBone.name == "cf_o_root")
-                    {
-                        trueMeshRoot = parentBone.gameObject;
-                        break;
-                    }
-                    parentBone = parentBone?.parent;
-                }
-
-                //Default to the body mesh root otherwise
-                var kkMeshRoot = trueMeshRoot != null ? trueMeshRoot : PregnancyPlusHelper.GetBoneGO(ChaControl, bodyBone);
-                if (kkMeshRoot == null) return null;                               
-
-                return kkMeshRoot.transform;           
+        {                                        
+            #if KK       
+                //Occasionally a mesh is imported and positioned incorrectly in KK.  Just use the characters root as the origin point for belly stuff instead of the mesh root                      
+                return ChaControl.transform;           
             
             #elif HS2 || AI
                 var bodyBone = ChaControl.sex == 0 ? "p_cm_body_00.n_o_root" : "p_cf_body_00.n_o_root";
@@ -364,36 +343,31 @@ namespace KK_PregnancyPlus
         /// In special cases we need to apply a small offset to the sphereCenter to align the mesh correctly with the other meshes.  Otherwise you get tons of clipping
         ///  Mostly used to fix the default KK body which seems to be mis aligned from uncensor, and AI/HS2 meshes
         /// </summary>
-        public void ApplyConditionalSphereCenterOffset(Transform meshRootTf, bool isClothingMesh, Vector3 _sphereCenter, SkinnedMeshRenderer smr, SkinnedMeshRenderer bodySmr, out Vector3 sphereCenter, out Vector3 bodySphereCenterOffset)
+        public void ApplyConditionalSphereCenterOffset(Transform meshRootTf, bool isClothingMesh, Vector3 _sphereCenter, SkinnedMeshRenderer smr, SkinnedMeshRenderer bodySmr, 
+                                                       out Vector3 sphereCenter, out Vector3 bodySphereCenterOffset)
         {
             bodySphereCenterOffset = sphereCenter = _sphereCenter; 
 
-            //Fixes for different mesh localspace positions between uncensor and default meshes
-            //In HS2/AI they are always the same :/  Why is it so different in kk?
             #if KK      
-                //When mesh is the default kk body, we have to adjust the mesh to match some strange offset that comes up
+                //When mesh is an uncensor body, we have to adjust the mesh center offset, to match its special localspace positioning
                 //  This lines up the body mesh infaltion with clothing mesh inflation
-                var isDefaultBody = !PregnancyPlusPlugin.Hooks_Uncensor.IsUncensorBody(ChaControl, UncensorCOMName);
-                //When the mesh shares similar local vertex positions as the default body, do the same
-                var isLikeDefaultBody = smr.localBounds.center.y < 0 && smr.sharedMesh.bounds.center.y < 0;
-                //When the mesh is a uncensor, we have to add a slight vertical offset to bodyOffset...
-                var defaultBodyOffsetFix = 0.0277f/2 * bellyInfo.TotalCharScale.y * bellyInfo.NHeightScale.y;//Where does this offset even come from?
 
-                //If default KK body (or similar to it)
-                if (!isClothingMesh && (isDefaultBody || isLikeDefaultBody)) 
-                {
-                    bodySphereCenterOffset = meshRootTf.position + GetUserMoveTransform(meshRootTf);
-                }
+                var isDefaultBody = !PregnancyPlusPlugin.Hooks_Uncensor.IsUncensorBody(ChaControl, UncensorCOMName);
+                //When the mesh shares similar local vertex positions as the default body.  Bounds are the only way I can reliably detect this...
+                var isLikeDefaultBody = smr.localBounds.center.y < 0 && smr.sharedMesh.bounds.center.y < 0;
+
                 //If uncensor body
-                else if (!isClothingMesh) 
+                if (!isClothingMesh && !isDefaultBody && !isLikeDefaultBody) 
                 {
-                    bodySphereCenterOffset = _sphereCenter + meshRootTf.up * defaultBodyOffsetFix;//once again what is this crazy small offset?
+                    //Uncensor mesh is twice the height in local space than default mesh, so double the sphere center offset height to match
+                    //TODO do we need to multiply by scale here?                
+                    bodySphereCenterOffset = _sphereCenter + meshRootTf.up * ChaControl.transform.InverseTransformPoint(smr.transform.position).y;
                 }
                 else if (isClothingMesh) 
                 {
-                    sphereCenter = meshRootTf.position + GetUserMoveTransform(meshRootTf);//at belly button - offset from meshroot
+                    //TODO there is one type of clothing that is not positioned correctly, similar to uncensor meshes.  Need to find the correct offset for those too. Though it is rare
                 }
-                if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] corrected sphereCenter {_sphereCenter} isDefaultBody {isDefaultBody} isLikeDefaultBody {isLikeDefaultBody}");
+                if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] corrected sphereCenter {bodySphereCenterOffset} isDefaultBody {isDefaultBody} isLikeDefaultBody {isLikeDefaultBody}");
 
             #elif HS2 || AI
                 //Its so simple when its not a KK mesh :/                               
