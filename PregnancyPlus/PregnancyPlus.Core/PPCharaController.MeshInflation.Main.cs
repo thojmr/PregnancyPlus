@@ -359,10 +359,10 @@ namespace KK_PregnancyPlus
                 //If uncensor body
                 if (!isClothingMesh && !isDefaultBody && !isLikeDefaultBody) 
                 {
-                    if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] isDefaultBody {isDefaultBody} isLikeDefaultBody {isLikeDefaultBody}");
-                    //Uncensor mesh is twice the height in local space than default mesh, so double the sphere center offset height to match
-                    //TODO do we need to multiply by scale here?                
-                    return ChaControl.transform.InverseTransformPoint(smr.transform.position).y;
+                    //Uncensor mesh is about twice the height in local space than default mesh, so save the current offset to be used later
+                    var yOffset = ChaControl.transform.InverseTransformPoint(smr.transform.position).y;
+                    if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] setting yOffset {yOffset} isDefaultBody {isDefaultBody} isLikeDefaultBody {isLikeDefaultBody}");                           
+                    return yOffset;
                 }
                 else if (isClothingMesh) 
                 {
@@ -371,9 +371,9 @@ namespace KK_PregnancyPlus
 
                 return 0;
 
-            #endif    
-
-            return 0;
+            #else
+                return 0;
+            #endif                
         }
 
 
