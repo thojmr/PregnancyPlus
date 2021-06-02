@@ -195,23 +195,23 @@ namespace KK_PregnancyPlus
                 isClothingMesh = false;            
             }
 
-            var meshRootTf = GetMeshRoot();
+            var meshRootTf = GetMeshRoot(smr);
             if (meshRootTf == null) 
             {
                 if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" GetInflatedVerticies meshRootTf was null"); 
                 return false;
             }
             
-            // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" SMR pos {smr.transform.position} rot {smr.transform.rotation} parent {smr.transform.parent}");
-                        
-            //set sphere center and allow for adjusting its position from the UI sliders  
-            Vector3 sphereCenter = GetSphereCenter(meshRootTf);
-            ApplyConditionalSphereCenterOffset(meshRootTf, isClothingMesh, sphereCenter, smr,  out sphereCenter, out bodySphereCenterOffset);  
+            // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" SMR pos {smr.transform.position} rot {smr.transform.rotation} parent {smr.transform.parent}");                     
 
             var rendererName = GetMeshKey(smr);         
             md[rendererName].originalVertices = smr.sharedMesh.vertices;
             md[rendererName].inflatedVertices = smr.sharedMesh.vertices;
             md[rendererName].alteredVerticieIndexes = new bool[smr.sharedMesh.vertexCount];
+
+            //set sphere center and allow for adjusting its position from the UI sliders  
+            Vector3 sphereCenter = GetSphereCenter(meshRootTf);
+            ApplyConditionalSphereCenterOffset(meshRootTf, isClothingMesh, sphereCenter, smr, bodySmr, out sphereCenter, out bodySphereCenterOffset); 
 
             //Get the cloth offset for each cloth vertex via raycast to skin
             var clothOffsets = DoClothMeasurement(smr, bodySmr, sphereCenter);
@@ -287,7 +287,10 @@ namespace KK_PregnancyPlus
                                                                  topExtentPosLs);                    
                         inflatedVerts[i] = smr.transform.InverseTransformPoint(inflatedVertWs);//Convert back to local space
                     }
-                }               
+                }    
+
+                // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(smr.transform, 0.02f, origVerts[i], false);            
+                // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(ChaControl.transform, 0.02f, smr.transform.TransformPoint(origVerts[i]), false);            
             }      
 
             return true;                 
@@ -297,30 +300,31 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Get the root position of the mesh, so we can calculate the true position of its mesh verticies later
         /// </summary>
-        internal Transform GetMeshRoot() 
-        {                                   
+        internal Transform GetMeshRoot(SkinnedMeshRenderer smr) 
+        {                
+            //In KK the meshroot position sometimes doesnt align with other mesh roots (poorly imported mesh I guess)                
             #if KK
                 //Male vs female body bone string
                 var bodyBone = ChaControl.sex == 0 ? "p_cm_body_00.cf_o_root" : "p_cf_body_00.cf_o_root";
 
                 //Get normal mesh root attachment position, and if its not near 0,0,0 fix it so that it is (Match it to the chacontrol y pos)
-                var kkMeshRoot = PregnancyPlusHelper.GetBoneGO(ChaControl, bodyBone);
-                if (kkMeshRoot == null) return null;                
-                
-                //If the mesh root y is too far from the ChaControl origin
-                if (ChaControl.transform.InverseTransformPoint(kkMeshRoot.transform.position).y > 0.01f)
+                GameObject trueMeshRoot = null;
+                var parentBone = smr.transform.parent;
+
+                //Find the parent mesh root bone
+                while (parentBone)
                 {
-                    // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($"$ GetMeshRoot pos {kkMeshRoot.transform.position}");
-                    // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($"$ char pos {ChaControl.transform.position}");
-                    var distanceMoved = Vector3.Distance(ChaControl.transform.position, kkMeshRoot.transform.position);
-                    if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" MeshRoot moved to charRoot by {distanceMoved}f");
+                    if (parentBone.name == "cf_o_root")
+                    {
+                        trueMeshRoot = parentBone.gameObject;
+                        break;
+                    }
+                    parentBone = parentBone?.parent;
+                }
 
-                    //Set the meshroot.pos to the chaControl.pos to make it more in line with HS2/AI, and KK Uncensor mesh
-                    kkMeshRoot.transform.position = ChaControl.transform.position;
-                    bellyInfo.MeshRootDidMove = true;
-
-                    // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($"$ GetMeshRoot pos after {meshRoot.transform.position}");                    
-                }     
+                //Default to the body mesh root otherwise
+                var kkMeshRoot = trueMeshRoot != null ? trueMeshRoot : PregnancyPlusHelper.GetBoneGO(ChaControl, bodyBone);
+                if (kkMeshRoot == null) return null;                               
 
                 return kkMeshRoot.transform;           
             
@@ -341,17 +345,17 @@ namespace KK_PregnancyPlus
         /// </summary>
         /// <param name="boneOrMeshTf">The transform that defined the center of the sphere X, Y, and Z for KK and X, Z for HS2 with calculated Y</param>
         /// <param name="isClothingMesh"></param>
-        internal Vector3 GetSphereCenter(Transform boneOrMeshTf) 
+        internal Vector3 GetSphereCenter(Transform meshRootTf) 
         { 
             
             //Sphere slider adjustments need to be transformed to local space first to eliminate any character rotation in world space   
             var bbHeight = GetBellyButtonLocalHeight();
             bellyInfo.BellyButtonHeight = bbHeight;//Store for later use
-            Vector3 bellyButtonPos = boneOrMeshTf.up * bbHeight; 
-            Vector3 sphereCenter = boneOrMeshTf.position + bellyButtonPos + GetUserMoveTransform(boneOrMeshTf) + GetBellyButtonOffsetVector(boneOrMeshTf, bbHeight);                                 
+            Vector3 bellyButtonPos = meshRootTf.up * bbHeight; 
+            Vector3 sphereCenter = meshRootTf.position + bellyButtonPos + GetUserMoveTransform(meshRootTf) + GetBellyButtonOffsetVector(meshRootTf, bbHeight);                                 
 
             if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" bbHeight {bbHeight}");            
-            if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" sphereCenter {sphereCenter} meshRoot {boneOrMeshTf.position} char origin {ChaControl.transform.position}");            
+            if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" sphereCenter {sphereCenter} meshRoot {meshRootTf.position} char origin {ChaControl.transform.position}");            
             return sphereCenter;
         }
 
@@ -360,31 +364,39 @@ namespace KK_PregnancyPlus
         /// In special cases we need to apply a small offset to the sphereCenter to align the mesh correctly with the other meshes.  Otherwise you get tons of clipping
         ///  Mostly used to fix the default KK body which seems to be mis aligned from uncensor, and AI/HS2 meshes
         /// </summary>
-        public void ApplyConditionalSphereCenterOffset(Transform meshRootTf, bool isClothingMesh, Vector3 _sphereCenter, SkinnedMeshRenderer smr, out Vector3 sphereCenter, out Vector3 bodySphereCenterOffset)
+        public void ApplyConditionalSphereCenterOffset(Transform meshRootTf, bool isClothingMesh, Vector3 _sphereCenter, SkinnedMeshRenderer smr, SkinnedMeshRenderer bodySmr, out Vector3 sphereCenter, out Vector3 bodySphereCenterOffset)
         {
-            //Fixes for different mesh localspace positions/rotations between KK and HS2/AI
-            #if KK            
+            bodySphereCenterOffset = sphereCenter = _sphereCenter; 
+
+            //Fixes for different mesh localspace positions between uncensor and default meshes
+            //In HS2/AI they are always the same :/  Why is it so different in kk?
+            #if KK      
                 //When mesh is the default kk body, we have to adjust the mesh to match some strange offset that comes up
+                //  This lines up the body mesh infaltion with clothing mesh inflation
                 var isDefaultBody = !PregnancyPlusPlugin.Hooks_Uncensor.IsUncensorBody(ChaControl, UncensorCOMName);
                 //When the mesh shares similar local vertex positions as the default body, do the same
                 var isLikeDefaultBody = smr.localBounds.center.y < 0 && smr.sharedMesh.bounds.center.y < 0;
-                var defaultBodyOffsetFix = 0.0277f * bellyInfo.TotalCharScale.y * bellyInfo.NHeightScale.y;//Where does this offset even come from?
+                //When the mesh is a uncensor, we have to add a slight vertical offset to bodyOffset...
+                var defaultBodyOffsetFix = 0.0277f/2 * bellyInfo.TotalCharScale.y * bellyInfo.NHeightScale.y;//Where does this offset even come from?
 
+                //If default KK body (or similar to it)
                 if (!isClothingMesh && (isDefaultBody || isLikeDefaultBody)) 
                 {
-                    bodySphereCenterOffset = meshRootTf.position + GetUserMoveTransform(meshRootTf) - meshRootTf.up * defaultBodyOffsetFix;////at 0,0,0, once again what is this crazy small offset?
-                    sphereCenter = meshRootTf.position + GetUserMoveTransform(meshRootTf);//at belly button - offset from meshroot
+                    bodySphereCenterOffset = meshRootTf.position + GetUserMoveTransform(meshRootTf);
                 }
-                else 
+                //If uncensor body
+                else if (!isClothingMesh) 
                 {
-                    //For uncensor body mesh, and any clothing
-                    bodySphereCenterOffset = sphereCenter = _sphereCenter;//at belly button
+                    bodySphereCenterOffset = _sphereCenter + meshRootTf.up * defaultBodyOffsetFix;//once again what is this crazy small offset?
+                }
+                else if (isClothingMesh) 
+                {
+                    sphereCenter = meshRootTf.position + GetUserMoveTransform(meshRootTf);//at belly button - offset from meshroot
                 }
                 if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] corrected sphereCenter {_sphereCenter} isDefaultBody {isDefaultBody} isLikeDefaultBody {isLikeDefaultBody}");
 
             #elif HS2 || AI
-                //Its so simple when its not KK default mesh :/
-                bodySphereCenterOffset = sphereCenter = _sphereCenter;                
+                //Its so simple when its not a KK mesh :/                               
             #endif    
         }
 
