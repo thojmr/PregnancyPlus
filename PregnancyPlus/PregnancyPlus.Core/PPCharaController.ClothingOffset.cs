@@ -120,7 +120,9 @@ namespace KK_PregnancyPlus
 
             //Lerp the final offset based on the inflation size.  Since clothes will be most flatteded at the largest size (40), and no change needed at default belly size
             var rayCastDist = bellyInfo.OriginalSphereRadius/2;            
-            var minOffset = bellyInfo.ScaledWaistWidth/200;                  
+            var minOffset = bellyInfo.ScaledWaistWidth/200;       
+            //Apply and mesh offset needed, to make all meshes the same y height so the calculations below line up
+            var yOffsetDir = clothSmr.transform.up * md[renderKey].yOffset;           
 
             //Create mesh collider to make clothing measurements from skin (if it doesnt already exists)
             CreateMeshCollider(bodySmr);   
@@ -139,7 +141,7 @@ namespace KK_PregnancyPlus
                 }
 
                 //Convert to worldspace since thats where the mesh collider lives
-                var origVertWs = clothSmr.transform.TransformPoint(origVerts[i]);
+                var origVertWs = clothSmr.transform.TransformPoint(origVerts[i] + yOffsetDir);
                 
                 //Get raycast hit distance to the mesh collider on the skin
                 var dist = GetClosestRayCast(origVertWs, sphereCenter, rayCastDist);

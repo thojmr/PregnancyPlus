@@ -212,7 +212,7 @@ namespace KK_PregnancyPlus
 
             //set sphere center and allow for adjusting its position from the UI sliders  
             Vector3 sphereCenter = GetSphereCenter(meshRootTf);
-            ApplyConditionalSphereCenterOffset(meshRootTf, isClothingMesh, sphereCenter, smr, bodySmr, out sphereCenter, out bodySphereCenterOffset); 
+            md[rendererName].yOffset = ApplyConditionalSphereCenterOffset(isClothingMesh, sphereCenter, smr); 
 
             //Get the cloth offset for each cloth vertex via raycast to skin
             var clothOffsets = DoClothMeasurement(smr, bodySmr, sphereCenter);
@@ -244,6 +244,8 @@ namespace KK_PregnancyPlus
             var topExtentPos = new Vector3(preMorphSphereCenter.x, preMorphSphereCenter.y, preMorphSphereCenter.z) + meshRootTf.up * bellyInfo.YLimit;
             var topExtentPosLs = meshRootTf.InverseTransformPoint(topExtentPos);
             var vertNormalCaluRadius = sphereRadius + waistWidth/10;//Only recalculate normals for verts within this radius to prevent shadows under breast at small belly sizes
+            var yOffsetDir = meshRootTf.up * md[rendererName].yOffset;//Any offset direction needed to align all meshes to the same local y height
+            var reduceClothFlattenOffset = 0f;
 
             // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLineAndAttach(meshRootTf, 5, meshRootTf.InverseTransformPoint(topExtentPos) - meshRootTf.up * GetBellyButtonOffset(bellyInfo.BellyButtonHeight));
             // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLineAndAttach(meshRootTf, new Vector3(-3, 0, 0), new Vector3(3, 0, 0), meshRootTf.InverseTransformPoint(backExtentPos) - GetBellyButtonOffsetVector(meshRootTf, bellyInfo.BellyButtonHeight));
@@ -255,42 +257,43 @@ namespace KK_PregnancyPlus
                 //Only care about inflating belly verticies
                 if (bellyVertIndex[i] || PregnancyPlusPlugin.DebugVerts.Value) 
                 {                    
-                    var origVertWs = smr.transform.TransformPoint(origVerts[i]);//Convert to worldspace 
+                    //Convert to worldspace, and apply and mesh offset needed
+                    var origVertWs = smr.transform.TransformPoint(origVerts[i] - yOffsetDir);
                     var vertDistance = Vector3.Distance(origVertWs, sphereCenter);                    
 
                     //Ignore verts outside the sphere radius
                     if (vertDistance <= vertNormalCaluRadius || PregnancyPlusPlugin.DebugVerts.Value) 
                     {
                         Vector3 inflatedVertWs;                    
-                        Vector3 verticieToSpherePos;        
+                        Vector3 verticieToSpherePos;       
+                        reduceClothFlattenOffset = 0f; 
 
                         // If the vert is within the calculated normals radius, then consider it as an altered vert that needs normal recalculation when applying inflation
                         //  Hopefully this will reduce breast shadows for smaller bellies
                         if (vertDistance <= vertNormalCaluRadius) alteredVerts[i] = true;                                                                          
-
-                        //Shift each belly vertex away from sphere center in a sphere pattern
-                        if (!isClothingMesh) 
+                        
+                        if (isClothingMesh) 
                         {                        
-                            //You have to normalize to sphere center instead of 0,0,0.  This way the belly will expand out as expected.  So shift all mesh verts to be origin at sphereCenter first, then normalize, then shift back
-                            verticieToSpherePos = (origVertWs - bodySphereCenterOffset).normalized * sphereRadius + bodySphereCenterOffset;
+                            //Calculate clothing offset distance                   
+                            reduceClothFlattenOffset = GetClothesFixOffset(sphereCenter, sphereRadius, waistWidth, origVertWs, smr.name, clothOffsets[i]);
                         }
-                        else 
-                        {   
-                            //Reduce cloth flattening at largest inflation values                     
-                            float reduceClothFlattenOffset = GetClothesFixOffset(sphereCenter, sphereRadius, waistWidth, origVertWs, smr.name, clothOffsets[i]);
-                            verticieToSpherePos = (origVertWs - sphereCenter).normalized * (sphereRadius + reduceClothFlattenOffset) + sphereCenter;                            
-                        }     
+                           
+                        //Shift each belly vertex away from sphere center in a sphere pattern.  This is the core of the Preg+ belly shape
+                        verticieToSpherePos = (origVertWs - sphereCenter).normalized * (sphereRadius + reduceClothFlattenOffset) + sphereCenter;                                                    
 
-                        //Make adjustments to the shape, and feed in user slider input
+                        //Make adjustments to the shape to make it smooth, and feed in user slider input
                         inflatedVertWs =  SculptInflatedVerticie(origVertWs, verticieToSpherePos, sphereCenter, waistWidth, 
                                                                  meshRootTf, preMorphSphereCenter, sphereRadius, backExtentPos, 
                                                                  topExtentPos, sphereCenterLs, pmSphereCenterLs, backExtentPosLs, 
-                                                                 topExtentPosLs);                    
-                        inflatedVerts[i] = smr.transform.InverseTransformPoint(inflatedVertWs);//Convert back to local space
+                                                                 topExtentPosLs);   
+
+                        //Convert back to local space, and undo any temporary offset                                                                
+                        inflatedVerts[i] = smr.transform.InverseTransformPoint(inflatedVertWs) + yOffsetDir;
                     }
                 }    
 
-                // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(smr.transform, 0.02f, origVerts[i], false);            
+                // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLineAndAttach(smr.transform, 0.02f, origVerts[i], false);
+                // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(smr.transform, 0.02f, origVerts[i] - yOffsetDir, false);            
                 // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(ChaControl.transform, 0.02f, smr.transform.TransformPoint(origVerts[i]), false);            
             }      
 
@@ -343,11 +346,8 @@ namespace KK_PregnancyPlus
         /// In special cases we need to apply a small offset to the sphereCenter to align the mesh correctly with the other meshes.  Otherwise you get tons of clipping
         ///  Mostly used to fix the default KK body which seems to be mis aligned from uncensor, and AI/HS2 meshes
         /// </summary>
-        public void ApplyConditionalSphereCenterOffset(Transform meshRootTf, bool isClothingMesh, Vector3 _sphereCenter, SkinnedMeshRenderer smr, SkinnedMeshRenderer bodySmr, 
-                                                       out Vector3 sphereCenter, out Vector3 bodySphereCenterOffset)
+        public float ApplyConditionalSphereCenterOffset(bool isClothingMesh, Vector3 _sphereCenter, SkinnedMeshRenderer smr)
         {
-            bodySphereCenterOffset = sphereCenter = _sphereCenter; 
-
             #if KK      
                 //When mesh is an uncensor body, we have to adjust the mesh center offset, to match its special localspace positioning
                 //  This lines up the body mesh infaltion with clothing mesh inflation
@@ -359,19 +359,21 @@ namespace KK_PregnancyPlus
                 //If uncensor body
                 if (!isClothingMesh && !isDefaultBody && !isLikeDefaultBody) 
                 {
+                    if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] isDefaultBody {isDefaultBody} isLikeDefaultBody {isLikeDefaultBody}");
                     //Uncensor mesh is twice the height in local space than default mesh, so double the sphere center offset height to match
                     //TODO do we need to multiply by scale here?                
-                    bodySphereCenterOffset = _sphereCenter + meshRootTf.up * ChaControl.transform.InverseTransformPoint(smr.transform.position).y;
+                    return ChaControl.transform.InverseTransformPoint(smr.transform.position).y;
                 }
                 else if (isClothingMesh) 
                 {
                     //TODO there is one type of clothing that is not positioned correctly, similar to uncensor meshes.  Need to find the correct offset for those too. Though it is rare
-                }
-                if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] corrected sphereCenter {bodySphereCenterOffset} isDefaultBody {isDefaultBody} isLikeDefaultBody {isLikeDefaultBody}");
+                }                                           
 
-            #elif HS2 || AI
-                //Its so simple when its not a KK mesh :/                               
+                return 0;
+
             #endif    
+
+            return 0;
         }
 
 

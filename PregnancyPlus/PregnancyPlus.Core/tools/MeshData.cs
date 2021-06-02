@@ -11,6 +11,7 @@ namespace KK_PregnancyPlus
         public float[] clothingOffsets;//The distance we want to offset each vert from the body mesh when inflated
         public bool[] bellyVerticieIndexes;//List of verticie indexes that belong to the belly area
         public bool[] alteredVerticieIndexes;//List of verticie indexes inside the current belly radius from sphere center
+        public float yOffset = 0;//The distance the mesh needs to be offset to match all other meshes y height
 
         public bool HasInflatedVerts
         {
