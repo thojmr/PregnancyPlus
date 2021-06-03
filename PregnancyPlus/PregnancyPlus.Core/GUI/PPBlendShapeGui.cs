@@ -140,7 +140,6 @@ namespace KK_PregnancyPlus
 			try 
 			{
 				//We need to reset the HSPE sliders to avoid potential console errors
-				//TODO do we still need this?
 				// ResetHspeBlendShapes(guiSkinnedMeshRenderers);
 			}	
 			catch (Exception e)

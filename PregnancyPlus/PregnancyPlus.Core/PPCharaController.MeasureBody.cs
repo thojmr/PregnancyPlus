@@ -340,7 +340,7 @@ namespace KK_PregnancyPlus
                 //calculate the diatance by measuring y local distances only (we want to exclude angular distances)
                 var newDifference = (lastBone != null ? currentBone.transform.InverseTransformPoint(currentBone.transform.position).y 
                                      - currentBone.transform.InverseTransformPoint(lastBone.transform.position).y : 0);
-                if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" newDifference {newDifference}  currentBone.name {currentBone.name}  scale {currentBone.transform.localScale} corrected {((newDifference * currentBone.transform.localScale.y) - newDifference)}");
+                // if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" newDifference {newDifference}  currentBone.name {currentBone.name}  scale {currentBone.transform.localScale} corrected {((newDifference * currentBone.transform.localScale.y) - newDifference)}");
                 
                 //Ignore any negative bone differences (like char root bone which is at 0,0,0)
                 if (newDifference > 0) 

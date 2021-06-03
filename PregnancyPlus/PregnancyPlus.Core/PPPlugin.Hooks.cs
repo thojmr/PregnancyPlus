@@ -89,7 +89,6 @@ namespace KK_PregnancyPlus
 
 
             #if KK
-            //TODO this issue might exists in AI too
                 /// <summary>
                 /// When a character becomes visible let preg+ controller know, in main game mode only
                 /// </summary>

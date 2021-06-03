@@ -137,7 +137,7 @@ namespace KK_PregnancyPlus
 
 
             // /// <summary>   
-            // /// TODO I don't think there is an easy way to get vertex count of meshes we havent loaded yet
+            // /// TODO I don't think there is an easy way to get vertex count of meshes we havent loaded yet in uncensor
             // /// Get key value list of uncensor GUID's and uncensor mesh Vert counts
             // /// </summary>  
             // public static Dictionary<string, string> GetUncensorBodyDict() 

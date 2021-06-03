@@ -157,6 +157,7 @@ namespace KK_PregnancyPlus
         /// </summary>    
         internal string GetMeshKey(SkinnedMeshRenderer smr) 
         {
+            if (!smr) return null;
             return PregnancyPlusHelper.KeyFromNameAndVerts(smr);
         }
 

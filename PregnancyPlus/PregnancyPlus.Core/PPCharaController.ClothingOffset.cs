@@ -37,16 +37,41 @@ namespace KK_PregnancyPlus
         {        
             //If not passed in, fetch it
             bodySmr = bodySmr != null ? bodySmr : GetBodyMeshRenderer();
-            if (bodySmr == null) return null;
+            if (bodySmr == null) return null;            
 
             //Skip when the collider already exists
             var colliderExists = bodySmr.transform.gameObject.GetComponent<MeshCollider>();
             if (colliderExists != null) return null;
 
+            //Check for body mesh data dict
+            var hasData = md.TryGetValue(GetMeshKey(bodySmr), out MeshData _md);
+
+            //When the mesh has a y offset, we need to shift the mesh collider to match it (like KK uncensor meshes)
+            var yOffsetDir = hasData ? Vector3.up * _md.yOffset : Vector3.zero; 
+            Vector3[] shiftedVerts = null;
+
+            //Shift verticies in y direction before making the collider mesh
+            if (yOffsetDir != Vector3.zero)
+            {
+                var originalVerts = bodySmr.sharedMesh.vertices;
+
+                //Create mesh instance
+                bodySmr.sharedMesh = bodySmr.sharedMesh;
+                shiftedVerts = new Vector3[originalVerts.Length];
+
+                for (int i = 0; i < originalVerts.Length; i++)
+                {
+                    shiftedVerts[i] = originalVerts[i] - yOffsetDir;
+                }
+            }
+
             //Create the collider component
             var collider = bodySmr.transform.gameObject.AddComponent<MeshCollider>();
             //Copy the current base body mesh to use as the collider
             var meshCopy = (Mesh)UnityEngine.Object.Instantiate(bodySmr.sharedMesh); 
+
+            //If the verts were shifted use them for the mesh collider
+            if (yOffsetDir != Vector3.zero) meshCopy.vertices = shiftedVerts;
 
             collider.sharedMesh = meshCopy;
 
@@ -120,7 +145,9 @@ namespace KK_PregnancyPlus
 
             //Lerp the final offset based on the inflation size.  Since clothes will be most flatteded at the largest size (40), and no change needed at default belly size
             var rayCastDist = bellyInfo.OriginalSphereRadius/2;            
-            var minOffset = bellyInfo.ScaledWaistWidth/200;                  
+            var minOffset = bellyInfo.ScaledWaistWidth/200;       
+            //Apply and mesh offset needed, to make all meshes the same y height so the calculations below line up
+            var yOffsetDir = clothSmr.transform.up * md[renderKey].yOffset;           
 
             //Create mesh collider to make clothing measurements from skin (if it doesnt already exists)
             CreateMeshCollider(bodySmr);   
@@ -138,8 +165,8 @@ namespace KK_PregnancyPlus
                     continue;
                 }
 
-                //Convert to worldspace since thats where the mesh collider lives
-                var origVertWs = clothSmr.transform.TransformPoint(origVerts[i]);
+                //Convert to worldspace since thats where the mesh collider lives, apply any offset needed to align meshes to same y height
+                var origVertWs = clothSmr.transform.TransformPoint(origVerts[i] + yOffsetDir);
                 
                 //Get raycast hit distance to the mesh collider on the skin
                 GetClosestRayCast(origVertWs, sphereCenter, rayCastDist, out float dist, out Vector3 direction);
@@ -242,19 +269,19 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Allows users to adjust the offset of clothing by a small amount, uses V2 by default with characters saved on v1.27+
         /// </summary>
-        internal float GetClothesFixOffset(Transform meshRootTf, Vector3 sphereCenterWs, float sphereRadius, float waistWidth, Vector3 origVertWS, string meshName, float offset) 
+        internal float GetClothesFixOffset(Vector3 sphereCenterWs, float sphereRadius, float waistWidth, Vector3 origVertWS, string meshName, float offset) 
         {
             //Figure out which version of the clothing offset logic the character was made with, and apply the offset
             if (infConfig.clothingOffsetVersion == 1)
             {
                 //V2 is just a simple offset based on slider value, since DoClothMeasurement takes care of making sure any cloth bypasses the cloth flattening issue.
                 //This method remains as a way for the user to further offset clothing items if they need to
-                return GetClothesFixOffsetV2(meshRootTf, sphereCenterWs, sphereRadius, waistWidth, origVertWS, meshName, offset);
+                return GetClothesFixOffsetV2(sphereCenterWs, sphereRadius, waistWidth, origVertWS, meshName, offset);
             } 
             else 
             {
                 //V1 is much more complicated and tries to overcome the cloth flattening issues all on its own, while at the same time allowing user custom offset amount
-                return GetClothesFixOffsetV1(meshRootTf, sphereCenterWs, sphereRadius, waistWidth, origVertWS, meshName);
+                return GetClothesFixOffsetV1(sphereCenterWs, sphereRadius, waistWidth, origVertWS, meshName);
             }
         }
 
@@ -268,7 +295,7 @@ namespace KK_PregnancyPlus
         /// <param name="waistWidth">The average width of the characters waist</param>
         /// <param name="origVertWS">The original verticie's worldspace position</param>
         /// <param name="meshName">Used to determine inner vs outer mesh layers from a known list of names</param>
-        internal float GetClothesFixOffsetV2(Transform meshRootTf, Vector3 sphereCenterWs, float sphereRadius, float waistWidth, 
+        internal float GetClothesFixOffsetV2(Vector3 sphereCenterWs, float sphereRadius, float waistWidth, 
                                              Vector3 origVertWS, string meshName, float offset) 
         {  
             //Check that the slider has a non zero value
@@ -316,7 +343,7 @@ namespace KK_PregnancyPlus
         /// <param name="waistWidth">The average width of the characters waist</param>
         /// <param name="origVertWS">The original verticie's worldspace position</param>
         /// <param name="meshName">Used to determine inner vs outer mesh layers from a known list of names</param>
-        internal float GetClothesFixOffsetV1(Transform meshRootTf, Vector3 sphereCenterWs, float sphereRadius, float waistWidth, Vector3 origVertWS, string meshName) 
+        internal float GetClothesFixOffsetV1(Vector3 sphereCenterWs, float sphereRadius, float waistWidth, Vector3 origVertWS, string meshName) 
         {  
             //The size of the area to spread the flattened offsets over like shrinking center dist -> inflated dist into a small area shifted outside the radius.  So hard to explin with words...
             float shrinkBy = bellyInfo.ScaledWaistWidth/20 + (bellyInfo.ScaledWaistWidth/20 * GetInflationClothOffset());
