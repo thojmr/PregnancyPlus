@@ -47,7 +47,7 @@ namespace KK_PregnancyPlus
             var hasData = md.TryGetValue(GetMeshKey(bodySmr), out MeshData _md);
 
             //When the mesh has a y offset, we need to shift the mesh collider to match it (like KK uncensor meshes)
-            var yOffsetDir = hasData ? bodySmr.transform.up * _md.yOffset : Vector3.zero; 
+            var yOffsetDir = hasData ? Vector3.up * _md.yOffset : Vector3.zero; 
             Vector3[] shiftedVerts = null;
 
             //Shift verticies in y direction before making the collider mesh
