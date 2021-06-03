@@ -232,7 +232,7 @@ namespace KK_PregnancyPlus
                 if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" Mesh affected vert count {bellyVertsCount}");
             #endif
 
-            //Pre compute some values needed by SculptInflatedVerticie
+            //Pre compute some values needed by SculptInflatedVerticie, doin it here saves on compute in the big loop
             var vertsLength = origVerts.Length;
             var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenter);
             var preMorphSphereCenter = sphereCenter - GetUserMoveTransform(meshRootTf);
@@ -256,45 +256,43 @@ namespace KK_PregnancyPlus
             for (int i = 0; i < vertsLength; i++)
             {
                 //Only care about inflating belly verticies
-                if (bellyVertIndex[i] || PregnancyPlusPlugin.DebugVerts.Value) 
-                {                    
-                    //Convert to worldspace, and apply and mesh offset needed
-                    var origVertWs = smr.transform.TransformPoint(origVerts[i] - yOffsetDir);
-                    var vertDistance = Vector3.Distance(origVertWs, sphereCenter);                    
+                if (!bellyVertIndex[i] && !PregnancyPlusPlugin.DebugVerts.Value) continue;
+                                  
+                //Convert to worldspace, and apply and mesh offset needed
+                var origVertWs = smr.transform.TransformPoint(origVerts[i] - yOffsetDir);
+                var vertDistance = Vector3.Distance(origVertWs, sphereCenter);                    
 
-                    //Ignore verts outside the sphere radius
-                    if (vertDistance <= vertNormalCaluRadius || PregnancyPlusPlugin.DebugVerts.Value) 
-                    {
-                        Vector3 inflatedVertWs;                    
-                        Vector3 verticieToSpherePos;       
-                        reduceClothFlattenOffset = 0f; 
+                //Ignore verts outside the sphere radius
+                if (vertDistance > vertNormalCaluRadius && !PregnancyPlusPlugin.DebugVerts.Value) continue;
+                
+                Vector3 inflatedVertWs;                    
+                Vector3 verticieToSpherePos;       
+                reduceClothFlattenOffset = 0f; 
 
-                        // If the vert is within the calculated normals radius, then consider it as an altered vert that needs normal recalculation when applying inflation
-                        //  Hopefully this will reduce breast shadows for smaller bellies
-                        if (vertDistance <= vertNormalCaluRadius) alteredVerts[i] = true;                                                                          
-                        
-                        if (isClothingMesh) 
-                        {                        
-                            //Calculate clothing offset distance                   
-                            reduceClothFlattenOffset = GetClothesFixOffset(sphereCenter, sphereRadius, waistWidth, origVertWs, smr.name, clothOffsets[i]);
-                        }
-                           
-                        //Shift each belly vertex away from sphere center in a sphere pattern.  This is the core of the Preg+ belly shape
-                        verticieToSpherePos = (origVertWs - sphereCenter).normalized * (sphereRadius + reduceClothFlattenOffset) + sphereCenter;                                                    
+                // If the vert is within the calculated normals radius, then consider it as an altered vert that needs normal recalculation when applying inflation
+                //  Hopefully this will reduce breast shadows for smaller bellies
+                if (vertDistance <= vertNormalCaluRadius) alteredVerts[i] = true;                                                                          
+                
+                if (isClothingMesh) 
+                {                        
+                    //Calculate clothing offset distance                   
+                    reduceClothFlattenOffset = GetClothesFixOffset(sphereCenter, sphereRadius, waistWidth, origVertWs, smr.name, clothOffsets[i]);
+                }
+                    
+                //Shift each belly vertex away from sphere center in a sphere pattern.  This is the core of the Preg+ belly shape
+                verticieToSpherePos = (origVertWs - sphereCenter).normalized * (sphereRadius + reduceClothFlattenOffset) + sphereCenter;                                                    
 
-                        //Make adjustments to the shape to make it smooth, and feed in user slider input
-                        inflatedVertWs =  SculptInflatedVerticie(origVertWs, verticieToSpherePos, sphereCenter, waistWidth, 
-                                                                 meshRootTf, preMorphSphereCenter, sphereRadius, backExtentPos, 
-                                                                 topExtentPos, sphereCenterLs, pmSphereCenterLs, backExtentPosLs, 
-                                                                 topExtentPosLs);   
+                //Make adjustments to the shape to make it smooth, and feed in user slider input
+                inflatedVertWs =  SculptInflatedVerticie(origVertWs, verticieToSpherePos, sphereCenter, waistWidth, 
+                                                            meshRootTf, preMorphSphereCenter, sphereRadius, backExtentPos, 
+                                                            topExtentPos, sphereCenterLs, pmSphereCenterLs, backExtentPosLs, 
+                                                            topExtentPosLs);   
 
-                        //Convert back to local space, and undo any temporary offset                                                                
-                        inflatedVerts[i] = smr.transform.InverseTransformPoint(inflatedVertWs) + yOffsetDir;
-                    }
-                }    
+                //Convert back to local space, and undo any temporary offset                                                                
+                inflatedVerts[i] = smr.transform.InverseTransformPoint(inflatedVertWs) + yOffsetDir;                                      
 
                 // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLineAndAttach(smr.transform, 0.02f, origVerts[i]- yOffsetDir, false);
-                // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(smr.transform, 0.02f, origVerts[i] - yOffsetDir, false);            
+                if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(smr.transform, 0.02f, origVerts[i] - yOffsetDir, false);            
                 // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(ChaControl.transform, 0.02f, smr.transform.TransformPoint(origVerts[i]), false);            
             }      
 
@@ -349,28 +347,32 @@ namespace KK_PregnancyPlus
             #if KK      
                 //When mesh is an uncensor body, we have to adjust the mesh center offset, to match its special localspace positioning
                 //  This lines up the body mesh infaltion with clothing mesh inflation
-
+                var yOffset = 0f;
                 var isDefaultBody = !PregnancyPlusPlugin.Hooks_Uncensor.IsUncensorBody(ChaControl, UncensorCOMName);
                 //When the mesh shares similar local vertex positions as the default body.  Bounds are the only way I can reliably detect this...
                 var isLikeDefaultBody = smr.localBounds.center.y < 0 && smr.sharedMesh.bounds.center.y < 0;
+                var isOffsetClothMesh = smr.localBounds.center.y < 0 && smr.sharedMesh.bounds.center.y > Math.Abs(smr.localBounds.center.y * 1.5f);
 
                 //If uncensor body
                 if (!isClothingMesh && !isDefaultBody && !isLikeDefaultBody) 
                 {
                     //Uncensor mesh is about twice the height in local space than default mesh, so save the current offset to be used later
-                    var yOffset = meshRootTf.InverseTransformPoint(smr.transform.position).y;
+                    yOffset = meshRootTf.InverseTransformPoint(smr.transform.position).y;
                     if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] setting yOffset {yOffset} isDefaultBody {isDefaultBody} isLikeDefaultBody {isLikeDefaultBody}");                           
-                    return yOffset;
                 }
-                else if (isClothingMesh) 
+                else if (isClothingMesh && isOffsetClothMesh) 
                 {
-                    //TODO there is one type of clothing that is not positioned correctly, similar to uncensor meshes.  Need to find the correct offset for those too. Though it is rare
-                }                                           
+                    //there is one type of clothing that is not locally positioned correctly, similar to uncensor meshes. Though it's rare
+                    yOffset = meshRootTf.InverseTransformPoint(smr.transform.position).y/2;//Who knows why these need to be divided by 2 to correct the offset, when the uncensor check above is not divided by 2 ...
+                    if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] setting yOffset {yOffset} isOffsetClothMesh {isOffsetClothMesh}");                                                                                       
+                }                                                           
 
-                return 0;
+                if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] local bounds {smr.localBounds.center.y} sm.bounds {smr.sharedMesh.bounds.center.y}");                           
+
+                return yOffset;
 
             #else
-                return 0;
+                return 0f;
             #endif                
         }
 
