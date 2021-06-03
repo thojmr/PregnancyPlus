@@ -46,10 +46,13 @@ namespace KK_PregnancyPlus
 					//Log empty meshes
 					if (PregnancyPlusPlugin.DebugLog.Value)  
 					{
-						foreach (var smr in guiSkinnedMeshRenderers)
+						foreach (var smrIdentifier in guiSkinnedMeshRenderers)
 						{
+							var smr = PregnancyPlusHelper.GetMeshRendererByName(_charaInstance.ChaControl, smrIdentifier.name, smrIdentifier.vertexCount);
 							var name = smr != null ? smr.name : "<NUll smr>";
-							PregnancyPlusPlugin.Logger.LogInfo($" IsAnyMeshEmpty > {name} is empty ");
+							
+							if (smr == null || smr.sharedMesh == null || smr.sharedMesh.blendShapeCount == 0) 
+								PregnancyPlusPlugin.Logger.LogInfo($" IsAnyMeshEmpty > {name} is empty ");
 						}						
 					}
 					ResetHspeBlendShapes(guiSkinnedMeshRenderers);

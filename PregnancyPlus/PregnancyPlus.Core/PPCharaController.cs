@@ -167,7 +167,7 @@ namespace KK_PregnancyPlus
             else 
             {
                 //Load any saved blendshapes from card, and can trigger uncensor change when necessary
-                LoadBlendShapes(infConfig);
+                StartCoroutine(ILoadBlendshapes(0f));
             }         
 
             StartCoroutine(ReloadStoryInflation(0.5f, "Reload-story"));     

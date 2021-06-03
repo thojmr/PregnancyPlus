@@ -123,7 +123,7 @@ namespace KK_PregnancyPlus
 		{
 			foreach(var smrIdentifier in smrIdentifiers)
 			{
-				var smr = PregnancyPlusHelper.GetMeshRendererByName(_charaInstance.ChaControl, smrIdentifier.name);
+				var smr = PregnancyPlusHelper.GetMeshRendererByName(_charaInstance.ChaControl, smrIdentifier.name, smrIdentifier.vertexCount);
 				if (smr == null || smr.sharedMesh == null || smr.sharedMesh.blendShapeCount == 0) return true;			
 			}
 			

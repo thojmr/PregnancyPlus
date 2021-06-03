@@ -292,7 +292,7 @@ namespace KK_PregnancyPlus
                 inflatedVerts[i] = smr.transform.InverseTransformPoint(inflatedVertWs) + yOffsetDir;                                      
 
                 // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLineAndAttach(smr.transform, 0.02f, origVerts[i]- yOffsetDir, false);
-                if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(smr.transform, 0.02f, origVerts[i] - yOffsetDir, false);            
+                // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(smr.transform, 0.02f, origVerts[i] - yOffsetDir, false);            
                 // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(ChaControl.transform, 0.02f, smr.transform.TransformPoint(origVerts[i]), false);            
             }      
 
