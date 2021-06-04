@@ -98,9 +98,15 @@ namespace KK_PregnancyPlus
         /// </summary>
         public float RayCastToCenter(Vector3 clothVertWs, float maxDistance, Vector3 direction)
         {
-            if (Physics.Raycast(clothVertWs, direction, out RaycastHit hit, maxDistance))
+            var ray = new Ray(clothVertWs, direction);
+            //Raycast through any number of colliders
+            var hits = Physics.RaycastAll(ray, maxDistance);
+
+            //For each hit find the correct MeshCollider
+            foreach (RaycastHit hit in hits) 
             {
-                return hit.distance;
+                //Ignore any non MeshCollider hits (like the stupid crosshair cam in studio)
+                if (hit.collider.GetType() == typeof(MeshCollider)) return hit.distance;                               
             }
 
             //If nothing hit, return the default maxDistance
