@@ -75,5 +75,16 @@ namespace KK_PregnancyPlus
                 AddUncensorGUID(meshBlendShapes, uncensorGUID);
             }
         }
+
+
+        /// <summary>
+        /// < v3.6
+        /// When saving a card that has preg+ data pre v3.6, recompute the belly shape to show the user that it may have changed.
+        /// </summary>
+        internal void ConvertOldCardsToNew() 
+        {
+            PregnancyPlusPlugin.Logger.LogWarning($" Old Preg+ card detected. The first time you re-save this card the shape may be a little different than it was."); 
+            StartCoroutine(ReloadStudioMakerInflation(0f, reMeasure: true, "ConvertOldCardsToNew"));
+        }
     }
 }
