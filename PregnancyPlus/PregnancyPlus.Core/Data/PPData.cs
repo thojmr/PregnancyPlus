@@ -129,9 +129,27 @@ namespace KK_PregnancyPlus
             //Anything before v3.6 will be null
             return pluginVersion != null ? pluginVersion : "0";
         }
-
-#region Save/Load (Thanks for the code Marco)
         
+        /// <summary>   
+        /// When a character card is pre 3.6 load the character with the old incorrect belly size and shapes, so it doesnt look off in new versions
+        /// </summary>
+        public bool UseOldCalcLogic()
+        {
+            var oldCard = !VersionExists() && HasAnyValue() && !HasBlendShape();
+            if (oldCard && PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" Old preg+ card detected v{GetPluginVersion()} UseOldCalcLogic()");
+            return oldCard;
+        }
+
+        public bool VersionExists()
+        {
+            return pluginVersion != null;
+        }
+
+        public bool HasBlendShape()
+        {
+            return meshBlendShape != null && meshBlendShape.Length > 0;
+        }
+
         /// <summary>
         /// Will compare current values to default values
         /// </summary>
@@ -156,10 +174,8 @@ namespace KK_PregnancyPlus
             return false;
         }
 
-        public bool HasBlendShape()
-        {
-            return meshBlendShape != null && meshBlendShape.Length > 0;
-        }
+#region Save/Load (Thanks for the code Marco)
+    
 
         private static readonly PregnancyPlusData _default = new PregnancyPlusData();
         private static readonly FieldInfo[] _serializedFields = typeof(PregnancyPlusData).GetFields(BindingFlags.Public | BindingFlags.Instance);
