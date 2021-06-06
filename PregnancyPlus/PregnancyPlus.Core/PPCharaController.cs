@@ -147,7 +147,7 @@ namespace KK_PregnancyPlus
 
             // When changing a character (swapping in place) in studio carry over belly sliders/blendshapes
             //TODO there has to be a better way to detect swapping characters
-            if (StudioAPI.InsideStudio && infConfigHistory.HasAnyValue())
+            if (StudioAPI.InsideStudio && (infConfigHistory.HasAnyValue() || infConfigHistory.HasBlendShape()))
             {
                 if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" -Character changed in place, preserving belly shape");
                 infConfig = infConfigHistory;

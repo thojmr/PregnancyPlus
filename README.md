@@ -11,18 +11,18 @@ The belly shape will persist in any game mode when slider values are saved to th
 <img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/P%2BStudioGUI.PNG" width="476.5"></img>
 
 ## Features
-- Adds a number of sliders that will allow you to change the size and shape of a characters belly in Studio and Maker.
-    - Slider values will save to scene or card.
-    - In the main game you can further adjust all characters belly shape at once with the F1 plugin config sliders.
-- Timeline (KK) and VNGE (HS2/AI) integration for animating the belly by creating blendshapes (see specific features below).
+- Adds a number of sliders that will allow you to change the size and shape of a characters belly in Studio, Maker, and Main Game.
+    - Slider values will save to scene or character card.
+    - In the main game you can further tweak all characters belly shapes with the F1 plugin config sliders.
+- Adds Timeline (KK) and VNGE (HS2/AI) integration for animating the belly by creating blendshapes that save to character card (see specific features below).
 - Adds 3 configurable keybinds in plugin config that can be used to increase or decrease the belly size in Main Game, on the fly.   
-- This plugin can be a substitute for stomach bulges/fat bellies as well, but it's original intent is pregnancy.    
+- Substitutes for stomach bulges/fat bellies as well, but it's original intent is pregnancy.    
 - Adds a "Main Game" mode config option.  Disable if you want to turn off this plugins' features temporarily while playing.
 - Adds a "Mesh Smoothing" button in Studio and Maker, that allows you to smooth the belly mesh and reduce any edges resulting from some slider combinations.
     - The smoothing will reset on slider change or character load, so it's mostly for screenshots, animations, and blendshapes.
     - The smoothed shape will be captured by blendshapes!
     - Optionally you can smooth any skin tight clothing as well, to help reduce clipping while smoothing, but clothing doesn't always look great afterwords.
-- This plugin is somewhat compatible with "[ddaa33] Pregnant plugin (ShapeKeyPlugin)" if you wish to combine the effects of both, you can.  But the effects applied by that plugin will not save to the character card by default. (Only with Pregnancy+ captured blendshapes)
+- Somewhat compatible with "[ddaa33] Pregnant plugin (ShapeKeyPlugin)" if you wish to combine the effects of both, you can.  But the effects applied by that plugin will not save to the character card by default. (Only with Pregnancy+ captured blendshapes)
 
 ## Koikatsu and AI Only Features
 - When using the KK/AI_Pregnancy `inflation` or `pregnancy` features, any saved Pregnancy+ belly sliders will be added in addition to KK/AI_Pregnancy's shape, but only both pregnancy plugins are installed.  You can control the amount of Pregnancy+ belly shape applied on top of the KK/AI_Pregnancy belly with the "Max Additional Belly Size" slider in plugin config. 0 being no additional Preg+ slider effect, and max being the full Preg+ slider effect.  You can use the plugin config sliders to further adjust the results for all pregnant characters at once.
@@ -147,13 +147,13 @@ If sucessfull you should see a KK_PregnancyPlus.dll file nested in .\bin\
 
 ### Some KK_PregnancyPlus technical details
 - Instead of manipulating the bones like KK_Pregnancy does, this mod alters the mesh itself via computed blendshapes which has benefits and drawbacks
-    - A blendshape is generated at runtime for every mesh that touches the belly, via lots of math.  The sliders alter the shape of the calculations before saving it to the blendshape. 
-- Integrates with KK/AI_Pregnancy in Story Mode so that both plugins can work together.  This can be configured in PregnancyPlus plugin config
+    - A blendshape is generated at runtime for every mesh near the belly.  The sliders alter the shape of the pre calculated blendshape before re-applying it. 
+- Integrates with KK/AI_Pregnancy in Story Mode so that both plugins can work together.  This can be configured in plugin config
 
 ### Some of the drawbacks of generating blendshapes instead of the manipulating bones directly
-- Right now clothing can be hit or miss, because of the way the belly grows and loses its local positional data.  With bones clothes move automagically.
+- Right now clothing can be hit or miss, because of the way the belly grows the mesh loses its local positional data causing clipping.  With bone scaling, clothes shift automagically via bone weights which usually results in less clipping.
     - There are some clothing items in HS2 and AI that simply wont work at all with blendshapes because they are marked as not readable in Unity
 - Acessories won't automatically move with the mesh as they do when you manipulate bones
 - It has bigger impact on performance (only when changing a slider) because of the computation it has to perform. However once the shape is calculated the performance is equally as fast as bone manipulation.
 - Unity doesn't have great blendshape support in older versions like KK is running on.
-- Since blendshapes are tied to a single mesh, if the mesh creator updates the mesh/uncensor with new verticies, the blendshape will become invalid, and a new blendshape will need to be made.
+- Since blendshapes are tied to a single mesh, if the mesh is changed (like uncensors), any saved blendshape will become invalid, and a new blendshape will need to be made.

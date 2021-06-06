@@ -178,7 +178,7 @@ namespace KK_PregnancyPlus
                 }
                 else if (needsWaistRecalc && !needsSphereRecalc)//Measurements needed which also requires sphere recalc
                 {
-                    var _valid = MeasureWaist(chaControl, charScale, nHeightScale, 
+                    var _valid = MeasureWaist(chaControl, charScale, nHeightScale, bodyTopScale, 
                                         out float _waistToRibDist, out float _waistToBackThickness, out float _waistWidth, out float _bellyToBreastDist);
                     MeasureSphere(chaControl, bodyTopScale, nHeightScale, totalScale);
 
@@ -204,7 +204,7 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" MeasureWaistAndSphere init ");
 
             //Get waist measurements from bone distances
-            var valid = MeasureWaist(chaControl, charScale, nHeightScale, 
+            var valid = MeasureWaist(chaControl, charScale, nHeightScale, bodyTopScale,
                                      out float waistToRibDist, out float waistToBackThickness, out float waistWidth, out float bellyToBreastDist);
 
             //Check for bad values
@@ -229,7 +229,7 @@ namespace KK_PregnancyPlus
         /// Calculate the waist mesaurements that are used to set the default belly size
         /// </summary>
         /// <returns>Boolean if all measurements are valid</returns>
-        internal bool MeasureWaist(ChaControl chaControl, Vector3 charScale, Vector3 nHeightScale, 
+        internal bool MeasureWaist(ChaControl chaControl, Vector3 charScale, Vector3 nHeightScale, Vector3 bodyTopScale,
                                    out float waistToRibDist, out float waistToBackThickness, out float waistWidth, out float bellyToBreastDist) 
         {
             //Bone names
@@ -241,6 +241,7 @@ namespace KK_PregnancyPlus
                 var thighRName = "cf_j_thigh00_R";  
                 var backName = "a_n_back";  
                 var bellyButton = "cf_j_waist01";
+                var hipName = "cf_j_hips";
             #elif HS2 || AI   
                 var breastRoot = "cf_J_Mune00";                             
                 var ribName = "cf_J_Spine02_s";
@@ -249,6 +250,7 @@ namespace KK_PregnancyPlus
                 var thighRName = "cf_J_LegUp00_R";
                 var backName = "N_Back";  
                 var bellyButton = "cf_J_Kosi01";
+                var hipName = "cf_J_hips";
             #endif  
 
             //Init out params
@@ -257,14 +259,15 @@ namespace KK_PregnancyPlus
             waistWidth = 0;
             bellyToBreastDist = 0;
 
+            var allCharScales = new Vector3(bodyTopScale.x * charScale.x, bodyTopScale.y * charScale.y, bodyTopScale.z * charScale.z);
+
             //Get the characters Y bones to measure from
             var ribBone = PregnancyPlusHelper.GetBone(ChaControl, ribName);
             var waistBone = PregnancyPlusHelper.GetBone(ChaControl, waistName);
             if (ribBone == null || waistBone == null) return (waistWidth > 0 && waistToBackThickness > 0 && waistToRibDist > 0);
 
             //Measures from the wasist to the bottom of the ribs
-            waistToRibDist = Vector3.Distance(waistBone.transform.InverseTransformPoint(waistBone.position), waistBone.transform.InverseTransformPoint(ribBone.position));
-
+            waistToRibDist = BoneChainYDistance(waistName, hipName) + BoneChainYDistance(ribName, hipName, includeNegative: true);
 
             //Get the characters z waist thickness
             var backBone = PregnancyPlusHelper.GetBone(ChaControl, backName);
@@ -285,7 +288,7 @@ namespace KK_PregnancyPlus
             //Verts above this position are not allowed to move
             var bellyButtonBone = PregnancyPlusHelper.GetBone(ChaControl, bellyButton);      
             //Distance from waist to breast root              
-            bellyToBreastDist = Math.Abs(bellyButtonBone.transform.InverseTransformPoint(ribBone.position).y) + Math.Abs(ribBone.transform.InverseTransformPoint(breastBone.position).y);  
+            bellyToBreastDist = BoneChainYDistance(bellyButton, hipName) + BoneChainYDistance(breastRoot, hipName, includeNegative: true);
 
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" MeasureWaist Recalc ");            
             return (waistWidth > 0 && waistToBackThickness > 0 && waistToRibDist > 0); 
@@ -316,13 +319,13 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Calculates the length of a set of chained bones from bottom up.  It will only caluculate the true Y distance, so it effectively ignores any animations (behaves like a TPose measurement).  Will include bones scales as well
         /// </summary>
-        /// <param name="chaControl">The character to fetch bones from</param>
-        /// <param name="boneStart">The starting (bottom of tree) bone name</param>
+        /// <param name="boneStart">The starting (bottom of tree) bone name</param>        
         /// <param name="boneEnd">The optional (top level) end bone name.  If null, the entire bone tree from bottom to top will be calculated.</param>
-        internal float BoneChainYDistance(ChaControl chaControl, Vector3 totalCharScale, string boneStart, string boneEnd = null) 
+        /// <param name="totalCharScale">If you want to apply wordsspace char scale to the resulting messurement</param>
+        internal float BoneChainYDistance(string boneStart, string boneEnd = null, Vector3 totalCharScale = default(Vector3), bool includeNegative = false) 
         {
             //loops through each bone starting bottom going up through parent to destination (or root)
-            var currentBone = PregnancyPlusHelper.GetBoneGO(chaControl, boneStart);
+            var currentBone = PregnancyPlusHelper.GetBoneGO(ChaControl, boneStart);
             GameObject lastBone = currentBone;
 
             if (currentBone == null) return 0;  
@@ -343,17 +346,17 @@ namespace KK_PregnancyPlus
                 // if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" newDifference {newDifference}  currentBone.name {currentBone.name}  scale {currentBone.transform.localScale} corrected {((newDifference * currentBone.transform.localScale.y) - newDifference)}");
                 
                 //Ignore any negative bone differences (like char root bone which is at 0,0,0)
-                if (newDifference > 0) 
+                if (includeNegative || newDifference > 0) 
                 {                    
-                    distance = distance + newDifference;
+                    distance = distance + Math.Abs(newDifference);
                     lastBone = currentBone;
                 }                
 
                 currentBone = currentBone.transform.parent.gameObject;
             }
 
-            //Check for BodyTop scale to apply it to distance (cf_n_height scale doesnt matter here for some reason)
-            if (totalCharScale.y != 1) 
+            //Check for BodyTop scale to apply it to distance
+            if (totalCharScale.y != 0 && totalCharScale.y != 1) 
             {                
                 if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" applying BodyTop scale to distance: {distance} scale: {totalCharScale.y}");
                 distance = distance * totalCharScale.y;

@@ -298,7 +298,10 @@ namespace KK_PregnancyPlus
                 //do the same for body meshs
                 var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, true);
                 LoopMeshAndAddSavedBlendShape(bodyRenderers, meshBlendShape, uncensorGUID);
-            }            
+            }       
+
+            //When we do load a saved blendshape add it to the history so we can track it has been successfully loaded
+            infConfigHistory = (PregnancyPlusData) infConfig.Clone();    
         }
 
         internal List<MeshBlendShape> LoadBlendShapesFromCardData(byte[] meshBlendShapesByte) 
