@@ -16,7 +16,7 @@ namespace KK_PregnancyPlus
         
         /// <summary>
         /// < v3.6
-        /// If the meshBlendShape.UncensorGUID is null, but the current character mesh is a match, use this GUID instead
+        /// If the meshBlendShape.UncensorGUID is null, but the current character mesh is a match, insert this UncensorGUID
         /// </summary>
         internal void Legacy_CheckInitialUncensorGuid(List<MeshBlendShape> meshBlendShapes, string uncensorGUID) 
         {
@@ -30,10 +30,10 @@ namespace KK_PregnancyPlus
             {
                 if (meshBlendShape.UncensorGUID != null) guidsAllNull = false;
 
-                //If the body uncensor does have a weight
-                if (!meshBlendShape.BlendShape.name.Contains("_body_") || meshBlendShape.BlendShape.weight <= 0) continue;
+                //If its not a body mesh
+                if (!meshBlendShape.BlendShape.name.Contains("o_body_")) continue;
 
-                //Find renderer with matching naame
+                //Find renderer with matching name
                 var bodySmr = bodyRenderers.Find(smr => smr.name == meshBlendShape.MeshName);                
                 if (bodySmr == null) continue;
                 
@@ -51,10 +51,13 @@ namespace KK_PregnancyPlus
                 //Get current card state, incase we made some changes that have not been saved
                 var tempInfConfig = GetCardData();
                 AddUncensorGUID(meshBlendShapes, uncensorGUID);
-                //Re-pack the blendshapes that have the new uncensorGUID
-                AddBlendShapesToData(tempInfConfig, meshBlendShapes);
 
-                //Update old saved card.  HotSwap makes it like a quick save, instead of a full one
+                //Re-pack the blendshapes that have the new uncensorGUID
+                AddBlendShapesToData(tempInfConfig, meshBlendShapes);  
+                //Set it to the current state too, so character swaps will detect it              
+                AddBlendShapesToData(infConfig, meshBlendShapes);                
+
+                //Update card with the new guid data.  HotSwap makes it like a quick save, instead of a full one
                 SetExtendedData(tempInfConfig.Save(hotSwap: true));
             }
         }

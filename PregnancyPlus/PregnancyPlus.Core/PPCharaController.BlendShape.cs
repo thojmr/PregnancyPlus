@@ -119,6 +119,9 @@ namespace KK_PregnancyPlus
         }
 
 
+        /// <summary>
+        /// Append an UncensorGUID to all saved blendshapes
+        /// </summary>
         internal void AddUncensorGUID(List<MeshBlendShape> meshBlendShapes, string uncensorGUID) 
         {
             foreach(var meshBlendShape in meshBlendShapes)
@@ -316,27 +319,19 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// For any stored blendshape, if it has blendshape weights, make sure the current uncensor matches
-        /// Allows character swapping in scene with belly shapes
+        /// For any stored blendshape, make sure the current uncensor matches, when the uncensor does not match but we know what it should be, swap it
         /// </summary>
         /// <param name="updateUncensor">When true the uncensor will be changed to match the stored body blendshape when weight is present</param>
         internal bool NeedsUncensorChanged(List<MeshBlendShape> meshBlendShapes, string uncensorGUID, bool updateUncensor = false) 
         {
-            bool hasWeights = false;            
+            string validUncensorGUID = null;
 
-            foreach(var meshBlendShape in meshBlendShapes)
+            //Search for a valid uncensor ID
+            foreach(var bs in meshBlendShapes) 
             {
-                //If the body uncensor does have a weight
-                if (meshBlendShape.BlendShape.name.Contains("_body_") && meshBlendShape.BlendShape.weight > 0) 
-                {
-                    hasWeights = true;
-                }
+                if (bs.UncensorGUID != null) validUncensorGUID = bs.UncensorGUID;
             }
 
-            //If no weights present then we can skip this check
-            if (!hasWeights) return false;
-
-            var validUncensorGUID = meshBlendShapes[0].UncensorGUID;
             //Skip when old card data doesnt have the uncensor GUID (pre v3.6), or if the uncensors already match
             if (validUncensorGUID == null || uncensorGUID == validUncensorGUID) 
             {                  

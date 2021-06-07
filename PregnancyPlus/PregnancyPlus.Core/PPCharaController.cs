@@ -157,7 +157,7 @@ namespace KK_PregnancyPlus
             if (uncensorChanged)
             {
                 uncensorChanged = false;
-
+                
                 //When in maker or studio we want to reset inflation values when uncensor changes to reset clothes
                 if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) ResetInflation();        
                 //Load any saved blendshapes from card, and can trigger uncensor change when necessary
