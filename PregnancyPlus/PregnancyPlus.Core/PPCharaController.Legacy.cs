@@ -70,7 +70,7 @@ namespace KK_PregnancyPlus
         internal void Legacy_CheckNullUncensorGuid(List<MeshBlendShape> meshBlendShapes, MeshBlendShape meshBlendShape, SkinnedMeshRenderer smr, string uncensorGUID)
         {
             //For old blendshape data (when null), if blendshape matches the mesh, then save the current uncensorGUID     
-            if (meshBlendShape.UncensorGUID == null && meshBlendShape.VertCount == smr.sharedMesh.vertexCount && meshBlendShape.MeshName.Contains("_body_")) 
+            if (meshBlendShape.UncensorGUID == null && meshBlendShape.VertCount == smr.sharedMesh.vertexCount && meshBlendShape.MeshName.Contains("o_body_")) 
             {
                 if (PregnancyPlusPlugin.DebugLog.Value)  
                     PregnancyPlusPlugin.Logger.LogInfo($" CaptureNewBlendshapeWeights > appending uncensorGUID {uncensorGUID} to all saved blendshapes since there was not one already"); 

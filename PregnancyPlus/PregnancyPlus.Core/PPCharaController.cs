@@ -136,7 +136,7 @@ namespace KK_PregnancyPlus
             ClearOnReload();
             #if AI || HS2
                 //Fix for the way AI addds new characters by copying existing character first.  This will remove the old blendshapes.
-                ScrubBlendShapes();
+                ScrubTempBlendShapes();
             #endif
 
             //Check for swapping out character Game Object with new character

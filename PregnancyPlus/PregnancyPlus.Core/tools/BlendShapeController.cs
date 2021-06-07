@@ -206,7 +206,7 @@ namespace KK_PregnancyPlus
             smr.sharedMesh = smr.sharedMesh;
 
             //Belly size goes from 0-40, but blendShapes have to be 0-100
-            //Technically unity 2018x + can go above 100 when unclamped, but not any illusion games yet
+            //  Technically unity 2018x + can go above 100 when unclamped, but not any illusion games yet
             var lerpWeight = floatLerp ? Mathf.Lerp(0, 100, weight/40) : weight;
             var shapeIndex = GetBlendShapeIndex(smr, blendShape.name);
             //If the blendshape is not found, return

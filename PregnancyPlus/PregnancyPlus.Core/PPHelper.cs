@@ -11,7 +11,7 @@ using HarmonyLib;
 
 namespace KK_PregnancyPlus
 {
-    //Stores the values to uniqoely identify a skinned mesh renderer
+    //Stores the values to uniqoely identify a skinned mesh renderer.  Much better than passing around the blendshapes themselves since they tend to be big
     public class MeshIdentifier {            
         public string name;
         public int vertexCount;

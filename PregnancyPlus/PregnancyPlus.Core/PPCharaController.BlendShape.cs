@@ -13,7 +13,7 @@ using MessagePack;
 namespace KK_PregnancyPlus
 {
 
-    //This partial class contains the blendshape logic for KK Timelines (and VNGE in future)
+    //This partial class contains the blendshape logic for Timeline and VNGE
     public partial class PregnancyPlusCharaController: CharaCustomFunctionController
     {           
 
@@ -46,7 +46,7 @@ namespace KK_PregnancyPlus
         /// On user button click. Create blendshape from current belly state.  Add it to infConfig so it will be saved to char card if the user chooses save scene
         /// </summary>
         /// <param name="temporary">If Temporary, the blendshape will not be saved to char card</param>
-        /// <returns>boolean true if any blendshapes were created</returns>
+        /// <returns>true if any blendshapes were created</returns>
         internal bool OnCreateBlendShapeSelected(bool temporary = false) 
         {
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" ");
@@ -57,21 +57,21 @@ namespace KK_PregnancyPlus
 
             var uncensorGUID = GetUncensorGuid();
 
-            //Get all cloth renderes and attempt to create blendshapes from preset inflatedVerticies
+            //Get all cloth renderes and attempt to create blendshapes from current inflatedVerticies
             var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);
             meshBlendShapes = LoopAndCreateBlendShape(clothRenderers, meshBlendShapes, uncensorGUID);
 
-            //do the same for body meshs
+            //do the same for body mesh
             var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody);
             meshBlendShapes = LoopAndCreateBlendShape(bodyRenderers, meshBlendShapes, uncensorGUID);
 
-            //Save any meshBlendShapes to card
+            //Save meshBlendShapes to card
             if (!temporary) AddBlendShapesToData(infConfig, meshBlendShapes);
 
-            //Reset belly size to 0 so the blendshape can be used with out interference
+            //Reset Preg+ slider 0 so the blendshape can be used with out interference
             PregnancyPlusGui.ResetSlider(PregnancyPlusGui.inflationSize, 0);
 
-            //Append the smrs that have new blendspahes to the GUI to be seen
+            //Append the smrs that have new blendspahes to the blendshape GUI
             blendShapeGui.OnSkinnedMeshRendererBlendShapesCreated(meshWithBlendShapes);
 
             return meshBlendShapes.Count > 0;
@@ -99,11 +99,11 @@ namespace KK_PregnancyPlus
 
                 //Get the smr, and the blendshape if any still exist
                 var smr = PregnancyPlusHelper.GetMeshRendererByName(ChaControl, meshBlendShape.MeshName, meshBlendShape.VertCount);
-                //If the mesh was changed keep old blendshape data, in case its swaped back later
                 if (smr == null) continue;            
 
-                //Get existing blend shape from mesh
-                var bsc = new BlendShapeController(smr, MakeBlendShapeName(GetMeshKey(smr)));
+                var blendShapeName = MakeBlendShapeName(GetMeshKey(smr));
+                //Get existing blend shape from mesh            
+                var bsc = new BlendShapeController(smr, blendShapeName);
                 if (bsc.blendShape == null) continue;
 
                 if (PregnancyPlusPlugin.DebugLog.Value && meshBlendShape.BlendShape.weight != bsc.blendShape.weight)  
@@ -136,8 +136,7 @@ namespace KK_PregnancyPlus
         /// </summary>
         internal string GetUncensorGuid() 
         {
-            var uncensorGUID = PregnancyPlusPlugin.Hooks_Uncensor.GetUncensorBodyGuid(ChaControl, UncensorCOMName);
-            return uncensorGUID;
+            return PregnancyPlusPlugin.Hooks_Uncensor.GetUncensorBodyGuid(ChaControl, UncensorCOMName);
         }
 
 
@@ -149,7 +148,7 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// When the user wants to remove all existing PregnancyPlus GUI blendshapes
+        /// When the user wants to remove all existing Preg+ GUI blendshapes 
         /// </summary>
         internal void OnRemoveAllGUIBlendShapes()
         {
@@ -165,7 +164,7 @@ namespace KK_PregnancyPlus
                     var name = smr.sharedMesh.GetBlendShapeName(i);
                     if (name.EndsWith(PregnancyPlusPlugin.GUID))
                     {
-                        //Set weight to 0
+                        //Set weight to 0.  Maybe in the future we'll actually remove them
                         var bsc = new BlendShapeController(smr, name);
                         bsc.ApplyBlendShapeWeight(smr, 0);
                     }
@@ -177,23 +176,24 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// When you want to start fresh and remove all (non GUI) Preg+ blendshapes completely.
+        /// When you want to start fresh and remove all (non GUI) Preg+ [temp] blendshapes completely.
         /// </summary>
-        internal void ScrubBlendShapes()
+        internal void ScrubTempBlendShapes()
         {
             var renderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);            
             var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, true);
             renderers.AddRange(bodyRenderers);
 
-            //Remove any Preg+ blendshapes
+            //Remove any Preg+ [temp] blendshapes
             foreach (var smr in renderers)
             {
                 for (var i = 0; i < smr.sharedMesh.blendShapeCount; i++)
                 {
-                    //Search for GUI blendshape
+                    //Search for all blendshapes on a mesh
                     var name = smr.sharedMesh.GetBlendShapeName(i);
                     var blendShapePartialName = MakeBlendShapeName(GetMeshKey(smr), blendShapeTempTagName);
 
+                    //If it is a [temp] blendshape
                     if (name.EndsWith(blendShapePartialName))
                     {
                         //Remove the blendshape
@@ -207,7 +207,7 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Loop through each skinned mesh rendere and if the char card has a blendshape for it, add it
+        /// Loop through each skinned mesh renderer and create a blendshape from its current preg+ state
         /// </summary>
         /// <param name="smrs">List of skinnedMeshRenderes</param>
         /// <param name="meshBlendShapes">the current list of MeshBlendShapes collected so far</param>
@@ -225,15 +225,13 @@ namespace KK_PregnancyPlus
 
                 var blendShapeCtrl = CreateBlendShape(smr, renderKey);
 
-                //Return the blendshape format that can be saved to character card
+                //Get the blendshape format that can be saved to character card
                 var meshBlendShape = ConvertToMeshBlendShape(smr.name, blendShapeCtrl.blendShape, uncensorGUID);
                 if (meshBlendShape != null) 
                 {
                     meshBlendShapes.Add(meshBlendShape);                
                     meshWithBlendShapes.Add(new MeshIdentifier(smr.name, smr.sharedMesh.vertexCount));
                 }
-
-                // LogMeshBlendShapes(smr);
             }  
 
             return meshBlendShapes;
@@ -241,19 +239,19 @@ namespace KK_PregnancyPlus
      
 
         /// <summary>
-        /// Convert a BlendShape to MeshBlendShape, used for storing to character card data
+        /// Convert a BlendShape to MeshBlendShape, used for storing as character card data
         /// </summary>
-        internal MeshBlendShape ConvertToMeshBlendShape(string smrName, BlendShapeController.BlendShape blendShape, string uncensorGUID) 
+        internal MeshBlendShape ConvertToMeshBlendShape(string smrMeshName, BlendShapeController.BlendShape blendShape, string uncensorGUID) 
         {            
             if (blendShape == null) return null;
-            var meshBlendShape = new MeshBlendShape(smrName, blendShape, blendShape.vertexCount, uncensorGUID);
-            return meshBlendShape;
+            return new MeshBlendShape(smrMeshName, blendShape, blendShape.vertexCount, uncensorGUID);
         }
 
 
         /// <summary>
-        /// Sets a custom meshBlendShape object to character data
+        /// Serialize a custom meshBlendShape object to characters card data (still requires a save to save it)
         /// </summary>
+        /// <param name="_infConfig">The character data instance to save it to</param>
         /// <param name="meshBlendShapes">the list of MeshBlendShapes we want to save</param>
         internal void AddBlendShapesToData(PregnancyPlusData _infConfig, List<MeshBlendShape> meshBlendShapes) 
         {            
@@ -271,7 +269,7 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Loads a blendshape from character card and sets it to the correct mesh
+        /// Loads any blendshapes from character card and sets them to the correct mesh
         /// </summary>
         /// <param name="data">The characters card data for this plugin</param>
         /// <param name="checkUncensor">When true will check the uncensor, and swap to the correct one to match saved blendshapes</param>
@@ -291,14 +289,13 @@ namespace KK_PregnancyPlus
             //When the saved body blendshape does not match the uncensor, change to that uncensor
             NeedsUncensorChanged(meshBlendShapes, uncensorGUID, checkUncensor);
 
-            //For each stores meshBlendShape
+            //For each meshBlendShape loaded from card
             foreach(var meshBlendShape in meshBlendShapes)
             {
-                //Loop through all meshes and find matching name
+                //Loop through all meshes and append any that need to be
                 var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes, true);
                 LoopMeshAndAddSavedBlendShape(clothRenderers, meshBlendShape, uncensorGUID, true);
 
-                //do the same for body meshs
                 var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, true);
                 LoopMeshAndAddSavedBlendShape(bodyRenderers, meshBlendShape, uncensorGUID);
             }       
@@ -307,6 +304,10 @@ namespace KK_PregnancyPlus
             infConfigHistory = (PregnancyPlusData) infConfig.Clone();    
         }
 
+
+        /// <summary>
+        /// Use messagepack to Deserialize the saved blendshapes from the characters card
+        /// </summary>
         internal List<MeshBlendShape> LoadBlendShapesFromCardData(byte[] meshBlendShapesByte) 
         {
             if (meshBlendShapesByte == null) return new List<MeshBlendShape>();
@@ -322,8 +323,10 @@ namespace KK_PregnancyPlus
         /// For any stored blendshape, make sure the current uncensor matches, when the uncensor does not match but we know what it should be, swap it
         /// </summary>
         /// <param name="updateUncensor">When true the uncensor will be changed to match the stored body blendshape when weight is present</param>
+        /// <param name="uncensorGUID">The GUID of the character's current uncensor</param>
         internal bool NeedsUncensorChanged(List<MeshBlendShape> meshBlendShapes, string uncensorGUID, bool updateUncensor = false) 
         {
+            //The uncensorGUID that this blendshape actually belongs to
             string validUncensorGUID = null;
 
             //Search for a valid uncensor ID
@@ -352,7 +355,7 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Triggers an uncensor change
+        /// Triggers an uncensor change so we can successfully add a saved blendshape
         /// </summary>
         internal bool TriggerUncensorChange(string validUncensorGUID, string uncensorGUID)
         {
@@ -379,7 +382,7 @@ namespace KK_PregnancyPlus
             
             foreach (var smr in smrs) 
             {   
-                //Fixes any stale data on mesh blendshapes           
+                //Fixes any stale data on mesh blendshapes.  Thanks Unity...
                 smr.sharedMesh = smr.sharedMesh;
 
                 //If mesh matches, append the blend shape
@@ -400,7 +403,7 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Add a saved blendshape to its matching mesh
+        /// Add a saved blendshape (from card) back to its mesh
         /// </summary>
         /// <param name="meshBlendShape">The MeshBlendShape loaded from character card</param>
         internal bool AddSavedBlendShape(SkinnedMeshRenderer smr, MeshBlendShape meshBlendShape) 
@@ -420,10 +423,10 @@ namespace KK_PregnancyPlus
                 
                 //Update the weight to match the weight from the character card   
                 _bsc.ApplyBlendShapeWeight(smr, meshBlendShape.BlendShape.weight, false);
-                return false;
+                return true;
             }
 
-            //Add the blendshape to the mesh, and set weight
+            //Othwewise add the blendshape to the mesh, and set the weight
             var bsc = new BlendShapeController(meshBlendShape.BlendShape, smr);
             bsc.ApplyBlendShapeWeight(smr, meshBlendShape.BlendShape.weight, false);
 
@@ -484,14 +487,16 @@ namespace KK_PregnancyPlus
             NormalSolver.RecalculateNormals(meshCopyTarget, 40f, md[renderKey].alteredVerticieIndexes);
             meshCopyTarget.RecalculateTangents();
 
-            // LogMeshBlendShapes(smr);
-
             var blendShapeName = MakeBlendShapeName(renderKey, blendShapeTag);
 
             //Create a blend shape object on the mesh, and return the controller object
             return new BlendShapeController(smr.sharedMesh, meshCopyTarget, blendShapeName, smr);            
         }  
 
+
+        /// <summary>
+        /// This is how we name preg+ blendshapes
+        /// </summary>
         internal string MakeBlendShapeName(string renderKey, string blendShapeTag = null) 
         {
             return blendShapeTag == null ? $"{renderKey}_{PregnancyPlusPlugin.GUID}" : $"{renderKey}_{PregnancyPlusPlugin.GUID}_{blendShapeTag}";
@@ -521,6 +526,7 @@ namespace KK_PregnancyPlus
                 return false;
             }
             
+            //Determine the current infaltion size
             var size = isDuringInflationScene ? CurrentInflationChange : infConfig.inflationSize;
 
             //Update the weight to be the same as inflationSize value   
@@ -558,6 +564,7 @@ namespace KK_PregnancyPlus
             MeshInflate(0, "ComputeInflationBlendShapes", new MeshInflateFlags(this, _bypassWhen0: true));
 
             var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);            
+            //For each mesh, grab any existing Preg+ blendshapes and add to list
             foreach(var smr in clothRenderers)
             {
                 var blendShapeName = MakeBlendShapeName(GetMeshKey(smr), blendShapeTempTagName);
