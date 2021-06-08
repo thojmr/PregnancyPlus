@@ -233,7 +233,16 @@ namespace KK_PregnancyPlus
         internal PregnancyPlusData GetCardData()
         {
             var data = GetExtendedData();
-            return PregnancyPlusData.Load(data) ?? new PregnancyPlusData();
+            var pregCardData = PregnancyPlusData.Load(data);
+
+            //When new card, no data will be set
+            if (pregCardData == null)
+            {
+                pregCardData = new PregnancyPlusData();
+                pregCardData.pluginVersion = PregnancyPlusPlugin.Version;
+            }
+            
+            return pregCardData;
         }
 
 

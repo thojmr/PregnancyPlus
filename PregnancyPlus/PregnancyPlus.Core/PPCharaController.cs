@@ -71,11 +71,7 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnCardBeingSaved ");
 
             CaptureNewBlendshapeWeights();            
-            var newSaveData = infConfig.Save();
-            SetExtendedData(newSaveData);
-
-            //When saving old card in new Preg+ version
-            if (infConfig.GetPluginVersion() == "0") ConvertOldCardsToNew();
+            SetExtendedData(infConfig.Save());
         }
 
 

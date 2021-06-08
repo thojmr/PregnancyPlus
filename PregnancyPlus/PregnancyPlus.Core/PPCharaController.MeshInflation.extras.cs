@@ -89,7 +89,7 @@ namespace KK_PregnancyPlus
             var radius = Math.Min(wasitToRibDist/1.25f, wasitWidth/1.3f) * charScale.y;
 
             //Older cards had slightly smaller radiuses because of less accuraate belly bone measurements, adjust these old cards to look similar in size with new bone logic
-            radius = infConfig.UseOldCalcLogic() ? radius * 0.85f : radius;
+            radius = infConfig.UseOldCalcLogic() ? radius * 0.9f : radius;
 
             return radius;
         }

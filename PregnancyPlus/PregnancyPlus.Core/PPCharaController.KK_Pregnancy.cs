@@ -201,6 +201,7 @@ namespace KK_PregnancyPlus
         {
             if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" GetDefaultInflationShape>  Loading a Default belly shape");
             var customInfConfig = new PregnancyPlusData();
+            customInfConfig.pluginVersion = PregnancyPlusPlugin.Version;
             
             #if KK
                 //These values looked decent on most default characters, but they can always be changed.
