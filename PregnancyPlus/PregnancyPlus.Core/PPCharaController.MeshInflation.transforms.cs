@@ -209,13 +209,13 @@ namespace KK_PregnancyPlus
             var xyLerp = Mathf.Lerp(0, GetInflationRoundness(), (zDistFromCenter - (bellyInfo.WaistThick/4f))/bellyInfo.ScaledRadius(BellyDir.z));
 
             //As the original vert gets closer to the sphere radius, apply less change since we want smooth transitions at belly's edge
-            var totalLerp = Mathf.Lerp(xyLerp, 0, BellyEdgeAC.Evaluate(skinToCenterDist/bellyInfo.ScaledRadius(BellyDir.z)));
+            var moveDistanceLerp = Mathf.Lerp(xyLerp, 0, BellyEdgeAC.Evaluate(skinToCenterDist/bellyInfo.ScaledRadius(BellyDir.z)));
 
             //Get the direction to move the vert (offset center a little forward from sphere center)
-            var xyDirection = (smoothedVectorLs - (sphereCenterLs + Vector3.forward * (bellyInfo.ScaledRadius(BellyDir.z)/3))).normalized;
+            var directionToMove = (smoothedVectorLs - (sphereCenterLs + Vector3.forward * (bellyInfo.ScaledRadius(BellyDir.z)/3))).normalized;
 
             //set the new vert position in that direction + the new lerp scale distance
-            return smoothedVectorLs + xyDirection * totalLerp;
+            return smoothedVectorLs + directionToMove * moveDistanceLerp;
         }
 
 
