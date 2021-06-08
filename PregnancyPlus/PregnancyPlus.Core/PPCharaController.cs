@@ -151,6 +151,7 @@ namespace KK_PregnancyPlus
             {
                 if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" -Character changed in place, preserving belly shape");
                 infConfig = infConfigHistory;
+                if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" Updating Card Data > {infConfig.ValuesToString()}");
             }
 
             //If the uncensor changed just before this Reload(), then is was probably a character swap.
