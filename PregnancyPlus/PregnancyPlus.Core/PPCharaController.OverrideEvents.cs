@@ -30,7 +30,7 @@ namespace KK_PregnancyPlus
         internal IEnumerator ILoadBlendshapes(float waitforSeconds, bool checkUncensor = false) 
         {   
             yield return new WaitForSeconds(waitforSeconds);
-            yield return new WaitForEndOfFrame();
+            if (!infConfig.UseOldCalcLogic()) yield return new WaitForEndOfFrame();
             LoadBlendShapes(infConfig, checkUncensor);
         }
 
@@ -100,7 +100,7 @@ namespace KK_PregnancyPlus
 
             yield return new WaitForSeconds(time);
             //Waiting until end of frame lets bones settle so we can take accurate measurements
-            yield return new WaitForEndOfFrame();
+            if (!infConfig.UseOldCalcLogic()) yield return new WaitForEndOfFrame();
 
             #if KK || AI
                 GetWeeksAndSetInflation(true);  
@@ -126,7 +126,7 @@ namespace KK_PregnancyPlus
 
             yield return new WaitForSeconds(time);
             //Waiting until end of frame lets bones settle so we can take accurate measurements
-            yield return new WaitForEndOfFrame();
+            if (!infConfig.UseOldCalcLogic()) yield return new WaitForEndOfFrame();
 
             if (StudioAPI.InsideStudio || (MakerAPI.InsideMaker && MakerAPI.InsideAndLoaded))
             {
@@ -233,7 +233,16 @@ namespace KK_PregnancyPlus
         internal PregnancyPlusData GetCardData()
         {
             var data = GetExtendedData();
-            return PregnancyPlusData.Load(data) ?? new PregnancyPlusData();
+            var pregCardData = PregnancyPlusData.Load(data);
+
+            //When new card, no data will be set
+            if (pregCardData == null)
+            {
+                pregCardData = new PregnancyPlusData();
+                pregCardData.pluginVersion = PregnancyPlusPlugin.Version;
+            }
+            
+            return pregCardData;
         }
 
 
@@ -268,7 +277,7 @@ namespace KK_PregnancyPlus
             {
                 // if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" WaitForMeshToSettle checkNewMesh:{checkNewMesh} forceRecalcVerts:{forceRecalcVerts}");        
                 CheckMeshVisibility(); 
-                yield return new WaitForEndOfFrame();
+                if (!infConfig.UseOldCalcLogic()) yield return new WaitForEndOfFrame();
                 MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: checkNewMesh, _freshStart: forceRecalcVerts), "WaitForClothMeshToSettle");                
             }
         }

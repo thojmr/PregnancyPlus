@@ -129,9 +129,27 @@ namespace KK_PregnancyPlus
             //Anything before v3.6 will be null
             return pluginVersion != null ? pluginVersion : "0";
         }
-
-#region Save/Load (Thanks for the code Marco)
         
+        /// <summary>   
+        /// When a character card is pre 3.6 load the character with the old belly size and shape logic, so it doesnt look off in new versions
+        /// </summary>
+        public bool UseOldCalcLogic()
+        {
+            var oldCard = !VersionExists() && HasAnyValue() && !HasBlendShape();
+            if (oldCard && PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" Old preg+ card detected v{GetPluginVersion()} UseOldCalcLogic()");
+            return oldCard;
+        }
+
+        public bool VersionExists()
+        {
+            return pluginVersion != null;
+        }
+
+        public bool HasBlendShape()
+        {
+            return meshBlendShape != null && meshBlendShape.Length > 0;
+        }
+
         /// <summary>
         /// Will compare current values to default values
         /// </summary>
@@ -142,8 +160,9 @@ namespace KK_PregnancyPlus
             {
                 //When false, we want to ignore changes in inflationSize
                 if (!includeSize && fieldInfo.Name == "inflationSize") continue;
-                //Skip the below fields always
+                //Skip the below fields always, we don't care if they changed in here
                 if (fieldInfo.Name == "pluginVersion") continue;
+                if (fieldInfo.Name == "clothingOffsetVersion") continue;
 
                 var value = fieldInfo.GetValue(this);
                 var defaultValue = fieldInfo.GetValue(_default);
@@ -156,16 +175,15 @@ namespace KK_PregnancyPlus
             return false;
         }
 
-        public bool HasBlendShape()
-        {
-            return meshBlendShape != null && meshBlendShape.Length > 0;
-        }
+#region Save/Load (Thanks for the code Marco)
+    
 
         private static readonly PregnancyPlusData _default = new PregnancyPlusData();
         private static readonly FieldInfo[] _serializedFields = typeof(PregnancyPlusData).GetFields(BindingFlags.Public | BindingFlags.Instance);
 
         public static PregnancyPlusData Load(PluginData data)
         {
+            //On new card return null
             if (data?.data == null) return null;
             var hasClothingVersion = false;
 
@@ -212,13 +230,16 @@ namespace KK_PregnancyPlus
             
             foreach (var fieldInfo in _serializedFields)
             {
-                var value = fieldInfo.GetValue(this);
-                // Check if any value is different than default, if not then don't save any data
+                var value = fieldInfo.GetValue(this);                
                 var defaultValue = fieldInfo.GetValue(_default);
 
+                // Check if any value is different than default, if not then don't save any data
                 if (!Equals(defaultValue, value)) 
                 {
                     result.data.Add(fieldInfo.Name, value);
+
+                    //Skip the below fields always, we don't care if they changed in here
+                    if (fieldInfo.Name == "pluginVersion") continue;
                     anyValuesChanged = true;
                 }
             }
@@ -226,13 +247,13 @@ namespace KK_PregnancyPlus
             //When we don't want to change any of the below values (just replace a single val or two)
             if (hotSwap) return result.data.Count > 0 ? result : null;
 
-            //always save clolthing offset version if any values above set
+            //Save clolthing offset version if any values above set
             if (anyValuesChanged && !result.data.ContainsKey("clothingOffsetVersion")) 
             {
                 result.data.Add("clothingOffsetVersion", clothingOffsetVersion);                             
             }
 
-            //Update plugin version on saving card, helps with debugging
+            //Always update plugin version on saving card, helps with debugging
             if (!result.data.ContainsKey("pluginVersion")) 
             {                
                 result.data.Add("pluginVersion", PregnancyPlusPlugin.Version);

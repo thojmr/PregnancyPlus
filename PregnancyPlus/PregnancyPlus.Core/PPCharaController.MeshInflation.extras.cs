@@ -86,7 +86,12 @@ namespace KK_PregnancyPlus
         internal float GetSphereRadius(float wasitToRibDist, float wasitWidth, Vector3 charScale) 
         {
             //The float numbers are just arbitrary numbers that ended up looking porportional
-            return Math.Min(wasitToRibDist/1.25f, wasitWidth/1.3f) * charScale.y;
+            var radius = Math.Min(wasitToRibDist/1.25f, wasitWidth/1.3f) * charScale.y;
+
+            //Older cards had slightly smaller radiuses because of less accuraate belly bone measurements, adjust these old cards to look similar in size with new bone logic
+            radius = infConfig.UseOldCalcLogic() ? radius * 0.9f : radius;
+
+            return radius;
         }
 
 
