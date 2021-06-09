@@ -72,6 +72,8 @@ The belly shape will persist in any game mode when slider values are saved to th
     - A: The character must have a leg scale > 0 for the belly sliders to work correctly.
 - Q: The heck is a BlendShape?
     - A: Put simply a blendshape is a copy of the mesh that has some deformation that you want to be able to slide into.  Like visually morphing from originalMesh -> targetMesh (Preggo).
+- Q: The belly size/shape is different in Maker than in Studio?
+    - A: This was fixed in v3.5 and some cards with belly shapes before that version need to be re-saved again.  Only old characters with ABMX adjustments to the torso will have this issue.
 
 ## Notes
 - There will be cloth clipping.  You can use the Cloth Offset slider to help with it, but It's a difficult problem to solve.
