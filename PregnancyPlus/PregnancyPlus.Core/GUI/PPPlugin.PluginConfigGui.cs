@@ -12,6 +12,7 @@ namespace KK_PregnancyPlus
     {
         public static ConfigEntry<bool> StoryMode { get; private set; }
         public static ConfigEntry<bool> AllowMale { get; private set; }
+        public static ConfigEntry<bool> AllowCumflation { get; private set; }
         public static ConfigEntry<float> MaxStoryModeBelly { get; private set; }
         public static ConfigEntry<float> StoryModeInflationMultiplier { get; private set; }
         public static ConfigEntry<float> StoryModeInflationMoveY { get; private set; }
@@ -108,8 +109,13 @@ namespace KK_PregnancyPlus
             #elif HS2            
                 var storyConfigTitle = "Story/Main-Game Mode";
                 var additionalSliderText = "";
-                
-            #endif
+
+            AllowCumflation = Config.Bind<bool>("General", "Allow cumflation", false,
+                new ConfigDescription("Automatically increase belly InflationSize when cumming.",
+                    null,
+                    new ConfigurationManagerAttributes { Order = 2 })
+                );
+#endif
 
 
             StoryMode = Config.Bind<bool>(storyConfigTitle, "Gameplay Enabled", true,
