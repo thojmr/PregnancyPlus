@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using KKAPI.Maker;
 using KKAPI.Studio;
+using KKAPI.Chara;
 #if AI || HS2
     using AIChara;
 #elif KK
@@ -29,6 +30,28 @@ namespace KK_PregnancyPlus
             {
                 harmonyInstance.PatchAll(typeof(Hooks));
             }
+			
+			#if HS2
+            /// <summary>
+            /// Add for cumflation effect.
+            /// </summary>
+            [HarmonyPostfix, HarmonyPatch(typeof(HSceneFlagCtrl), nameof(HSceneFlagCtrl.AddOrgasm))]
+            private static void HSceneFlagCtrl_AddOrgasm_HS2(HSceneFlagCtrl __instance)
+            {
+                if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return;//Don't allow toggle event in studio
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" StoryMode_SettingsChanged > {StoryMode.Value}");
+                var handlers = CharacterApi.GetRegisteredBehaviour(GUID);
+
+                if (StoryMode.Value && AllowCumflation.Value)
+                {
+                    foreach (PregnancyPlusCharaController charCustFunCtrl in handlers.Instances)
+                    {
+                        var newVal = charCustFunCtrl.infConfig.inflationSize += 2;
+                        charCustFunCtrl.MeshInflate(newVal, "HSceneFlagCtrl_AddOrgasm_HS2");
+                    }
+                }
+            }
+            #endif
 
 
             /// <summary>
