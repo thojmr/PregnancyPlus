@@ -32,25 +32,63 @@ namespace KK_PregnancyPlus
             }
 			
 			#if HS2
-            /// <summary>
-            /// Add for cumflation effect.
-            /// </summary>
-            [HarmonyPostfix, HarmonyPatch(typeof(HSceneFlagCtrl), nameof(HSceneFlagCtrl.AddOrgasm))]
-            private static void HSceneFlagCtrl_AddOrgasm_HS2(HSceneFlagCtrl __instance)
-            {
-                if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return;//Don't allow toggle event in studio
-                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" StoryMode_SettingsChanged > {StoryMode.Value}");
-                var handlers = CharacterApi.GetRegisteredBehaviour(GUID);
 
-                if (StoryMode.Value && AllowCumflation.Value)
+                //HS2 inflation trigger logic, copied from KK_Pregnancy
+                [HarmonyPrefix]
+                [HarmonyPatch(typeof(Sonyu), "Proc", typeof(int), typeof(HScene.AnimationListInfo))]
+                public static void Sonyu_Proc(Sonyu __instance)
+                {                    
+                    //Get current user button click type
+                    var ctrlFlag = Traverse.Create(__instance).Field("ctrlFlag").GetValue<HSceneFlagCtrl>();                                    
+                    DetermineInflationState(ctrlFlag);                   
+                }
+
+
+                [HarmonyPrefix]
+                [HarmonyPatch(typeof(Houshi), "Proc", typeof(int), typeof(HScene.AnimationListInfo))]
+                public static void Houshi_Proc(Houshi __instance)
+                {                    
+                    //Get current user button click type
+                    var ctrlFlag = Traverse.Create(__instance).Field("ctrlFlag").GetValue<HSceneFlagCtrl>(); 
+                    DetermineInflationState(ctrlFlag);                                   
+                }
+
+                //When user clicks finish button, set the inflation based on the button clicked
+                private static void DetermineInflationState(HSceneFlagCtrl ctrlFlag)
                 {
+                    //swallow clicked
+                    if (ctrlFlag.click == HSceneFlagCtrl.ClickKind.FinishInSide 
+                        || ctrlFlag.click == HSceneFlagCtrl.ClickKind.FinishSame  
+                        || ctrlFlag.click == HSceneFlagCtrl.ClickKind.FinishDrink ) 
+                    {
+                        TriggerInflation();                   
+                    }
+                    //spit clicked
+                    else if (ctrlFlag.click == HSceneFlagCtrl.ClickKind.FinishOutSide 
+                        || ctrlFlag.click == HSceneFlagCtrl.ClickKind.FinishVomit) 
+                    {
+                        TriggerInflation();
+                    }                        
+                }
+
+                /// <summary>
+                /// Add for cumflation effect in HS2 only.  (Too lazy to implement deflation logic right now)
+                /// </summary>
+                private static void TriggerInflation(bool deflate = false)
+                {
+                    if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return;//Don't allow in studio/maker
+                    if (!StoryMode.Value || !AllowCumflation.Value) return;
+                                        
+                    if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" HSceneFlagCtrl_AddOrgasm_HS2");
+                    var handlers = CharacterApi.GetRegisteredBehaviour(GUID);
+
+                    //This will probably inflate all characters in scene, but I don't care
                     foreach (PregnancyPlusCharaController charCustFunCtrl in handlers.Instances)
                     {
-                        var newVal = charCustFunCtrl.infConfig.inflationSize += 2;
-                        charCustFunCtrl.MeshInflate(newVal, "HSceneFlagCtrl_AddOrgasm_HS2");
-                    }
+                        //Trigger inflation
+                        charCustFunCtrl.HS2Inflation(deflate);
+                    }                    
                 }
-            }
             #endif
 
 

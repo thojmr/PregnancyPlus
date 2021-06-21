@@ -110,12 +110,13 @@ namespace KK_PregnancyPlus
                 var storyConfigTitle = "Story/Main-Game Mode";
                 var additionalSliderText = "";
 
-            AllowCumflation = Config.Bind<bool>("General", "Allow cumflation", false,
-                new ConfigDescription("Automatically increase belly InflationSize when cumming.",
-                    null,
-                    new ConfigurationManagerAttributes { Order = 2 })
-                );
-#endif
+                AllowCumflation = Config.Bind<bool>("General", "Allow cumflation", false,
+                    new ConfigDescription("Automatically increase belly InflationSize when cumming. 6 times is max size.",
+                        null,
+                        new ConfigurationManagerAttributes { Order = 2 })
+                    );
+                    
+            #endif
 
 
             StoryMode = Config.Bind<bool>(storyConfigTitle, "Gameplay Enabled", true,

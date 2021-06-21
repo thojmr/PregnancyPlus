@@ -93,23 +93,31 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.DebugLog.Value) 
                 PregnancyPlusPlugin.Logger.LogInfo($" InflationChanged {inflationAmount} maxInflationSize {maxInflationSize} kkInflationSize {kkInflationSize}");
 
-            //No Preg+ inflation when the additional size is set to 0
-            if (PregnancyPlusPlugin.MaxStoryModeBelly.Value == 0) return;
             //No additional preg+ inflation until the KKinflation amount is >= the current inflation.config.  We want both sizes to grow together.
             if (infConfig.inflationSize > kkInflationSize) return;
 
-            //When char is already pregnant, make that the starting inflation size
-            if (currentWeeks > _inflationStartSize) _inflationStartSize = _inflationChange = TargetPregPlusSize = currentWeeks;
+            #if !HS2
+                //No Preg+ inflation when the additional size is set to 0
+                if (PregnancyPlusPlugin.MaxStoryModeBelly.Value == 0) return;
 
-            //If no infConfig is set for this character, use a predefined one for the best KK_Pregnancy look, since the default shape tend to look a little strange.
-            if (!infConfig.HasAnyValue(false)) infConfig = GetDefaultShapeFor_KK_Pregnancy();            
+                //When char is already pregnant, make that the starting inflation size
+                if (currentWeeks > _inflationStartSize) _inflationStartSize = _inflationChange = TargetPregPlusSize = currentWeeks;
+
+                //If no infConfig is set for this character, use a predefined one for the best KK_Pregnancy look, since the default shape tend to look a little strange.
+                if (!infConfig.HasAnyValue(false)) infConfig = GetDefaultShapeFor_KK_Pregnancy();  
+            #endif          
 
             //Init and compile the list of blendshapes to target
             blendShapeCtrlList = ComputeInflationBlendShapes();
 
             //Compute the target belly size per inflation trigger
             //When TargetPregPlusSize changes, it will start ComputeInflationChange()
-            TargetPregPlusSize = Mathf.Lerp(0, kkInflationSize, PregnancyPlusPlugin.MaxStoryModeBelly.Value/40);
+            #if !HS2
+                TargetPregPlusSize = Mathf.Lerp(0, kkInflationSize, PregnancyPlusPlugin.MaxStoryModeBelly.Value/40);
+            #else
+                TargetPregPlusSize = kkInflationSize;
+            #endif
+
             _inflationStartSize = _inflationChange;
         }
 
@@ -119,33 +127,31 @@ namespace KK_PregnancyPlus
         /// </summary>
         public void ComputeInflationChange() 
         {
-            #if KK || AI
-                //Only in HScene
-                #if !KKS//TODO remove later when KKS fully releases               
+            //Only in HScene
+            #if !HS2 && !KKS//TODO remove later when KKS fully releases               
                 if (!GameAPI.InsideHScene) 
                 {
                     if (_inflationChange > 0 || TargetPregPlusSize > 0) ClearInflationStuff();
                     return;
                 }
-                #endif
-                if (_inflationChange == TargetPregPlusSize) 
-                {
-                    //When inflation is done lerping, do a soft clear of values
-                    ClearInflationStuff();
-                    return;
-                } 
-                
-                //Lerp the change in size over 3 seconds
-                _inflationChange = Mathf.Lerp(_inflationStartSize, TargetPregPlusSize, timeElapsed / 3);
-                timeElapsed += Time.deltaTime;  
-
-                //Snap the value at the end, in case the lerp never reaches 100%
-                if (Math.Abs(_inflationChange - TargetPregPlusSize) < 0.05f) _inflationChange = TargetPregPlusSize;
-                
-                //Update all blendshapes weights to this new size
-                QuickInflate((float) _inflationChange, blendShapeCtrlList);                    
-                
             #endif
+            if (_inflationChange == TargetPregPlusSize) 
+            {
+                //When inflation is done lerping, do a soft clear of values
+                ClearInflationStuff();
+                return;
+            } 
+            
+            //Lerp the change in size over 3 seconds
+            _inflationChange = Mathf.Lerp(_inflationStartSize, TargetPregPlusSize, timeElapsed / 3);
+            timeElapsed += Time.deltaTime;  
+
+            //Snap the value at the end, in case the lerp never reaches 100%
+            if (Math.Abs(_inflationChange - TargetPregPlusSize) < 0.05f) _inflationChange = TargetPregPlusSize;
+            
+            //Update all blendshapes weights to this new size
+            QuickInflate((float) _inflationChange, blendShapeCtrlList);                    
+                
         }
 
 
