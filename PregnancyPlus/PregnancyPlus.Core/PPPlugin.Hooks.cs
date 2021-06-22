@@ -59,16 +59,11 @@ namespace KK_PregnancyPlus
                     //swallow clicked
                     if (ctrlFlag.click == HSceneFlagCtrl.ClickKind.FinishInSide 
                         || ctrlFlag.click == HSceneFlagCtrl.ClickKind.FinishSame  
-                        || ctrlFlag.click == HSceneFlagCtrl.ClickKind.FinishDrink ) 
-                    {
-                        TriggerInflation();                   
-                    }
-                    //spit clicked
-                    else if (ctrlFlag.click == HSceneFlagCtrl.ClickKind.FinishOutSide 
+                        || ctrlFlag.click == HSceneFlagCtrl.ClickKind.FinishDrink
                         || ctrlFlag.click == HSceneFlagCtrl.ClickKind.FinishVomit) 
                     {
-                        TriggerInflation();
-                    }                        
+                        TriggerInflation();                   
+                    }            
                 }
 
                 /// <summary>
