@@ -18,11 +18,11 @@ namespace KK_PregnancyPlus
     public partial class PregnancyPlusCharaController: CharaCustomFunctionController
     {   
         //How many times the belly has been inflated, up to he max
-        public int currentInflationLevel = 0;
-        public int maxInflationLevel = 6;
+        private int _currentInflationLevel = 0;
+        //public int maxInflationLevel = 6;
 
-        public int inflationStep = 1;
-        public int deflationStep = 1;
+        //public int inflationStep = 1;
+        //public int deflationStep = 1;
 
 
         /// <summary>
@@ -33,15 +33,15 @@ namespace KK_PregnancyPlus
             int _nextInflationLevel;
 
             if (deflate)
-                _nextInflationLevel = currentInflationLevel - deflationStep;
+                _nextInflationLevel = _currentInflationLevel - PregnancyPlusPlugin.DeflationLevel.Value;
             else
-                _nextInflationLevel = currentInflationLevel + inflationStep;
-            
+                _nextInflationLevel = _currentInflationLevel + PregnancyPlusPlugin.InflationLevel.Value;
+
             //clip 
-            currentInflationLevel = Math.Max(0, Math.Min(_nextInflationLevel, maxInflationLevel));
-                  
+            _currentInflationLevel = Math.Max(0, Math.Min(_nextInflationLevel, PregnancyPlusPlugin.CumflationMaxLevel.Value));
+
             //Re-use the kk pregnancy inflation code here to smooth the inflation animation
-            OnInflationChanged(currentInflationLevel, maxInflationLevel);                    
+            OnInflationChanged(_currentInflationLevel, PregnancyPlusPlugin.CumflationMaxLevel.Value);
         }
 
     }

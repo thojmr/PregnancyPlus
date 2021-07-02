@@ -12,7 +12,6 @@ namespace KK_PregnancyPlus
     {
         public static ConfigEntry<bool> StoryMode { get; private set; }
         public static ConfigEntry<bool> AllowMale { get; private set; }
-        public static ConfigEntry<bool> AllowCumflation { get; private set; }
         public static ConfigEntry<float> MaxStoryModeBelly { get; private set; }
         public static ConfigEntry<float> StoryModeInflationMultiplier { get; private set; }
         public static ConfigEntry<float> StoryModeInflationMoveY { get; private set; }
@@ -27,7 +26,14 @@ namespace KK_PregnancyPlus
         public static ConfigEntry<float> StoryModeInflationFatFold { get; private set; }    
         public static ConfigEntry<float> StoryModeInflationFatFoldHeight { get; private set; }    
         public static ConfigEntry<float> StoryModeInflationRoundness { get; private set; }    
-        public static ConfigEntry<float> StoryModeInflationDrop { get; private set; }    
+        public static ConfigEntry<float> StoryModeInflationDrop { get; private set; }
+
+
+        //Cumflation
+        public static ConfigEntry<bool> AllowCumflation { get; private set; }
+        public static ConfigEntry<int> CumflationMaxLevel { get; private set; }
+        public static ConfigEntry<int> InflationLevel { get; private set; }
+        public static ConfigEntry<int> DeflationLevel { get; private set; }
 
 
         //Debug config options
@@ -106,16 +112,34 @@ namespace KK_PregnancyPlus
                 var maxBellySizeTitle = "AI_Pregnancy Integration";
                 var maxBellySizeDescription = "The maximum additional belly size/shape that this plugin will add to the original AI_Pregnancy belly. The character must be pregnant or inflated.\r\n0 will result in the original AI_Pregnancy belly, while 40 will be the original + the full Preg+ size/shape.";
 
-            #elif HS2            
+            #elif HS2
                 var storyConfigTitle = "Story/Main-Game Mode";
                 var additionalSliderText = "";
 
-                AllowCumflation = Config.Bind<bool>("General", "Allow cumflation", false,
-                    new ConfigDescription("Automatically increase belly InflationSize when cumming. 6 times is max size.",
-                        null,
-                        new ConfigurationManagerAttributes { Order = 2 })
-                    );
-                    
+                var CumflationTitle = "Cumflation";
+                AllowCumflation = Config.Bind<bool>(CumflationTitle, "Allow cumflation", false,
+                new ConfigDescription("Automatically increase belly InflationSize when cum inside.",
+                    null,
+                    new ConfigurationManagerAttributes { Order = 4 })
+                );
+
+                CumflationMaxLevel = Config.Bind<int>(CumflationTitle, "Cumflation Max Level", 6,
+                new ConfigDescription("Inflation levels required to reach max belly size.",
+                    null,
+                    new ConfigurationManagerAttributes { Order = 3 })
+                );
+
+                InflationLevel = Config.Bind<int>(CumflationTitle, "Inflation Level", 1,
+                new ConfigDescription("Inflation levels increased when cum inside.",
+                    null,
+                    new ConfigurationManagerAttributes { Order = 2 })
+                );
+
+                DeflationLevel = Config.Bind<int>(CumflationTitle, "Deflation Level", 1,
+                new ConfigDescription("Inflation levels decreased when pull out after cum inside.",
+                    null,
+                    new ConfigurationManagerAttributes { Order = 1 })
+                );
             #endif
 
 
