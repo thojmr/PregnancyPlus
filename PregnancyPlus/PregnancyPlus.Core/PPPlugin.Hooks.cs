@@ -86,14 +86,16 @@ namespace KK_PregnancyPlus
 
                         var InflationCharaTargetCtrl = DetermineInflationTarget(ctrlFlag, _infoAnimList);
 
-                        if (InflationCharaTargetCtrl == null) 
+                        if (InflationCharaTargetCtrl == null)
                             PregnancyPlusPlugin.Logger.LogWarning($"Cant determine which female to inflate");
                         else
+                        {
                             TriggerInflation(InflationCharaTargetCtrl);
+                            _lastPullProc = false;
+                        }
                     }          
+
                 }
-
-
 
                 /// <summary>
                 /// Add for cumflation effect in HS2 only.  (Too lazy to implement deflation logic right now)
@@ -104,9 +106,9 @@ namespace KK_PregnancyPlus
                     if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return;//Don't allow in studio/maker
                     if (!StoryMode.Value || !AllowCumflation.Value) return;
                                         
-                    if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($"TriggerInflation to {charCustFunCtrl.name}:{charCustFunCtrl.charaFileName}");
+                    if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($"Trigger {(deflate?"deflation": "inflation")} to {charCustFunCtrl.name}:{charCustFunCtrl.charaFileName}");
 
-                    charCustFunCtrl.HS2Inflation();
+                    charCustFunCtrl.HS2Inflation(deflate);
                 }
 
                 /// <summary>
@@ -150,9 +152,65 @@ namespace KK_PregnancyPlus
                         InflationCharaTarget = CharaControllers.FirstOrDefault(x => x.name == "chaF_001") as PregnancyPlusCharaController;
                     }
 
+                    _lastInflatedFemaleName = InflationCharaTarget?.name;
 
                     return InflationCharaTarget;
                 }
+
+
+                //flags for deflate process
+                private static bool _lastPullProc;
+                private static string _lastInflatedFemaleName;
+
+                [HarmonyPrefix]
+                [HarmonyPatch(typeof(Sonyu), "PullProc", typeof(float), typeof(int))]
+                public static void Sonyu_PullProc(Sonyu __instance)
+                {
+                    var ctrlFlag = Traverse.Create(__instance).Field("ctrlFlag").GetValue<HSceneFlagCtrl>();
+                    DetermineDeflationState(ctrlFlag, "Sonyu_PullProc");
+                }
+
+                [HarmonyPrefix]
+                [HarmonyPatch(typeof(MultiPlay_F1M2), "PullProc", typeof(float), typeof(int))]
+                public static void MultiPlay_F1M2_PullProc(MultiPlay_F1M2 __instance)
+                {
+                    var ctrlFlag = Traverse.Create(__instance).Field("ctrlFlag").GetValue<HSceneFlagCtrl>();
+                    DetermineDeflationState(ctrlFlag, "MultiPlay_F1M2_PullProc");
+                }
+
+                [HarmonyPrefix]
+                [HarmonyPatch(typeof(MultiPlay_F2M1), "PullProc", typeof(float), typeof(int))]
+                public static void MultiPlay_F2M1_PullProc(MultiPlay_F2M1 __instance)
+                {
+                    var ctrlFlag = Traverse.Create(__instance).Field("ctrlFlag").GetValue<HSceneFlagCtrl>();
+                    DetermineDeflationState(ctrlFlag, "MultiPlay_F2M1_PullProc");
+                }
+
+                //When pull out, deflate female chara
+                private static void DetermineDeflationState(HSceneFlagCtrl ctrlFlag, string source = null)
+                {
+
+                    if (ctrlFlag.isInsert
+                        && _lastPullProc != ctrlFlag.isInsert
+                        && !string.IsNullOrEmpty(_lastInflatedFemaleName))
+                    {
+                        if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($"DetermineDeflationState from {source}");
+
+                        var CharaControllers = CharacterApi.GetRegisteredBehaviour(GUID).Instances;
+                        var CharaTarget = CharaControllers.FirstOrDefault(x => x.name == _lastInflatedFemaleName) as PregnancyPlusCharaController;
+
+                        if (CharaTarget == null)
+                            PregnancyPlusPlugin.Logger.LogWarning($"Cant determine which female to deflate");
+                        else
+                        {
+                            TriggerInflation(CharaTarget, true);
+                            _lastInflatedFemaleName = null;
+                        }
+                    }
+
+                    _lastPullProc = ctrlFlag.isInsert;
+                }
+
             #endif
 
 
