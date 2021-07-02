@@ -34,7 +34,8 @@ namespace KK_PregnancyPlus
 
             #if HS2
 
-                //MultiPlay_F2M1
+
+                //HS2 inflation trigger logics
                 [HarmonyPrefix]
                 [HarmonyPatch(typeof(MultiPlay_F2M1), "Proc", typeof(int), typeof(HScene.AnimationListInfo))]
                 public static void MultiPlay_F2M1_Proc(MultiPlay_F2M1 __instance, int _modeCtrl, HScene.AnimationListInfo _infoAnimList)
@@ -44,7 +45,6 @@ namespace KK_PregnancyPlus
                     DetermineInflationState(ctrlFlag, _infoAnimList, "MultiPlay_F2M1_Proc");
                 }
 
-                //Multiplay F1M2
                 [HarmonyPrefix]
                 [HarmonyPatch(typeof(MultiPlay_F1M2), "Proc", typeof(int), typeof(HScene.AnimationListInfo))]
                 public static void MultiPlay_F1M2_Proc(MultiPlay_F1M2 __instance, int _modeCtrl, HScene.AnimationListInfo _infoAnimList)
@@ -54,7 +54,6 @@ namespace KK_PregnancyPlus
                     DetermineInflationState(ctrlFlag, _infoAnimList, "MultiPlay_F1M2_Proc");
                 }
 
-                //HS2 inflation trigger logic, copied from KK_Pregnancy
                 [HarmonyPrefix]
                 [HarmonyPatch(typeof(Sonyu), "Proc", typeof(int), typeof(HScene.AnimationListInfo))]
                 public static void Sonyu_Proc(Sonyu __instance, int _modeCtrl, HScene.AnimationListInfo _infoAnimList)
@@ -74,7 +73,9 @@ namespace KK_PregnancyPlus
                     DetermineInflationState(ctrlFlag, _infoAnimList, "Houshi_Proc");                                   
                 }
 
-                //When user clicks finish button, set the inflation based on the button clicked
+                /// <summary>
+                /// When user clicks finish button, set the inflation based on the button clicked
+                /// </summary>
                 private static void DetermineInflationState(HSceneFlagCtrl ctrlFlag, HScene.AnimationListInfo _infoAnimList,string source=null)
                 {
                     if (ctrlFlag.click == HSceneFlagCtrl.ClickKind.FinishInSide 
@@ -98,7 +99,7 @@ namespace KK_PregnancyPlus
                 }
 
                 /// <summary>
-                /// Add for cumflation effect in HS2 only.  (Too lazy to implement deflation logic right now)
+                /// Trigger inflation/deflation effect in HS2.
                 /// </summary>
                 private static void TriggerInflation(PregnancyPlusCharaController charCustFunCtrl, bool deflate = false)
                 {
@@ -139,9 +140,9 @@ namespace KK_PregnancyPlus
                             else
                             {
                                 if (fileFemaleSplit[1] == "f1")
-                                    InflationCharaTarget = CharaControllers.FirstOrDefault(x => x.name == "chaF_001") as PregnancyPlusCharaController;
+                                    InflationCharaTarget = GetCharaCtrlByName("chaF_001");
                                 else if (fileFemaleSplit[1] == "f2")
-                                    InflationCharaTarget = CharaControllers.FirstOrDefault(x => x.name == "chaF_002") as PregnancyPlusCharaController;
+                                    InflationCharaTarget = GetCharaCtrlByName("chaF_002");
                                 else
                                     PregnancyPlusPlugin.Logger.LogWarning($"bad fileFemaleSplit[1]:{fileFemaleSplit[1]}");
                             }
@@ -149,8 +150,8 @@ namespace KK_PregnancyPlus
                     }
                     else // Normal mode
                     {
-                        InflationCharaTarget = CharaControllers.FirstOrDefault(x => x.name == "chaF_001") as PregnancyPlusCharaController;
-                    }
+                        InflationCharaTarget = GetCharaCtrlByName("chaF_001");
+                    }   
 
                     _lastInflatedFemaleName = InflationCharaTarget?.name;
 
@@ -162,6 +163,7 @@ namespace KK_PregnancyPlus
                 private static bool _lastPullProc;
                 private static string _lastInflatedFemaleName;
 
+                //HS2 deflation trigger logics
                 [HarmonyPrefix]
                 [HarmonyPatch(typeof(Sonyu), "PullProc", typeof(float), typeof(int))]
                 public static void Sonyu_PullProc(Sonyu __instance)
@@ -186,7 +188,9 @@ namespace KK_PregnancyPlus
                     DetermineDeflationState(ctrlFlag, "MultiPlay_F2M1_PullProc");
                 }
 
-                //When pull out, deflate female chara
+                /// <summary>
+                /// deflate female chara when pull out
+                /// </summary>
                 private static void DetermineDeflationState(HSceneFlagCtrl ctrlFlag, string source = null)
                 {
 
@@ -196,8 +200,7 @@ namespace KK_PregnancyPlus
                     {
                         if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($"DetermineDeflationState from {source}");
 
-                        var CharaControllers = CharacterApi.GetRegisteredBehaviour(GUID).Instances;
-                        var CharaTarget = CharaControllers.FirstOrDefault(x => x.name == _lastInflatedFemaleName) as PregnancyPlusCharaController;
+                        var CharaTarget = GetCharaCtrlByName(_lastInflatedFemaleName);
 
                         if (CharaTarget == null)
                             PregnancyPlusPlugin.Logger.LogWarning($"Cant determine which female to deflate");
@@ -211,7 +214,15 @@ namespace KK_PregnancyPlus
                     _lastPullProc = ctrlFlag.isInsert;
                 }
 
-            #endif
+                private static PregnancyPlusCharaController GetCharaCtrlByName(string CharaName)
+                {
+                    if (string.IsNullOrEmpty(CharaName)) 
+                        return null;
+
+                    var CharaControllers = CharacterApi.GetRegisteredBehaviour(GUID).Instances;
+                    return CharaControllers.FirstOrDefault(x => x.name == CharaName) as PregnancyPlusCharaController;
+                }
+#endif
 
 
             /// <summary>
