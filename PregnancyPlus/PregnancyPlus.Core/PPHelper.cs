@@ -2,6 +2,7 @@
 using KKAPI.Chara;
 using UnityEngine;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
@@ -236,13 +237,7 @@ namespace KK_PregnancyPlus
 
         internal static Mesh CopyMesh(Mesh mesh)
         {
-            Mesh newmesh = new Mesh();
-            newmesh.vertices = mesh.vertices;
-            newmesh.triangles = mesh.triangles;
-            newmesh.uv = mesh.uv;
-            newmesh.normals = mesh.normals;
-            newmesh.colors = mesh.colors;
-            newmesh.tangents = mesh.tangents;
+            Mesh newmesh = (Mesh)UnityEngine.Object.Instantiate(mesh);
 
             return newmesh;
         }
