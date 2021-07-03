@@ -54,6 +54,8 @@ namespace KK_PregnancyPlus
             Hooks_Uncensor.InitHooks(hi);
             #if KK || AI
                 Hooks_KK_Pregnancy.InitHooks(hi);
+            #elif HS2
+                Hooks_HS2_Inflation.InitHooks(hi);
             #endif
 
             //Set up studio/malker GUI sliders

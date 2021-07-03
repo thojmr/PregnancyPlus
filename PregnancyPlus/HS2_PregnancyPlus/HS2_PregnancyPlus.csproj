@@ -140,6 +140,7 @@
     <Compile Include="..\PregnancyPlus.Core\PPPlugin.cs" />
     <Compile Include="..\PregnancyPlus.Core\GUI\PPPlugin.PluginConfigGui.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPPlugin.Hooks.cs" />
+    <Compile Include="..\PregnancyPlus.Core\PPPlugin.Hooks.HS2_Inflation.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPPlugin.Hooks.Uncensor.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPHelper.cs" />
     <Compile Include="..\PregnancyPlus.Core\Data\PPData.cs" />
