@@ -92,6 +92,7 @@ This plugin works in Koikatsu, Honey Select 2, and AI.  Grab the KK zip for Koik
 ## (Developers only) Compiling with Visual Studio 2019 (The official way)
 <details>
   <summary>Click to expand</summary>
+ 
  Simply clone this repository to your drive and use the free version of Visual Studio 2019 for C# to compile it. Hit build and all necessary dependencies should be automatically downloaded. Check the following links for useful tutorials. If you are having trouble or want to try to make your own plugin/mod, feel free to ask for help in modding channels of either the [Koikatsu](https://discord.gg/hevygx6) or [IllusionSoft](https://discord.gg/F3bDEFE) Discord servers.
 - https://help.github.com/en/github/creating-cloning-and-archiving-repositories/cloning-a-repository
 - https://docs.microsoft.com/en-us/visualstudio/get-started/csharp/?view=vs-2019
@@ -101,6 +102,7 @@ This plugin works in Koikatsu, Honey Select 2, and AI.  Grab the KK zip for Koik
 ## (Developers only) Compiling with Visual Studio Code (Not the suggested way, but my way)
 <details>
   <summary>Click to expand</summary>
+ 
 Simply clone this repository to your drive and use Visual Studio Code.  
 Install the C# extension for VSCode. 
 Make sure the following directory exists `C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/MSBuild/Current/Bin/msbuild.exe`.  
