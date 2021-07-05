@@ -24,7 +24,7 @@ The belly shape will persist in any game mode when slider values are saved to th
     - Optionally you can smooth any skin tight clothing as well, to help reduce clipping while smoothing, but clothing doesn't always look great afterwords.
 - Somewhat compatible with "[ddaa33] Pregnant plugin (ShapeKeyPlugin)" if you wish to combine the effects of both, you can.  But the effects applied by that plugin will not save to the character card by default. (Only with Pregnancy+ captured blendshapes)
 
-## Honey Select 2 Only Features
+## (New!) Honey Select 2 Only Features
 - Because I'm too lazy to port KK_Pregnancy to HS2, belly inflation logic has been added to Main Game HScenes when finishing inside.  Similar to how KK_Pregnancy inflation works.  It is off by default, turn it on in Preg+ plugin config.
 
 ## Koikatsu and AI Only Features
