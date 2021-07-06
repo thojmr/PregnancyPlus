@@ -123,8 +123,8 @@ namespace KK_PregnancyPlus
         {     
             if (!bodySmr) return null;   
 
-            //skip body meshes  (but this can be incorrect when a clothing mesh contains o_body_a in rare cases (Bad mesh makers! bad!))
-            if (clothSmr.name.Contains("o_body_cf") || clothSmr.name.Contains("o_body_a")) return null;    
+            //skip body meshes  (but this can be incorrect when a clothing mesh contains o_body_a or _cf in rare cases (Bad mesh makers! bad!))
+            if (clothSmr.name.Contains(BodyMeshName)) return null;    
             if (infConfig.clothingOffsetVersion == 0) return null;
 
             //Get the pre calculated preg verts for this mesh

@@ -60,6 +60,14 @@ namespace KK_PregnancyPlus
 
         internal Guid debounceGuid;//Track multiple events with a debounce based on these id's
 
+        //Determine body mesh name based on sex (0 is male)
+        public string BodyMeshName {
+            #if KK
+                get { return MakerAPI.GetMakerSex() == 0 ?  "o_body_a" : "o_body_a"; }
+            #elif HS2 || AI
+                get { return MakerAPI.GetMakerSex() == 0 ?  "o_body_cm" : "o_body_cf"; }
+            #endif            
+        }
 
 
 #region overrides

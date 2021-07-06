@@ -172,14 +172,8 @@ namespace KK_PregnancyPlus
         /// </summary>
         public SkinnedMeshRenderer GetBodyMeshRenderer()
         {
-            #if KK
-                var meshName = "o_body_a";
-            #elif HS2 || AI
-                var meshName = "o_body_cf";
-            #endif
-
             var bodyMeshRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, true);
-            return bodyMeshRenderers.Find(x => x.name == meshName);
+            return bodyMeshRenderers.Find(x => x.name == BodyMeshName);
         }
 
         /// <summary>
@@ -196,18 +190,14 @@ namespace KK_PregnancyPlus
         /// </summary>
         public bool BodyNestedUnderCloth(SkinnedMeshRenderer smr, SkinnedMeshRenderer bodySmr) 
         {
-            #if KK
-                var meshName = "o_body_a";
-            #elif HS2 || AI
-                var meshName = "o_body_cf";
-            #endif
+            if (bodySmr == null) return false;
 
             //Ignore instances when both are disabled, since neither is even visible
             //  If the real bodySmr is currently visible, then this is not a nested body
             var shouldEvenConsider = smr.enabled && !bodySmr.enabled;
 
             //Does the smr have the bodymesh name inside it?
-            return shouldEvenConsider && smr.name.Contains(meshName);
+            return shouldEvenConsider && smr.name.Contains(BodyMeshName);
         }
          
 

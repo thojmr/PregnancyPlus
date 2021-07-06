@@ -178,13 +178,7 @@ namespace KK_PregnancyPlus
             //Only smooth the body mesh around the belly area
             else
             {
-                #if KK
-                    var meshName = "o_body_a";
-                #elif HS2 || AI
-                    var meshName = "o_body_cf";
-                #endif
-
-                var bodySmr = PregnancyPlusHelper.GetMeshRendererByName(ChaControl, meshName);
+                var bodySmr = PregnancyPlusHelper.GetMeshRendererByName(ChaControl, BodyMeshName);
                 var renderKey = GetMeshKey(bodySmr);
 
                 var newVerts = SmoothSingleMesh(bodySmr, renderKey);     
