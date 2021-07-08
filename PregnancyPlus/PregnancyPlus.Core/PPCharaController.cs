@@ -63,9 +63,9 @@ namespace KK_PregnancyPlus
         //Determine body mesh name based on sex (0 is male)
         public string BodyMeshName {
             #if KK
-                get { return MakerAPI.GetMakerSex() == 0 ?  "o_body_a" : "o_body_a"; }
+                get { return ChaControl.sex == 0 ?  "o_body_a" : "o_body_a"; }
             #elif HS2 || AI
-                get { return MakerAPI.GetMakerSex() == 0 ?  "o_body_cm" : "o_body_cf"; }
+                get { return ChaControl.sex == 0 ?  "o_body_cm" : "o_body_cf"; }
             #endif            
         }
 
