@@ -1,6 +1,7 @@
 # Introduction
 This repository contains the PregnancyPlus plugin, that adds additional belly sliders in Studio and Maker.  It is intended to compliment the [KK_Pregnancy](https://github.com/ManlyMarco/KoikatuGameplayMods) plugin, but can be used without it.   (For example: HS2)  
 The belly shape will persist in any game mode when slider values are saved to the characters card, or scene.
+See `How To Install` for installation instructions
 
 ** 
  This project now has all the features I originally intended, so nothing new in the pipeline.  I will continue to provide bugfixes and support. 
@@ -86,7 +87,7 @@ You can grab the latest plugin release [here](https://github.com/thojmr/KK_Pregn
 This plugin works in Koikatsu, Honey Select 2, and AI.  Grab the KK zip for Koikatsu, HS2 zip for Honey Select 2, and AI zip for AI [here](https://github.com/thojmr/KK_PregnancyPlus/releases)
 
 ## How to install
-1. Requires a recent version of BetterRepack or HF Patch
+1. Requires a recent version of BetterRepack or HF Patch (Preg+ is included with these, but probably not the latest version of Preg+)
     - Otherwise make sure you have at least BepInEx 5.4.4 and KKAPI 1.17 for PregnancyPlus v3.0+
 3. Download the latest release of Preg+ [here](https://github.com/thojmr/KK_PregnancyPlus/releases).
 4. "Extract Here" and copy that folder to your root game directory. The plugin .dll will end up inside your BepInEx\plugins\ directory.
