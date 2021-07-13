@@ -103,7 +103,7 @@ namespace KK_PregnancyPlus
             if (!infConfig.UseOldCalcLogic()) yield return new WaitForEndOfFrame();
 
             #if KK || AI
-                GetWeeksAndSetInflation(true);  
+                GetWeeksAndSetBellySize(true);  
 
             #elif HS2
                 //For HS2 AI, we set global belly size from plugin config, or character card                    
