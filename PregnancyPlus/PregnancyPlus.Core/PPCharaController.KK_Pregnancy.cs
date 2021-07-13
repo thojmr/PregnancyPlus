@@ -14,7 +14,7 @@ using UnityEngine;
 namespace KK_PregnancyPlus
 {
 
-    //This partial class contains the logic for KK_Pregnancy integration
+    //This partial class contains the logic for KK_Pregnancy inflation integration
     public partial class PregnancyPlusCharaController: CharaCustomFunctionController
     {                    
         internal float _inflationStartSize = 0;
@@ -195,7 +195,8 @@ namespace KK_PregnancyPlus
 
             if (fullReset)
             {
-                _inflationStartSize = _inflationChange = TargetPregPlusSize = 0;
+                //Reset belly back to where it started before HScene
+                _inflationStartSize = _inflationChange = TargetPregPlusSize = currentWeeks;
             }
         }
 
