@@ -68,7 +68,7 @@ namespace KK_PregnancyPlus
             gameplayToggle.BindToFunctionController<PregnancyPlusCharaController, bool>(controller => controller.infConfig.GameplayEnabled, (controller, value) => {
                 var oldVal = controller.infConfig.GameplayEnabled;
                 controller.infConfig.GameplayEnabled = value; 
-                if (oldVal != value) OnMakerSettingsChanged(controller);
+                if (oldVal != value) OnEnableMakerSettingsChanged(controller);
             });
             e.AddControl(new MakerText("If disabled, you won't see any pregnant effects.", cat, _pluginInstance) { TextColor = hintColor });
 
@@ -263,12 +263,26 @@ namespace KK_PregnancyPlus
             e.AddControl(new MakerText("If enabled, will include clothing in the smoohting calculation above, to help reduce clipping for skin tight clothes.", cat, _pluginInstance) { TextColor = hintColor });
         }
 
-        //On any slider change, trigger mesh inflaiton update
+        
+        /// <summary>
+        /// On any slider change, trigger mesh inflaiton update
+        /// </summary>
         internal static void OnMakerSettingsChanged(PregnancyPlusCharaController controller) 
         {
             // if (!MakerAPI.InsideAndLoaded) return;
             if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" OnMakerSettingsChanged ");                
-            controller.MeshInflate(new MeshInflateFlags(controller, _checkForNewMesh: true), "OnMakerSettingsChanged");  
+            controller.MeshInflate(new MeshInflateFlags(controller), "OnMakerSettingsChanged");  
+        }
+
+
+        /// <summary>
+        /// On Preg+ enabled change, trigger mesh inflaiton update
+        /// </summary>
+        internal static void OnEnableMakerSettingsChanged(PregnancyPlusCharaController controller) 
+        {
+            // if (!MakerAPI.InsideAndLoaded) return;
+            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" OnEnableMakerSettingsChanged ");                
+            controller.MeshInflate(new MeshInflateFlags(controller, _checkForNewMesh: true), "OnEnableMakerSettingsChanged");  
         }
 
 

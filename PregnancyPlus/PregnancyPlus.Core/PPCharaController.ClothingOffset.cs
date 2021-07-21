@@ -116,7 +116,7 @@ namespace KK_PregnancyPlus
 
         /// <summary>
         /// Compute the clothVert offset for each clothing vert from the distance it is away from the skin mesh
-        ///  BodySmr must have mesh collider attached at this point
+        ///  BodySmr must have mesh collider attached at this point with CreateMeshCollider()
         /// </summary>
         internal float[] DoClothMeasurement(SkinnedMeshRenderer clothSmr, SkinnedMeshRenderer bodySmr, 
                                             Vector3 sphereCenter, bool needsRecomputeOffsets = false)
@@ -154,9 +154,7 @@ namespace KK_PregnancyPlus
             var minOffset = bellyInfo.ScaledWaistWidth/200;       
             //Apply and mesh offset needed, to make all meshes the same y height so the calculations below line up
             var yOffsetDir = clothSmr.transform.up * md[renderKey].yOffset;           
-
-            //Create mesh collider to make clothing measurements from skin (if it doesnt already exists)
-            CreateMeshCollider(bodySmr);   
+  
             GetRayCastTargetPositions();
 
             if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" Pre-calculating clothing offset values");
@@ -192,6 +190,28 @@ namespace KK_PregnancyPlus
             }           
 
             return clothOffsets;
+        }
+
+
+        /// <summary>
+        /// Compute the clothVert offset for each clothing vert from the distance it is away from the skin mesh
+        ///  BodySmr must have mesh collider attached at this point
+        /// </summary>
+        internal bool NeedsClothMeasurement(SkinnedMeshRenderer clothSmr, SkinnedMeshRenderer bodySmr, Vector3 sphereCenter)
+        {  
+            if (!bodySmr) return false;   
+
+            //skip body meshes  (but this can be incorrect when a clothing mesh contains o_body_a or _cf in rare cases (Bad mesh makers! bad!))
+            if (clothSmr.name.Contains(BodyMeshName)) return false;    
+            if (infConfig.clothingOffsetVersion == 0) return false;
+
+            var renderKey = GetMeshKey(clothSmr); 
+            var clothingOffsetsHasValue = md[renderKey].HasClothingOffsets;
+
+            //Does the offset list already exists?
+            if (clothingOffsetsHasValue) return false;
+
+            return true;
         }
 
 

@@ -200,6 +200,10 @@ namespace KK_PregnancyPlus
 
             //Execute thread results in main thread, when existing threads are done processing
             threading.WatchAndExecuteThreadResults();
+            
+            //Clear some values when all threads finished
+            if (threading.AllDone) RemoveMeshCollider();
+            
         }
 
 

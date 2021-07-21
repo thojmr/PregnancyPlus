@@ -65,8 +65,6 @@ namespace KK_PregnancyPlus
             var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);            
             LoopAndApplyMeshChanges(clothRenderers, meshInflateFlags, true, GetBodyMeshRenderer());          
 
-            RemoveMeshCollider();
-
             //If any changes were applied, updated the last used shape for the Restore GUI button
             if (infConfig.HasAnyValue()) 
             {
@@ -95,7 +93,7 @@ namespace KK_PregnancyPlus
                 var needsComputeVerts = NeedsComputeVerts(smr, renderKey, meshInflateFlags);
                 if (needsComputeVerts)
                 {
-                    threadedCompute = ComputeMeshVerts(smr, isClothingMesh, bodyMeshRenderer, meshInflateFlags);                                                                                   
+                    threadedCompute = ComputeMeshVerts(smr, isClothingMesh, bodyMeshRenderer, meshInflateFlags, renderKey);                                                                                   
                 }
 
                 //When threaded, the belly will be set later so we can skip it here (only used when full re-computation is needed)
@@ -123,8 +121,8 @@ namespace KK_PregnancyPlus
 
             //Do a quick check to see if we need to fetch the bone indexes again.  ex: on second call we should allready have them
             //This saves a lot on compute apparently!            
-            var isInitialized = md.TryGetValue(renderKey, out MeshData _md);
-            if (isInitialized)
+            var isMeshInitialized = md.TryGetValue(renderKey, out MeshData _md);
+            if (isMeshInitialized)
             {
                 //If the vertex count has not changed then we can skip this if no critical sliders changed
                 if (_md.bellyVerticieIndexes.Length == smr.sharedMesh.vertexCount) 
@@ -142,7 +140,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Just a helper function to combine searching for verts in a mesh, and then applying the transforms
         /// </summary>
-        internal bool ComputeMeshVerts(SkinnedMeshRenderer smr, bool isClothingMesh, SkinnedMeshRenderer bodyMeshRenderer, MeshInflateFlags meshInflateFlags) 
+        internal bool ComputeMeshVerts(SkinnedMeshRenderer smr, bool isClothingMesh, SkinnedMeshRenderer bodyMeshRenderer, MeshInflateFlags meshInflateFlags, string renderKey) 
         {
             //The list of bones to get verticies for
             #if KK            
@@ -151,7 +149,14 @@ namespace KK_PregnancyPlus
                 var boneFilters = new string[] { "cf_J_Spine02_s", "cf_J_Kosi01_s", "cf_J_Kosi02_s" };
             #endif
 
-            var hasVerticies = GetFilteredVerticieIndexes(smr, PregnancyPlusPlugin.MakeBalloon.Value ? null : boneFilters);        
+            var hasVerticies = true;
+            var isMeshInitialized = md.TryGetValue(renderKey, out MeshData _md);
+
+            //Only fetch belly vert list when needed since its fairly expensive
+            if (meshInflateFlags.NeedsToComputeIndex || !isMeshInitialized)
+            {
+                hasVerticies = GetFilteredVerticieIndexes(smr, PregnancyPlusPlugin.MakeBalloon.Value ? null : boneFilters);        
+            }
 
             //If no belly verts found, or verts already exists, then we can skip this mesh
             if (!hasVerticies) return false; 
@@ -189,7 +194,6 @@ namespace KK_PregnancyPlus
                 isClothingMesh = false;            
             }
 
-            //TODO does canging this to ChaControl.tf throw off any transforms below?
             var meshRootTf = GetMeshRoot(smr);
             if (meshRootTf == null) 
             {
@@ -208,46 +212,50 @@ namespace KK_PregnancyPlus
             Vector3 sphereCenter = GetSphereCenter(meshRootTf);
             md[rendererName].yOffset = ApplyConditionalSphereCenterOffset(isClothingMesh, sphereCenter, smr, meshRootTf); 
 
+            //Create mesh collider to make clothing measurements from skin (if it doesnt already exists)            
+            if (NeedsClothMeasurement(smr, bodySmr, sphereCenter)) CreateMeshCollider(bodySmr); 
+           
             //Get the cloth offset for each cloth vertex via raycast to skin
             var clothOffsets = DoClothMeasurement(smr, bodySmr, sphereCenter);
             if (clothOffsets == null) clothOffsets = new float[md[rendererName].originalVertices.Length];
-            
+
             var origVerts = md[rendererName].originalVertices;
             var inflatedVerts = md[rendererName].inflatedVertices;
             var bellyVertIndex = md[rendererName].bellyVerticieIndexes;
             var alteredVerts = md[rendererName].alteredVerticieIndexes;
 
-            #if DEBUG
-                var bellyVertsCount = 0;
-                for (int i = 0; i < bellyVertIndex.Length; i++)
-                {
-                    if (bellyVertIndex[i]) bellyVertsCount++;
-                }
-                if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" Mesh affected vert count {bellyVertsCount}");
-            #endif
+            //Heavy compute task below, run in separate thread
+            Action threadAction = () => 
+            {
 
-            //Pre compute some values needed by SculptInflatedVerticie, doin it here saves on compute in the big loop
-            var vertsLength = origVerts.Length;
-            var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenter);
-            var preMorphSphereCenter = sphereCenter - GetUserMoveTransform(meshRootTf);
-            var pmSphereCenterLs = meshRootTf.InverseTransformPoint(preMorphSphereCenter); 
-            //calculate the furthest back morph point based on the back bone position, include character rotation
-            var backExtentPos = new Vector3(preMorphSphereCenter.x, sphereCenter.y, preMorphSphereCenter.z) + meshRootTf.forward * -bellyInfo.ZLimit;
-            var backExtentPosLs = meshRootTf.InverseTransformPoint(backExtentPos);                        
-            //calculate the furthest top morph point based under the breast position, include character animated height differences
-            var topExtentPos = new Vector3(preMorphSphereCenter.x, preMorphSphereCenter.y, preMorphSphereCenter.z) + meshRootTf.up * bellyInfo.YLimit;
-            var topExtentPosLs = meshRootTf.InverseTransformPoint(topExtentPos);
-            var vertNormalCaluRadius = sphereRadius + waistWidth/10;//Only recalculate normals for verts within this radius to prevent shadows under breast at small belly sizes
-            var yOffsetDir = Vector3.up * md[rendererName].yOffset;//Any offset direction needed to align all meshes to the same local y height
-            var reduceClothFlattenOffset = 0f;
+                #if DEBUG
+                    var bellyVertsCount = 0;
+                    for (int i = 0; i < bellyVertIndex.Length; i++)
+                    {
+                        if (bellyVertIndex[i]) bellyVertsCount++;
+                    }
+                    if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" Mesh affected vert count {bellyVertsCount}");
+                #endif
 
-            // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(smr.transform, 0.2f, sphereCenter);
-            // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLineAndAttach(meshRootTf, 5, meshRootTf.InverseTransformPoint(topExtentPos) - meshRootTf.up * GetBellyButtonOffset(bellyInfo.BellyButtonHeight));
-            // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLineAndAttach(meshRootTf, new Vector3(-3, 0, 0), new Vector3(3, 0, 0), meshRootTf.InverseTransformPoint(backExtentPos) - GetBellyButtonOffsetVector(meshRootTf, bellyInfo.BellyButtonHeight));
-            // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLineAndAttach(meshRootTf, 5, meshRootTf.InverseTransformPoint(sphereCenter));    
+                //Pre compute some values needed by SculptInflatedVerticie, doin it here saves on compute in the big loop
+                var vertsLength = origVerts.Length;
+                var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenter);
+                var preMorphSphereCenter = sphereCenter - GetUserMoveTransform(meshRootTf);
+                var pmSphereCenterLs = meshRootTf.InverseTransformPoint(preMorphSphereCenter); 
+                //calculate the furthest back morph point based on the back bone position, include character rotation
+                var backExtentPos = new Vector3(preMorphSphereCenter.x, sphereCenter.y, preMorphSphereCenter.z) + meshRootTf.forward * -bellyInfo.ZLimit;
+                var backExtentPosLs = meshRootTf.InverseTransformPoint(backExtentPos);                        
+                //calculate the furthest top morph point based under the breast position, include character animated height differences
+                var topExtentPos = new Vector3(preMorphSphereCenter.x, preMorphSphereCenter.y, preMorphSphereCenter.z) + meshRootTf.up * bellyInfo.YLimit;
+                var topExtentPosLs = meshRootTf.InverseTransformPoint(topExtentPos);
+                var vertNormalCaluRadius = sphereRadius + waistWidth/10;//Only recalculate normals for verts within this radius to prevent shadows under breast at small belly sizes
+                var yOffsetDir = Vector3.up * md[rendererName].yOffset;//Any offset direction needed to align all meshes to the same local y height
+                var reduceClothFlattenOffset = 0f;
 
-            //Heavy compute task, run in separate thread
-            Action threadAction = () => {
+                // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(smr.transform, 0.2f, sphereCenter);
+                // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLineAndAttach(meshRootTf, 5, meshRootTf.InverseTransformPoint(topExtentPos) - meshRootTf.up * GetBellyButtonOffset(bellyInfo.BellyButtonHeight));
+                // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLineAndAttach(meshRootTf, new Vector3(-3, 0, 0), new Vector3(3, 0, 0), meshRootTf.InverseTransformPoint(backExtentPos) - GetBellyButtonOffsetVector(meshRootTf, bellyInfo.BellyButtonHeight));
+                // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLineAndAttach(meshRootTf, 5, meshRootTf.InverseTransformPoint(sphereCenter));    
 
                 //Set each verticies inflated postion, with some constraints (SculptInflatedVerticie) to make it look more natural
                 for (int i = 0; i < vertsLength; i++)
@@ -294,7 +302,8 @@ namespace KK_PregnancyPlus
                 }  
 
                 //When this thread task is complete, execute the below in main thread
-                Action threadActionResult = () => {
+                Action threadActionResult = () => 
+                {
                     //Apply computed mesh back to body
                     var appliedMeshChanges = ApplyInflation(smr, rendererName, meshInflateFlags.OverWriteMesh, blendShapeTempTagName, meshInflateFlags.bypassWhen0);
 
@@ -303,7 +312,7 @@ namespace KK_PregnancyPlus
                     if (appliedMeshChanges) infConfigHistory = (PregnancyPlusData)infConfig.Clone();   
                 };
 
-                threading.AddFunctionToThreadQueue(threadActionResult);
+                threading.AddResultToThreadQueue(threadActionResult);
 
             };
 

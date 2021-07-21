@@ -62,6 +62,16 @@ namespace KK_PregnancyPlus
             }
         }
 
+        // Determine if we need to recompute belly indexes    
+        public bool NeedsToComputeIndex
+        {
+            get 
+            {   
+                if (visibilityUpdate || bypassWhen0 || freshStart || checkForNewMesh) return true; 
+                return false;
+            }
+        }
+
 
 
 
