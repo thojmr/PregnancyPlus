@@ -69,6 +69,9 @@ namespace KK_PregnancyPlus
             #endif            
         }
 
+        //Used to multithread some complex tasks.  Cant use fancy new unity threading methods, because of KK's old unity version
+        public Threading threading = new Threading();
+
 
 #region overrides
 
@@ -194,6 +197,9 @@ namespace KK_PregnancyPlus
             {
                 if (Time.frameCount % 60 == 0) MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: true, _freshStart: true, _reMeasure: true), "Update");
             }
+
+            //Execute thread results in main thread, when existing threads are done processing
+            threading.WatchAndExecuteThreadResults();
         }
 
 

@@ -134,45 +134,11 @@ namespace KK_PregnancyPlus
                 //Get all existing mesh keys
                 var keyList = new List<string>(md.Keys);
 
-                //Ill add this back laater once I do some more research
-                // //For each mesh key, calculate the new smoothed mesh in parallel
-                // var meshResults = ThreadingExtensions.RunParallel<string, Dictionary<String, Vector3[]>>(keyList, (_renderKey) => {                    
-                //     // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" QueueUserWorkItem : {_renderKey}");
-
-                //     var smr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, _renderKey, false);
-                //     if (smr == null) return null;
-
-                //     //Do the smoothing here, and get the new smoothed verts
-                //     var newVerts = SmoothSingleMesh(smr, _renderKey);
-
-                //     //Create returned data format
-                //     var keyAndVertDict = new Dictionary<String, Vector3[]>();
-                //     keyAndVertDict[_renderKey] = newVerts;
-
-                //     return keyAndVertDict;
-                // });
-                
-                // //For each mesh result
-                // foreach(var meshResult in meshResults) 
-                // {
-                //     if (meshResult == null) continue;
-                //     var renderKeys = meshResult.Keys;//Only 1 key per result in this case                    
-
-                //     //Get get the render key and apply the changes
-                //     foreach(var renderKey in renderKeys) 
-                //     {
-                //         ApplySmoothResults(meshResult[renderKey], renderKey);
-                //     }
-                //     yield return null;//Allow UI updates after each mesh has finished updating, instead of locking ui until the very end
-                // }
-
                 //For every `active` meshRenderer key we have created, smooth the mesh
                 foreach(var renderKey in keyList) 
                 {
                     var smr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderKey, searchInactive: false);
-                    var newVerts = SmoothSingleMesh(smr, renderKey);
-                    //Re-trigger ApplyInflation to set the new smoothed mesh
-                    ApplySmoothResults(newVerts, renderKey, smr);
+                    SmoothSingleMesh(smr, renderKey);
                 }
             } 
             //Only smooth the body mesh around the belly area
@@ -181,8 +147,7 @@ namespace KK_PregnancyPlus
                 var bodySmr = PregnancyPlusHelper.GetMeshRendererByName(ChaControl, BodyMeshName);
                 var renderKey = GetMeshKey(bodySmr);
 
-                var newVerts = SmoothSingleMesh(bodySmr, renderKey);     
-                ApplySmoothResults(newVerts, renderKey, bodySmr);
+                SmoothSingleMesh(bodySmr, renderKey);     
             }
 
             yield return null;
@@ -206,15 +171,15 @@ namespace KK_PregnancyPlus
         /// <summary>   
         /// Smooths a single mesh with lapacian smoothing
         /// </summary>   
-        internal Vector3[] SmoothSingleMesh(SkinnedMeshRenderer smr, string renderKey, Func<bool> callback = null)
+        internal void SmoothSingleMesh(SkinnedMeshRenderer smr, string renderKey, Func<bool> callback = null)
         {
-            if (smr == null || renderKey == null) return null;
+            if (smr == null || renderKey == null) return;
             
             //Check that this mesh has computed inflated verticies            
             if (!md.ContainsKey(renderKey) || ! md[renderKey].HasInflatedVerts) 
             {
                 if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" No inflated verts found for SmoothSingleMesh");
-                return null;
+                return;
             }
 
             //Make a copy of the mesh. We dont want to affect the existing for this
@@ -223,7 +188,7 @@ namespace KK_PregnancyPlus
             {
                 PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_MeshNotReadable, 
                     $"SmoothSingleMesh > smr '{renderKey}' is not readable, skipping");                     
-                return null;
+                return;
             } 
 
             //Calculate the original normals, but don't show them.  We just want it for the blendshape target
@@ -232,8 +197,24 @@ namespace KK_PregnancyPlus
             NormalSolver.RecalculateNormals(meshCopyTarget, 40f, md[renderKey].alteredVerticieIndexes);
             meshCopyTarget.RecalculateTangents();
 
-            //Get the new smoothed mesh verticies (compute only the belly verts)
-            return SmoothMesh.Start(meshCopyTarget, md[renderKey].alteredVerticieIndexes);
+
+            // Lapacian Smoothing is exetemely costly, and can take multiple seconds to compute with even a small mesh
+            //  So we want to put each mesh smoothing pass in its own thread, and apply the result when done
+            Action threadAction = () => {
+                var newVerts = SmoothMesh.Start(meshCopyTarget, md[renderKey].alteredVerticieIndexes);
+
+                //When this thread task is complete, execute the below in main thread
+                Action threadActionResult = () => {
+                    //Re-trigger ApplyInflation to set the new smoothed mesh
+                    ApplySmoothResults(newVerts, renderKey, smr);
+                };
+
+                threading.AddFunctionToThreadQueue(threadActionResult);
+
+            };
+
+            //Start this threaded task, and will be watched in Update() for completion
+            threading.Start(threadAction);
         }
 
     }

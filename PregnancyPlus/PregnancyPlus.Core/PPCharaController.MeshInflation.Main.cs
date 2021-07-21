@@ -23,17 +23,17 @@ namespace KK_PregnancyPlus
         /// </summary>
         /// <param name="meshInflateFlags">Contains any flags needed for mesh computation</param>
         /// <returns>Will return True if the mesh was altered and False if not</returns>
-        public bool MeshInflate(MeshInflateFlags meshInflateFlags, string callee)
+        public void MeshInflate(MeshInflateFlags meshInflateFlags, string callee)
         {
-            if (ChaControl.objBodyBone == null) return false;//Make sure chatacter objs exists first  
-            if (!PregnancyPlusPlugin.AllowMale.Value && ChaControl.sex == 0) return false;// Only female characters, unless plugin config says otherwise          
+            if (ChaControl.objBodyBone == null) return;//Make sure chatacter objs exists first  
+            if (!PregnancyPlusPlugin.AllowMale.Value && ChaControl.sex == 0) return;// Only female characters, unless plugin config says otherwise          
 
             //Only continue if one of the config values changed, or we need to recompute a mesh
-            if (!meshInflateFlags.NeedsToRun) return false;
+            if (!meshInflateFlags.NeedsToRun) return;
             if (!meshInflateFlags.bypassWhen0 && !isDuringInflationScene) ResetInflation();
 
-            if (!AllowedToInflate()) return false;//if outside studio/maker, make sure StoryMode is enabled first
-            if (!infConfig.GameplayEnabled) return false;//Only if gameplay enabled
+            if (!AllowedToInflate()) return;//if outside studio/maker, make sure StoryMode is enabled first
+            if (!infConfig.GameplayEnabled) return;//Only if gameplay enabled
 
             //Resets all stored vert values, so the script will have to recalculate all from base body
             if (meshInflateFlags.freshStart) CleanSlate();
@@ -42,7 +42,7 @@ namespace KK_PregnancyPlus
             if (infConfig.inflationSize <= 0 && !meshInflateFlags.bypassWhen0 && !isDuringInflationScene) 
             {
                 infConfigHistory.inflationSize = 0;
-                return false;                                
+                return;                                
             }
             
             if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value)  PregnancyPlusPlugin.Logger.LogInfo($" ---------- {callee}() ");
@@ -56,16 +56,14 @@ namespace KK_PregnancyPlus
             {
                 PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_BadMeasurement, 
                     $"Could not get one or more belly measurements from character");
-                return false;
-            }
-            
-            var anyMeshChanges = false;            
+                return;
+            }           
 
             //Get all mesh renderers, calculate, and apply inflation changes
             var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, findAll: true);
-            anyMeshChanges = LoopAndApplyMeshChanges(bodyRenderers, meshInflateFlags, anyMeshChanges);
+            LoopAndApplyMeshChanges(bodyRenderers, meshInflateFlags);
             var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);            
-            anyMeshChanges = LoopAndApplyMeshChanges(clothRenderers, meshInflateFlags, anyMeshChanges, true, GetBodyMeshRenderer());          
+            LoopAndApplyMeshChanges(clothRenderers, meshInflateFlags, true, GetBodyMeshRenderer());          
 
             RemoveMeshCollider();
 
@@ -73,12 +71,7 @@ namespace KK_PregnancyPlus
             if (infConfig.HasAnyValue()) 
             {
                 PregnancyPlusPlugin.lastBellyState = (PregnancyPlusData)infConfig.Clone();//CLone so we don't accidently overwright the lastState later
-            }
-
-            //Update config history when mesh changes were made
-            if (anyMeshChanges) infConfigHistory = (PregnancyPlusData)infConfig.Clone();            
-
-            return anyMeshChanges;
+            }           
         }
 
 
@@ -90,31 +83,32 @@ namespace KK_PregnancyPlus
         /// <param name="anyMeshChanges">If any mesh changes have happened so far</param>
         /// <param name="isClothingMesh">If this smr is a cloth mesh</param>
         /// <returns>boolean true if any meshes were changed</returns>
-        internal bool LoopAndApplyMeshChanges(List<SkinnedMeshRenderer> smrs, MeshInflateFlags meshInflateFlags, bool anyMeshChanges, 
+        internal void LoopAndApplyMeshChanges(List<SkinnedMeshRenderer> smrs, MeshInflateFlags meshInflateFlags, 
                                               bool isClothingMesh = false, SkinnedMeshRenderer bodyMeshRenderer = null) 
         {
             foreach (var smr in smrs) 
             {           
-                var didCompute = false;  
+                var threadedCompute = false;//Whether the computation has been threaded
+                var renderKey = GetMeshKey(smr);
 
                 //Dont recompute verts if no sliders have changed or clothing added
-                var needsComputeVerts = NeedsComputeVerts(smr, GetMeshKey(smr), meshInflateFlags);
+                var needsComputeVerts = NeedsComputeVerts(smr, renderKey, meshInflateFlags);
                 if (needsComputeVerts)
                 {
-                    didCompute = ComputeMeshVerts(smr, isClothingMesh, bodyMeshRenderer);                                                                                   
+                    threadedCompute = ComputeMeshVerts(smr, isClothingMesh, bodyMeshRenderer, meshInflateFlags);                                                                                   
                 }
 
-                //If mesh fails to compute, skip (mesn.IsReadable = false will cause this) 
-                if (needsComputeVerts && !didCompute) continue;
+                //When threaded, the belly will be set later so we can skip it here (only used when full re-computation is needed)
+                if (threadedCompute) continue;           
 
-                var appliedMeshChanges = ApplyInflation(smr, GetMeshKey(smr), meshInflateFlags.OverWriteMesh, blendShapeTempTagName, meshInflateFlags.bypassWhen0);
+                //We only make it to here when the shape was previously computed, but we need to alter the blendshape weight
+                var appliedMeshChanges = ApplyInflation(smr, renderKey, meshInflateFlags.OverWriteMesh, blendShapeTempTagName, meshInflateFlags.bypassWhen0);
 
                 //When inflation is actively happening as clothing changes, make sure the new clothing grows too
-                if (didCompute && isDuringInflationScene) AppendToQuickInflateList(smr);
-                if (appliedMeshChanges) anyMeshChanges = true;                
+                if (isDuringInflationScene) AppendToQuickInflateList(smr);
+                if (appliedMeshChanges) infConfigHistory = (PregnancyPlusData)infConfig.Clone(); 
             }  
 
-            return anyMeshChanges;
         }
 
 
@@ -148,7 +142,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Just a helper function to combine searching for verts in a mesh, and then applying the transforms
         /// </summary>
-        internal bool ComputeMeshVerts(SkinnedMeshRenderer smr, bool isClothingMesh, SkinnedMeshRenderer bodyMeshRenderer) 
+        internal bool ComputeMeshVerts(SkinnedMeshRenderer smr, bool isClothingMesh, SkinnedMeshRenderer bodyMeshRenderer, MeshInflateFlags meshInflateFlags) 
         {
             //The list of bones to get verticies for
             #if KK            
@@ -164,7 +158,7 @@ namespace KK_PregnancyPlus
 
             if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" ");
             if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" ComputeMeshVerts for {smr.name}"); 
-            return GetInflatedVerticies(smr, bellyInfo.SphereRadius, bellyInfo.WaistWidth, isClothingMesh, bodyMeshRenderer);
+            return GetInflatedVerticies(smr, bellyInfo.SphereRadius, bellyInfo.WaistWidth, isClothingMesh, bodyMeshRenderer, meshInflateFlags);
         }
 
 
@@ -177,7 +171,7 @@ namespace KK_PregnancyPlus
         /// <param name="isClothingMesh">Clothing requires a few tweaks to match skin morphs</param>
         /// <returns>Will return True if mesh verticies > 0 were found  Some meshes wont have any verticies for the belly area, returning false</returns>
         internal bool GetInflatedVerticies(SkinnedMeshRenderer smr, float sphereRadius, float waistWidth, bool isClothingMesh, 
-                                           SkinnedMeshRenderer bodySmr) 
+                                           SkinnedMeshRenderer bodySmr, MeshInflateFlags meshInflateFlags) 
         {
             Vector3 bodySphereCenterOffset = Vector3.zero;//For defaultt KK body mesh custom offset correction
 
@@ -250,51 +244,71 @@ namespace KK_PregnancyPlus
             // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(smr.transform, 0.2f, sphereCenter);
             // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLineAndAttach(meshRootTf, 5, meshRootTf.InverseTransformPoint(topExtentPos) - meshRootTf.up * GetBellyButtonOffset(bellyInfo.BellyButtonHeight));
             // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLineAndAttach(meshRootTf, new Vector3(-3, 0, 0), new Vector3(3, 0, 0), meshRootTf.InverseTransformPoint(backExtentPos) - GetBellyButtonOffsetVector(meshRootTf, bellyInfo.BellyButtonHeight));
-            // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLineAndAttach(meshRootTf, 5, meshRootTf.InverseTransformPoint(sphereCenter));
+            // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLineAndAttach(meshRootTf, 5, meshRootTf.InverseTransformPoint(sphereCenter));    
 
-            //Set each verticies inflated postion, with some constraints (SculptInflatedVerticie) to make it look more natural
-            for (int i = 0; i < vertsLength; i++)
-            {
-                //Only care about inflating belly verticies
-                if (!bellyVertIndex[i] && !PregnancyPlusPlugin.DebugVerts.Value) continue;
-                                  
-                //Convert to worldspace, and apply and mesh offset needed
-                var origVertWs = smr.transform.TransformPoint(origVerts[i] - yOffsetDir);
-                var vertDistance = Vector3.Distance(origVertWs, sphereCenter);                    
+            //Heavy compute task, run in separate thread
+            Action threadAction = () => {
 
-                //Ignore verts outside the sphere radius
-                if (vertDistance > vertNormalCaluRadius && !PregnancyPlusPlugin.DebugVerts.Value) continue;
-                
-                Vector3 inflatedVertWs;                    
-                Vector3 verticieToSpherePos;       
-                reduceClothFlattenOffset = 0f; 
+                //Set each verticies inflated postion, with some constraints (SculptInflatedVerticie) to make it look more natural
+                for (int i = 0; i < vertsLength; i++)
+                {
+                    //Only care about inflating belly verticies
+                    if (!bellyVertIndex[i] && !PregnancyPlusPlugin.DebugVerts.Value) continue;
+                                    
+                    //Convert to worldspace, and apply and mesh offset needed
+                    var origVertWs = smr.transform.TransformPoint(origVerts[i] - yOffsetDir);
+                    var vertDistance = Vector3.Distance(origVertWs, sphereCenter);                    
 
-                // If the vert is within the calculated normals radius, then consider it as an altered vert that needs normal recalculation when applying inflation
-                //  Hopefully this will reduce breast shadows for smaller bellies
-                if (vertDistance <= vertNormalCaluRadius) alteredVerts[i] = true;                                                                          
-                
-                if (isClothingMesh) 
-                {                        
-                    //Calculate clothing offset distance                   
-                    reduceClothFlattenOffset = GetClothesFixOffset(sphereCenter, sphereRadius, waistWidth, origVertWs, smr.name, clothOffsets[i]);
-                }
+                    //Ignore verts outside the sphere radius
+                    if (vertDistance > vertNormalCaluRadius && !PregnancyPlusPlugin.DebugVerts.Value) continue;
                     
-                //Shift each belly vertex away from sphere center in a sphere pattern.  This is the core of the Preg+ belly shape
-                verticieToSpherePos = (origVertWs - sphereCenter).normalized * (sphereRadius + reduceClothFlattenOffset) + sphereCenter;                                                    
+                    Vector3 inflatedVertWs;                    
+                    Vector3 verticieToSpherePos;       
+                    reduceClothFlattenOffset = 0f; 
 
-                //Make adjustments to the shape to make it smooth, and feed in user slider input
-                inflatedVertWs =  SculptInflatedVerticie(origVertWs, verticieToSpherePos, sphereCenter, waistWidth, 
-                                                            meshRootTf, preMorphSphereCenter, sphereRadius, backExtentPos, 
-                                                            topExtentPos, sphereCenterLs, pmSphereCenterLs, backExtentPosLs, 
-                                                            topExtentPosLs);   
+                    // If the vert is within the calculated normals radius, then consider it as an altered vert that needs normal recalculation when applying inflation
+                    //  Hopefully this will reduce breast shadows for smaller bellies
+                    if (vertDistance <= vertNormalCaluRadius) alteredVerts[i] = true;                                                                          
+                    
+                    if (isClothingMesh) 
+                    {                        
+                        //Calculate clothing offset distance                   
+                        reduceClothFlattenOffset = GetClothesFixOffset(sphereCenter, sphereRadius, waistWidth, origVertWs, smr.name, clothOffsets[i]);
+                    }
+                        
+                    //Shift each belly vertex away from sphere center in a sphere pattern.  This is the core of the Preg+ belly shape
+                    verticieToSpherePos = (origVertWs - sphereCenter).normalized * (sphereRadius + reduceClothFlattenOffset) + sphereCenter;                                                    
 
-                //Convert back to local space, and undo any temporary offset                                                                
-                inflatedVerts[i] = smr.transform.InverseTransformPoint(inflatedVertWs) + yOffsetDir;                                      
+                    //Make adjustments to the shape to make it smooth, and feed in user slider input
+                    inflatedVertWs =  SculptInflatedVerticie(origVertWs, verticieToSpherePos, sphereCenter, waistWidth, 
+                                                                meshRootTf, preMorphSphereCenter, sphereRadius, backExtentPos, 
+                                                                topExtentPos, sphereCenterLs, pmSphereCenterLs, backExtentPosLs, 
+                                                                topExtentPosLs);   
 
-                // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLineAndAttach(smr.transform, 0.02f, origVerts[i]- yOffsetDir, false);
-                // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(smr.transform, 0.02f, origVerts[i] - yOffsetDir, false);            
-                // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(ChaControl.transform, 0.02f, smr.transform.TransformPoint(origVerts[i]), false);            
-            }      
+                    //Convert back to local space, and undo any temporary offset                                                                
+                    inflatedVerts[i] = smr.transform.InverseTransformPoint(inflatedVertWs) + yOffsetDir;                                      
+
+                    // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLineAndAttach(smr.transform, 0.02f, origVerts[i]- yOffsetDir, false);
+                    // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(smr.transform, 0.02f, origVerts[i] - yOffsetDir, false);            
+                    // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(ChaControl.transform, 0.02f, smr.transform.TransformPoint(origVerts[i]), false);            
+                }  
+
+                //When this thread task is complete, execute the below in main thread
+                Action threadActionResult = () => {
+                    //Apply computed mesh back to body
+                    var appliedMeshChanges = ApplyInflation(smr, rendererName, meshInflateFlags.OverWriteMesh, blendShapeTempTagName, meshInflateFlags.bypassWhen0);
+
+                    //When inflation is actively happening as clothing changes, make sure the new clothing grows too
+                    if (isDuringInflationScene) AppendToQuickInflateList(smr);
+                    if (appliedMeshChanges) infConfigHistory = (PregnancyPlusData)infConfig.Clone();   
+                };
+
+                threading.AddFunctionToThreadQueue(threadActionResult);
+
+            };
+
+            //Start this threaded task, and will be watched in Update() for completion
+            threading.Start(threadAction);
 
             return true;                 
         }

@@ -28,14 +28,14 @@ namespace KK_PregnancyPlus
         /// </summary>
         /// <param name="inflationSize">Sets inflation size from 0 to 40, clamped</param>
         /// <param name="meshInflateFlags">Contains any flags needed for mesh computation</param>
-        public bool MeshInflate(float inflationSize, string callee, MeshInflateFlags meshInflateFlags = null)
+        public void MeshInflate(float inflationSize, string callee, MeshInflateFlags meshInflateFlags = null)
         {                  
             //Allow an initial size to be passed in, and sets it to the config           
             infConfig.inflationSize = Mathf.Clamp(inflationSize, 0, 40);         
             if (meshInflateFlags == null) meshInflateFlags = new MeshInflateFlags(this);
             meshInflateFlags.infConfig = infConfig;//Update the new config value here too
 
-            return MeshInflate(meshInflateFlags, callee);
+            MeshInflate(meshInflateFlags, callee);
         }
 
         /// <summary>
@@ -43,14 +43,14 @@ namespace KK_PregnancyPlus
         /// </summary>
         /// <param name="cardData">Some prexisting PregnancyPlusData that we want to activate</param>
         /// <param name="meshInflateFlags">Contains any flags needed for mesh computation</param>
-        public bool MeshInflate(PregnancyPlusData cardData, string callee, MeshInflateFlags meshInflateFlags = null)
+        public void MeshInflate(PregnancyPlusData cardData, string callee, MeshInflateFlags meshInflateFlags = null)
         {                  
             //Allow an initial size to be passed in, and sets it to the config           
             infConfig = cardData;          
             if (meshInflateFlags == null) meshInflateFlags = new MeshInflateFlags(this);
             meshInflateFlags.infConfig = infConfig;//Update the new config value here too
 
-            return MeshInflate(meshInflateFlags, callee);
+            MeshInflate(meshInflateFlags, callee);
         }
 
 
