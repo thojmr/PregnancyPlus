@@ -71,7 +71,7 @@ namespace KK_PregnancyPlus
                 }
 
                 //If no infConfig is set for this character, use a predefined one for the best KK_Pregnancy look, since the default shape tend to look a little strange.
-                if (!infConfig.HasAnyValue(false)) infConfig = GetDefaultShapeFor_KK_Pregnancy();
+                if (!infConfig.HasAnyValue(includeSize: false)) infConfig = GetDefaultShapeFor_KK_Pregnancy();
 
                 //Compute the additonal belly size added based on user configured vallue from 0-40
                 var additionalPregPlusSize = Mathf.Lerp(0, weeks, PregnancyPlusPlugin.MaxStoryModeBelly.Value/40);
@@ -105,7 +105,7 @@ namespace KK_PregnancyPlus
                 if (currentWeeks > _inflationStartSize) _inflationStartSize = _inflationChange = TargetPregPlusSize = currentWeeks;
 
                 //If no infConfig is set for this character, use a predefined one for the best KK_Pregnancy look, since the default shape tend to look a little strange.
-                if (!infConfig.HasAnyValue(false)) infConfig = GetDefaultShapeFor_KK_Pregnancy();  
+                if (!infConfig.HasAnyValue(includeSize: false)) infConfig = GetDefaultShapeFor_KK_Pregnancy();  
             #endif          
 
             //Init and compile the list of blendshapes to target

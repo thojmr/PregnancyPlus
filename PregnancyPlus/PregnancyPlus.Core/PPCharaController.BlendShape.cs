@@ -181,7 +181,7 @@ namespace KK_PregnancyPlus
         internal void ScrubTempBlendShapes()
         {
             var renderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);            
-            var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, true);
+            var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, findAll: true);
             renderers.AddRange(bodyRenderers);
 
             //Remove any Preg+ [temp] blendshapes
@@ -293,10 +293,10 @@ namespace KK_PregnancyPlus
             foreach(var meshBlendShape in meshBlendShapes)
             {
                 //Loop through all meshes and append any that need to be
-                var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes, true);
-                LoopMeshAndAddSavedBlendShape(clothRenderers, meshBlendShape, uncensorGUID, true);
+                var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes, findAll: true);
+                LoopMeshAndAddSavedBlendShape(clothRenderers, meshBlendShape, uncensorGUID, isClothingMesh: true);
 
-                var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, true);
+                var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, findAll: true);
                 LoopMeshAndAddSavedBlendShape(bodyRenderers, meshBlendShape, uncensorGUID);
             }       
 
@@ -422,13 +422,13 @@ namespace KK_PregnancyPlus
                 }
                 
                 //Update the weight to match the weight from the character card   
-                _bsc.ApplyBlendShapeWeight(smr, meshBlendShape.BlendShape.weight, false);
+                _bsc.ApplyBlendShapeWeight(smr, meshBlendShape.BlendShape.weight, floatLerp: false);
                 return true;
             }
 
             //Othwewise add the blendshape to the mesh, and set the weight
             var bsc = new BlendShapeController(meshBlendShape.BlendShape, smr);
-            bsc.ApplyBlendShapeWeight(smr, meshBlendShape.BlendShape.weight, false);
+            bsc.ApplyBlendShapeWeight(smr, meshBlendShape.BlendShape.weight, floatLerp: false);
 
             return true;
         }
@@ -572,7 +572,7 @@ namespace KK_PregnancyPlus
                 if (blendshapeCtrl.blendShape != null) blendshapes.Add(blendshapeCtrl);
             }
 
-            var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, true);
+            var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, findAll: true);
             foreach(var smr in bodyRenderers)
             {
                 var blendShapeName = MakeBlendShapeName(GetMeshKey(smr), blendShapeTempTagName);

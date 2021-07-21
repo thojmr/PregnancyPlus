@@ -211,7 +211,7 @@ namespace KK_PregnancyPlus
                         PregnancyPlusPlugin.Logger.LogWarning($"Cant determine which female to deflate");
                     else
                     {
-                        TriggerInflation(CharaTarget, true);
+                        TriggerInflation(CharaTarget, deflate: true);
                         _lastInflatedFemaleName = null;
                     }
                 }

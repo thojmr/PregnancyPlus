@@ -172,7 +172,7 @@ namespace KK_PregnancyPlus
         /// </summary>
         public SkinnedMeshRenderer GetBodyMeshRenderer()
         {
-            var bodyMeshRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, true);
+            var bodyMeshRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, findAll: true);
             return bodyMeshRenderers.Find(x => x.name == BodyMeshName);
         }
 

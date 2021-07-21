@@ -22,7 +22,7 @@ namespace KK_PregnancyPlus
         {
             var hasMatchingMesh = false;
             var guidsAllNull = true;
-            var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, true);
+            var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, findAll: true);
             if (bodyRenderers == null || bodyRenderers.Count <= 0) return;
 
             //For each saved blendshape see if the current body mesh is a match

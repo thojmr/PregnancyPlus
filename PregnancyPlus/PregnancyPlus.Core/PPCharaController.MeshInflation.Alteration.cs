@@ -169,7 +169,7 @@ namespace KK_PregnancyPlus
                 //For every `active` meshRenderer key we have created, smooth the mesh
                 foreach(var renderKey in keyList) 
                 {
-                    var smr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderKey, false);
+                    var smr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderKey, searchInactive: false);
                     var newVerts = SmoothSingleMesh(smr, renderKey);
                     //Re-trigger ApplyInflation to set the new smoothed mesh
                     ApplySmoothResults(newVerts, renderKey, smr);
@@ -197,7 +197,7 @@ namespace KK_PregnancyPlus
             //Set the new smoothed mesh verts
             if (newMesh != null) md[renderKey].inflatedVertices = newMesh;
 
-            if (smr == null) smr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderKey, false);
+            if (smr == null) smr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderKey, searchInactive: false);
             //Re-trigger ApplyInflation to set the new smoothed mesh           
             ApplyInflation(smr, renderKey, true, blendShapeTempTagName);            
         }

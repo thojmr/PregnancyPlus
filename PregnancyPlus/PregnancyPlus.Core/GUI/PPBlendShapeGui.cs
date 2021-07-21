@@ -164,7 +164,7 @@ namespace KK_PregnancyPlus
 
 		public void ClearAllSliderValues() 
 		{
-			_sliderValues = BuildSliderListValues(guiSkinnedMeshRenderers, _sliderValues, true);
+			_sliderValues = BuildSliderListValues(guiSkinnedMeshRenderers, _sliderValues, clearAll: true);
 		}
 
 

@@ -103,7 +103,7 @@ namespace KK_PregnancyPlus
             if (!infConfig.UseOldCalcLogic()) yield return new WaitForEndOfFrame();
 
             #if KK || AI
-                GetWeeksAndSetBellySize(true);  
+                GetWeeksAndSetBellySize(checkNewMesh: true);  
 
             #elif HS2
                 //For HS2 AI, we set global belly size from plugin config, or character card                    
@@ -255,7 +255,7 @@ namespace KK_PregnancyPlus
             if (!initialized) return;
 
             //When clothing changes, reload inflation state
-            StartCoroutine(WaitForClothMeshToSettle(0.05f, true));
+            StartCoroutine(WaitForClothMeshToSettle(0.05f, checkNewMesh: true));
         } 
 
         

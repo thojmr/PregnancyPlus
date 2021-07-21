@@ -293,7 +293,7 @@ namespace KK_PregnancyPlus
                 foreach (PregnancyPlusCharaController charCustFunCtrl in handlers.Instances)
                 { 
                     #if KK || AI //In kk we want to use KK_pregnancy weeks to determine the belly size
-                        charCustFunCtrl.GetWeeksAndSetBellySize(true);                     
+                        charCustFunCtrl.GetWeeksAndSetBellySize(checkNewMesh: true);                     
 
                     #elif HS2 //In HS2 we set the belly size based on the plugin config slider
                         charCustFunCtrl.MeshInflate(new MeshInflateFlags(charCustFunCtrl, _checkForNewMesh: true), "StoryMode_SettingsChanged");                     
@@ -323,7 +323,7 @@ namespace KK_PregnancyPlus
                 if (PregnancyPlusPlugin.StoryMode != null && PregnancyPlusPlugin.StoryMode.Value) 
                 {            
                     #if KK || AI //custom integration with KK_Pregnancy    
-                        charCustFunCtrl.GetWeeksAndSetBellySize(true, true);    
+                        charCustFunCtrl.GetWeeksAndSetBellySize(checkNewMesh: true, slidersChanged: true);    
 
                     #elif HS2
                         //Need to recalculate mesh position when sliders change here

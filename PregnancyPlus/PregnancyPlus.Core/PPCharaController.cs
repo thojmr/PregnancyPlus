@@ -108,7 +108,7 @@ namespace KK_PregnancyPlus
                     GameAPI.EndH += (object sender, EventArgs e) => 
                     { 
                         if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $EndH {charaFileName}");
-                        ClearInflationStuff(true);
+                        ClearInflationStuff(fullReset: true);
                     };
                 #endif
          
@@ -143,17 +143,17 @@ namespace KK_PregnancyPlus
 
             ClearOnReload();
             #if AI || HS2
-                //Fix for the way AI addds new characters by copying existing character first.  This will remove the old blendshapes.
+                //Fix for the way AI injects new characters in Main Game by copying existing character first.  This will remove the old blendshapes.
                 ScrubTempBlendShapes();
             #endif
 
-            //Check for swapping out character Game Object with new character
-            var isNewCharFile = IsNewChar(ChaFileControl);
+            //(no longer used) Check for swapping out character Game Object with new character
+            IsNewChar(ChaFileControl);
             charaFileName = ChaFileControl.parameter.fullname;
 
             ReadAndSetCardData();
 
-            // When changing a character (swapping in place) in studio carry over belly sliders/blendshapes
+            // When changing a character (swapping in place) in studio, carry over belly sliders/blendshapes
             //TODO there has to be a better way to detect swapping characters
             if (StudioAPI.InsideStudio && (infConfigHistory.HasAnyValue() || infConfigHistory.HasBlendShape()))
             {
@@ -162,7 +162,7 @@ namespace KK_PregnancyPlus
                 if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" Updating Card Data > {infConfig.ValuesToString()}");
             }
 
-            //If the uncensor changed just before this Reload(), then is was probably a character swap.
+            //If the uncensor changed just before this Reload() fired, then is was probably a character swap.
             if (uncensorChanged)
             {
                 uncensorChanged = false;
@@ -170,12 +170,12 @@ namespace KK_PregnancyPlus
                 //When in maker or studio we want to reset inflation values when uncensor changes to reset clothes
                 if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) ResetInflation();        
                 //Load any saved blendshapes from card, and can trigger uncensor change when necessary
-                //Give any existing uncensor changes time to process first, incase we need to auto swap uncensors
-                StartCoroutine(ILoadBlendshapes(0.1f, true));
+                //Give any existing uncensor changes time to process first
+                StartCoroutine(ILoadBlendshapes(0.1f, checkUncensor: true));
             }   
             else 
             {
-                //Load any saved blendshapes from card, and can trigger uncensor change when necessary
+                //Load any saved blendshapes from card, or trigger uncensor change when necessary
                 StartCoroutine(ILoadBlendshapes(0f));
             }         
 
