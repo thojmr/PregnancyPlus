@@ -2,6 +2,7 @@
 using KKAPI.Chara;
 using UnityEngine;
 using System;
+using System.Threading;
 using System.Collections;
 using System.Collections.Generic;
 #if HS2 || AI
@@ -216,6 +217,7 @@ namespace KK_PregnancyPlus
             if (NeedsClothMeasurement(smr, bodySmr, sphereCenter)) CreateMeshCollider(bodySmr); 
            
             //Get the cloth offset for each cloth vertex via raycast to skin
+            //  Unfortunately this cant be inside the thread below because Unity Raycast are not thread safe...
             var clothOffsets = DoClothMeasurement(smr, bodySmr, sphereCenter);
             if (clothOffsets == null) clothOffsets = new float[md[rendererName].originalVertices.Length];
 
@@ -225,7 +227,7 @@ namespace KK_PregnancyPlus
             var alteredVerts = md[rendererName].alteredVerticieIndexes;
 
             //Heavy compute task below, run in separate thread
-            Action threadAction = () => 
+            WaitCallback threadAction = (System.Object stateInfo) => 
             {
 
                 #if DEBUG

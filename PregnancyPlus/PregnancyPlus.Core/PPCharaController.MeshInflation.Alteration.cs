@@ -200,7 +200,7 @@ namespace KK_PregnancyPlus
 
             // Lapacian Smoothing is exetemely costly, and can take multiple seconds to compute with even a small mesh
             //  So we want to put each mesh smoothing pass in its own thread, and apply the result when done
-            Action threadAction = () => 
+            WaitCallback threadAction = (System.Object stateInfo) => 
             {
                 var newVerts = SmoothMesh.Start(meshCopyTarget, md[renderKey].alteredVerticieIndexes);
 
