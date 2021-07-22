@@ -18,8 +18,6 @@ namespace KK_PregnancyPlus
         internal PregnancyPlusData infConfigHistory = null;
 
 
-        //** Computed props below**
-
 
         //When any slider values have actually changed, we need to recompute the belly shape
         public bool SliderHaveChanged 
@@ -62,12 +60,12 @@ namespace KK_PregnancyPlus
             }
         }
 
-        // Determine if we need to recompute belly indexes    
+        // Determine if we need to recompute belly indexes from scratch
         public bool NeedsToComputeIndex
         {
             get 
             {   
-                if (visibilityUpdate || bypassWhen0 || freshStart || checkForNewMesh) return true; 
+                if (bypassWhen0 || freshStart || checkForNewMesh) return true;
                 return false;
             }
         }
