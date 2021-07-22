@@ -29,6 +29,7 @@ namespace KK_PregnancyPlus
                 try
                 {
                     TryPatchPreggersInflation(harmonyInstance);
+                    TryPatchPreggersBellyEffect(harmonyInstance);
                 }
                 catch(MissingMethodException e)
                 {
@@ -116,6 +117,48 @@ namespace KK_PregnancyPlus
 
                 //Set the inflation amount on the characters controller
                 controller.OnInflationChanged(inflationAmount, maxInflationSize.Value);
+            }
+
+
+            /// <summary>
+            /// When configured so, disable the KK_Pregnancy default belly effect, and prefer our own
+            /// </summary>
+            public static void TryPatchPreggersBellyEffect(Harmony hi)
+            {                
+                var pregnancyBoneEffect = Type.GetType($"KK_Pregnancy.PregnancyBoneEffect, {pluginName}", false);
+                if (pregnancyBoneEffect == null)
+                {
+                    PregnancyPlusPlugin.Logger.LogWarning(
+                        $"Could not find {pluginName}.PregnancyBoneEffect not found, (please report this if you do have latest version of {pluginName} installed)");
+                        return;
+                }
+
+                var LerpModifierMethod = pregnancyBoneEffect.GetMethod("LerpModifier", AccessTools.all);
+                if (LerpModifierMethod == null)
+                {
+                    PregnancyPlusPlugin.Logger.LogWarning(
+                        $"Could not find {pluginName}.PregnancyBoneEffect.LerpModifier - something isn't right, please report this");
+                    return;                        
+                }
+                
+                //If the LerpModifier method is found, then patch it
+                hi.Patch(LerpModifierMethod,
+                        prefix: new HarmonyMethod(typeof(Hooks_KK_Pregnancy), nameof(Hooks_KK_Pregnancy.BoneModifierChangePatch)));                                            
+            }
+
+
+            /// <summary>
+            /// When KK_Pregnancy tries to modify belly bones stop it when configured to do so by setting bone effect size to 0
+            /// </summary>
+            private static void BoneModifierChangePatch(ref float bellySize)
+            {
+                //When user wants to use our belly shape instead of the default KK_Pregnancy one, always set the belly bone modifier scale to 0
+                if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return;//Don't allow override in studio or maker
+                //Disable setting bone modifier size when we want to override with our shape
+                if (PregnancyPlusPlugin.OverrideBelly != null && PregnancyPlusPlugin.OverrideBelly.Value)
+                {
+                    bellySize = 0;
+                }
             }
 
 

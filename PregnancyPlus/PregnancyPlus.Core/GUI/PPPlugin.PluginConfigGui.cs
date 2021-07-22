@@ -11,6 +11,7 @@ namespace KK_PregnancyPlus
     public partial class PregnancyPlusPlugin
     {
         public static ConfigEntry<bool> StoryMode { get; private set; }
+        public static ConfigEntry<bool> OverrideBelly { get; private set; }
         public static ConfigEntry<bool> AllowMale { get; private set; }
         public static ConfigEntry<float> MaxStoryModeBelly { get; private set; }
         public static ConfigEntry<float> StoryModeInflationMultiplier { get; private set; }
@@ -104,6 +105,8 @@ namespace KK_PregnancyPlus
 
                 var maxBellySizeTitle = "KK_Pregnancy Integration";
                 var maxBellySizeDescription = "The maximum additional belly size/shape that this plugin will add to the original KK_Pregnancy belly. The character must be pregnant or inflated.\r\n0 will result in the original KK_Pregnancy belly, while 40 will be the original + the full Preg+ size/shape.";
+                var overrideBellyShapeTitle = "Override KK_Pregnancy belly shape";
+                var overrideBellyShapeDescription = "When enabled, the Preg+ belly shape will be the only shape used for pregnancy and inflation.  It disables the KK_Pregnancy shape in main gameplay.";
             
             #elif AI
                 var storyConfigTitle = "Story/Main-Game Mode";     
@@ -111,6 +114,8 @@ namespace KK_PregnancyPlus
 
                 var maxBellySizeTitle = "AI_Pregnancy Integration";
                 var maxBellySizeDescription = "The maximum additional belly size/shape that this plugin will add to the original AI_Pregnancy belly. The character must be pregnant or inflated.\r\n0 will result in the original AI_Pregnancy belly, while 40 will be the original + the full Preg+ size/shape.";
+                var overrideBellyShapeTitle = "Override AI_Pregnancy belly shape";
+                var overrideBellyShapeDescription = "When enabled, the Preg+ belly shape will be the only shape used for pregnancy and inflation.  It disables the AI_Pregnancy shape in main gameplay.";
 
             #elif HS2
                 var storyConfigTitle = "Story/Main-Game Mode";
@@ -258,6 +263,15 @@ namespace KK_PregnancyPlus
                         new ConfigurationManagerAttributes { Order = 1 })
                     );
                 MaxStoryModeBelly.SettingChanged += InflationConfig_SettingsChanged;
+
+
+                //Allows us to override the default KK_Pregnancy belly shape with out own.  For when we don't want to mix them.
+                OverrideBelly = Config.Bind<bool>(maxBellySizeTitle, overrideBellyShapeTitle, false,
+                new ConfigDescription(overrideBellyShapeDescription,
+                    null,
+                    new ConfigurationManagerAttributes { Order = 1 })
+                );
+                OverrideBelly.SettingChanged += OverrideBelly_SettingsChanged;
             #endif
                     
 
@@ -280,6 +294,7 @@ namespace KK_PregnancyPlus
                     new ConfigurationManagerAttributes { Order = 28 })
                 );
         }
+
 
         internal void StoryMode_SettingsChanged(object sender, System.EventArgs e) 
         {            
@@ -310,6 +325,20 @@ namespace KK_PregnancyPlus
                 }
             }
         }
+
+
+        internal void OverrideBelly_SettingsChanged(object sender, System.EventArgs e) 
+        {            
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return;//Don't allow toggle event in studio
+            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" OverrideBelly_SettingsChanged > {OverrideBelly.Value}");
+        
+            //Make sure the belly can reach its normal size when at full term 
+            if (OverrideBelly != null && OverrideBelly.Value) MaxStoryModeBelly.Value = 40f;
+            if (OverrideBelly != null && !OverrideBelly.Value) MaxStoryModeBelly.Value = 10f;//Otherwise back to default
+
+            //The next time the KK_Pregnancy bone modifier triggers it will set the correct size based on OverrideBelly.Value
+        }
+
 
         internal void InflationConfig_SettingsChanged(object sender, System.EventArgs e) 
         {

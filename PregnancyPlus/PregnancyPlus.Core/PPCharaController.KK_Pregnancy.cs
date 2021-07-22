@@ -114,7 +114,8 @@ namespace KK_PregnancyPlus
             //Compute the target belly size up to 40
             //When TargetPregPlusSize changes, it will trigger ComputeInflationChange()
             #if !HS2
-                TargetPregPlusSize = Mathf.Lerp(0, kkInflationSize, PregnancyPlusPlugin.MaxStoryModeBelly.Value/40);
+                //Scale it correctly based on MaxStoryModeBelly size
+                TargetPregPlusSize = kkInflationSize * (PregnancyPlusPlugin.MaxStoryModeBelly.Value/40);
             #else
                 TargetPregPlusSize = kkInflationSize;
             #endif
@@ -210,9 +211,16 @@ namespace KK_PregnancyPlus
         /// </summary>
         public PregnancyPlusData GetDefaultShapeFor_KK_Pregnancy() 
         {
-            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" GetDefaultInflationShape>  Loading a Default belly shape");
+            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" GetDefaultInflationShape > Loading a Default belly shape");
             var customInfConfig = new PregnancyPlusData();
             customInfConfig.pluginVersion = PregnancyPlusPlugin.Version;
+
+            //When we are overriding the KK_Pregnancy belly shape, we don't need a custom shape
+            if (PregnancyPlusPlugin.OverrideBelly != null && PregnancyPlusPlugin.OverrideBelly.Value) 
+            {
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" GetDefaultInflationShape > OverrideBelly is set, ignoring custom belly shape");
+                return customInfConfig;
+            }
             
             #if KK
                 //These values looked decent on most default characters, but they can always be changed.
