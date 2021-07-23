@@ -215,10 +215,30 @@ namespace KK_PregnancyPlus
             var customInfConfig = new PregnancyPlusData();
             customInfConfig.pluginVersion = PregnancyPlusPlugin.Version;
 
-            //When we are overriding the KK_Pregnancy belly shape, we don't need a custom shape
+            //When we are overriding the KK_Pregnancy belly shape, we want a different custom shape than the default one
             if (PregnancyPlusPlugin.OverrideBelly != null && PregnancyPlusPlugin.OverrideBelly.Value) 
             {
-                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" GetDefaultInflationShape > OverrideBelly is set, ignoring custom belly shape");
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" GetDefaultInflationShape > OverrideBelly is set, Loading custom belly shape");
+
+                #if KK
+                    //These values looked decent on most default characters, but they can always be changed.
+                    customInfConfig.inflationMultiplier = 0.4f;
+                    customInfConfig.inflationStretchX = -0.2f;
+                    customInfConfig.inflationStretchY = -0.1f;
+                    customInfConfig.inflationTaperY = -0.02f;
+                    customInfConfig.inflationTaperZ = -0.005f;
+                    customInfConfig.inflationDrop = 0.05f;
+
+                #else
+                    customInfConfig.inflationMultiplier = 0.1f;
+                    customInfConfig.inflationStretchX = -0.15f;          
+                    customInfConfig.inflationStretchY = -0.05f;
+                    customInfConfig.inflationTaperY = -0.02f;
+                    customInfConfig.inflationTaperZ = -0.01f;
+                    customInfConfig.inflationDrop = 0.05f;
+
+                #endif
+
                 return customInfConfig;
             }
             
