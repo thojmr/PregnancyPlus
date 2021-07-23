@@ -31,7 +31,6 @@ namespace KK_PregnancyPlus
 
             //Only continue if one of the config values changed, or we need to recompute a mesh
             if (!meshInflateFlags.NeedsToRun) return;
-            if (!meshInflateFlags.bypassWhen0 && !isDuringInflationScene) ResetInflation();
 
             if (!AllowedToInflate()) return;//if outside studio/maker, make sure StoryMode is enabled first
             if (!infConfig.GameplayEnabled) return;//Only if gameplay enabled
@@ -43,6 +42,7 @@ namespace KK_PregnancyPlus
             if (infConfig.inflationSize <= 0 && !meshInflateFlags.bypassWhen0 && !isDuringInflationScene) 
             {
                 infConfigHistory.inflationSize = 0;
+                ResetInflation();
                 return;                                
             }
             
@@ -56,7 +56,7 @@ namespace KK_PregnancyPlus
             if (!hasMeasuerments) 
             {
                 PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_BadMeasurement, 
-                    $"Could not get one or more belly measurements from character");
+                    $"Could not get one or more belly measurements from character (This is normal when a character is loaded but inactive)");
                 return;
             }           
 
@@ -103,7 +103,7 @@ namespace KK_PregnancyPlus
                 //We only make it to here when the shape was previously computed, but we need to alter the blendshape weight
                 var appliedMeshChanges = ApplyInflation(smr, renderKey, meshInflateFlags.OverWriteMesh, blendShapeTempTagName, meshInflateFlags.bypassWhen0);
 
-                //When inflation is actively happening as clothing changes, make sure the new clothing grows too
+                //When inflation is actively happening as clothing changes, add cloting to the inflation list
                 if (isDuringInflationScene) AppendToQuickInflateList(smr);
                 if (appliedMeshChanges) infConfigHistory = (PregnancyPlusData)infConfig.Clone(); 
             }  
