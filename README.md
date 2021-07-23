@@ -4,13 +4,16 @@ The belly shape will persist in any game mode when slider values are saved to th
 
 See `How To Install` for installation instructions
 
-** 
- This project now has all the features I originally intended, so nothing new in the pipeline.  I will continue to provide bugfixes and support. 
-**
 
 <img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/result.png" height="575"></img>
 <img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/P%2BMakerGUI.PNG" height="575"></img>
 <img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/P%2BStudioGUI.PNG" width="476.5"></img>
+
+## Latest Features (I will update this occasionally)
+- Override KK_Pregnancy belly shape
+- Multithreaded computation
+- HS2 belly inflation logic
+
 
 ## Features
 - Adds a number of sliders that will allow you to change the size and shape of a characters belly in Studio, Maker, and Main Game.
@@ -20,13 +23,14 @@ See `How To Install` for installation instructions
 - Adds 3 configurable keybinds in plugin config that can be used to increase or decrease the belly size in Main Game, on the fly.   
 - Substitutes for stomach bulges/fat bellies as well, but it's original intent is pregnancy.    
 - Adds a "Main Game" mode config option.  Disable if you want to turn off this plugins' features temporarily while playing.
+- Adds an "Override KK_Pregnancy belly shape" toggle, that lets you replace the KK/AI_Pregnancy belly with the Preg+ one in Main Gameplay
 - Adds a "Mesh Smoothing" button in Studio and Maker, that allows you to smooth the belly mesh and reduce any edges resulting from some slider combinations.
     - The smoothing will reset on slider change or character load, so it's mostly for screenshots, animations, and blendshapes.
     - The smoothed shape will be captured by blendshapes!
     - Optionally you can smooth any skin tight clothing as well, to help reduce clipping while smoothing, but clothing doesn't always look great afterwords.
 - Somewhat compatible with "[ddaa33] Pregnant plugin (ShapeKeyPlugin)" if you wish to combine the effects of both, you can.  But the effects applied by that plugin will not save to the character card by default. (Only with Pregnancy+ captured blendshapes)
 
-## (New!) Honey Select 2 Only Features
+## Honey Select 2 Only Features
 - Because I'm too lazy to port KK_Pregnancy to HS2, belly inflation logic has been added to Main Game HScenes when finishing inside.  Similar to how KK_Pregnancy inflation works.  It is off by default, turn it on in Preg+ plugin config.
 
 ## Koikatsu and AI Only Features
