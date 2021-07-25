@@ -23,13 +23,94 @@ namespace KK_PregnancyPlus
 
             public static void InitHooks(Harmony harmonyInstance)
             {                                    
-                harmonyInstance.PatchAll(typeof(Hooks_HS2_Inflation));
+                TryPatchHS2FinishProcs(harmonyInstance);
             }
 
 
-            //HS2 inflation trigger logics
-            [HarmonyPrefix]
-            [HarmonyPatch(typeof(MultiPlay_F2M1), "Proc", typeof(int), typeof(HScene.AnimationListInfo))]
+            /// <summary>
+            /// Because HS2 and HS2_VR Assembly-csharp methods differ in method arguments, we have to patch them this way
+            /// </summary>
+            public static void TryPatchHS2FinishProcs(Harmony hi)
+            {                
+                var procTypeF1M2 = Type.GetType($"MultiPlay_F1M2, Assembly-CSharp", false);
+                if (procTypeF1M2 == null)
+                {
+                    PregnancyPlusPlugin.Logger.LogWarning(
+                        $"Could not find Assembly-Csharp.MultiPlay_F1M2, (please report this)");
+                        return;
+                }
+
+                var procMethodF1m2 = procTypeF1M2.GetMethod("Proc", AccessTools.all);
+                if (procMethodF1m2 == null)
+                {
+                    PregnancyPlusPlugin.Logger.LogWarning(
+                        $"Could not find Assembly-Csharp.MultiPlay_F1M2.Proc - something isn't right, please report this");
+                    return;                        
+                }
+
+                var procTypeF2M1 = Type.GetType($"MultiPlay_F2M1, Assembly-CSharp", false);
+                if (procTypeF2M1 == null)
+                {
+                    PregnancyPlusPlugin.Logger.LogWarning(
+                        $"Could not find Assembly-Csharp.MultiPlay_F2M1, (please report this)");
+                        return;
+                }
+
+                var procMethodF2m1 = procTypeF2M1.GetMethod("Proc", AccessTools.all);
+                if (procMethodF2m1 == null)
+                {
+                    PregnancyPlusPlugin.Logger.LogWarning(
+                        $"Could not find Assembly-Csharp.MultiPlay_F2M1.Proc - something isn't right, please report this");
+                    return;                        
+                }
+
+
+                var procTypeSonyu = Type.GetType($"Sonyu, Assembly-CSharp", false);
+                if (procTypeSonyu == null)
+                {
+                    PregnancyPlusPlugin.Logger.LogWarning(
+                        $"Could not find Assembly-Csharp.Sonyu, (please report this)");
+                        return;
+                }
+
+                var procMethodSonyu = procTypeSonyu.GetMethod("Proc", AccessTools.all);
+                if (procMethodSonyu == null)
+                {
+                    PregnancyPlusPlugin.Logger.LogWarning(
+                        $"Could not find Assembly-Csharp.Sonyu.Proc - something isn't right, please report this");
+                    return;                        
+                }
+
+
+                var procTypeHoushi = Type.GetType($"Houshi, Assembly-CSharp", false);
+                if (procTypeHoushi == null)
+                {
+                    PregnancyPlusPlugin.Logger.LogWarning(
+                        $"Could not find Assembly-Csharp.Houshi, (please report this)");
+                        return;
+                }
+
+                var procMethodHoushi = procTypeHoushi.GetMethod("Proc", AccessTools.all);
+                if (procMethodHoushi == null)
+                {
+                    PregnancyPlusPlugin.Logger.LogWarning(
+                        $"Could not find Assembly-Csharp.Houshi.Proc - something isn't right, please report this");
+                    return;                        
+                }
+                
+
+                hi.Patch(procMethodF1m2,
+                        prefix: new HarmonyMethod(typeof(Hooks_HS2_Inflation), nameof(Hooks_HS2_Inflation.MultiPlay_F2M1_Proc)));                                            
+                hi.Patch(procMethodF2m1,
+                        prefix: new HarmonyMethod(typeof(Hooks_HS2_Inflation), nameof(Hooks_HS2_Inflation.MultiPlay_F1M2_Proc)));                                            
+                hi.Patch(procMethodSonyu,
+                        prefix: new HarmonyMethod(typeof(Hooks_HS2_Inflation), nameof(Hooks_HS2_Inflation.Sonyu_Proc)));                                            
+                hi.Patch(procMethodHoushi,
+                        prefix: new HarmonyMethod(typeof(Hooks_HS2_Inflation), nameof(Hooks_HS2_Inflation.Houshi_Proc)));                                            
+            }
+
+
+            //HS2 inflation trigger hooks
             public static void MultiPlay_F2M1_Proc(MultiPlay_F2M1 __instance, int _modeCtrl, HScene.AnimationListInfo _infoAnimList)
             {
                 //Get current user button click type
@@ -37,8 +118,6 @@ namespace KK_PregnancyPlus
                 DetermineInflationState(ctrlFlag, _infoAnimList, "MultiPlay_F2M1_Proc");
             }
 
-            [HarmonyPrefix]
-            [HarmonyPatch(typeof(MultiPlay_F1M2), "Proc", typeof(int), typeof(HScene.AnimationListInfo))]
             public static void MultiPlay_F1M2_Proc(MultiPlay_F1M2 __instance, int _modeCtrl, HScene.AnimationListInfo _infoAnimList)
             {
                 //Get current user button click type
@@ -46,8 +125,6 @@ namespace KK_PregnancyPlus
                 DetermineInflationState(ctrlFlag, _infoAnimList, "MultiPlay_F1M2_Proc");
             }
 
-            [HarmonyPrefix]
-            [HarmonyPatch(typeof(Sonyu), "Proc", typeof(int), typeof(HScene.AnimationListInfo))]
             public static void Sonyu_Proc(Sonyu __instance, int _modeCtrl, HScene.AnimationListInfo _infoAnimList)
             {
                 //Get current user button click type
@@ -55,15 +132,14 @@ namespace KK_PregnancyPlus
                 DetermineInflationState(ctrlFlag, _infoAnimList, "Sonyu_Proc");      
             }
 
-
-            [HarmonyPrefix]
-            [HarmonyPatch(typeof(Houshi), "Proc", typeof(int), typeof(HScene.AnimationListInfo))]
             public static void Houshi_Proc(Houshi __instance, int _modeCtrl, HScene.AnimationListInfo _infoAnimList)
             {
                 //Get current user button click type
                 var ctrlFlag = Traverse.Create(__instance).Field("ctrlFlag").GetValue<HSceneFlagCtrl>();                
                 DetermineInflationState(ctrlFlag, _infoAnimList, "Houshi_Proc");                                   
             }
+
+
 
             /// <summary>
             /// When user clicks finish button, set the inflation based on the button clicked
