@@ -12,42 +12,98 @@
 
 #region Don't change these, they would change users cards default scales
 
+        //HS2 and AI world scales are bigger than KK, so slider min/max needs to be bigger too
         #if KK
-            internal readonly static int scaleLimits = 1;
-        #elif HS2 || AI
-            //once again everything is bigger in HS2
-            internal readonly static int scaleLimits = 5;
+            private readonly static int scaleLimits = 1;
+        #elif HS2 || AI            
+            private readonly static int scaleLimits = 5;
         #endif
 
-        #if KK  //Range multiplier for the min max values allowed
-            private readonly static float rmAltHS2x2 = 1;
-            private readonly static float rmKKx2 = 2f;//Some small adjustments for sliders that felt too large or small in range
-            private readonly static float rmKKxFract = 0.75f;
-            private readonly static float rmKKx10 = 10f;
+
+        #if KK  //Range multiplier for the min max values allowed (This is partly to correct me setting the HS2 scale to 5x initially when it should have been 10x)
+            internal readonly static float rmAltHS2x2 = 1;
+            internal readonly static float rmKKx2 = 2f;//Some small adjustments for sliders that felt too large or small in range
+            internal readonly static float rmKKxFract = 0.75f;
+            internal readonly static float rmKKx10 = 10f;
         #elif HS2 || AI
-            private readonly static float rmAltHS2x2 = 2f;
-            private readonly static float rmKKx2 = 1;
-            private readonly static float rmKKxFract = 1f;
-            private readonly static float rmKKx10 = 1f;
+            internal readonly static float rmAltHS2x2 = 2f;
+            internal readonly static float rmKKx2 = 1;
+            internal readonly static float rmKKxFract = 1f;
+            internal readonly static float rmKKx10 = 1f;
         #endif
+
 
         //The allowed slider ranges for each slider type
         public static class SliderRange {
-            public readonly static float[] inflationSize = {0, 40};
-            public readonly static float[] inflationMultiplier = {-2f, 2f};            
-            public readonly static float[] inflationMoveY = {-0.5f * rmKKxFract, 0.5f * rmKKxFract};
-            public readonly static float[] inflationMoveZ = {-0.2f * rmAltHS2x2 * rmKKxFract, 0.2f * rmAltHS2x2 * rmKKxFract};
-            public readonly static float[] inflationStretchX = {-0.3f * rmKKx2, 0.3f * rmKKx2};
-            public readonly static float[] inflationStretchY = {-0.3f * rmKKx2, 0.3f * rmKKx2};
-            public readonly static float[] inflationShiftY = {-0.2f * rmAltHS2x2, 0.2f * rmAltHS2x2};
-            public readonly static float[] inflationShiftZ = {-0.15f * rmAltHS2x2, 0.15f * rmAltHS2x2};
-            public readonly static float[] inflationTaperY = {-0.075f * rmAltHS2x2, 0.075f * rmAltHS2x2};
-            public readonly static float[] inflationTaperZ = {-0.075f * rmAltHS2x2, 0.075f * rmAltHS2x2};            
-            public readonly static float[] inflationDrop = { 0, 1f };            
-            public readonly static float[] inflationClothOffset = {-2 * rmKKx10, 2 * rmKKx10};
-            public readonly static float[] inflationFatFold = {0, 2f};
-            public readonly static float[] inflationFatFoldHeight = {-1, 1f};
-            public readonly static float[] inflationRoundness = {-0.75f, 0.75f};
+
+            //Computed slider values including different game world scales
+            private static float[] inflationMoveY = {-0.5f * rmKKxFract * scaleLimits, 0.5f * rmKKxFract * scaleLimits};
+            private static float[] inflationMoveZ = {-0.2f * rmAltHS2x2 * rmKKxFract * scaleLimits, 0.2f * rmAltHS2x2 * rmKKxFract * scaleLimits};
+            private static float[] inflationStretchX = {-0.3f * rmKKx2 * scaleLimits, 0.3f * rmKKx2 * scaleLimits};
+            private static float[] inflationStretchY = {-0.3f * rmKKx2 * scaleLimits, 0.3f * rmKKx2 * scaleLimits};
+            private static float[] inflationShiftY = {-0.2f * rmAltHS2x2 * scaleLimits, 0.2f * rmAltHS2x2 * scaleLimits};
+            private static float[] inflationShiftZ = {-0.15f * rmAltHS2x2 * scaleLimits, 0.15f * rmAltHS2x2 * scaleLimits};
+            private static float[] inflationTaperY = {-0.075f * rmAltHS2x2 * scaleLimits, 0.075f * rmAltHS2x2 * scaleLimits};
+            private static float[] inflationTaperZ = {-0.075f * rmAltHS2x2 * scaleLimits, 0.075f * rmAltHS2x2 * scaleLimits};
+            private static float[] inflationClothOffset = {-2 * rmKKx10 * scaleLimits, 2 * rmKKx10 * scaleLimits};
+            private static float[] inflationRoundness = {-0.75f * scaleLimits, 0.75f * scaleLimits};
+
+            
+            //No scales needed here, why you ask? because I learned from my mistakes above and made the sliders independent of world scale
+            private static float[] inflationSize = {0, 40};
+            private static float[] inflationMultiplier = {-2f, 2f}; 
+            private static float[] inflationDrop = { 0, 1f };  
+            private static float[] inflationFatFold = {0, 2f};
+            private static float[] inflationFatFoldHeight = {-1, 1f};
+
+
+
+            public static float[] InflationSize {
+                get { return inflationSize; }
+            }
+            public static float[] InflationMultiplier {
+                get { return inflationMultiplier; }
+            }          
+            public static float[] InflationMoveY {
+                get { return inflationMoveY; }
+            }  
+            public static float[] InflationMoveZ {
+                get { return inflationMoveZ; }
+            }  
+            public static float[] InflationStretchX {
+                get { return inflationStretchX; }
+            }  
+            public static float[] InflationStretchY {
+                get { return inflationStretchY; }
+            }  
+            public static float[] InflationShiftY {
+                get { return inflationShiftY; }
+            }  
+            public static float[] InflationShiftZ {
+                get { return inflationShiftZ; }
+            }  
+            public static float[] InflationTaperY {
+                get { return inflationTaperY; }
+            }  
+            public static float[] InflationTaperZ {
+                get { return inflationTaperZ; }
+            }              
+            public static float[] InflationClothOffset {
+                get { return inflationClothOffset; }
+            }  
+            public static float[] InflationRoundness {
+                get { return inflationRoundness; }
+            }  
+            public static float[] InflationDrop {
+                get { return inflationDrop; }
+            }  
+            public static float[] InflationFatFold {
+                get { return inflationFatFold; }
+            }  
+            public static float[] InflationFatFoldHeight {
+                get { return inflationFatFoldHeight; }
+            }                                                                                  
+            
         }
 
 #endregion Don't change these, they would change users cards default scales

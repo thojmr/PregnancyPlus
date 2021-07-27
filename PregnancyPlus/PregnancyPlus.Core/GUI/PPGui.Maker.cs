@@ -73,7 +73,7 @@ namespace KK_PregnancyPlus
             e.AddControl(new MakerText("If disabled, you won't see any pregnant effects.", cat, _pluginInstance) { TextColor = hintColor });
 
 
-            var size = e.AddControl(new MakerSlider(cat, inflationSizeMaker, SliderRange.inflationSize[0], SliderRange.inflationSize[1], ppDataDefaults.inflationSize, _pluginInstance));
+            var size = e.AddControl(new MakerSlider(cat, inflationSizeMaker, SliderRange.InflationSize[0], SliderRange.InflationSize[1], ppDataDefaults.inflationSize, _pluginInstance));
             size.BindToFunctionController<PregnancyPlusCharaController, float>(controller => controller.infConfig.inflationSize, (controller, value) => {
                 var oldVal = controller.infConfig.inflationSize;
                 controller.infConfig.inflationSize = value;
@@ -83,7 +83,7 @@ namespace KK_PregnancyPlus
             sliders.Add(size);
 
 
-            var multiplier = e.AddControl(new MakerSlider(cat, inflationMultiplierMaker, SliderRange.inflationMultiplier[0], SliderRange.inflationMultiplier[1], ppDataDefaults.inflationMultiplier, _pluginInstance));
+            var multiplier = e.AddControl(new MakerSlider(cat, inflationMultiplierMaker, SliderRange.InflationMultiplier[0], SliderRange.InflationMultiplier[1], ppDataDefaults.inflationMultiplier, _pluginInstance));
             multiplier.BindToFunctionController<PregnancyPlusCharaController, float>(controller => controller.infConfig.inflationMultiplier, (controller, value) => {
                 var oldVal = controller.infConfig.inflationMultiplier;
                 controller.infConfig.inflationMultiplier = value;
@@ -93,7 +93,7 @@ namespace KK_PregnancyPlus
             sliders.Add(multiplier);
 
 
-            var roundness = e.AddControl(new MakerSlider(cat, inflationRoundnessMaker, SliderRange.inflationRoundness[0] * scaleLimits, SliderRange.inflationRoundness[1] * scaleLimits, ppDataDefaults.inflationRoundness, _pluginInstance));
+            var roundness = e.AddControl(new MakerSlider(cat, inflationRoundnessMaker, SliderRange.InflationRoundness[0], SliderRange.InflationRoundness[1], ppDataDefaults.inflationRoundness, _pluginInstance));
             roundness.BindToFunctionController<PregnancyPlusCharaController, float>(controller => controller.infConfig.inflationRoundness, (controller, value) => {
                 var oldVal = controller.infConfig.inflationRoundness;
                 controller.infConfig.inflationRoundness = value;
@@ -103,7 +103,7 @@ namespace KK_PregnancyPlus
             sliders.Add(roundness);
 
 
-            var moveY = e.AddControl(new MakerSlider(cat, inflationMoveYMaker, SliderRange.inflationMoveY[0] * scaleLimits, SliderRange.inflationMoveY[1] * scaleLimits, ppDataDefaults.inflationMoveY, _pluginInstance));
+            var moveY = e.AddControl(new MakerSlider(cat, inflationMoveYMaker, SliderRange.InflationMoveY[0], SliderRange.InflationMoveY[1], ppDataDefaults.inflationMoveY, _pluginInstance));
             moveY.BindToFunctionController<PregnancyPlusCharaController, float>(controller => controller.infConfig.inflationMoveY, (controller, value) => {
                 var oldVal = controller.infConfig.inflationMoveY;
                 controller.infConfig.inflationMoveY = value;
@@ -113,7 +113,7 @@ namespace KK_PregnancyPlus
             sliders.Add(moveY);
 
 
-            var moveZ = e.AddControl(new MakerSlider(cat, inflationMoveZMaker, SliderRange.inflationMoveZ[0] * scaleLimits, SliderRange.inflationMoveZ[1] * scaleLimits, ppDataDefaults.inflationMoveZ, _pluginInstance));
+            var moveZ = e.AddControl(new MakerSlider(cat, inflationMoveZMaker, SliderRange.InflationMoveZ[0], SliderRange.InflationMoveZ[1], ppDataDefaults.inflationMoveZ, _pluginInstance));
             moveZ.BindToFunctionController<PregnancyPlusCharaController, float>(controller => controller.infConfig.inflationMoveZ, (controller, value) => {
                 var oldVal = controller.infConfig.inflationMoveZ;
                 controller.infConfig.inflationMoveZ = value;
@@ -123,7 +123,7 @@ namespace KK_PregnancyPlus
             sliders.Add(moveZ);
 
 
-            var stretchX = e.AddControl(new MakerSlider(cat, inflationStretchXMaker, SliderRange.inflationStretchX[0] * scaleLimits, SliderRange.inflationStretchX[1] * scaleLimits, ppDataDefaults.inflationStretchX, _pluginInstance));
+            var stretchX = e.AddControl(new MakerSlider(cat, inflationStretchXMaker, SliderRange.InflationStretchX[0], SliderRange.InflationStretchX[1], ppDataDefaults.inflationStretchX, _pluginInstance));
             stretchX.BindToFunctionController<PregnancyPlusCharaController, float>(controller => controller.infConfig.inflationStretchX, (controller, value) => {
                 var oldVal = controller.infConfig.inflationStretchX;
                 controller.infConfig.inflationStretchX = value;
@@ -133,7 +133,7 @@ namespace KK_PregnancyPlus
             sliders.Add(stretchX);
 
 
-            var stretchY = e.AddControl(new MakerSlider(cat, inflationStretchYMaker, SliderRange.inflationStretchY[0] * scaleLimits, SliderRange.inflationStretchY[1] * scaleLimits, ppDataDefaults.inflationStretchY, _pluginInstance));
+            var stretchY = e.AddControl(new MakerSlider(cat, inflationStretchYMaker, SliderRange.InflationStretchY[0], SliderRange.InflationStretchY[1], ppDataDefaults.inflationStretchY, _pluginInstance));
             stretchY.BindToFunctionController<PregnancyPlusCharaController, float>(controller => controller.infConfig.inflationStretchY, (controller, value) => {
                 var oldVal = controller.infConfig.inflationStretchY;
                 controller.infConfig.inflationStretchY = value;
@@ -143,7 +143,7 @@ namespace KK_PregnancyPlus
             sliders.Add(stretchY);
 
 
-            var shiftY = e.AddControl(new MakerSlider(cat, inflationShiftYMaker, SliderRange.inflationShiftY[0] * scaleLimits, SliderRange.inflationShiftY[1] * scaleLimits, ppDataDefaults.inflationShiftY, _pluginInstance));
+            var shiftY = e.AddControl(new MakerSlider(cat, inflationShiftYMaker, SliderRange.InflationShiftY[0], SliderRange.InflationShiftY[1], ppDataDefaults.inflationShiftY, _pluginInstance));
             shiftY.BindToFunctionController<PregnancyPlusCharaController, float>(controller => controller.infConfig.inflationShiftY, (controller, value) => {
                 var oldVal = controller.infConfig.inflationShiftY;
                 controller.infConfig.inflationShiftY = value;
@@ -153,7 +153,7 @@ namespace KK_PregnancyPlus
             sliders.Add(shiftY);
 
 
-            var shiftZ = e.AddControl(new MakerSlider(cat, inflationShiftZMaker, SliderRange.inflationShiftZ[0] * scaleLimits, SliderRange.inflationShiftZ[1] * scaleLimits, ppDataDefaults.inflationShiftZ, _pluginInstance));
+            var shiftZ = e.AddControl(new MakerSlider(cat, inflationShiftZMaker, SliderRange.InflationShiftZ[0], SliderRange.InflationShiftZ[1], ppDataDefaults.inflationShiftZ, _pluginInstance));
             shiftZ.BindToFunctionController<PregnancyPlusCharaController, float>(controller => controller.infConfig.inflationShiftZ, (controller, value) => {
                 var oldVal = controller.infConfig.inflationShiftZ;
                 controller.infConfig.inflationShiftZ = value;
@@ -163,7 +163,7 @@ namespace KK_PregnancyPlus
             sliders.Add(shiftZ);
 
 
-            var taperY = e.AddControl(new MakerSlider(cat, inflationTaperYMaker, SliderRange.inflationTaperY[0] * scaleLimits, SliderRange.inflationTaperY[1] * scaleLimits, ppDataDefaults.inflationTaperY, _pluginInstance));
+            var taperY = e.AddControl(new MakerSlider(cat, inflationTaperYMaker, SliderRange.InflationTaperY[0], SliderRange.InflationTaperY[1], ppDataDefaults.inflationTaperY, _pluginInstance));
             taperY.BindToFunctionController<PregnancyPlusCharaController, float>(controller => controller.infConfig.inflationTaperY, (controller, value) => {
                 var oldVal = controller.infConfig.inflationTaperY;
                 controller.infConfig.inflationTaperY = value;
@@ -173,7 +173,7 @@ namespace KK_PregnancyPlus
             sliders.Add(taperY);
 
 
-            var taperZ = e.AddControl(new MakerSlider(cat, inflationTaperZMaker, SliderRange.inflationTaperZ[0] * scaleLimits, SliderRange.inflationTaperZ[1] * scaleLimits, ppDataDefaults.inflationTaperZ, _pluginInstance));
+            var taperZ = e.AddControl(new MakerSlider(cat, inflationTaperZMaker, SliderRange.InflationTaperZ[0], SliderRange.InflationTaperZ[1], ppDataDefaults.inflationTaperZ, _pluginInstance));
             taperZ.BindToFunctionController<PregnancyPlusCharaController, float>(controller => controller.infConfig.inflationTaperZ, (controller, value) => {
                 var oldVal = controller.infConfig.inflationTaperZ;
                 controller.infConfig.inflationTaperZ = value;
@@ -183,7 +183,7 @@ namespace KK_PregnancyPlus
             sliders.Add(taperZ);
 
 
-            var drop = e.AddControl(new MakerSlider(cat, inflationDropMaker, SliderRange.inflationDrop[0], SliderRange.inflationDrop[1], ppDataDefaults.inflationDrop, _pluginInstance));
+            var drop = e.AddControl(new MakerSlider(cat, inflationDropMaker, SliderRange.InflationDrop[0], SliderRange.InflationDrop[1], ppDataDefaults.inflationDrop, _pluginInstance));
             drop.BindToFunctionController<PregnancyPlusCharaController, float>(controller => controller.infConfig.inflationDrop, (controller, value) => {
                 var oldVal = controller.infConfig.inflationDrop;
                 controller.infConfig.inflationDrop = value;
@@ -193,7 +193,7 @@ namespace KK_PregnancyPlus
             sliders.Add(drop);
 
 
-            var clothOffset = e.AddControl(new MakerSlider(cat, inflationClothOffsetMaker, SliderRange.inflationClothOffset[0] * scaleLimits, SliderRange.inflationClothOffset[1] * scaleLimits, ppDataDefaults.inflationClothOffset, _pluginInstance));
+            var clothOffset = e.AddControl(new MakerSlider(cat, inflationClothOffsetMaker, SliderRange.InflationClothOffset[0], SliderRange.InflationClothOffset[1], ppDataDefaults.inflationClothOffset, _pluginInstance));
             clothOffset.BindToFunctionController<PregnancyPlusCharaController, float>(controller => controller.infConfig.inflationClothOffset, (controller, value) => {
                 var oldVal = controller.infConfig.inflationClothOffset;
                 controller.infConfig.inflationClothOffset = value;
@@ -203,7 +203,7 @@ namespace KK_PregnancyPlus
             sliders.Add(clothOffset);
 
 
-            var fatFold = e.AddControl(new MakerSlider(cat, inflationFatFoldMaker, SliderRange.inflationFatFold[0], SliderRange.inflationFatFold[1], ppDataDefaults.inflationFatFold, _pluginInstance));
+            var fatFold = e.AddControl(new MakerSlider(cat, inflationFatFoldMaker, SliderRange.InflationFatFold[0], SliderRange.InflationFatFold[1], ppDataDefaults.inflationFatFold, _pluginInstance));
             fatFold.BindToFunctionController<PregnancyPlusCharaController, float>(controller => controller.infConfig.inflationFatFold, (controller, value) => {
                 var oldVal = controller.infConfig.inflationFatFold;
                 controller.infConfig.inflationFatFold = value;
@@ -213,7 +213,7 @@ namespace KK_PregnancyPlus
             sliders.Add(fatFold);
 
 
-            var fatFoldHeight = e.AddControl(new MakerSlider(cat, inflationFatFoldHeightMaker, SliderRange.inflationFatFoldHeight[0], SliderRange.inflationFatFoldHeight[1], ppDataDefaults.inflationFatFoldHeight, _pluginInstance));
+            var fatFoldHeight = e.AddControl(new MakerSlider(cat, inflationFatFoldHeightMaker, SliderRange.InflationFatFoldHeight[0], SliderRange.InflationFatFoldHeight[1], ppDataDefaults.inflationFatFoldHeight, _pluginInstance));
             fatFoldHeight.BindToFunctionController<PregnancyPlusCharaController, float>(controller => controller.infConfig.inflationFatFoldHeight, (controller, value) => {
                 var oldVal = controller.infConfig.inflationFatFoldHeight;
                 controller.infConfig.inflationFatFoldHeight = value;

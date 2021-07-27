@@ -86,8 +86,8 @@ namespace KK_PregnancyPlus
                     return ctrl != null ? ctrl.infConfig.inflationSize : 0;
 
                 }, 
-                    SliderRange.inflationSize[0], 
-                    SliderRange.inflationSize[1]
+                    SliderRange.InflationSize[0], 
+                    SliderRange.InflationSize[1]
                 ))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) 
@@ -104,8 +104,8 @@ namespace KK_PregnancyPlus
                     return ctrl != null ? ctrl.infConfig.inflationMultiplier: 0;
 
                 }, 
-                    SliderRange.inflationMultiplier[0], 
-                    SliderRange.inflationMultiplier[1]
+                    SliderRange.InflationMultiplier[0], 
+                    SliderRange.InflationMultiplier[1]
                 ))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) 
@@ -122,8 +122,8 @@ namespace KK_PregnancyPlus
                     return ctrl != null ? ctrl.infConfig.inflationRoundness: 0;
                     
                 }, 
-                    SliderRange.inflationRoundness[0] * scaleLimits, 
-                    SliderRange.inflationRoundness[1] * scaleLimits
+                    SliderRange.InflationRoundness[0], 
+                    SliderRange.InflationRoundness[1]
                 ))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) 
@@ -140,8 +140,8 @@ namespace KK_PregnancyPlus
                     return ctrl != null ? ctrl.infConfig.inflationMoveY: 0;
 
                 }, 
-                    SliderRange.inflationMoveY[0] * scaleLimits, 
-                    SliderRange.inflationMoveY[1] * scaleLimits
+                    SliderRange.InflationMoveY[0], 
+                    SliderRange.InflationMoveY[1]
                 ))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) 
@@ -158,8 +158,8 @@ namespace KK_PregnancyPlus
                     return ctrl != null ? ctrl.infConfig.inflationMoveZ: 0;
 
                 }, 
-                    SliderRange.inflationMoveZ[0] * scaleLimits, 
-                    SliderRange.inflationMoveZ[1] * scaleLimits
+                    SliderRange.InflationMoveZ[0], 
+                    SliderRange.InflationMoveZ[1]
                 ))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) 
@@ -176,8 +176,8 @@ namespace KK_PregnancyPlus
                     return ctrl != null ? ctrl.infConfig.inflationStretchX: 0;
 
                 }, 
-                    SliderRange.inflationStretchX[0] * scaleLimits, 
-                    SliderRange.inflationStretchX[1] * scaleLimits
+                    SliderRange.InflationStretchX[0], 
+                    SliderRange.InflationStretchX[1]
                 ))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) 
@@ -194,8 +194,8 @@ namespace KK_PregnancyPlus
                     return ctrl != null ? ctrl.infConfig.inflationStretchY: 0;
                     
                 }, 
-                    SliderRange.inflationStretchY[0] * scaleLimits, 
-                    SliderRange.inflationStretchY[1] * scaleLimits
+                    SliderRange.InflationStretchY[0], 
+                    SliderRange.InflationStretchY[1]
                 ))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) 
@@ -212,8 +212,8 @@ namespace KK_PregnancyPlus
                     return ctrl != null ? ctrl.infConfig.inflationShiftY: 0;
 
                 }, 
-                    SliderRange.inflationShiftY[0]  * scaleLimits, 
-                    SliderRange.inflationShiftY[1] * scaleLimits
+                    SliderRange.InflationShiftY[0], 
+                    SliderRange.InflationShiftY[1]
                 ))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) 
@@ -230,8 +230,8 @@ namespace KK_PregnancyPlus
                     return ctrl != null ? ctrl.infConfig.inflationShiftZ: 0;
 
                 }, 
-                    SliderRange.inflationShiftZ[0] * scaleLimits, 
-                    SliderRange.inflationShiftZ[1] * scaleLimits
+                    SliderRange.InflationShiftZ[0], 
+                    SliderRange.InflationShiftZ[1]
                 ))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) 
@@ -248,8 +248,8 @@ namespace KK_PregnancyPlus
                     return ctrl != null ? ctrl.infConfig.inflationTaperY: 0;
                     
                 }, 
-                    SliderRange.inflationTaperY[0] * scaleLimits, 
-                    SliderRange.inflationTaperY[1] * scaleLimits
+                    SliderRange.InflationTaperY[0], 
+                    SliderRange.InflationTaperY[1]
                 ))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) 
@@ -266,8 +266,8 @@ namespace KK_PregnancyPlus
                     return ctrl != null ? ctrl.infConfig.inflationTaperZ: 0;
                     
                 }, 
-                    SliderRange.inflationTaperZ[0] * scaleLimits, 
-                    SliderRange.inflationTaperZ[1] * scaleLimits
+                    SliderRange.InflationTaperZ[0], 
+                    SliderRange.InflationTaperZ[1]
                 ))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) 
@@ -284,8 +284,8 @@ namespace KK_PregnancyPlus
                     return ctrl != null ? ctrl.infConfig.inflationDrop: 0;
                     
                 }, 
-                    SliderRange.inflationDrop[0], 
-                    SliderRange.inflationDrop[1]
+                    SliderRange.InflationDrop[0], 
+                    SliderRange.InflationDrop[1]
                 ))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) 
@@ -302,8 +302,8 @@ namespace KK_PregnancyPlus
                     return ctrl != null ? ctrl.infConfig.inflationClothOffset: 0;
                     
                 }, 
-                    SliderRange.inflationClothOffset[0] * scaleLimits, 
-                    SliderRange.inflationClothOffset[1] * scaleLimits
+                    SliderRange.InflationClothOffset[0], 
+                    SliderRange.InflationClothOffset[1]
                 ))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) 
@@ -320,8 +320,8 @@ namespace KK_PregnancyPlus
                     return ctrl != null ? ctrl.infConfig.inflationFatFold: 0;
                     
                 }, 
-                    SliderRange.inflationFatFold[0], 
-                    SliderRange.inflationFatFold[1]
+                    SliderRange.InflationFatFold[0], 
+                    SliderRange.InflationFatFold[1]
                 ))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) 
@@ -338,8 +338,8 @@ namespace KK_PregnancyPlus
                     return ctrl != null ? ctrl.infConfig.inflationFatFoldHeight: 0;
                     
                 }, 
-                    SliderRange.inflationFatFoldHeight[0], 
-                    SliderRange.inflationFatFoldHeight[1]
+                    SliderRange.InflationFatFoldHeight[0], 
+                    SliderRange.InflationFatFoldHeight[1]
                 ))
                     .Value.Subscribe(f => { 
                         foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) 
