@@ -226,6 +226,29 @@ namespace KK_PregnancyPlus
             var bellyVertIndex = md[rendererName].bellyVerticieIndexes;
             var alteredVerts = md[rendererName].alteredVerticieIndexes;
 
+            //Pre compute some values needed by SculptInflatedVerticie, doin it here saves on compute in the big loop
+            var vertsLength = origVerts.Length;
+            var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenter);
+            var preMorphSphereCenter = sphereCenter - GetUserMoveTransform(meshRootTf);
+            var pmSphereCenterLs = meshRootTf.InverseTransformPoint(preMorphSphereCenter); 
+            //calculate the furthest back morph point based on the back bone position, include character rotation
+            var backExtentPos = new Vector3(preMorphSphereCenter.x, sphereCenter.y, preMorphSphereCenter.z) + meshRootTf.forward * -bellyInfo.ZLimit;
+            var backExtentPosLs = meshRootTf.InverseTransformPoint(backExtentPos);                        
+            //calculate the furthest top morph point based under the breast position, include character animated height differences
+            var topExtentPos = new Vector3(preMorphSphereCenter.x, preMorphSphereCenter.y, preMorphSphereCenter.z) + meshRootTf.up * bellyInfo.YLimit;
+            var topExtentPosLs = meshRootTf.InverseTransformPoint(topExtentPos);
+            var vertNormalCaluRadius = sphereRadius + waistWidth/10;//Only recalculate normals for verts within this radius to prevent shadows under breast at small belly sizes
+            var yOffsetDir = Vector3.up * md[rendererName].yOffset;//Any offset direction needed to align all meshes to the same local y height
+            var reduceClothFlattenOffset = 0f;
+
+            //I dont think transforms are thread safe so get the values we need now
+            var meshRootTfPos = meshRootTf.position;
+            var meshRootTfUp = meshRootTf.up;
+            var mrTfTransPt = meshRootTf.localToWorldMatrix;
+            var mrTfInvTransPt = mrTfTransPt.inverse;            
+            var smrTfTransPt = smr.transform.localToWorldMatrix;
+            var smrTfInvTransPt = smrTfTransPt.inverse;            
+
             //Heavy compute task below, run in separate thread
             WaitCallback threadAction = (System.Object stateInfo) => 
             {
@@ -239,30 +262,14 @@ namespace KK_PregnancyPlus
                     if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" Mesh affected vert count {bellyVertsCount}");
                 #endif
 
-                //Pre compute some values needed by SculptInflatedVerticie, doin it here saves on compute in the big loop
-                var vertsLength = origVerts.Length;
-                var sphereCenterLs = meshRootTf.InverseTransformPoint(sphereCenter);
-                var preMorphSphereCenter = sphereCenter - GetUserMoveTransform(meshRootTf);
-                var pmSphereCenterLs = meshRootTf.InverseTransformPoint(preMorphSphereCenter); 
-                //calculate the furthest back morph point based on the back bone position, include character rotation
-                var backExtentPos = new Vector3(preMorphSphereCenter.x, sphereCenter.y, preMorphSphereCenter.z) + meshRootTf.forward * -bellyInfo.ZLimit;
-                var backExtentPosLs = meshRootTf.InverseTransformPoint(backExtentPos);                        
-                //calculate the furthest top morph point based under the breast position, include character animated height differences
-                var topExtentPos = new Vector3(preMorphSphereCenter.x, preMorphSphereCenter.y, preMorphSphereCenter.z) + meshRootTf.up * bellyInfo.YLimit;
-                var topExtentPosLs = meshRootTf.InverseTransformPoint(topExtentPos);
-                var vertNormalCaluRadius = sphereRadius + waistWidth/10;//Only recalculate normals for verts within this radius to prevent shadows under breast at small belly sizes
-                var yOffsetDir = Vector3.up * md[rendererName].yOffset;//Any offset direction needed to align all meshes to the same local y height
-                var reduceClothFlattenOffset = 0f;
-  
-
                 //Set each verticies inflated postion, with some constraints (SculptInflatedVerticie) to make it look more natural
                 for (int i = 0; i < vertsLength; i++)
                 {
                     //Only care about inflating belly verticies
                     if (!bellyVertIndex[i] && !PregnancyPlusPlugin.DebugVerts.Value) continue;
                                     
-                    //Convert to worldspace, and apply and mesh offset needed
-                    var origVertWs = smr.transform.TransformPoint(origVerts[i] - yOffsetDir);
+                    //Convert to worldspace (in a threadsafe way), and apply and mesh offset needed
+                    var origVertWs = smrTfTransPt.MultiplyPoint3x4(origVerts[i] - yOffsetDir);
                     var vertDistance = Vector3.Distance(origVertWs, sphereCenter);                    
 
                     //Ignore verts outside the sphere radius
@@ -287,13 +294,13 @@ namespace KK_PregnancyPlus
 
                     //Make adjustments to the shape to make it smooth, and feed in user slider input
                     inflatedVertWs =  SculptInflatedVerticie(origVertWs, verticieToSpherePos, sphereCenter, waistWidth, 
-                                                                meshRootTf, preMorphSphereCenter, sphereRadius, backExtentPos, 
-                                                                topExtentPos, sphereCenterLs, pmSphereCenterLs, backExtentPosLs, 
+                                                                meshRootTf, mrTfTransPt, mrTfInvTransPt, meshRootTfPos, meshRootTfUp, 
+                                                                preMorphSphereCenter, sphereRadius, 
+                                                                backExtentPos, topExtentPos, sphereCenterLs, pmSphereCenterLs, backExtentPosLs, 
                                                                 topExtentPosLs);   
 
                     //Convert back to local space, and undo any temporary offset                                                                
-                    inflatedVerts[i] = smr.transform.InverseTransformPoint(inflatedVertWs) + yOffsetDir;                                      
-            
+                    inflatedVerts[i] = smrTfInvTransPt.MultiplyPoint3x4(inflatedVertWs) + yOffsetDir;                                                  
                 }  
 
                 //When this thread task is complete, execute the below in main thread
@@ -428,9 +435,10 @@ namespace KK_PregnancyPlus
         /// <param name="sphereCenterPos">The center of the imaginary sphere</param>
         /// <param name="waistWidth">The characters waist width that limits the width of the belly (future implementation)</param>
         /// <param name="meshRootTf">The transform used to convert a mesh vector from local space to worldspace and back, also servers as the point where we want to stop making mesh changes when Z < 0</param>
-        internal Vector3 SculptInflatedVerticie(Vector3 originalVerticeWs, Vector3 inflatedVerticieWs, Vector3 sphereCenterWs, 
-                                                float waistWidth, Transform meshRootTf, Vector3 preMorphSphereCenterWs, float sphereRadius, 
-                                                Vector3 backExtentPos, Vector3 topExtentPos, Vector3 sphereCenterLs, Vector3 pmSphereCenterLs, 
+        internal Vector3 SculptInflatedVerticie(Vector3 originalVerticeWs, Vector3 inflatedVerticieWs, Vector3 sphereCenterWs, float waistWidth, 
+                                                Transform meshRootTf, Matrix4x4 mrTfTransPt, Matrix4x4 mrTfInvTransPt, Vector3 meshRootTfPos, Vector3 meshRootTfUp, 
+                                                Vector3 preMorphSphereCenterWs, float sphereRadius, Vector3 backExtentPos, Vector3 topExtentPos, 
+                                                Vector3 sphereCenterLs, Vector3 pmSphereCenterLs, 
                                                 Vector3 backExtentPosLs, Vector3 topExtentPosLs) 
         {
             //No smoothing modification in debug mode
@@ -449,68 +457,68 @@ namespace KK_PregnancyPlus
 
             //Pre compute some constant Vert values so we dont have to do it for each transform
             //Most all of the measurements below are done in local space to ignore character rotation and position
-            var originalVerticeLs = meshRootTf.InverseTransformPoint(originalVerticeWs);
-            var inflatedVerticieLs = meshRootTf.InverseTransformPoint(inflatedVerticieWs);
+            var originalVerticeLs = mrTfInvTransPt.MultiplyPoint3x4(originalVerticeWs);
+            var inflatedVerticieLs = mrTfInvTransPt.MultiplyPoint3x4(inflatedVerticieWs);
 
             //Get the base shape with XY plane size limits
-            var smoothedVectorLs = SculptBaseShape(meshRootTf, originalVerticeLs, inflatedVerticieLs, sphereCenterLs);      
+            var smoothedVectorLs = SculptBaseShape(originalVerticeLs, inflatedVerticieLs, sphereCenterLs);      
 
             //Allow user adjustment of the height and width placement of the belly
             if (GetInflationShiftY() != 0 || GetInflationShiftZ() != 0) 
             {
-                smoothedVectorLs = GetUserShiftTransform(meshRootTf, smoothedVectorLs, sphereCenterLs, skinToCenterDist);            
+                smoothedVectorLs = GetUserShiftTransform(smoothedVectorLs, sphereCenterLs, skinToCenterDist);            
             }
 
             //Allow user adjustment of the width of the belly
             if (GetInflationStretchX() != 0) 
             {   
-                smoothedVectorLs = GetUserStretchXTransform(meshRootTf, smoothedVectorLs, sphereCenterLs);
+                smoothedVectorLs = GetUserStretchXTransform(smoothedVectorLs, sphereCenterLs);
             }
 
             //Allow user adjustment of the height of the belly
             if (GetInflationStretchY() != 0) 
             {   
-                smoothedVectorLs = GetUserStretchYTransform(meshRootTf, smoothedVectorLs, sphereCenterLs);
+                smoothedVectorLs = GetUserStretchYTransform(smoothedVectorLs, sphereCenterLs);
             }
 
             if (GetInflationRoundness() != 0) 
             {  
-                smoothedVectorLs = GetUserRoundnessTransform(meshRootTf, originalVerticeLs, smoothedVectorLs, sphereCenterLs, skinToCenterDist);
+                smoothedVectorLs = GetUserRoundnessTransform(originalVerticeLs, smoothedVectorLs, sphereCenterLs, skinToCenterDist);
             }
 
             //Allow user adjustment of the egg like shape of the belly
             if (GetInflationTaperY() != 0) 
             {
-                smoothedVectorLs = GetUserTaperYTransform(meshRootTf, smoothedVectorLs, sphereCenterLs, skinToCenterDist);
+                smoothedVectorLs = GetUserTaperYTransform(smoothedVectorLs, sphereCenterLs, skinToCenterDist);
             }
 
             //Allow user adjustment of the front angle of the belly
             if (GetInflationTaperZ() != 0) 
             {
-                smoothedVectorLs = GetUserTaperZTransform(meshRootTf, originalVerticeLs, smoothedVectorLs, sphereCenterLs, skinToCenterDist, backExtentPosLs);
+                smoothedVectorLs = GetUserTaperZTransform(originalVerticeLs, smoothedVectorLs, sphereCenterLs, skinToCenterDist, backExtentPosLs);
             }
 
             //Allow user adjustment of the fat fold line through the middle of the belly
             if (GetInflationFatFold() > 0) 
             {
-                smoothedVectorLs = GetUserFatFoldTransform(meshRootTf, originalVerticeLs, smoothedVectorLs, sphereCenterLs, sphereRadius);
+                smoothedVectorLs = GetUserFatFoldTransform(originalVerticeLs, smoothedVectorLs, sphereCenterLs, sphereRadius);
             }            
 
             //If the user has selected a drop slider value
             if (GetInflationDrop() > 0) 
             {
-                smoothedVectorLs = GetUserDropTransform(meshRootTf, smoothedVectorLs, sphereCenterLs, skinToCenterDist, sphereRadius);
+                smoothedVectorLs = GetUserDropTransform(meshRootTfUp, smoothedVectorLs, sphereCenterLs, skinToCenterDist, sphereRadius);
             }
 
 
             //After all user transforms are applied, remove the edges from the sides/top of the belly
-            smoothedVectorLs = RoundToSides(meshRootTf, originalVerticeLs, smoothedVectorLs, backExtentPosLs);
+            smoothedVectorLs = RoundToSides(originalVerticeLs, smoothedVectorLs, backExtentPosLs);
 
 
             //Less skin stretching under breast area with large slider values
             if (originalVerticeLs.y > pmSphereCenterLs.y)
             {                
-                smoothedVectorLs = ReduceRibStretchingZ(meshRootTf, originalVerticeLs, smoothedVectorLs, topExtentPosLs);
+                smoothedVectorLs = ReduceRibStretchingZ(originalVerticeLs, smoothedVectorLs, topExtentPosLs);
             }
 
             // //Experimental, move more polygons to the front of the belly at max, Measured by trying to keep belly button size the same at 0 and max inflation size
@@ -525,20 +533,20 @@ namespace KK_PregnancyPlus
 
 
             //At this point if the smoothed vector is the originalVector just return it
-            if (smoothedVectorLs.Equals(originalVerticeLs)) return meshRootTf.TransformPoint(smoothedVectorLs);
+            if (smoothedVectorLs.Equals(originalVerticeLs)) return mrTfTransPt.MultiplyPoint3x4(smoothedVectorLs);
 
 
             //**** All of the below are post mesh change checks to make sure the vertex position don't go outside of bounds
 
             //Smoothed vert back to worldspace
-            var smoothedVectorWs = meshRootTf.TransformPoint(smoothedVectorLs);
+            var smoothedVectorWs = mrTfTransPt.MultiplyPoint3x4(smoothedVectorLs);
             var currentVectorDistance = Math.Abs(Vector3.Distance(sphereCenterWs, smoothedVectorWs));
             var pmCurrentVectorDistance = Math.Abs(Vector3.Distance(preMorphSphereCenterWs, smoothedVectorWs));     
             //Get core point on the same y plane as the original vert
-            var coreLineVertWs = meshRootTf.position + meshRootTf.up * (meshRootTf.InverseTransformPoint(originalVerticeWs).y * bellyInfo.TotalCharScale.y);
+            var coreLineVertWs = meshRootTfPos + meshRootTfUp * (mrTfInvTransPt.MultiplyPoint3x4(originalVerticeWs).y * bellyInfo.TotalCharScale.y);
             var origCoreDist = Math.Abs(Vector3.Distance(originalVerticeWs, coreLineVertWs));//Get line from feet to head that verts must respect distance from
             //Get core point on the same y plane as the smoothed vert
-            var coreLineSmoothedVertWs = meshRootTf.position + meshRootTf.up * (meshRootTf.InverseTransformPoint(smoothedVectorWs).y * bellyInfo.TotalCharScale.y);       
+            var coreLineSmoothedVertWs = meshRootTfPos + meshRootTfUp * (mrTfInvTransPt.MultiplyPoint3x4(smoothedVectorWs).y * bellyInfo.TotalCharScale.y);       
             var currentCoreDist = Math.Abs(Vector3.Distance(smoothedVectorWs, coreLineSmoothedVertWs)); 
 
             //Don't allow any morphs to shrink towards the sphere center more than its original distance, only outward morphs allowed

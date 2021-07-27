@@ -25,7 +25,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// This will help pvent too much XY direction change, keeping the belly more round than disk like at large sizes
         /// </summary>
-        internal Vector3 SculptBaseShape(Transform meshRootTf, Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 sphereCenterLs) 
+        internal Vector3 SculptBaseShape(Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 sphereCenterLs) 
         {
             //We only want to limit expansion n XY plane for this lerp
             var sphereCenterXY = new Vector2(sphereCenterLs.x, sphereCenterLs.y);
@@ -46,7 +46,7 @@ namespace KK_PregnancyPlus
         /// <summary>   
         /// This will shift the sphereCenter position *After sphereifying* on Y or Z axis (This stretches the mesh, where pre sphereifying, it would move the sphere within the mesh like Move Y)
         /// </summary>
-        internal Vector3 GetUserShiftTransform(Transform meshRootTf, Vector3 smoothedVectorLs, Vector3 sphereCenterLs, float skinToCenterDist) 
+        internal Vector3 GetUserShiftTransform(Vector3 smoothedVectorLs, Vector3 sphereCenterLs, float skinToCenterDist) 
         {                     
             //IF the user has selected a y value, lerp the top and bottom slower and lerp any verts closer to z = 0 slower
             if (GetInflationShiftY() != 0) 
@@ -81,7 +81,7 @@ namespace KK_PregnancyPlus
         /// <summary>   
         /// This will stretch the belly mesh wider
         /// </summary>        
-        internal Vector3 GetUserStretchXTransform(Transform meshRootTf, Vector3 smoothedVectorLs, Vector3 sphereCenterLs) 
+        internal Vector3 GetUserStretchXTransform(Vector3 smoothedVectorLs, Vector3 sphereCenterLs) 
         {
             //local Distance left or right from sphere center
             var distFromXCenterLs = smoothedVectorLs.x - sphereCenterLs.x;                
@@ -94,7 +94,7 @@ namespace KK_PregnancyPlus
         }
 
 
-        internal Vector3 GetUserStretchYTransform(Transform meshRootTf, Vector3 smoothedVectorLs, Vector3 sphereCenterLs) 
+        internal Vector3 GetUserStretchYTransform(Vector3 smoothedVectorLs, Vector3 sphereCenterLs) 
         {
             //Allow user adjustment of the height of the belly
             //local Distance up or down from sphere center
@@ -112,7 +112,7 @@ namespace KK_PregnancyPlus
         /// <summary>   
         /// This sill taper the belly shape based on user input slider. shrinking the top width, and expanding the bottom width along the YX adis
         /// </summary>
-        internal Vector3 GetUserTaperYTransform(Transform meshRootTf, Vector3 smoothedVectorLs, Vector3 sphereCenterLs, float skinToCenterDist) 
+        internal Vector3 GetUserTaperYTransform(Vector3 smoothedVectorLs, Vector3 sphereCenterLs, float skinToCenterDist) 
         {
             //local Distance up or down from sphere center
             var distFromYCenterLs = smoothedVectorLs.y - sphereCenterLs.y; 
@@ -138,7 +138,7 @@ namespace KK_PregnancyPlus
         /// <summary>   
         /// This sill taper the belly shape based on user input slider. pulling out the bottom and pushing in the top along the XZ axis
         /// </summary>
-        internal Vector3 GetUserTaperZTransform(Transform meshRootTf, Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 sphereCenterLs, 
+        internal Vector3 GetUserTaperZTransform(Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 sphereCenterLs, 
                                                 float skinToCenterDist, Vector3 backExtentPosLs) 
         {
             //local Distance up or down from sphere center
@@ -168,7 +168,7 @@ namespace KK_PregnancyPlus
         /// <summary>   
         /// This will add a fat fold across the middle of the belly
         /// </summary>        
-        internal Vector3 GetUserFatFoldTransform(Transform meshRootTf, Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 sphereCenterLs, float sphereRadius) 
+        internal Vector3 GetUserFatFoldTransform(Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 sphereCenterLs, float sphereRadius) 
         {
             var origSmoothVectorLs = smoothedVectorLs;
             var inflationFatFold = GetInflationFatFold();            
@@ -201,7 +201,7 @@ namespace KK_PregnancyPlus
         /// <summary>   
         /// This will make the front of the belly more, or less round
         /// </summary>  
-        internal Vector3 GetUserRoundnessTransform(Transform meshRootTf, Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 sphereCenterLs, float skinToCenterDist)
+        internal Vector3 GetUserRoundnessTransform(Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 sphereCenterLs, float skinToCenterDist)
         {
             var zDistFromCenter = smoothedVectorLs.z - sphereCenterLs.z;
 
@@ -222,18 +222,18 @@ namespace KK_PregnancyPlus
         /// <summary>   
         /// This Drop the belly down
         /// </summary>
-        internal Vector3 GetUserDropTransform(Transform meshRootTf, Vector3 smoothedVectorLs, Vector3 sphereCenterLs, float skinToCenterDist, float sphereRadius) 
+        internal Vector3 GetUserDropTransform(Vector3 meshRootTfUp, Vector3 smoothedVectorLs, Vector3 sphereCenterLs, float skinToCenterDist, float sphereRadius) 
         {                     
             //Move the verts closest to sphere center Z more slowly than verts at the belly button.  Otherwise you stretch the ones near the body too much
             var lerpZ = Mathf.Lerp(0, GetInflationDrop(), (smoothedVectorLs.z - sphereCenterLs.z)/(bellyInfo.ScaledRadius(BellyDir.z) * 1.5f));
-            return smoothedVectorLs + meshRootTf.up * -(sphereRadius * lerpZ);
+            return smoothedVectorLs + meshRootTfUp * -(sphereRadius * lerpZ);
         }
 
 
         /// <summary>
         /// Dampen any mesh changed near edged of the belly (sides, top, and bottom) to prevent too much vertex stretching.  The more forward the vertex is from Z the more it's allowd to be altered by sliders
         /// </summary>        
-        internal Vector3 RoundToSides(Transform meshRootTf, Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 backExtentPosLs) 
+        internal Vector3 RoundToSides(Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 backExtentPosLs) 
         {        
             var origRad = bellyInfo.ScaledOrigRadius(BellyDir.z)/1.8f;
             var multipliedRad = bellyInfo.ScaledRadius(BellyDir.z)/2.5f;
@@ -252,7 +252,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Reduce the stretching of the skin at the top of the belly where it connects to the ribs at large Multiplier values
         /// </summary>
-        internal Vector3 ReduceRibStretchingZ(Transform meshRootTf, Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 topExtentPosLs)
+        internal Vector3 ReduceRibStretchingZ(Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 topExtentPosLs)
         {         
             //The distance from topExtent that we want to start lerping movement more slowly
             var topExtentOffset = topExtentPosLs.y/10;
