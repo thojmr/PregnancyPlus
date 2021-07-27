@@ -13,10 +13,10 @@
 #region Don't change these, they would change users cards default scales
 
         #if KK
-            private readonly static int scaleLimits = 1;
+            internal readonly static int scaleLimits = 1;
         #elif HS2 || AI
             //once again everything is bigger in HS2
-            private readonly static int scaleLimits = 5;
+            internal readonly static int scaleLimits = 5;
         #endif
 
         #if KK  //Range multiplier for the min max values allowed

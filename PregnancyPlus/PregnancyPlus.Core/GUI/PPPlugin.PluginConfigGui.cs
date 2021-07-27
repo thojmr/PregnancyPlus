@@ -164,63 +164,63 @@ namespace KK_PregnancyPlus
 
             StoryModeInflationRoundness = Config.Bind<float>(storyConfigTitle, "Global Roundness Adjustment", 0, 
                 new ConfigDescription("Allows you to increase or decrease the 'Roundness' amount in story mode for" + additionalSliderText,
-                    new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationRoundness[0], PregnancyPlusGui.SliderRange.inflationRoundness[1]),
+                    new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationRoundness[0] * PregnancyPlusGui.scaleLimits, PregnancyPlusGui.SliderRange.inflationRoundness[1] * PregnancyPlusGui.scaleLimits),
                     new ConfigurationManagerAttributes { Order = 17 })
                 );
             StoryModeInflationRoundness.SettingChanged += InflationConfig_SettingsChanged;            
             
             StoryModeInflationMoveY = Config.Bind<float>(storyConfigTitle, "Global Move Y Adjustment", 0, 
                 new ConfigDescription("Allows you to increase or decrease the 'Move Y' amount in story mode for" + additionalSliderText,
-                    new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationMoveY[0], PregnancyPlusGui.SliderRange.inflationMoveY[1]),
+                    new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationMoveY[0] * PregnancyPlusGui.scaleLimits, PregnancyPlusGui.SliderRange.inflationMoveY[1] * PregnancyPlusGui.scaleLimits),
                     new ConfigurationManagerAttributes { Order = 16 })
                 );
             StoryModeInflationMoveY.SettingChanged += InflationConfig_SettingsChanged;
 
             StoryModeInflationMoveZ = Config.Bind<float>(storyConfigTitle, "Global Move Z Adjustment", 0, 
                 new ConfigDescription("Allows you to increase or decrease the 'Move Z' amount in story mode for" + additionalSliderText,
-                    new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationMoveZ[0], PregnancyPlusGui.SliderRange.inflationMoveZ[1]),
+                    new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationMoveZ[0] * PregnancyPlusGui.scaleLimits, PregnancyPlusGui.SliderRange.inflationMoveZ[1] * PregnancyPlusGui.scaleLimits),
                     new ConfigurationManagerAttributes { Order = 15 })
                 );
             StoryModeInflationMoveZ.SettingChanged += InflationConfig_SettingsChanged;
 
             StoryModeInflationStretchX = Config.Bind<float>(storyConfigTitle, "Global Stretch X Adjustment", 0, 
                 new ConfigDescription("Allows you to increase or decrease the 'Stretch X' amount in story mode for" + additionalSliderText,
-                    new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationStretchX[0], PregnancyPlusGui.SliderRange.inflationStretchX[1]),
+                    new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationStretchX[0] * PregnancyPlusGui.scaleLimits, PregnancyPlusGui.SliderRange.inflationStretchX[1] * PregnancyPlusGui.scaleLimits),
                     new ConfigurationManagerAttributes { Order = 14 })
                 );
             StoryModeInflationStretchX.SettingChanged += InflationConfig_SettingsChanged;
 
             StoryModeInflationStretchY = Config.Bind<float>(storyConfigTitle, "Global Stretch Y Adjustment", 0, 
                 new ConfigDescription("Allows you to increase or decrease the 'Stretch Y' amount in story mode for" + additionalSliderText,
-                    new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationStretchY[0], PregnancyPlusGui.SliderRange.inflationStretchY[1]),
+                    new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationStretchY[0] * PregnancyPlusGui.scaleLimits, PregnancyPlusGui.SliderRange.inflationStretchY[1] * PregnancyPlusGui.scaleLimits),
                     new ConfigurationManagerAttributes { Order = 13 })
                 );
             StoryModeInflationStretchY.SettingChanged += InflationConfig_SettingsChanged;
 
             StoryModeInflationShiftY = Config.Bind<float>(storyConfigTitle, "Global Shift Y Adjustment", 0, 
                 new ConfigDescription("Allows you to increase or decrease the 'Shift Y' amount in story mode for" + additionalSliderText,
-                    new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationShiftY[0], PregnancyPlusGui.SliderRange.inflationShiftY[1]),
+                    new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationShiftY[0] * PregnancyPlusGui.scaleLimits, PregnancyPlusGui.SliderRange.inflationShiftY[1] * PregnancyPlusGui.scaleLimits),
                     new ConfigurationManagerAttributes { Order = 12 })
                 );
             StoryModeInflationShiftY.SettingChanged += InflationConfig_SettingsChanged;
 
             StoryModeInflationShiftZ = Config.Bind<float>(storyConfigTitle, "Global Shift Z Adjustment", 0, 
                 new ConfigDescription("Allows you to increase or decrease the 'Shift Z' amount in story mode for" + additionalSliderText,
-                    new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationShiftZ[0], PregnancyPlusGui.SliderRange.inflationShiftZ[1]),
+                    new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationShiftZ[0] * PregnancyPlusGui.scaleLimits, PregnancyPlusGui.SliderRange.inflationShiftZ[1] * PregnancyPlusGui.scaleLimits),
                     new ConfigurationManagerAttributes { Order = 11 })
                 );
             StoryModeInflationShiftZ.SettingChanged += InflationConfig_SettingsChanged;
 
             StoryModeInflationTaperY = Config.Bind<float>(storyConfigTitle, "Global Taper Y Adjustment", 0, 
                 new ConfigDescription("Allows you to increase or decrease the 'Taper Y' amount in story mode for" + additionalSliderText,
-                    new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationTaperY[0], PregnancyPlusGui.SliderRange.inflationTaperY[1]),
+                    new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationTaperY[0] * PregnancyPlusGui.scaleLimits, PregnancyPlusGui.SliderRange.inflationTaperY[1] * PregnancyPlusGui.scaleLimits),
                     new ConfigurationManagerAttributes { Order = 10 })
                 );
             StoryModeInflationTaperY.SettingChanged += InflationConfig_SettingsChanged; 
 
             StoryModeInflationTaperZ = Config.Bind<float>(storyConfigTitle, "Global Taper Z Adjustment", 0, 
                 new ConfigDescription("Allows you to increase or decrease the 'Taper Z' amount in story mode for" + additionalSliderText,
-                    new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationTaperZ[0], PregnancyPlusGui.SliderRange.inflationTaperZ[1]),
+                    new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationTaperZ[0] * PregnancyPlusGui.scaleLimits, PregnancyPlusGui.SliderRange.inflationTaperZ[1] * PregnancyPlusGui.scaleLimits),
                     new ConfigurationManagerAttributes { Order = 9 })
                 );
             StoryModeInflationTaperZ.SettingChanged += InflationConfig_SettingsChanged;  
@@ -234,7 +234,7 @@ namespace KK_PregnancyPlus
 
             StoryModeInflationClothOffset = Config.Bind<float>(storyConfigTitle, "Global Cloth Offset Adjustment", 0, 
                 new ConfigDescription("Allows you to increase or decrease the cloth layer distance to reduce clipping",
-                    new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationClothOffset[0], PregnancyPlusGui.SliderRange.inflationClothOffset[1]),
+                    new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.inflationClothOffset[0] * PregnancyPlusGui.scaleLimits, PregnancyPlusGui.SliderRange.inflationClothOffset[1] * PregnancyPlusGui.scaleLimits),
                     new ConfigurationManagerAttributes { Order = 7 })
                 );
             StoryModeInflationClothOffset.SettingChanged += InflationConfig_SettingsChanged; 
