@@ -65,7 +65,7 @@ namespace KK_PregnancyPlus
             LoopAndApplyMeshChanges(bodyRenderers, meshInflateFlags);
             var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);            
             LoopAndApplyMeshChanges(clothRenderers, meshInflateFlags, true, GetBodyMeshRenderer());          
-
+            
             //If any changes were applied, updated the last used shape for the Restore GUI button
             if (infConfig.HasAnyValue()) 
             {
@@ -253,11 +253,7 @@ namespace KK_PregnancyPlus
                 var vertNormalCaluRadius = sphereRadius + waistWidth/10;//Only recalculate normals for verts within this radius to prevent shadows under breast at small belly sizes
                 var yOffsetDir = Vector3.up * md[rendererName].yOffset;//Any offset direction needed to align all meshes to the same local y height
                 var reduceClothFlattenOffset = 0f;
-
-                // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(smr.transform, 0.2f, sphereCenter);
-                // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLineAndAttach(meshRootTf, 5, meshRootTf.InverseTransformPoint(topExtentPos) - meshRootTf.up * GetBellyButtonOffset(bellyInfo.BellyButtonHeight));
-                // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLineAndAttach(meshRootTf, new Vector3(-3, 0, 0), new Vector3(3, 0, 0), meshRootTf.InverseTransformPoint(backExtentPos) - GetBellyButtonOffsetVector(meshRootTf, bellyInfo.BellyButtonHeight));
-                // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLineAndAttach(meshRootTf, 5, meshRootTf.InverseTransformPoint(sphereCenter));    
+  
 
                 //Set each verticies inflated postion, with some constraints (SculptInflatedVerticie) to make it look more natural
                 for (int i = 0; i < vertsLength; i++)
@@ -297,15 +293,37 @@ namespace KK_PregnancyPlus
 
                     //Convert back to local space, and undo any temporary offset                                                                
                     inflatedVerts[i] = smr.transform.InverseTransformPoint(inflatedVertWs) + yOffsetDir;                                      
-
-                    // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLineAndAttach(smr.transform, 0.02f, origVerts[i]- yOffsetDir, false);
-                    // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(smr.transform, 0.02f, origVerts[i] - yOffsetDir, false);            
-                    // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(ChaControl.transform, 0.02f, smr.transform.TransformPoint(origVerts[i]), false);            
+            
                 }  
 
                 //When this thread task is complete, execute the below in main thread
                 Action threadActionResult = () => 
                 {
+                    //If you need to debug the calculated vert positions visually
+                    if (PregnancyPlusPlugin.DebugLog.Value) 
+                    {
+                        // var _origVerts = md[rendererName].originalVertices;
+                        // //Clear old spheres (and shows mesh root position)
+                        // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(smr.transform, 0.01f, Vector3.zero, removeExisting: true);
+
+                        // for (int i = 0; i < _origVerts.Length; i++)
+                        // {
+                        //     //Place spheres on each vert to debug the mesh calculated position relative to other meshes
+                        //     // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(smr.transform, 0.02f, _origVerts[i] - yOffsetDir, removeExisting: false);  
+     
+                        //     //Original non offset mesh      
+                        //     // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(ChaControl.transform, 0.02f, smr.transform.TransformPoint(origVerts[i]), false);
+                        // } 
+
+
+                        //Some other internally measured points/boundaries
+                        // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(smr.transform, 0.2f, sphereCenter);
+                        // var topExtentOffset = topExtentPosLs.y/10;
+                        // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLineAndAttach(meshRootTf, 5, topExtentPosLs, removeExisting: false);                        
+                        // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLineAndAttach(meshRootTf, 5, topExtentPosLs + meshRootTf.up * -topExtentOffset, removeExisting: false);                        
+                        // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLineAndAttach(meshRootTf, 5, meshRootTf.InverseTransformPoint(sphereCenter));  
+                    }                    
+
                     //Apply computed mesh back to body
                     var appliedMeshChanges = ApplyInflation(smr, rendererName, meshInflateFlags.OverWriteMesh, blendShapeTempTagName, meshInflateFlags.bypassWhen0);
 
