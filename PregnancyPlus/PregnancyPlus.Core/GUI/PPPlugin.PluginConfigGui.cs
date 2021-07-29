@@ -13,6 +13,7 @@ namespace KK_PregnancyPlus
         public static ConfigEntry<bool> StoryMode { get; private set; }
         public static ConfigEntry<bool> OverrideBelly { get; private set; }
         public static ConfigEntry<bool> AllowMale { get; private set; }
+        public static ConfigEntry<bool> PerferTargetBelly { get; private set; }
         public static ConfigEntry<float> MaxStoryModeBelly { get; private set; }
         public static ConfigEntry<float> StoryModeInflationMultiplier { get; private set; }
         public static ConfigEntry<float> StoryModeInflationMoveY { get; private set; }
@@ -53,7 +54,8 @@ namespace KK_PregnancyPlus
      
         internal void PluginConfig()
         {            
-            //Debug config options
+            //**** Debug Config *******/
+            //*************************/
             MakeBalloon = Config.Bind<bool>("Debug", "Balloon mode (Debug mode)", false,
                 new ConfigDescription("Debug mesh mode, disable to go back to normal.  This will disable some Preg+ sliders temporarily.",
                     null,
@@ -91,9 +93,18 @@ namespace KK_PregnancyPlus
                     new ConfigurationManagerAttributes { Order = 1, IsAdvanced = true })
                 );
 
-            //General config options
+
+            //**** General Config *******/
+            //***************************/
+
             AllowMale = Config.Bind<bool>("General", "Allow male", false,
                 new ConfigDescription("When enabled, the sliders will work on male characters as well.",
+                    null,
+                    new ConfigurationManagerAttributes { Order = 2 })
+                );
+
+            PerferTargetBelly = Config.Bind<bool>("General", "Prefer targets belly", true,
+                new ConfigDescription("When changing characters in Maker, prefer the targets belly when both characters have a belly (Default).  When \'Disabled\' the source characters belly shape will be used.",
                     null,
                     new ConfigurationManagerAttributes { Order = 1 })
                 );
@@ -122,6 +133,10 @@ namespace KK_PregnancyPlus
                 var additionalSliderText = "";
 
                 var CumflationTitle = "Cumflation";
+
+
+                //**** Inflation Config *******/
+
                 AllowCumflation = Config.Bind<bool>(CumflationTitle, "Allow cumflation", false,
                 new ConfigDescription("Automatically increase belly InflationSize when cum inside.",
                     null,
@@ -148,6 +163,8 @@ namespace KK_PregnancyPlus
             #endif
 
 
+            //**** Story Mode Config *******/
+            //******************************/
             StoryMode = Config.Bind<bool>(storyConfigTitle, "Gameplay Enabled", true,
                 new ConfigDescription("Whether or not Preg+ is enabled in Main Game mode",
                     null,

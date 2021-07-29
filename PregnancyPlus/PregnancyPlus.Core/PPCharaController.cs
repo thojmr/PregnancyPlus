@@ -155,17 +155,10 @@ namespace KK_PregnancyPlus
             charaFileName = ChaFileControl.parameter.fullname;
 
             ReadAndSetCardData();
+            //When char swap determine which char belly to use
+            CheckBellyPreservation();
 
-            // When changing a character (swapping in place) in studio, carry over belly sliders/blendshapes
-            //TODO there has to be a better way to detect swapping characters
-            if (StudioAPI.InsideStudio && (infConfigHistory.HasAnyValue() || infConfigHistory.HasBlendShape()))
-            {
-                if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" -Character changed in place, preserving belly shape");
-                infConfig = infConfigHistory;
-                if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" Updating Card Data > {infConfig.ValuesToString()}");
-            }
-
-            //If the uncensor changed just before this Reload() fired, then is was probably a character swap.
+            //If the uncensor changed just before this Reload(), then is was probably a character swap.
             if (uncensorChanged)
             {
                 uncensorChanged = false;
@@ -184,7 +177,7 @@ namespace KK_PregnancyPlus
 
             StartCoroutine(ReloadStoryInflation(0.5f, "Reload-story"));     
             StartCoroutine(ReloadStudioMakerInflation(1.5f, reMeasure: true, "Reload"));  //Give time for character to load, and settle  
-        }
+        }        
 
 
         protected override void Update()

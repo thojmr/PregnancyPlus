@@ -305,6 +305,42 @@ namespace KK_PregnancyPlus
             #endif
         }
 
+
+        /// <summary>
+        /// When changing a character (swapping in place) in studio/maker, carry over belly sliders/blendshapes
+        /// </summary>
+        internal void CheckBellyPreservation()
+        {
+            //TODO there has to be a better way to detect swapping characters
+            //When in studio and the source character has a belly
+            if (StudioAPI.InsideStudio && (infConfigHistory.HasAnyValue() || infConfigHistory.HasBlendShape()))
+            {
+                if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" -Character changed in place, using source's belly shape");
+                //Keep source character's card data (in case we are swapping out characters in a preg based scene)
+                infConfig = infConfigHistory;
+                if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" Updating Card Data > {infConfig.ValuesToString()}");            
+            }
+
+
+            //When in maker and the source character has a belly
+            if (MakerAPI.InsideMaker && (infConfigHistory.HasAnyValue() || infConfigHistory.HasBlendShape()))
+            {
+                //Decide whether to preserve the belly based on user configured value
+                if (PregnancyPlusPlugin.PerferTargetBelly.Value)
+                {
+                    if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" -Character changed in place, using target's belly shape");   
+                    //Use the target belly shape             
+                } 
+                else 
+                {
+                    if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" -Character changed in place, using source's belly shape");
+                    //Keep source character's card data
+                    infConfig = infConfigHistory;
+                    if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" Updating Card Data > {infConfig.ValuesToString()}");
+                }
+            }
+        }
+
     }
 }
 
