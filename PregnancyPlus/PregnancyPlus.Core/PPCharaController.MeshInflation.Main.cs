@@ -539,9 +539,7 @@ namespace KK_PregnancyPlus
             //**** All of the below are post mesh change checks to make sure the vertex position don't go outside of bounds
 
             //Smoothed vert back to worldspace
-            var smoothedVectorWs = mrTfTransPt.MultiplyPoint3x4(smoothedVectorLs);
-            var currentVectorDistance = Math.Abs(Vector3.Distance(sphereCenterWs, smoothedVectorWs));
-            var pmCurrentVectorDistance = Math.Abs(Vector3.Distance(preMorphSphereCenterWs, smoothedVectorWs));     
+            var smoothedVectorWs = mrTfTransPt.MultiplyPoint3x4(smoothedVectorLs);    
             //Get core point on the same y plane as the original vert
             var coreLineVertWs = meshRootTfPos + meshRootTfUp * (mrTfInvTransPt.MultiplyPoint3x4(originalVerticeWs).y * bellyInfo.TotalCharScale.y);
             var origCoreDist = Math.Abs(Vector3.Distance(originalVerticeWs, coreLineVertWs));//Get line from feet to head that verts must respect distance from
@@ -549,17 +547,25 @@ namespace KK_PregnancyPlus
             var coreLineSmoothedVertWs = meshRootTfPos + meshRootTfUp * (mrTfInvTransPt.MultiplyPoint3x4(smoothedVectorWs).y * bellyInfo.TotalCharScale.y);       
             var currentCoreDist = Math.Abs(Vector3.Distance(smoothedVectorWs, coreLineSmoothedVertWs)); 
 
-            //Don't allow any morphs to shrink towards the sphere center more than its original distance, only outward morphs allowed
-            if (skinToCenterDist > currentVectorDistance || pmSkinToCenterDist > pmCurrentVectorDistance) 
-            {
-                return originalVerticeWs;
-            }
+
+            //** Order matters below **
+
 
             //Don't allow any morphs to shrink towards the characters core line any more than the original distance
             if (currentCoreDist < origCoreDist) 
             {
-                //Since this is just an XZ distance line check, don't modify the new y value
-                return new Vector3(originalVerticeWs.x, smoothedVectorWs.y, originalVerticeWs.z);
+                //Since this is just an XZ distance check, don't modify the new y value
+                smoothedVectorWs = new Vector3(originalVerticeWs.x, smoothedVectorWs.y, originalVerticeWs.z);
+            }
+
+            //Get the new distances from mesh vert to center
+            var currentVectorDistance = Math.Abs(Vector3.Distance(sphereCenterWs, smoothedVectorWs));
+            var pmCurrentVectorDistance = Math.Abs(Vector3.Distance(preMorphSphereCenterWs, smoothedVectorWs)); 
+
+            //Don't allow any morphs to shrink towards the sphere center more than its original distance, only outward morphs allowed
+            if (skinToCenterDist > currentVectorDistance || pmSkinToCenterDist > pmCurrentVectorDistance) 
+            {
+                return originalVerticeWs;
             }
 
             //Don't allow any morphs to move behind the character's.z = 0 + extentOffset position, otherwise skin sometimes pokes out the back side :/
