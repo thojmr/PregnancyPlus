@@ -25,6 +25,7 @@ namespace KK_PregnancyPlus
     {        
 
         internal bool initialized = false;//Prevent some actions from happening before character data loads   
+        internal bool firstStart = true;//When this class just loaded for the first time
 
         public BellyInfo bellyInfo;
         public string charaFileName = null;
@@ -89,6 +90,7 @@ namespace KK_PregnancyPlus
         protected override void Start() 
         {  
             uncensorChanged = false;//reset value to signify its not a change made manually by the user
+            firstStart = true;
             
             //Character card name 
             charaFileName = ChaFileControl.parameter.fullname;        
@@ -100,6 +102,8 @@ namespace KK_PregnancyPlus
 
                 //When HScene starts, pre compute inflated size blendshape
                 #if !KKS //TODO add gameAPI later when KKS releases fully
+                
+                    //TODO this fires for all chaaracters, even those not in Hscene...
                     GameAPI.StartH += (object sender, EventArgs e) => 
                     { 
                         if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $StartH {charaFileName}");
@@ -116,12 +120,6 @@ namespace KK_PregnancyPlus
                 #endif
          
             #endif
-
-            // CharacterApi.CharacterReloaded += (object sender, CharaReloadEventArgs e) =>  
-            // {  
-            //     if (e.ReloadedCharacter == null || e.ReloadedCharacter.name != ChaControl.name) return;            
-            //     if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= OnCharacterReloaded ");
-            // };
 
             base.Start();
         }        
@@ -155,34 +153,24 @@ namespace KK_PregnancyPlus
             charaFileName = ChaFileControl.parameter.fullname;
 
             ReadAndSetCardData();
-            //When char swap determine which char belly to use
+            //When char was swaped, determine which char's belly shape to use
             CheckBellyPreservation();
+            //Check for saved blendshapes to load from char card
+            CheckBlendShapes();        
 
-            //If the uncensor changed just before this Reload(), then is was probably a character swap.
-            if (uncensorChanged)
-            {
-                uncensorChanged = false;
-                
-                //When in maker or studio we want to reset inflation values when uncensor changes to reset clothes
-                if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) ResetInflation();        
-                //Load any saved blendshapes from card, and can trigger uncensor change when necessary
-                //Give any existing uncensor changes time to process first
-                StartCoroutine(ILoadBlendshapes(0.1f, checkUncensor: true));
-            }   
-            else 
-            {
-                //Load any saved blendshapes from card, or trigger uncensor change when necessary
-                StartCoroutine(ILoadBlendshapes(0f));
-            }         
-
+            //Apply belly shape slider values saved on char card
             StartCoroutine(ReloadStoryInflation(0.5f, "Reload-story"));     
             StartCoroutine(ReloadStudioMakerInflation(1.5f, reMeasure: true, "Reload"));  //Give time for character to load, and settle  
+
+            firstStart = false;
         }        
 
 
         protected override void Update()
         {
+            //Used to inflate/deflate in main game
             WatchForUserKeyPress();
+            //Used to incrementally inflate belly during HScene
             ComputeInflationChange();
 
             //just for debugging belly during animations, very compute heavy for Update()
@@ -191,9 +179,12 @@ namespace KK_PregnancyPlus
                 if (Time.frameCount % 60 == 0) MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: true, _freshStart: true, _reMeasure: true), "Update");
             }
 
+
+
+            ///** Threading **
+
             //Execute thread results in main thread, when existing threads are done processing
-            threading.WatchAndExecuteThreadResults();
-            
+            threading.WatchAndExecuteThreadResults();            
             //Clear some values when all threads finished
             if (threading.AllDone) RemoveMeshCollider();
             

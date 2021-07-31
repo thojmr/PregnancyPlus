@@ -341,6 +341,33 @@ namespace KK_PregnancyPlus
             }
         }
 
+
+        /// <summary>
+        /// When loading or changing characters, check for any save blendshapes that need to be loaded from the character card
+        /// </summary>
+        internal void CheckBlendShapes() 
+        {
+            //If the uncensor changed just before this Reload(), then is was probably a character swap.
+            if (uncensorChanged)
+            {
+                uncensorChanged = false;
+                
+                //When in maker or studio we want to reset inflation values when uncensor changes to reset clothes
+                if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) ResetInflation();        
+                //Load any saved blendshapes from card, and can trigger uncensor change when necessary
+                //Give any existing uncensor changes time to process first
+                StartCoroutine(ILoadBlendshapes(0.1f, checkUncensor: true));
+            }   
+            else 
+            {
+                //When character first loads in studio, always check for uncensor match if a saved blendshape exists
+                var needsUncensorCheck = firstStart && (StudioAPI.InsideStudio || MakerAPI.InsideMaker);
+                
+                //Load any saved blendshapes from card, or trigger uncensor change when necessary
+                StartCoroutine(ILoadBlendshapes(0f, checkUncensor: needsUncensorCheck));
+            } 
+        }
+
     }
 }
 
