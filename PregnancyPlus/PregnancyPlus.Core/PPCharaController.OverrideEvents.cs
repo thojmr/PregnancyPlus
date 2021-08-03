@@ -142,7 +142,7 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// When maker is not loaded, but is loading, wait for it before setting belly sliders (Only needed on maker first load)
+        /// When maker is not fully loaded yet, wait for it before setting belly sliders (Only needed on first load)
         /// </summary>
         internal IEnumerator WaitForMakerLoad()
         {
@@ -153,7 +153,7 @@ namespace KK_PregnancyPlus
 
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" WaitForMakerLoad done, setting initial sliders");         
             //Restore sliders to current state
-            PregnancyPlusGui.OnRestore(PregnancyPlusGui.sliders, GetCardData());
+            PregnancyPlusGui.OnPasteBelly(PregnancyPlusGui.sliders, GetCardData());
             yield return null;
             isReloading = false;//Allow cloth mesh events to continue triggering MeshInflate
         }

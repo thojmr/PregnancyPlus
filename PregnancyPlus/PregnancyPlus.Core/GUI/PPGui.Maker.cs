@@ -235,19 +235,23 @@ namespace KK_PregnancyPlus
 
 
             //Maker state buttons
-            var resetBtn = e.AddControl(new MakerButton("Reset All", cat, _pluginInstance));        
+            var copyBtn = e.AddControl(new MakerButton("Copy Belly", cat, _pluginInstance));
+            copyBtn.OnClick.AddListener(() => {
+                OnCopyBelly();
+            });
+            e.AddControl(new MakerText("Copy the current belly shape.", cat, _pluginInstance) { TextColor = hintColor });
+
+            var pasteBtn = e.AddControl(new MakerButton("Paste Belly", cat, _pluginInstance));
+            pasteBtn.OnClick.AddListener(() => {
+                OnPasteBelly(sliders);
+            });
+            e.AddControl(new MakerText("Paste the last copied belly shape, even on different characters", cat, _pluginInstance) { TextColor = hintColor });
+
+            var resetBtn = e.AddControl(new MakerButton("Reset Belly", cat, _pluginInstance));        
             resetBtn.OnClick.AddListener(() => {
                 OnResetAll(sliders);
             });
-            e.AddControl(new MakerText("Will reset all Pregnancy+ sliders to their default value", cat, _pluginInstance) { TextColor = hintColor });
-
-
-            var restoreBtn = e.AddControl(new MakerButton("Restore Last Shape", cat, _pluginInstance));
-            restoreBtn.OnClick.AddListener(() => {
-                OnRestore(sliders);
-            });
-            e.AddControl(new MakerText("Restores the last set belly shape.  Even across characters.", cat, _pluginInstance) { TextColor = hintColor });
-
+            e.AddControl(new MakerText("Resets all P+ sliders to their default value", cat, _pluginInstance) { TextColor = hintColor });
 
             var smoothBtn = e.AddControl(new MakerButton("Belly Mesh Smoothing", cat, _pluginInstance));
             smoothBtn.OnClick.AddListener(() => {
@@ -325,9 +329,25 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// On Restore, set sliders to last non zero shape, and set characters belly state
+        /// On Copy, get the current characters belly state
         /// </summary>
-        public static void OnRestore(List<MakerSlider> _sliders, PregnancyPlusData restoreToState = null)
+        public static void OnCopyBelly()
+        {
+            if (!MakerAPI.InsideAndLoaded) return;
+
+            var chaControl = MakerAPI.GetCharacterControl();
+            var charCustFunCtrl  = PregnancyPlusHelper.GetCharacterBehaviorController<PregnancyPlusCharaController>(chaControl, PregnancyPlusPlugin.GUID);
+            if (charCustFunCtrl == null) return;
+
+            //Grab the current belly state
+            PregnancyPlusPlugin.copiedBelly = (PregnancyPlusData)charCustFunCtrl.infConfig.Clone();
+        }
+
+
+        /// <summary>
+        /// On Paste, set sliders to last copied state
+        /// </summary>
+        public static void OnPasteBelly(List<MakerSlider> _sliders, PregnancyPlusData restoreToState = null)
         {
             if (!MakerAPI.InsideAndLoaded) return;
             if (_sliders == null || _sliders.Count <= 0 || !_sliders[0].Exists) return;
@@ -336,7 +356,10 @@ namespace KK_PregnancyPlus
             var charCustFunCtrl  = PregnancyPlusHelper.GetCharacterBehaviorController<PregnancyPlusCharaController>(chaControl, PregnancyPlusPlugin.GUID);
             if (charCustFunCtrl == null) return;
 
-            var _infConfig = restoreToState != null ? restoreToState : PregnancyPlusPlugin.lastBellyState;
+            var _infConfig = restoreToState != null ? restoreToState : PregnancyPlusPlugin.copiedBelly;
+
+            //If no belly state has been copied, skip this
+            if (_infConfig == null) return;
 
             //For each slider, set to default which will reset the belly shape
             foreach (var slider in _sliders) 

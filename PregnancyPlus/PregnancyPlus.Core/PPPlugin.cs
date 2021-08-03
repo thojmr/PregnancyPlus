@@ -34,7 +34,7 @@ namespace KK_PregnancyPlus
    
 
         //Used to hold the last non zero belly shape slider values that were applied to any character for Restore button
-        public static PregnancyPlusData lastBellyState =  new PregnancyPlusData();        
+        public static PregnancyPlusData copiedBelly = null;       
         public static ErrorCodeController errorCodeCtrl;
 
 

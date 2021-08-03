@@ -64,13 +64,7 @@ namespace KK_PregnancyPlus
             var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, findAll: true);
             LoopAndApplyMeshChanges(bodyRenderers, meshInflateFlags);
             var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);            
-            LoopAndApplyMeshChanges(clothRenderers, meshInflateFlags, true, GetBodyMeshRenderer());          
-            
-            //If any changes were applied, updated the last used shape for the Restore GUI button
-            if (infConfig.HasAnyValue()) 
-            {
-                PregnancyPlusPlugin.lastBellyState = (PregnancyPlusData)infConfig.Clone();//CLone so we don't accidently overwright the lastState later
-            }           
+            LoopAndApplyMeshChanges(clothRenderers, meshInflateFlags, true, GetBodyMeshRenderer());                           
         }
 
 

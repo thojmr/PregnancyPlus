@@ -49,23 +49,38 @@ namespace KK_PregnancyPlus
         {
             cat = StudioAPI.GetOrCreateCurrentStateCategory("Pregnancy +");
 
-            cat.AddControl(new CurrentStateCategorySwitch("Reset P+ Shape", c =>
+            cat.AddControl(new CurrentStateCategorySwitch("Copy Belly", c =>
+                {                                         
+                    return false;
+                }))
+                .Value.Subscribe(f => {                   
+                    if (f == false) return;
+                    foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) 
+                    {             
+                        PregnancyPlusPlugin.copiedBelly = (PregnancyPlusData)ctrl.infConfig.Clone();
+                        //Just copy the first in the list
+                        break;
+                    }                    
+                 });
+
+            cat.AddControl(new CurrentStateCategorySwitch("Paste Belly", c =>
+                {                                         
+                    return false;
+                }))
+                .Value.Subscribe(f => {         
+                    if (f == false) return;          
+                    if (PregnancyPlusPlugin.copiedBelly != null && PregnancyPlusPlugin.copiedBelly.HasAnyValue()) 
+                        RestoreSliders(PregnancyPlusPlugin.copiedBelly);
+                 });
+
+            cat.AddControl(new CurrentStateCategorySwitch("Reset Belly", c =>
                 {                     
                     return false;
                 }))
                 .Value.Subscribe(f => {
-                    if (f == false) return;
+                    if (f == false) return;//This will trigger on studio first load
                     ResetAllSliders();                   
                 });
-            
-            cat.AddControl(new CurrentStateCategorySwitch("Restore Last P+ Shape", c =>
-                {                                         
-                    return false;
-                }))
-                .Value.Subscribe(f => {
-                    if (f == false) return;
-                    if (PregnancyPlusPlugin.lastBellyState.HasAnyValue()) RestoreSliders(PregnancyPlusPlugin.lastBellyState);
-                 });
 
             cat.AddControl(new CurrentStateCategorySwitch(blendshapeText, c =>
                 {                                         
@@ -426,7 +441,7 @@ namespace KK_PregnancyPlus
         }
 
 
-        //Restore sliders to last non zero config
+        //Restore sliders to last non zero config (similar to OnPasteBelly in Maker)
         internal static void RestoreSliders(PregnancyPlusData _infConfig) 
         {
             if (cat == null) return;            
