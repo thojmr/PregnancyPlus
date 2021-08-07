@@ -86,7 +86,7 @@ See `How To Install` for installation instructions
     - A: This was fixed in v3.5 and some cards with belly shapes before that version need to be re-saved again.  Only old characters with ABMX adjustments to the torso will have this issue.
 
 ## Notes
-- There will be cloth clipping.  You can use the Cloth Offset slider to help with it, but It's a difficult problem to solve.
+- There will always be some amount of cloth clipping.  You can use the Cloth Offset slider to help with it, but It's a difficult problem to solve.
 
 ## How to download
 You can grab the latest plugin release [here](https://github.com/thojmr/KK_PregnancyPlus/releases), or build it yourself (developers only).  Explained further below.
