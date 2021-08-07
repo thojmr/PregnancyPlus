@@ -10,6 +10,7 @@ See `How To Install` for installation instructions
 <img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/P%2BStudioGUI.PNG" width="476.5"></img>
 
 ## Latest Features (I will update this occasionally)
+- Copy Paste Belly buttons
 - Override KK_Pregnancy belly shape
 - Multithreaded computation
 - HS2 belly inflation logic
