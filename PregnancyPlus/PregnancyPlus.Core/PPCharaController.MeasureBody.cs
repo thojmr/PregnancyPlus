@@ -137,6 +137,11 @@ namespace KK_PregnancyPlus
                 return false;
             }
 
+            //Allows cloning, to avoid pass by ref issues when keeping history
+            public object Clone()
+            {
+                return this.MemberwiseClone();
+            }
 
             public string Log()
             {

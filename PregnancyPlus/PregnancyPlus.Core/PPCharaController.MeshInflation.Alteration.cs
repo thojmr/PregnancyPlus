@@ -211,6 +211,7 @@ namespace KK_PregnancyPlus
                     ApplySmoothResults(newVerts, renderKey, smr);
                 };
 
+                //Append to result queue.  Will execute on next Update()
                 threading.AddResultToThreadQueue(threadActionResult);
 
             };

@@ -8,7 +8,8 @@ namespace KK_PregnancyPlus
     //This partial class contains the animation curves used in mesh transformations, much better curvature than a simple linear mathf.lerp
     public partial class PregnancyPlusCharaController: CharaCustomFunctionController
     {           
-        
+
+        //Careful that none of these are threadsafe for mesh calculations, need to make copies first        
         public AnimationCurve FastLerpAC = FastLerpAnimCurve();
         public AnimationCurve SlowLerpAC = SlowLerpAnimCurve();
         public AnimationCurve BellyTopAC = BellyTopAnimCurve();

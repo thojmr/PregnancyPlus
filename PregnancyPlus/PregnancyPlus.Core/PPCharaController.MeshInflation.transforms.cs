@@ -46,14 +46,14 @@ namespace KK_PregnancyPlus
         /// <summary>   
         /// This will shift the sphereCenter position *After sphereifying* on Y or Z axis (This stretches the mesh, where pre sphereifying, it would move the sphere within the mesh like Move Y)
         /// </summary>
-        internal Vector3 GetUserShiftTransform(Vector3 smoothedVectorLs, Vector3 sphereCenterLs, float skinToCenterDist) 
+        internal Vector3 GetUserShiftTransform(PregnancyPlusData infConfigClone, Vector3 smoothedVectorLs, Vector3 sphereCenterLs, float skinToCenterDist) 
         {                     
             //IF the user has selected a y value, lerp the top and bottom slower and lerp any verts closer to z = 0 slower
-            if (GetInflationShiftY() != 0) 
+            if (GetInflationShiftY(infConfigClone) != 0) 
             {
                 var distFromYCenterLs = smoothedVectorLs.y - sphereCenterLs.y;
                 //Lerp up and down positon more when the belly is near the center Y, and less for top and bottom
-                var lerpY = Mathf.Lerp(GetInflationShiftY(), GetInflationShiftY()/4, Math.Abs(distFromYCenterLs/((skinToCenterDist/bellyInfo.TotalCharScale.y)*1.8f)));
+                var lerpY = Mathf.Lerp(GetInflationShiftY(infConfigClone), GetInflationShiftY(infConfigClone)/4, Math.Abs(distFromYCenterLs/((skinToCenterDist/bellyInfo.TotalCharScale.y)*1.8f)));
                 var yLerpedsmoothedVector = smoothedVectorLs + Vector3.up * lerpY;//Since its all local space here, we dont have to use meshRootTf.up
 
                 //Finally lerp sides slightly slower than center
@@ -65,10 +65,10 @@ namespace KK_PregnancyPlus
             }
 
             //If the user has selected a z value
-            if (GetInflationShiftZ() != 0) 
+            if (GetInflationShiftZ(infConfigClone) != 0) 
             {
                 //Move the verts closest to sphere center Z more slowly than verts at the belly button.  Otherwise you stretch the ones near the body too much
-                var lerpZ = Mathf.Lerp(0, GetInflationShiftZ(), (smoothedVectorLs.z - sphereCenterLs.z)/((skinToCenterDist/bellyInfo.TotalCharScale.z) *2));
+                var lerpZ = Mathf.Lerp(0, GetInflationShiftZ(infConfigClone), (smoothedVectorLs.z - sphereCenterLs.z)/((skinToCenterDist/bellyInfo.TotalCharScale.z) *2));
                 var finalLerpPos = smoothedVectorLs + Vector3.forward * lerpZ;
 
                 smoothedVectorLs = finalLerpPos;
@@ -81,12 +81,12 @@ namespace KK_PregnancyPlus
         /// <summary>   
         /// This will stretch the belly mesh wider
         /// </summary>        
-        internal Vector3 GetUserStretchXTransform(Vector3 smoothedVectorLs, Vector3 sphereCenterLs) 
+        internal Vector3 GetUserStretchXTransform(PregnancyPlusData infConfigClone, Vector3 smoothedVectorLs, Vector3 sphereCenterLs) 
         {
             //local Distance left or right from sphere center
             var distFromXCenterLs = smoothedVectorLs.x - sphereCenterLs.x;                
 
-            var changeInDist = distFromXCenterLs * (GetInflationStretchX() + 1);  
+            var changeInDist = distFromXCenterLs * (GetInflationStretchX(infConfigClone) + 1);  
             //Get new local space X position
             smoothedVectorLs.x = (sphereCenterLs + Vector3.right * changeInDist).x;
 
@@ -94,14 +94,14 @@ namespace KK_PregnancyPlus
         }
 
 
-        internal Vector3 GetUserStretchYTransform(Vector3 smoothedVectorLs, Vector3 sphereCenterLs) 
+        internal Vector3 GetUserStretchYTransform(PregnancyPlusData infConfigClone, Vector3 smoothedVectorLs, Vector3 sphereCenterLs) 
         {
             //Allow user adjustment of the height of the belly
             //local Distance up or down from sphere center
             var distFromYCenterLs = smoothedVectorLs.y - sphereCenterLs.y; 
             
             //have to change growth direction above and below center line
-            var changeInDist = distFromYCenterLs * (GetInflationStretchY() + 1);  
+            var changeInDist = distFromYCenterLs * (GetInflationStretchY(infConfigClone) + 1);  
             //Get new local space X position
             smoothedVectorLs.y = (sphereCenterLs + Vector3.up * changeInDist).y;
             
@@ -112,7 +112,7 @@ namespace KK_PregnancyPlus
         /// <summary>   
         /// This sill taper the belly shape based on user input slider. shrinking the top width, and expanding the bottom width along the YX adis
         /// </summary>
-        internal Vector3 GetUserTaperYTransform(Vector3 smoothedVectorLs, Vector3 sphereCenterLs, float skinToCenterDist) 
+        internal Vector3 GetUserTaperYTransform(PregnancyPlusData infConfigClone, Vector3 smoothedVectorLs, Vector3 sphereCenterLs, float skinToCenterDist) 
         {
             //local Distance up or down from sphere center
             var distFromYCenterLs = smoothedVectorLs.y - sphereCenterLs.y; 
@@ -122,7 +122,7 @@ namespace KK_PregnancyPlus
             var isRight = distFromXCenterLs > 0; 
 
             //Increase taper amount for vecters further above or below center.  No shift along center
-            var taperY = Mathf.Lerp(0, GetInflationTaperY(), Math.Abs(distFromYCenterLs)/(skinToCenterDist/bellyInfo.TotalCharScale.y));
+            var taperY = Mathf.Lerp(0, GetInflationTaperY(infConfigClone), Math.Abs(distFromYCenterLs)/(skinToCenterDist/bellyInfo.TotalCharScale.y));
             //Second lerp to limit how much it shifts l/r when near x=0 line, no shift along center
             taperY = Mathf.Lerp(0, taperY, Math.Abs(distFromXCenterLs)/(skinToCenterDist/bellyInfo.TotalCharScale.x));
             //Reverse the direction based on which side the vert is on
@@ -138,7 +138,7 @@ namespace KK_PregnancyPlus
         /// <summary>   
         /// This sill taper the belly shape based on user input slider. pulling out the bottom and pushing in the top along the XZ axis
         /// </summary>
-        internal Vector3 GetUserTaperZTransform(Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 sphereCenterLs, 
+        internal Vector3 GetUserTaperZTransform(PregnancyPlusData infConfigClone, Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 sphereCenterLs, 
                                                 float skinToCenterDist, Vector3 backExtentPosLs) 
         {
             //local Distance up or down from sphere center
@@ -148,7 +148,7 @@ namespace KK_PregnancyPlus
             var isTop = distFromYCenterLs > 0; 
 
             //Increase taper amount for vecters further above or below center.  No shifting at center
-            var taperZ = Mathf.Lerp(0, GetInflationTaperZ(), Math.Abs(distFromYCenterLs)/(skinToCenterDist/bellyInfo.TotalCharScale.y));
+            var taperZ = Mathf.Lerp(0, GetInflationTaperZ(infConfigClone), Math.Abs(distFromYCenterLs)/(skinToCenterDist/bellyInfo.TotalCharScale.y));
             //Reverse the direction based on which side the vert is on
             taperZ = (isTop ? taperZ : -taperZ);
             var taperedZVert = smoothedVectorLs + Vector3.forward * taperZ;
@@ -168,12 +168,12 @@ namespace KK_PregnancyPlus
         /// <summary>   
         /// This will add a fat fold across the middle of the belly
         /// </summary>        
-        internal Vector3 GetUserFatFoldTransform(Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 sphereCenterLs, float sphereRadius) 
+        internal Vector3 GetUserFatFoldTransform(PregnancyPlusData infConfigClone, Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 sphereCenterLs, float sphereRadius) 
         {
             var origSmoothVectorLs = smoothedVectorLs;
-            var inflationFatFold = GetInflationFatFold();            
+            var inflationFatFold = GetInflationFatFold(infConfigClone);            
             var scaledSphereRadius = bellyInfo.ScaledRadius(BellyDir.y);
-            var inflationFatFoldHeightOffset = GetInflationFatFoldHeight() * scaledSphereRadius;
+            var inflationFatFoldHeightOffset = GetInflationFatFoldHeight(infConfigClone) * scaledSphereRadius;
 
             //Define how hight and low from center we want to pull the skin inward
             var svDistFromCenter = Math.Abs(smoothedVectorLs.y - (sphereCenterLs.y + inflationFatFoldHeightOffset));
@@ -201,12 +201,13 @@ namespace KK_PregnancyPlus
         /// <summary>   
         /// This will make the front of the belly more, or less round
         /// </summary>  
-        internal Vector3 GetUserRoundnessTransform(Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 sphereCenterLs, float skinToCenterDist)
+        internal Vector3 GetUserRoundnessTransform(PregnancyPlusData infConfigClone, Vector3 originalVerticeLs, Vector3 smoothedVectorLs, 
+                                                   Vector3 sphereCenterLs, float skinToCenterDist)
         {
             var zDistFromCenter = smoothedVectorLs.z - sphereCenterLs.z;
 
             //As the distance forward gets further from sphere center make the shape more round (shifted outward slightly from center)
-            var xyLerp = Mathf.Lerp(0, GetInflationRoundness(), (zDistFromCenter - (bellyInfo.WaistThick/4f))/bellyInfo.ScaledRadius(BellyDir.z));
+            var xyLerp = Mathf.Lerp(0, GetInflationRoundness(infConfigClone), (zDistFromCenter - (bellyInfo.WaistThick/4f))/bellyInfo.ScaledRadius(BellyDir.z));
 
             //As the original vert gets closer to the sphere radius, apply less change since we want smooth transitions at belly's edge
             var moveDistanceLerp = Mathf.Lerp(xyLerp, 0, BellyEdgeAC.Evaluate(skinToCenterDist/bellyInfo.ScaledRadius(BellyDir.z)));
@@ -222,10 +223,11 @@ namespace KK_PregnancyPlus
         /// <summary>   
         /// This Drop the belly down
         /// </summary>
-        internal Vector3 GetUserDropTransform(Vector3 meshRootTfUp, Vector3 smoothedVectorLs, Vector3 sphereCenterLs, float skinToCenterDist, float sphereRadius) 
+        internal Vector3 GetUserDropTransform(PregnancyPlusData infConfigClone, Vector3 meshRootTfUp, Vector3 smoothedVectorLs, Vector3 sphereCenterLs, 
+                                              float skinToCenterDist, float sphereRadius) 
         {                     
             //Move the verts closest to sphere center Z more slowly than verts at the belly button.  Otherwise you stretch the ones near the body too much
-            var lerpZ = Mathf.Lerp(0, GetInflationDrop(), (smoothedVectorLs.z - sphereCenterLs.z)/(bellyInfo.ScaledRadius(BellyDir.z) * 1.5f));
+            var lerpZ = Mathf.Lerp(0, GetInflationDrop(infConfigClone), (smoothedVectorLs.z - sphereCenterLs.z)/(bellyInfo.ScaledRadius(BellyDir.z) * 1.5f));
             return smoothedVectorLs + meshRootTfUp * -(sphereRadius * lerpZ);
         }
 
@@ -233,7 +235,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Dampen any mesh changed near edged of the belly (sides, top, and bottom) to prevent too much vertex stretching.  The more forward the vertex is from Z the more it's allowd to be altered by sliders
         /// </summary>        
-        internal Vector3 RoundToSides(Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 backExtentPosLs) 
+        internal Vector3 RoundToSides(Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 backExtentPosLs, AnimationCurve bellySidesAC) 
         {        
             var origRad = bellyInfo.ScaledOrigRadius(BellyDir.z)/1.8f;
             var multipliedRad = bellyInfo.ScaledRadius(BellyDir.z)/2.5f;
@@ -245,14 +247,14 @@ namespace KK_PregnancyPlus
             var forwardFromBack = (originalVerticeLs.z - backExtentPosLs.z);
             
             //As the vert.z approaches the front lerp it less
-            return Vector3.Lerp(originalVerticeLs, smoothedVectorLs, BellySidesAC.Evaluate(forwardFromBack/zForwardSmoothDist));        
+            return Vector3.Lerp(originalVerticeLs, smoothedVectorLs, bellySidesAC.Evaluate(forwardFromBack/zForwardSmoothDist));        
         }
         
 
         /// <summary>
         /// Reduce the stretching of the skin at the top of the belly where it connects to the ribs at large Multiplier values
         /// </summary>
-        internal Vector3 ReduceRibStretchingZ(Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 topExtentPosLs)
+        internal Vector3 ReduceRibStretchingZ(Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 topExtentPosLs, AnimationCurve bellyTopAC)
         {         
             //The distance from topExtent that we want to start lerping movement more slowly
             var topExtentOffset = topExtentPosLs.y/10;
@@ -267,7 +269,7 @@ namespace KK_PregnancyPlus
             if (originalVerticeLs.y >= topExtentPosLs.y -topExtentOffset)
             {                
                 var distanceFromTopExtent = topExtentPosLs.y - originalVerticeLs.y;
-                var animCurveVal = BellyTopAC.Evaluate(distanceFromTopExtent/topExtentOffset);
+                var animCurveVal = bellyTopAC.Evaluate(distanceFromTopExtent/topExtentOffset);
 
                 //Reduce the amount they are allowed to stretch forward, the higher the verts are
                 var newVector = Vector3.Lerp(originalVerticeLs, smoothedVectorLs, animCurveVal);  
@@ -280,103 +282,145 @@ namespace KK_PregnancyPlus
 
 
         //Allow user plugin config values to be added in during story mode
-        internal float GetInflationMultiplier() 
+        internal float GetInflationMultiplier(PregnancyPlusData infConfigInstance = null) 
         {
-            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationMultiplier;
+            //If an instance of preg+ data is passed in, use it
+            var multiplier = infConfigInstance != null ? infConfigInstance.inflationMultiplier : infConfig.inflationMultiplier;
+
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return multiplier;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationMultiplier != null ? PregnancyPlusPlugin.StoryModeInflationMultiplier.Value : 0;
-            return (infConfig.inflationMultiplier + globalOverrideVal);
+            return (multiplier + globalOverrideVal);
         }
-        internal float GetInflationMoveY() 
+        internal float GetInflationMoveY(PregnancyPlusData infConfigInstance = null) 
         {
-            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationMoveY;
+            //If an instance of preg+ data is passed in, use it
+            var moveY = infConfigInstance != null ? infConfigInstance.inflationMoveY : infConfig.inflationMoveY;
+
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return moveY;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationMoveY != null ? PregnancyPlusPlugin.StoryModeInflationMoveY.Value : 0;
-            return (infConfig.inflationMoveY + globalOverrideVal);
+            return (moveY + globalOverrideVal);
         }
 
-        internal float GetInflationMoveZ() 
+        internal float GetInflationMoveZ(PregnancyPlusData infConfigInstance = null) 
         {
-            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationMoveZ;
+            //If an instance of preg+ data is passed in, use it
+            var moveZ = infConfigInstance != null ? infConfigInstance.inflationMoveZ : infConfig.inflationMoveZ;
+
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return moveZ;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationMoveZ != null ? PregnancyPlusPlugin.StoryModeInflationMoveZ.Value : 0;
-            return (infConfig.inflationMoveZ + globalOverrideVal);
+            return (moveZ + globalOverrideVal);
         }
 
-        internal float GetInflationStretchX() 
+        internal float GetInflationStretchX(PregnancyPlusData infConfigInstance = null) 
         {
-            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationStretchX;
+            //If an instance of preg+ data is passed in, use it
+            var stretchX = infConfigInstance != null ? infConfigInstance.inflationStretchX : infConfig.inflationStretchX;
+
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return stretchX;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationStretchX != null ? PregnancyPlusPlugin.StoryModeInflationStretchX.Value : 0;
-            return (infConfig.inflationStretchX + globalOverrideVal);
+            return (stretchX + globalOverrideVal);
         }
 
-        internal float GetInflationStretchY() 
+        internal float GetInflationStretchY(PregnancyPlusData infConfigInstance = null) 
         {
-            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationStretchY;
+            //If an instance of preg+ data is passed in, use it
+            var stretchY = infConfigInstance != null ? infConfigInstance.inflationStretchY : infConfig.inflationStretchY;
+
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return stretchY;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationStretchY != null ? PregnancyPlusPlugin.StoryModeInflationStretchY.Value : 0;
-            return (infConfig.inflationStretchY + globalOverrideVal);
+            return (stretchY + globalOverrideVal);
         }
 
-        internal float GetInflationShiftY() 
+        internal float GetInflationShiftY(PregnancyPlusData infConfigInstance = null) 
         {
-            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationShiftY;
+            //If an instance of preg+ data is passed in, use it
+            var shiftY = infConfigInstance != null ? infConfigInstance.inflationShiftY : infConfig.inflationShiftY;
+
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return shiftY;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationShiftY != null ? PregnancyPlusPlugin.StoryModeInflationShiftY.Value : 0;
-            return (infConfig.inflationShiftY + globalOverrideVal);
+            return (shiftY + globalOverrideVal);
         }
 
-        internal float GetInflationShiftZ() 
+        internal float GetInflationShiftZ(PregnancyPlusData infConfigInstance = null) 
         {
-            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationShiftZ;
+            //If an instance of preg+ data is passed in, use it
+            var shiftZ = infConfigInstance != null ? infConfigInstance.inflationShiftZ : infConfig.inflationShiftZ;
+
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return shiftZ;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationShiftZ != null ? PregnancyPlusPlugin.StoryModeInflationShiftZ.Value : 0;
-            return (infConfig.inflationShiftZ + globalOverrideVal);
+            return (shiftZ + globalOverrideVal);
         }
 
-        internal float GetInflationTaperY() 
+        internal float GetInflationTaperY(PregnancyPlusData infConfigInstance = null) 
         {
-            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationTaperY;
+            //If an instance of preg+ data is passed in, use it
+            var taperY = infConfigInstance != null ? infConfigInstance.inflationTaperY : infConfig.inflationTaperY;
+
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return taperY;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationTaperY != null ? PregnancyPlusPlugin.StoryModeInflationTaperY.Value : 0;
-            return (infConfig.inflationTaperY + globalOverrideVal);
+            return (taperY + globalOverrideVal);
         }
 
-        internal float GetInflationTaperZ() 
+        internal float GetInflationTaperZ(PregnancyPlusData infConfigInstance = null) 
         {
-            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationTaperZ;
+            //If an instance of preg+ data is passed in, use it
+            var taperZ = infConfigInstance != null ? infConfigInstance.inflationTaperZ : infConfig.inflationTaperZ;
+
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return taperZ;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationTaperZ != null ? PregnancyPlusPlugin.StoryModeInflationTaperZ.Value : 0;
-            return (infConfig.inflationTaperZ + globalOverrideVal);
+            return (taperZ + globalOverrideVal);
         }
 
-        internal float GetInflationDrop() 
+        internal float GetInflationDrop(PregnancyPlusData infConfigInstance = null) 
         {
-            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationDrop;
+            //If an instance of preg+ data is passed in, use it
+            var drop = infConfigInstance != null ? infConfigInstance.inflationDrop : infConfig.inflationDrop;
+
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return drop;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationDrop != null ? PregnancyPlusPlugin.StoryModeInflationDrop.Value : 0;
-            return (infConfig.inflationDrop + globalOverrideVal);
+            return (drop + globalOverrideVal);
         }
 
-        internal float GetInflationClothOffset() 
+        internal float GetInflationClothOffset(PregnancyPlusData infConfigInstance = null) 
         {
-            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationClothOffset;
+            //If an instance of preg+ data is passed in, use it
+            var clothOffset = infConfigInstance != null ? infConfigInstance.inflationClothOffset : infConfig.inflationClothOffset;
+
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return clothOffset;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationClothOffset != null ? PregnancyPlusPlugin.StoryModeInflationClothOffset.Value : 0;
-            return (infConfig.inflationClothOffset + globalOverrideVal);
+            return (clothOffset + globalOverrideVal);
         }
 
-        internal float GetInflationFatFold() 
+        internal float GetInflationFatFold(PregnancyPlusData infConfigInstance = null) 
         {
-            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationFatFold;
+            //If an instance of preg+ data is passed in, use it
+            var fatFold = infConfigInstance != null ? infConfigInstance.inflationFatFold : infConfig.inflationFatFold;
+
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return fatFold;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationFatFold != null ? PregnancyPlusPlugin.StoryModeInflationFatFold.Value : 0;
-            return (infConfig.inflationFatFold + globalOverrideVal);
+            return (fatFold + globalOverrideVal);
         }
 
 
-        internal float GetInflationFatFoldHeight() 
+        internal float GetInflationFatFoldHeight(PregnancyPlusData infConfigInstance = null) 
         {
-            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationFatFoldHeight;
+            //If an instance of preg+ data is passed in, use it
+            var fatFoldHeight = infConfigInstance != null ? infConfigInstance.inflationFatFoldHeight : infConfig.inflationFatFoldHeight;
+
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return fatFoldHeight;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationFatFoldHeight != null ? PregnancyPlusPlugin.StoryModeInflationFatFoldHeight.Value : 0;
-            return (infConfig.inflationFatFoldHeight + globalOverrideVal);
+            return (fatFoldHeight + globalOverrideVal);
         }
 
 
-        internal float GetInflationRoundness() 
+        internal float GetInflationRoundness(PregnancyPlusData infConfigInstance = null) 
         {
-            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return infConfig.inflationRoundness;
+            //If an instance of preg+ data is passed in, use it
+            var roundness = infConfigInstance != null ? infConfigInstance.inflationRoundness : infConfig.inflationRoundness;
+
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return roundness;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationRoundness != null ? PregnancyPlusPlugin.StoryModeInflationRoundness.Value : 0;
-            return (infConfig.inflationRoundness + globalOverrideVal);
+            return (roundness + globalOverrideVal);
         }
 
         

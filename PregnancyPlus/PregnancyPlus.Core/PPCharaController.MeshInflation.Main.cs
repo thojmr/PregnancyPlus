@@ -242,6 +242,11 @@ namespace KK_PregnancyPlus
             var mrTfInvTransPt = mrTfTransPt.inverse;            
             var smrTfTransPt = smr.transform.localToWorldMatrix;
             var smrTfInvTransPt = smrTfTransPt.inverse;            
+            //Lock in current slider values for threaded calculation
+            var infConfigClone = (PregnancyPlusData)infConfig.Clone();
+            //Animation curves are not thread safe, so make copies here
+            var bellySidesAC = BellySidesAnimCurve();
+            var bellyTopAC = BellyTopAnimCurve();
 
             //Heavy compute task below, run in separate thread
             WaitCallback threadAction = (System.Object stateInfo) => 
@@ -280,18 +285,18 @@ namespace KK_PregnancyPlus
                     if (isClothingMesh) 
                     {                        
                         //Calculate clothing offset distance                   
-                        reduceClothFlattenOffset = GetClothesFixOffset(sphereCenter, sphereRadius, waistWidth, origVertWs, smr.name, clothOffsets[i]);
+                        reduceClothFlattenOffset = GetClothesFixOffset(infConfigClone, sphereCenter, sphereRadius, waistWidth, origVertWs, smr.name, clothOffsets[i]);
                     }
                         
                     //Shift each belly vertex away from sphere center in a sphere pattern.  This is the core of the Preg+ belly shape
                     verticieToSpherePos = (origVertWs - sphereCenter).normalized * (sphereRadius + reduceClothFlattenOffset) + sphereCenter;                                                    
 
                     //Make adjustments to the shape to make it smooth, and feed in user slider input
-                    inflatedVertWs =  SculptInflatedVerticie(origVertWs, verticieToSpherePos, sphereCenter, waistWidth, 
-                                                                meshRootTf, mrTfTransPt, mrTfInvTransPt, meshRootTfPos, meshRootTfUp, 
-                                                                preMorphSphereCenter, sphereRadius, 
-                                                                backExtentPos, topExtentPos, sphereCenterLs, pmSphereCenterLs, backExtentPosLs, 
-                                                                topExtentPosLs);   
+                    inflatedVertWs =  SculptInflatedVerticie(infConfigClone, origVertWs, verticieToSpherePos, sphereCenter, waistWidth, 
+                                                             meshRootTf, mrTfTransPt, mrTfInvTransPt, meshRootTfPos, meshRootTfUp, 
+                                                             preMorphSphereCenter, sphereRadius, 
+                                                             backExtentPos, topExtentPos, sphereCenterLs, pmSphereCenterLs, backExtentPosLs, 
+                                                             topExtentPosLs, bellySidesAC, bellyTopAC);   
 
                     //Convert back to local space, and undo any temporary offset                                                                
                     inflatedVerts[i] = smrTfInvTransPt.MultiplyPoint3x4(inflatedVertWs) + yOffsetDir;                                                  
@@ -330,9 +335,10 @@ namespace KK_PregnancyPlus
 
                     //When inflation is actively happening as clothing changes, make sure the new clothing grows too
                     if (isDuringInflationScene) AppendToQuickInflateList(smr);
-                    if (appliedMeshChanges) infConfigHistory = (PregnancyPlusData)infConfig.Clone();   
+                    if (appliedMeshChanges) infConfigHistory = infConfigClone;   
                 };
 
+                //Append to result queue.  Will execute on next Update()
                 threading.AddResultToThreadQueue(threadActionResult);
 
             };
@@ -429,11 +435,12 @@ namespace KK_PregnancyPlus
         /// <param name="sphereCenterPos">The center of the imaginary sphere</param>
         /// <param name="waistWidth">The characters waist width that limits the width of the belly (future implementation)</param>
         /// <param name="meshRootTf">The transform used to convert a mesh vector from local space to worldspace and back, also servers as the point where we want to stop making mesh changes when Z < 0</param>
-        internal Vector3 SculptInflatedVerticie(Vector3 originalVerticeWs, Vector3 inflatedVerticieWs, Vector3 sphereCenterWs, float waistWidth, 
+        internal Vector3 SculptInflatedVerticie(PregnancyPlusData infConfigClone, Vector3 originalVerticeWs, Vector3 inflatedVerticieWs, Vector3 sphereCenterWs, float waistWidth, 
                                                 Transform meshRootTf, Matrix4x4 mrTfTransPt, Matrix4x4 mrTfInvTransPt, Vector3 meshRootTfPos, Vector3 meshRootTfUp, 
                                                 Vector3 preMorphSphereCenterWs, float sphereRadius, Vector3 backExtentPos, Vector3 topExtentPos, 
                                                 Vector3 sphereCenterLs, Vector3 pmSphereCenterLs, 
-                                                Vector3 backExtentPosLs, Vector3 topExtentPosLs) 
+                                                Vector3 backExtentPosLs, Vector3 topExtentPosLs,
+                                                AnimationCurve bellySidesAC, AnimationCurve bellyTopAC) 
         {
             //No smoothing modification in debug mode
             if (PregnancyPlusPlugin.MakeBalloon.Value || PregnancyPlusPlugin.DebugVerts.Value) return inflatedVerticieWs;                       
@@ -458,61 +465,61 @@ namespace KK_PregnancyPlus
             var smoothedVectorLs = SculptBaseShape(originalVerticeLs, inflatedVerticieLs, sphereCenterLs);      
 
             //Allow user adjustment of the height and width placement of the belly
-            if (GetInflationShiftY() != 0 || GetInflationShiftZ() != 0) 
+            if (GetInflationShiftY(infConfigClone) != 0 || GetInflationShiftZ(infConfigClone) != 0) 
             {
-                smoothedVectorLs = GetUserShiftTransform(smoothedVectorLs, sphereCenterLs, skinToCenterDist);            
+                smoothedVectorLs = GetUserShiftTransform(infConfigClone, smoothedVectorLs, sphereCenterLs, skinToCenterDist);            
             }
 
             //Allow user adjustment of the width of the belly
-            if (GetInflationStretchX() != 0) 
+            if (GetInflationStretchX(infConfigClone) != 0) 
             {   
-                smoothedVectorLs = GetUserStretchXTransform(smoothedVectorLs, sphereCenterLs);
+                smoothedVectorLs = GetUserStretchXTransform(infConfigClone, smoothedVectorLs, sphereCenterLs);
             }
 
             //Allow user adjustment of the height of the belly
-            if (GetInflationStretchY() != 0) 
+            if (GetInflationStretchY(infConfigClone) != 0) 
             {   
-                smoothedVectorLs = GetUserStretchYTransform(smoothedVectorLs, sphereCenterLs);
+                smoothedVectorLs = GetUserStretchYTransform(infConfigClone, smoothedVectorLs, sphereCenterLs);
             }
 
-            if (GetInflationRoundness() != 0) 
+            if (GetInflationRoundness(infConfigClone) != 0) 
             {  
-                smoothedVectorLs = GetUserRoundnessTransform(originalVerticeLs, smoothedVectorLs, sphereCenterLs, skinToCenterDist);
+                smoothedVectorLs = GetUserRoundnessTransform(infConfigClone, originalVerticeLs, smoothedVectorLs, sphereCenterLs, skinToCenterDist);
             }
 
             //Allow user adjustment of the egg like shape of the belly
-            if (GetInflationTaperY() != 0) 
+            if (GetInflationTaperY(infConfigClone) != 0) 
             {
-                smoothedVectorLs = GetUserTaperYTransform(smoothedVectorLs, sphereCenterLs, skinToCenterDist);
+                smoothedVectorLs = GetUserTaperYTransform(infConfigClone, smoothedVectorLs, sphereCenterLs, skinToCenterDist);
             }
 
             //Allow user adjustment of the front angle of the belly
-            if (GetInflationTaperZ() != 0) 
+            if (GetInflationTaperZ(infConfigClone) != 0) 
             {
-                smoothedVectorLs = GetUserTaperZTransform(originalVerticeLs, smoothedVectorLs, sphereCenterLs, skinToCenterDist, backExtentPosLs);
+                smoothedVectorLs = GetUserTaperZTransform(infConfigClone, originalVerticeLs, smoothedVectorLs, sphereCenterLs, skinToCenterDist, backExtentPosLs);
             }
 
             //Allow user adjustment of the fat fold line through the middle of the belly
-            if (GetInflationFatFold() > 0) 
+            if (GetInflationFatFold(infConfigClone) > 0) 
             {
-                smoothedVectorLs = GetUserFatFoldTransform(originalVerticeLs, smoothedVectorLs, sphereCenterLs, sphereRadius);
+                smoothedVectorLs = GetUserFatFoldTransform(infConfigClone, originalVerticeLs, smoothedVectorLs, sphereCenterLs, sphereRadius);
             }            
 
             //If the user has selected a drop slider value
-            if (GetInflationDrop() > 0) 
+            if (GetInflationDrop(infConfigClone) > 0) 
             {
-                smoothedVectorLs = GetUserDropTransform(meshRootTfUp, smoothedVectorLs, sphereCenterLs, skinToCenterDist, sphereRadius);
+                smoothedVectorLs = GetUserDropTransform(infConfigClone, meshRootTfUp, smoothedVectorLs, sphereCenterLs, skinToCenterDist, sphereRadius);
             }
 
 
             //After all user transforms are applied, remove the edges from the sides/top of the belly
-            smoothedVectorLs = RoundToSides(originalVerticeLs, smoothedVectorLs, backExtentPosLs);
+            smoothedVectorLs = RoundToSides(originalVerticeLs, smoothedVectorLs, backExtentPosLs, bellySidesAC);
 
 
             //Less skin stretching under breast area with large slider values
             if (originalVerticeLs.y > pmSphereCenterLs.y)
             {                
-                smoothedVectorLs = ReduceRibStretchingZ(originalVerticeLs, smoothedVectorLs, topExtentPosLs);
+                smoothedVectorLs = ReduceRibStretchingZ(originalVerticeLs, smoothedVectorLs, topExtentPosLs, bellyTopAC);
             }
 
             // //Experimental, move more polygons to the front of the belly at max, Measured by trying to keep belly button size the same at 0 and max inflation size
