@@ -5,9 +5,7 @@ The belly shape will persist in any game mode when slider values are saved to th
 See `How To Install` for installation instructions
 
 
-<img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/result.png" height="575"></img>
-<img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/P%2BMakerGUI.PNG" height="575"></img>
-<img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/P%2BStudioGUI.PNG" width="476.5"></img>
+<img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/P+ All Menus.png" height="1000"></img>
 
 ## Latest Features (I will update this occasionally)
 - Copy Paste Belly buttons
