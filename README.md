@@ -10,6 +10,7 @@ See `How To Install` for installation instructions
 <img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/P%2BStudioGUI.PNG" width="476.5"></img>
 
 ## Latest Features (I will update this occasionally)
+- Copy Paste Belly buttons
 - Override KK_Pregnancy belly shape
 - Multithreaded computation
 - HS2 belly inflation logic
@@ -85,7 +86,7 @@ See `How To Install` for installation instructions
     - A: This was fixed in v3.5 and some cards with belly shapes before that version need to be re-saved again.  Only old characters with ABMX adjustments to the torso will have this issue.
 
 ## Notes
-- There will be cloth clipping.  You can use the Cloth Offset slider to help with it, but It's a difficult problem to solve.
+- There will always be some amount of cloth clipping.  You can use the Cloth Offset slider to help with it, but It's a difficult problem to solve.
 
 ## How to download
 You can grab the latest plugin release [here](https://github.com/thojmr/KK_PregnancyPlus/releases), or build it yourself (developers only).  Explained further below.
@@ -93,11 +94,12 @@ This plugin works in Koikatsu, Honey Select 2, and AI.  Grab the KK zip for Koik
 
 ## How to install
 1. Requires a recent version of BetterRepack or HF Patch (Preg+ is included with these, but probably not the latest version of Preg+)
-    - Otherwise make sure you have at least BepInEx 5.4.4 and KKAPI 1.17 for PregnancyPlus v3.0+
+    - Otherwise make sure you have at least BepInEx 5.4.4 and KKAPI 1.17 for PregnancyPlus v3.0+ (These are all included in latest BetterRepack)
 3. Download the latest release of Preg+ [here](https://github.com/thojmr/KK_PregnancyPlus/releases).
-4. "Extract Here" and copy that folder to your root game directory. The plugin .dll will end up inside your BepInEx\plugins\ directory.
+4. Right click the zip > "Extract Here" and copy that folder to your root game directory. The plugin .dll will end up inside your BepInEx\plugins\ directory.
     - like {root game}/BepInEx/plugins/XX_PregnancyPlus.dll
 5. Check for warnings on game startup, if the plugin loaded it should appear in Plugin Config.
+    - If you see warnings in game about KKAPI or BepInEx versions, you need to download the latest BetterRepack or HFPatch
 
 ## (Developers only) Compiling with Visual Studio 2019 (The official way)
 <details>
@@ -164,7 +166,7 @@ If sucessfull you should see a KK_PregnancyPlus.dll file nested in .\bin\
     - A blendshape is generated at runtime for every mesh near the belly.  The sliders alter the shape of the pre calculated blendshape before re-applying it. 
 - Integrates with KK/AI_Pregnancy in Story Mode so that both plugins can work together.  This can be configured in plugin config
 
-### Some of the drawbacks of generating blendshapes instead of the manipulating bones directly
+### Some of the drawbacks of generating blendshapes instead of manipulating bones directly
 - Right now clothing can be hit or miss, because of the way the belly grows the mesh loses its local positional data causing clipping.  With bone scaling, clothes shift automagically via bone weights which usually results in less clipping.
     - There are some clothing items in HS2 and AI that simply wont work at all with blendshapes because they are marked as not readable in Unity
 - Acessories won't automatically move with the mesh as they do when you manipulate bones
