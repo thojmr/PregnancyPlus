@@ -13,6 +13,7 @@ See `How To Install` for installation instructions
 - Multithreaded computation
 - HS2 belly inflation logic
 
+</br>
 
 ## Features
 - Adds a number of sliders that will allow you to change the size and shape of a characters belly in Studio, Maker, and Main Game.
@@ -57,6 +58,19 @@ See `How To Install` for installation instructions
     - To use BlendShapes in VNGE set ExportChara_XXPE_BlendShapes=1 in vnactor.ini everywhere it is found (may become obsolete)
   - Follow VNGE guides for further info
 
+</br>
+
+## How to install
+1. Requires a recent version of BetterRepack or HF Patch (Preg+ is included with these, but probably not the latest version of Preg+)
+    - Otherwise make sure you have at least BepInEx 5.4.4 and KKAPI 1.17 for PregnancyPlus v3.0+ (These are all included in latest BetterRepack)
+3. Download the latest release of Preg+ [here](https://github.com/thojmr/KK_PregnancyPlus/releases).
+4. Right click the zip > "Extract Here" and copy that folder to your root game directory. The plugin .dll will end up inside your BepInEx\plugins\ directory.
+    - like {root game}/BepInEx/plugins/XX_PregnancyPlus.dll
+5. Check for warnings on game startup, if the plugin loaded it should appear in Plugin Config.
+    - If you see warnings in game about KKAPI or BepInEx versions, you need to download the latest BetterRepack or HFPatch
+
+</br>
+
 ## Bigger!
 - For additonal effect in HS2 you can mimic what KK_Pregnancy does to belly bones to make the final shape larger/rounder
 - Here's how 
@@ -66,6 +80,8 @@ See `How To Install` for installation instructions
     - Now apply any P+ sliders you want
 - This will however make slight changes to the characters spine shape, so keep that in mind.  
 - Also since this is altering bones, you may have some unintended cosequences down the road.
+
+</br>
 
 ## FAQ - Troubleshooting
 - Q: Where do I put the PregnancyPlus.dll?
@@ -79,21 +95,13 @@ See `How To Install` for installation instructions
 - Q: The belly size/shape is different in Maker than in Studio?
     - A: This was fixed in v3.5 and some cards with belly shapes before that version need to be re-saved again.  Only old characters with ABMX adjustments to the torso will have this issue.
 
+</br>
+
 ## Notes
 - There will always be some amount of cloth clipping.  You can use the Cloth Offset slider to help with it, but It's a difficult problem to solve.
 - If you are looking for a higher poly base mesh to make up for Koikatsu's lack of belly polygons, you can try this [high poly uncensor (mesh)](https://ux.getuploader.com/nHaruka_KK/)  However you will see a lot of cloth clipping with this uncensor, since it doesn't fully line up with the default one. Pick your poison.
 
-
-## How to install
-1. Requires a recent version of BetterRepack or HF Patch (Preg+ is included with these, but probably not the latest version of Preg+)
-    - Otherwise make sure you have at least BepInEx 5.4.4 and KKAPI 1.17 for PregnancyPlus v3.0+ (These are all included in latest BetterRepack)
-3. Download the latest release of Preg+ [here](https://github.com/thojmr/KK_PregnancyPlus/releases).
-4. Right click the zip > "Extract Here" and copy that folder to your root game directory. The plugin .dll will end up inside your BepInEx\plugins\ directory.
-    - like {root game}/BepInEx/plugins/XX_PregnancyPlus.dll
-5. Check for warnings on game startup, if the plugin loaded it should appear in Plugin Config.
-    - If you see warnings in game about KKAPI or BepInEx versions, you need to download the latest BetterRepack or HFPatch
-
-
+</br>
 
 ### Some KK_PregnancyPlus technical details
 - Instead of manipulating the bones like KK_Pregnancy does, this mod alters the mesh itself via computed blendshapes which has benefits and drawbacks
@@ -108,10 +116,9 @@ See `How To Install` for installation instructions
 - Unity doesn't have great blendshape support in older versions like KK is running on.
 - Since blendshapes are tied to a single mesh, if the mesh is changed (like uncensors), any saved blendshape will become invalid, and a new blendshape will need to be made.
 
-
-
-
-
+</br>
+</br>
+</br>
 
 
 ## (Developers only) Compiling with Visual Studio 2019 (The official way)
