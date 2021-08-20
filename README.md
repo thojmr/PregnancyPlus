@@ -85,6 +85,7 @@ See `How To Install` for installation instructions
 
 ## Notes
 - There will always be some amount of cloth clipping.  You can use the Cloth Offset slider to help with it, but It's a difficult problem to solve.
+- If you are looking for a higher poly base mesh to make up for Koikatsu's lack of belly polygons, you can try this [high poly uncensor (mesh)](https://ux.getuploader.com/nHaruka_KK/)  However you will see a lot of cloth clipping with this uncensor, since it doesn't fully line up with the default one. Pick your poison.
 
 ## How to download
 You can grab the latest plugin release [here](https://github.com/thojmr/KK_PregnancyPlus/releases), or build it yourself (developers only).  Explained further below.
