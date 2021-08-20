@@ -72,10 +72,6 @@ See `How To Install` for installation instructions
     - A: It should end up under {Root game folder}/BepinEx/Plugins/xx_PregnancyPlus.dll
 - Q: Why are some outfits not affected by the sliders?
     - A: Some outifts in Unity are marked as not readable, and the mesh of these outfits can not be altered at runtime.
-- Q: Some of the sliders are not working?
-    - A: First make sure you don't have the debug mesh option enabled.  Then try adjusting your 'Move Y' 'Move Z' sliders to make sure their centers are not outside your characters body.  Third, make sure P+ gameplay is enabled in Plugin Config, and on the character card (It will be by default).  Worst case scenario you can try turning on Preg+ debug logging to look for any errors in the Plugin Config and report to me. 
-- Q: The belly size is suddenly changing when the character moves, or the first time I adjust a slider.
-    - A: The default belly size is calculated based on the hip and rib bone width.  In rare cases It can be due to strange character animations, or character size adjustments.   
 - Q: There are no slider effects when the character has no legs.
     - A: The character must have a leg scale > 0 for the belly sliders to work correctly.
 - Q: The heck is a BlendShape?
@@ -87,9 +83,6 @@ See `How To Install` for installation instructions
 - There will always be some amount of cloth clipping.  You can use the Cloth Offset slider to help with it, but It's a difficult problem to solve.
 - If you are looking for a higher poly base mesh to make up for Koikatsu's lack of belly polygons, you can try this [high poly uncensor (mesh)](https://ux.getuploader.com/nHaruka_KK/)  However you will see a lot of cloth clipping with this uncensor, since it doesn't fully line up with the default one. Pick your poison.
 
-## How to download
-You can grab the latest plugin release [here](https://github.com/thojmr/KK_PregnancyPlus/releases), or build it yourself (developers only).  Explained further below.
-This plugin works in Koikatsu, Honey Select 2, and AI.  Grab the KK zip for Koikatsu, HS2 zip for Honey Select 2, and AI zip for AI [here](https://github.com/thojmr/KK_PregnancyPlus/releases)
 
 ## How to install
 1. Requires a recent version of BetterRepack or HF Patch (Preg+ is included with these, but probably not the latest version of Preg+)
@@ -99,6 +92,27 @@ This plugin works in Koikatsu, Honey Select 2, and AI.  Grab the KK zip for Koik
     - like {root game}/BepInEx/plugins/XX_PregnancyPlus.dll
 5. Check for warnings on game startup, if the plugin loaded it should appear in Plugin Config.
     - If you see warnings in game about KKAPI or BepInEx versions, you need to download the latest BetterRepack or HFPatch
+
+
+
+### Some KK_PregnancyPlus technical details
+- Instead of manipulating the bones like KK_Pregnancy does, this mod alters the mesh itself via computed blendshapes which has benefits and drawbacks
+    - A blendshape is generated at runtime for every mesh near the belly.  The sliders alter the shape of the pre calculated blendshape before re-applying it. 
+- Integrates with KK/AI_Pregnancy in Story Mode so that both plugins can work together.  This can be configured in plugin config
+
+### Some of the drawbacks of generating blendshapes instead of manipulating bones directly
+- Right now clothing can be hit or miss, because of the way the belly grows the mesh loses its local positional data causing clipping.  With bone scaling, clothes shift automagically via bone weights which usually results in less clipping.
+    - There are some clothing items in HS2 and AI that simply wont work at all with blendshapes because they are marked as not readable in Unity
+- Acessories won't automatically move with the mesh as they do when you manipulate bones
+- It has bigger impact on performance (only when changing a slider) because of the computation it has to perform. However once the shape is calculated the performance is equally as fast as bone manipulation.
+- Unity doesn't have great blendshape support in older versions like KK is running on.
+- Since blendshapes are tied to a single mesh, if the mesh is changed (like uncensors), any saved blendshape will become invalid, and a new blendshape will need to be made.
+
+
+
+
+
+
 
 ## (Developers only) Compiling with Visual Studio 2019 (The official way)
 <details>
@@ -159,16 +173,3 @@ Example build task:
 ```
 If sucessfull you should see a KK_PregnancyPlus.dll file nested in .\bin\
 </details>
-
-### Some KK_PregnancyPlus technical details
-- Instead of manipulating the bones like KK_Pregnancy does, this mod alters the mesh itself via computed blendshapes which has benefits and drawbacks
-    - A blendshape is generated at runtime for every mesh near the belly.  The sliders alter the shape of the pre calculated blendshape before re-applying it. 
-- Integrates with KK/AI_Pregnancy in Story Mode so that both plugins can work together.  This can be configured in plugin config
-
-### Some of the drawbacks of generating blendshapes instead of manipulating bones directly
-- Right now clothing can be hit or miss, because of the way the belly grows the mesh loses its local positional data causing clipping.  With bone scaling, clothes shift automagically via bone weights which usually results in less clipping.
-    - There are some clothing items in HS2 and AI that simply wont work at all with blendshapes because they are marked as not readable in Unity
-- Acessories won't automatically move with the mesh as they do when you manipulate bones
-- It has bigger impact on performance (only when changing a slider) because of the computation it has to perform. However once the shape is calculated the performance is equally as fast as bone manipulation.
-- Unity doesn't have great blendshape support in older versions like KK is running on.
-- Since blendshapes are tied to a single mesh, if the mesh is changed (like uncensors), any saved blendshape will become invalid, and a new blendshape will need to be made.
