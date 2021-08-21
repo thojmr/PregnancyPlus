@@ -16,28 +16,32 @@ See `How To Install` for installation instructions
 </br>
 
 ## Features
-- Adds a number of sliders that will allow you to change the size and shape of a characters belly in Studio, Maker, and Main Game.
+- Adds a number of sliders that will allow you to change the size and shape of a characters belly in Studio, Maker, and Main Gameplay.
     - Slider values will save to scene or character card.
     - In the main game you can further tweak all characters belly shapes with the F1 plugin config sliders.
 - Adds Timeline (KK) and VNGE (HS2/AI) integration for animating the belly by creating blendshapes that save to character card (see specific features below).
 - Adds 3 configurable keybinds in plugin config that can be used to increase or decrease the belly size in Main Game, on the fly.   
 - Substitutes for stomach bulges/fat bellies as well, but it's original intent is pregnancy.    
 - Adds a "Main Game" mode config option.  Disable if you want to turn off this plugins' features temporarily while playing.
-- Adds an "Override KK_Pregnancy belly shape" toggle, that lets you replace the KK/AI_Pregnancy belly with the Preg+ one in Main Gameplay
+- Adds an "Override KK_Pregnancy belly shape" toggle, that lets you replace the KK/AI_Pregnancy belly with the Preg+ one in Main Gameplay.
 - Adds a "Mesh Smoothing" button in Studio and Maker, that allows you to smooth the belly mesh and reduce any edges resulting from some slider combinations.
     - The smoothing will reset on slider change or character load, so it's mostly for screenshots, animations, and blendshapes.
-    - The smoothed shape will be captured by blendshapes!
-    - Optionally you can smooth any skin tight clothing as well, to help reduce clipping while smoothing, but clothing doesn't always look great afterwords.
+    - The smoothed mesh can be saved as a blendshape!    
+    - It's a slow prcess so give it some time to complete (extremely so when using a high poly mesh)
 - Somewhat compatible with "[ddaa33] Pregnant plugin (ShapeKeyPlugin)" if you wish to combine the effects of both, you can.  But the effects applied by that plugin will not save to the character card by default. (Only with Pregnancy+ captured blendshapes)
 
 ## Honey Select 2 Only Features
-- Because I'm too lazy to port KK_Pregnancy to HS2, belly inflation logic has been added to Main Game HScenes when finishing inside.  Similar to how KK_Pregnancy inflation works.  It is off by default, turn it on in Preg+ plugin config.
+- Because I'm too lazy to port KK_Pregnancy to HS2, belly inflation logic has been added to Main Game HScenes when finishing inside (Thanks to Crescent696).  Similar to how KK_Pregnancy inflation works.  It is off by default, turn it on in Preg+ plugin config.
 
 ## Koikatsu and AI Only Features
+- This was way too confusing, so I added the option to disable the KK_Pregnancy belly shape in favor of the Pregnancy+ belly in HScenes and Main Gameplay.  Both plugins will still work together, and pregnancy will progress.  You just have less to think about now!  Look for "Override KK_Pregnancy belly shape" in plugin config.
+
+<del>
 - When using the KK/AI_Pregnancy `inflation` or `pregnancy` features, any saved Pregnancy+ belly sliders will be added in addition to KK/AI_Pregnancy's shape, but only both pregnancy plugins are installed.  You can control the amount of Pregnancy+ belly shape applied on top of the KK/AI_Pregnancy belly with the "Max Additional Belly Size" slider in plugin config. 0 being no additional Preg+ slider effect, and max being the full Preg+ slider effect.  You can use the plugin config sliders to further adjust the results for all pregnant characters at once.
     - This can be used to tweak the final pregnant shape, or make the max size larger than what KK/AI_Pregnancy allows.
     - Toggle this feature off by setting "Max Additional Belly Size" to 0.
-- *Key thing to note*: If you just want to alter the KK/AI_Pregnancy shape.  Make sure to set the "Inflation Size" slider to 0 before saving character card.  When it is above 0 it will always be visible in Main Game even when not pregnant. 
+- *Key thing to note*: If you just want to alter the KK/AI_Pregnancy shape.  Make sure to set the "Inflation Size" slider to 0 before saving character card.  When it is above 0 it will always be visible in Main Game even when not pregnant.
+</del>
 
 ## Koikatsu Only Features
 - Studio Timeline integration via blendshapes.  Here's how to:
