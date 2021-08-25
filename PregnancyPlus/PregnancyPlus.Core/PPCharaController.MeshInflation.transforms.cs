@@ -202,7 +202,7 @@ namespace KK_PregnancyPlus
         /// This will make the front of the belly more, or less round
         /// </summary>  
         internal Vector3 GetUserRoundnessTransform(PregnancyPlusData infConfigClone, Vector3 originalVerticeLs, Vector3 smoothedVectorLs, 
-                                                   Vector3 sphereCenterLs, float skinToCenterDist)
+                                                   Vector3 sphereCenterLs, float skinToCenterDist, ThreadsafeCurve bellyEdgeAC)
         {
             var zDistFromCenter = smoothedVectorLs.z - sphereCenterLs.z;
 
@@ -210,7 +210,7 @@ namespace KK_PregnancyPlus
             var xyLerp = Mathf.Lerp(0, GetInflationRoundness(infConfigClone), (zDistFromCenter - (bellyInfo.WaistThick/4f))/bellyInfo.ScaledRadius(BellyDir.z));
 
             //As the original vert gets closer to the sphere radius, apply less change since we want smooth transitions at belly's edge
-            var moveDistanceLerp = Mathf.Lerp(xyLerp, 0, BellyEdgeAC.Evaluate(skinToCenterDist/bellyInfo.ScaledRadius(BellyDir.z)));
+            var moveDistanceLerp = Mathf.Lerp(xyLerp, 0, bellyEdgeAC.Evaluate(skinToCenterDist/bellyInfo.ScaledRadius(BellyDir.z)));
 
             //Get the direction to move the vert (offset center a little forward from sphere center)
             var directionToMove = (smoothedVectorLs - (sphereCenterLs + Vector3.forward * (bellyInfo.ScaledRadius(BellyDir.z)/3))).normalized;
@@ -235,7 +235,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Dampen any mesh changed near edged of the belly (sides, top, and bottom) to prevent too much vertex stretching.  The more forward the vertex is from Z the more it's allowd to be altered by sliders
         /// </summary>        
-        internal Vector3 RoundToSides(Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 backExtentPosLs, AnimationCurve bellySidesAC) 
+        internal Vector3 RoundToSides(Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 backExtentPosLs, ThreadsafeCurve bellySidesAC) 
         {        
             var origRad = bellyInfo.ScaledOrigRadius(BellyDir.z)/1.8f;
             var multipliedRad = bellyInfo.ScaledRadius(BellyDir.z)/2.5f;
@@ -254,7 +254,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Reduce the stretching of the skin at the top of the belly where it connects to the ribs at large Multiplier values
         /// </summary>
-        internal Vector3 ReduceRibStretchingZ(Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 topExtentPosLs, AnimationCurve bellyTopAC)
+        internal Vector3 ReduceRibStretchingZ(Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 topExtentPosLs, ThreadsafeCurve bellyTopAC)
         {         
             //The distance from topExtent that we want to start lerping movement more slowly
             var topExtentOffset = topExtentPosLs.y/10;

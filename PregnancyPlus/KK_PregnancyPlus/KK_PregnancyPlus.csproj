@@ -128,6 +128,7 @@
     <Compile Include="..\PregnancyPlus.Core\Tools\MeshInflateFlags.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\MeshData.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\Threading.cs" />
+    <Compile Include="..\PregnancyPlus.Core\Tools\ThreadsafeCurve.cs" />
     <Compile Include="..\..\..\#DebugTools\DebugTools.cs" />
   </ItemGroup>
 

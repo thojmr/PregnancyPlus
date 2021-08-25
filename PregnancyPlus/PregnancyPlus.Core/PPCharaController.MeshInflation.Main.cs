@@ -232,8 +232,7 @@ namespace KK_PregnancyPlus
             var topExtentPos = new Vector3(preMorphSphereCenter.x, preMorphSphereCenter.y, preMorphSphereCenter.z) + meshRootTf.up * bellyInfo.YLimit;
             var topExtentPosLs = meshRootTf.InverseTransformPoint(topExtentPos);
             var vertNormalCaluRadius = sphereRadius + waistWidth/10;//Only recalculate normals for verts within this radius to prevent shadows under breast at small belly sizes
-            var yOffsetDir = Vector3.up * md[rendererName].yOffset;//Any offset direction needed to align all meshes to the same local y height
-            var reduceClothFlattenOffset = 0f;
+            var yOffsetDir = Vector3.up * md[rendererName].yOffset;//Any offset direction needed to align all meshes to the same local y height            
 
             //I dont think transforms are thread safe so get the values we need now
             var meshRootTfPos = meshRootTf.position;
@@ -244,13 +243,16 @@ namespace KK_PregnancyPlus
             var smrTfInvTransPt = smrTfTransPt.inverse;            
             //Lock in current slider values for threaded calculation
             var infConfigClone = (PregnancyPlusData)infConfig.Clone();
+
             //Animation curves are not thread safe, so make copies here
-            var bellySidesAC = BellySidesAnimCurve();
-            var bellyTopAC = BellyTopAnimCurve();
+            var bellySidesAC = new ThreadsafeCurve(BellySidesAC);
+            var bellyTopAC = new ThreadsafeCurve(BellyTopAC);
+            var bellyEdgeAC = new ThreadsafeCurve(BellyEdgeAC);
 
             //Heavy compute task below, run in separate thread
             WaitCallback threadAction = (System.Object stateInfo) => 
             {
+                var reduceClothFlattenOffset = 0f;
 
                 #if DEBUG
                     var bellyVertsCount = 0;
@@ -296,7 +298,7 @@ namespace KK_PregnancyPlus
                                                              meshRootTf, mrTfTransPt, mrTfInvTransPt, meshRootTfPos, meshRootTfUp, 
                                                              preMorphSphereCenter, sphereRadius, 
                                                              backExtentPos, topExtentPos, sphereCenterLs, pmSphereCenterLs, backExtentPosLs, 
-                                                             topExtentPosLs, bellySidesAC, bellyTopAC);   
+                                                             topExtentPosLs, bellySidesAC, bellyTopAC, bellyEdgeAC);   
 
                     //Convert back to local space, and undo any temporary offset                                                                
                     inflatedVerts[i] = smrTfInvTransPt.MultiplyPoint3x4(inflatedVertWs) + yOffsetDir;                                                  
@@ -320,7 +322,6 @@ namespace KK_PregnancyPlus
                         //     //Original non offset mesh      
                         //     // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(ChaControl.transform, 0.02f, smr.transform.TransformPoint(origVerts[i]), false);
                         // } 
-
 
                         //Some other internally measured points/boundaries
                         // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(smr.transform, 0.2f, sphereCenter);
@@ -440,7 +441,7 @@ namespace KK_PregnancyPlus
                                                 Vector3 preMorphSphereCenterWs, float sphereRadius, Vector3 backExtentPos, Vector3 topExtentPos, 
                                                 Vector3 sphereCenterLs, Vector3 pmSphereCenterLs, 
                                                 Vector3 backExtentPosLs, Vector3 topExtentPosLs,
-                                                AnimationCurve bellySidesAC, AnimationCurve bellyTopAC) 
+                                                ThreadsafeCurve bellySidesAC, ThreadsafeCurve bellyTopAC, ThreadsafeCurve bellyEdgeAC) 
         {
             //No smoothing modification in debug mode
             if (PregnancyPlusPlugin.MakeBalloon.Value || PregnancyPlusPlugin.DebugVerts.Value) return inflatedVerticieWs;                       
@@ -484,7 +485,7 @@ namespace KK_PregnancyPlus
 
             if (GetInflationRoundness(infConfigClone) != 0) 
             {  
-                smoothedVectorLs = GetUserRoundnessTransform(infConfigClone, originalVerticeLs, smoothedVectorLs, sphereCenterLs, skinToCenterDist);
+                smoothedVectorLs = GetUserRoundnessTransform(infConfigClone, originalVerticeLs, smoothedVectorLs, sphereCenterLs, skinToCenterDist, bellyEdgeAC);
             }
 
             //Allow user adjustment of the egg like shape of the belly
