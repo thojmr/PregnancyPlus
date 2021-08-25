@@ -538,15 +538,15 @@ namespace KK_PregnancyPlus
             if (smoothedVectorLs.Equals(originalVerticeLs)) return mrTfTransPt.MultiplyPoint3x4(smoothedVectorLs);
 
 
-            //**** All of the below are post mesh change checks to make sure the vertex position don't go outside of bounds
+            //**** All of the below are post vert calculation checks to make sure the vertex position don't go outside of bounds
 
             //Smoothed vert back to worldspace
             var smoothedVectorWs = mrTfTransPt.MultiplyPoint3x4(smoothedVectorLs);    
             //Get core point on the same y plane as the original vert
-            var coreLineVertWs = meshRootTfPos + meshRootTfUp * (mrTfInvTransPt.MultiplyPoint3x4(originalVerticeWs).y * bellyInfo.TotalCharScale.y);
+            var coreLineVertWs = meshRootTfPos + meshRootTfUp * (originalVerticeLs.y * bellyInfo.TotalCharScale.y);
             var origCoreDist = Math.Abs(Vector3.Distance(originalVerticeWs, coreLineVertWs));//Get line from feet to head that verts must respect distance from
             //Get core point on the same y plane as the smoothed vert
-            var coreLineSmoothedVertWs = meshRootTfPos + meshRootTfUp * (mrTfInvTransPt.MultiplyPoint3x4(smoothedVectorWs).y * bellyInfo.TotalCharScale.y);       
+            var coreLineSmoothedVertWs = meshRootTfPos + meshRootTfUp * (smoothedVectorLs.y * bellyInfo.TotalCharScale.y);       
             var currentCoreDist = Math.Abs(Vector3.Distance(smoothedVectorWs, coreLineSmoothedVertWs)); 
 
 

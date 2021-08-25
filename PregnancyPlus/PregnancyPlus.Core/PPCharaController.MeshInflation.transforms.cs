@@ -33,13 +33,11 @@ namespace KK_PregnancyPlus
             var smoothedVertXY = new Vector2(smoothedVectorLs.x, smoothedVectorLs.y);
 
             //As the inflatied vert moves further than the original sphere radius lerp its movement slower
-            var radiusLerpScale = Vector2.Distance(sphereCenterXY, smoothedVertXY)/((bellyInfo.ScaledOrigRadius(BellyDir.y) + bellyInfo.ScaledOrigRadius(BellyDir.x))/2 * 10);
+            var radiusLerpScale = Vector2.Distance(sphereCenterXY, smoothedVertXY)/((bellyInfo.ScaledOrigRadius(BellyDir.y) + bellyInfo.ScaledOrigRadius(BellyDir.x)) * 5);
             var lerpXY = Vector3.Lerp(smoothedVertXY, origVertXY, radiusLerpScale);
 
             //set limited XY, but keep the new z postion
-            smoothedVectorLs = new Vector3(lerpXY.x, lerpXY.y, smoothedVectorLs.z);
-
-            return smoothedVectorLs;
+            return new Vector3(lerpXY.x, lerpXY.y, smoothedVectorLs.z);
         }
 
 
@@ -245,6 +243,9 @@ namespace KK_PregnancyPlus
 
             // Get the disnce the original vector is forward from characters back (use originial and not inflated to exclude multiplier interference)
             var forwardFromBack = (originalVerticeLs.z - backExtentPosLs.z);
+
+            //Dont bother lerping if not needed
+            if (forwardFromBack > zForwardSmoothDist) return smoothedVectorLs;
             
             //As the vert.z approaches the front lerp it less
             return Vector3.Lerp(originalVerticeLs, smoothedVectorLs, bellySidesAC.Evaluate(forwardFromBack/zForwardSmoothDist));        
