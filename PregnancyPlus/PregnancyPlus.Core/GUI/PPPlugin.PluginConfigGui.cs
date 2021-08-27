@@ -59,7 +59,7 @@ namespace KK_PregnancyPlus
             MakeBalloon = Config.Bind<bool>("Debug", "Balloon mode (Debug mode)", false,
                 new ConfigDescription("Debug mesh mode, disable to go back to normal.  This will disable some Preg+ sliders temporarily.",
                     null,
-                    new ConfigurationManagerAttributes { Order = 10 })
+                    new ConfigurationManagerAttributes { Order = 10, IsAdvanced = true })
                 );
             MakeBalloon.SettingChanged += MakeBalloon_SettingsChanged;
 
