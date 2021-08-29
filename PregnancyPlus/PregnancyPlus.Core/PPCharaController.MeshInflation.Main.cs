@@ -359,12 +359,26 @@ namespace KK_PregnancyPlus
             #if KK       
                 //In KK we can't use .n_o_root because there are too many improperly imported meshes (wried local positions or rotations), use the parent body mesh bone instead
                 var bodyBone = ChaControl.sex == 0 ? "p_cm_body_00" : "p_cf_body_00";                            
+                var bodyBone2 = ChaControl.sex == 0 ? "p_cm_body_00_low" : "p_cf_body_00_low";                            
             #elif HS2 || AI
                 var bodyBone = ChaControl.sex == 0 ? "p_cm_body_00.n_o_root" : "p_cf_body_00.n_o_root";
             #endif            
 
             var meshRootGo = PregnancyPlusHelper.GetBoneGO(ChaControl, bodyBone);
-            if (meshRootGo == null) return null;
+
+            #if KK  //In KK during Main Game free walk mode, char bodie bones are different now. So search for that if the first search ends up empty
+                if (meshRootGo == null) 
+                {
+                    meshRootGo = PregnancyPlusHelper.GetBoneGO(ChaControl, bodyBone2);
+                }
+            #endif
+
+            if (meshRootGo == null) 
+            {
+                PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_NoMeshRootFound, 
+                        $" This characters root body bone ({bodyBone}) could not be found.  Preg+ won't work without the correct bone name.  Please report this!"); 
+                return null;
+            }
             return meshRootGo.transform;
         }
 

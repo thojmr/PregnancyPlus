@@ -13,6 +13,7 @@ namespace KK_PregnancyPlus
         PregPlus_BodyMeshDisguisedAsCloth,//When a body mesh is detected that is nested under a cloth Game Object (like Squeeze Socks)
         PregPlus_BodyMeshVertexChanged,//When a saved blendshape tries to loadd, but the mesh is no longer the same and can't load
         PregPlus_BodyUncensorChanged,//When a saved blendshape tries to load, but the uncensor body no longer matches, so it can't
+        PregPlus_NoMeshRootFound,//For some reason in RX11 KK, the mesh root bone name changed . '_low' was appended in free roam.  Catch these changes if they happen again
     }
 
     /// <summary>
