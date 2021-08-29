@@ -101,23 +101,21 @@ namespace KK_PregnancyPlus
             #if KK || AI
 
                 //When HScene starts, pre compute inflated size blendshape
-                #if !KKS //TODO add gameAPI later when KKS releases fully
                 
-                    //TODO this fires for all chaaracters, even those not in Hscene...
-                    GameAPI.StartH += (object sender, EventArgs e) => 
-                    { 
-                        if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $StartH {charaFileName}");
-                        //Trigger inflation at current size to create any Preg+ blendshapes that may be used.  Kind of like like pre processing.
-                        MeshInflate(infConfig.inflationSize, "GameAPI.StartH", new MeshInflateFlags(this, _bypassWhen0: true));
-                    };
+                //TODO this fires for all chaaracters, even those not in Hscene...
+                GameAPI.StartH += (object sender, EventArgs e) => 
+                { 
+                    if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $StartH {charaFileName}");
+                    //Trigger inflation at current size to create any Preg+ blendshapes that may be used.  Kind of like like pre processing.
+                    MeshInflate(infConfig.inflationSize, "GameAPI.StartH", new MeshInflateFlags(this, _bypassWhen0: true));
+                };
 
-                    //When HScene ends, clear any inflation data
-                    GameAPI.EndH += (object sender, EventArgs e) => 
-                    { 
-                        if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $EndH {charaFileName}");
-                        ClearInflationStuff(fullReset: true);
-                    };
-                #endif
+                //When HScene ends, clear any inflation data
+                GameAPI.EndH += (object sender, EventArgs e) => 
+                { 
+                    if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $EndH {charaFileName}");
+                    ClearInflationStuff(fullReset: true);
+                };
          
             #endif
 

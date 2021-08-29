@@ -131,7 +131,7 @@ namespace KK_PregnancyPlus
         public void ComputeInflationChange() 
         {
             //Only process inflation in HScenes
-            #if !HS2 && !KKS//TODO remove later when KKS fully releases               
+            #if !HS2              
                 if (!GameAPI.InsideHScene) 
                 {
                     if (_inflationChange > 0 || TargetPregPlusSize > 0) ClearInflationStuff();
