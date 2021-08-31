@@ -24,6 +24,7 @@ namespace KK_PregnancyPlus
             public static void InitHooks(Harmony harmonyInstance)
             {                                    
                 TryPatchHS2FinishProcs(harmonyInstance);
+                harmonyInstance.PatchAll(typeof(Hooks_HS2_Inflation));
             }
 
 
