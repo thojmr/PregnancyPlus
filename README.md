@@ -7,6 +7,7 @@ See `How To Install` for installation instructions
 <img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/P+ All Menus.png"></img>
 
 ## Latest Features (I will update this occasionally)
+- Ported to KKS
 - Copy Paste Belly buttons
 - Override KK_Pregnancy belly shape
 - Multithreaded computation
