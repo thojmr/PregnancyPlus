@@ -117,11 +117,21 @@ namespace KK_PregnancyPlus
             if (!blendShape.isInitilized) return false;
             if (blendShape.vertexCount != smr.sharedMesh.vertexCount 
                 || blendShape.verticies.Length != smr.sharedMesh.vertexCount
-                || blendShape.normals.Length != smr.sharedMesh.vertexCount
-                || blendShape.tangents.Length != smr.sharedMesh.vertexCount) 
+                || blendShape.normals.Length != smr.sharedMesh.vertexCount) 
             {
                 if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" AddBlendShape > missmatch vertex count on {smr.name}: smr {smr.sharedMesh.vertexCount} -> blendshape {blendShape.vertexCount} skipping"); 
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" verticies {blendShape.verticies.Length}, normals {blendShape.normals.Length}, tangents {blendShape.tangents.Length}"); 
                 return false;
+            }
+
+            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" smr.sharedMesh.tangents {smr.sharedMesh.tangents.Length}, blendShape.tangents {blendShape.tangents.Length}"); 
+
+            //When tangents are empty, pad them to the same length as the vert count
+            //  Not sure why they would be unless the mesh import was bad?
+            if (blendShape.tangents.Length == 0)
+            {                
+                blendShape.tangents = new Vector3[smr.sharedMesh.vertexCount ];
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" smr.sharedMesh.tangents {smr.sharedMesh.tangents.Length}, blendShape.tangents {blendShape.tangents.Length}"); 
             }
 
             //Create instance on character to prevent changes leaking to other characters
@@ -269,7 +279,7 @@ namespace KK_PregnancyPlus
 
             Vector3[] deltaVertices = new Vector3 [smr.sharedMesh.vertexCount];
             Vector3[] deltaNormals = new Vector3 [smr.sharedMesh.vertexCount];
-            Vector3[] deltaTangents = new Vector3 [smr.sharedMesh.tangents.Length];
+            Vector3[] deltaTangents = new Vector3 [smr.sharedMesh.vertexCount];
 
             //Get the blendshape details
             smr.sharedMesh.GetBlendShapeFrameVertices(shapeIndex, 0, deltaVertices, deltaNormals, deltaTangents);
@@ -371,7 +381,7 @@ namespace KK_PregnancyPlus
 
                 Vector3[] deltaVertices = new Vector3 [smrMesh.vertexCount];
                 Vector3[] deltaNormals = new Vector3 [smrMesh.vertexCount];
-                Vector3[] deltaTangents = new Vector3 [smrMesh.tangents.Length];
+                Vector3[] deltaTangents = new Vector3 [smrMesh.vertexCount];
 
                 existingBlendShapes[i] = new BlendShape[frameCount];
 
