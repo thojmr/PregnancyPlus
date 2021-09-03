@@ -223,7 +223,7 @@ namespace KK_PregnancyPlus
             sliders.Add(fatFoldHeight);
 
 
-            var clothOffsetVersion = e.AddControl(new MakerDropdown(inflationClothingOffsetVersionMaker, new string[2] {"V1", "V2 experimental"}, cat, 1, _pluginInstance));
+            var clothOffsetVersion = e.AddControl(new MakerDropdown(inflationClothingOffsetVersionMaker, new string[2] {"V1", "V2 (improved)"}, cat, 1, _pluginInstance));
             clothOffsetVersion.BindToFunctionController<PregnancyPlusCharaController, int>(controller => controller.infConfig.clothingOffsetVersion, (controller, value) => {
                 var oldVal = controller.infConfig.clothingOffsetVersion;
                 controller.infConfig.clothingOffsetVersion = value;

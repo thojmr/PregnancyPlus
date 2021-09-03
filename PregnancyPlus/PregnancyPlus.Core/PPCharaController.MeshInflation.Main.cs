@@ -33,7 +33,15 @@ namespace KK_PregnancyPlus
             if (!meshInflateFlags.NeedsToRun) return;
 
             if (!AllowedToInflate()) return;//if outside studio/maker, make sure StoryMode is enabled first
-            if (!infConfig.GameplayEnabled) return;//Only if gameplay enabled
+            if (!infConfig.GameplayEnabled) 
+            {
+                //Remove belly if gameplay disabled, and char has a belly
+                if (infConfig.inflationSize > 0 && md?.Keys.Count > 0) 
+                {
+                    CleanSlate();
+                }
+                return;
+            }
 
             //Resets all stored vert values, so the script will have to recalculate all from base body
             if (meshInflateFlags.freshStart) CleanSlate();
