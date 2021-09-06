@@ -65,11 +65,10 @@ See `How To Install` for installation instructions
 </br>
 
 ## How to install
-1. Requires a recent version of BetterRepack or HF Patch (Preg+ is included with these, but probably not the latest version of Preg+)
-    - Otherwise make sure you have at least BepInEx 5.4.4 and KKAPI 1.17 for PregnancyPlus v3.0+ (These are all included in latest BetterRepack)
+1. Requires BetterRepack or HF Patch (Preg+ is included with these, but probably not the latest version)
 3. Download the latest release of Preg+ [here](https://github.com/thojmr/KK_PregnancyPlus/releases).
 4. Right click the zip > "Extract Here" and copy that folder to your root game directory. The plugin .dll will end up inside your BepInEx\plugins\ directory.
-    - like {root game}/BepInEx/plugins/XX_PregnancyPlus.dll
+    -> {root game}/BepInEx/plugins/XX_PregnancyPlus.dll
 5. Check for warnings on game startup, if the plugin loaded it should appear in Plugin Config.
     - If you see warnings in game about KKAPI or BepInEx versions, you need to download the latest BetterRepack or HFPatch
 
