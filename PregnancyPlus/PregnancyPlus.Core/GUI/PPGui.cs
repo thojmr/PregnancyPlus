@@ -1,4 +1,5 @@
-﻿namespace KK_PregnancyPlus
+﻿
+namespace KK_PregnancyPlus
 {
     //This partial class contains all the common properties used by the other partials
     public static partial class PregnancyPlusGui
@@ -9,6 +10,7 @@
         
         //Whether to include clothing in mesh smoothing calculations or not, to reduce clipping in some cases
         internal static bool includeClothSmoothing = false;
+
 
 #region Don't change these, they would change users cards default scales
 

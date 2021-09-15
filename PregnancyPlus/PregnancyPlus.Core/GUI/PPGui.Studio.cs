@@ -12,7 +12,7 @@ namespace KK_PregnancyPlus
     //This partial class contatins all of the Studi GUI 
     public static partial class PregnancyPlusGui
     {
-        internal static CurrentStateCategory cat;
+        public static CurrentStateCategory cat;
 
 
         //String constants for the slider names, and GameObject identifiers
@@ -32,7 +32,7 @@ namespace KK_PregnancyPlus
         internal const string inflationRoundness = "        Roundness";
         internal const string inflationDrop = "        Drop";
         private const string blendshapeText = "Open BlendShapes";
-        private const string smoothBellyMeshText = "Belly Mesh Smoothing (Give it a second)";
+        private const string smoothBellyMeshText = "Belly Mesh Smoothing";
         private const string smoothClothMeshText = "Include cloth when smoothing";
 
 
@@ -79,7 +79,7 @@ namespace KK_PregnancyPlus
                 }))
                 .Value.Subscribe(f => {
                     if (f == false) return;//This will trigger on studio first load
-                    ResetAllSliders();                   
+                    UnityUiTools.ResetAllSliders(cat);                   
                 });
 
             cat.AddControl(new CurrentStateCategorySwitch(blendshapeText, c =>
@@ -375,7 +375,7 @@ namespace KK_PregnancyPlus
                     foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) 
                     {             
                         ctrl.ApplySmoothing(includeClothSmoothing);                                                   
-                    }
+                    }                    
                 });
 
             cat.AddControl(new CurrentStateCategorySwitch(smoothClothMeshText, c =>
@@ -389,55 +389,15 @@ namespace KK_PregnancyPlus
         }
 
 
-        //Reduce, reuse, recycle methods
+        /// <summary>
+        /// Get the character control tied to this UI item
+        /// </summary>
         internal static PregnancyPlusCharaController GetCharCtrl(Studio.OCIChar c) 
         {
             if (c.charInfo == null) return null;
             var controller = c.charInfo.GetComponent<PregnancyPlusCharaController>();
             if (controller == null) return null;    
             return controller;
-        }
-
-
-        //Reset all sliders to 0 on Reset btn click
-        internal static void ResetAllSliders(float resetTo = 0) 
-        {
-            if (cat == null) return;
-
-            //For each ui item check if its a slider
-            foreach(CurrentStateCategorySubItemBase subItem in cat.SubItems) 
-            {
-                if (!subItem.Created) continue;
-                var itemGo = subItem.RootGameObject;
-                var sliders = itemGo.GetComponentsInChildren<UnityEngine.UI.Slider>();
-
-                //For each slider component (should just be one per subItem) set to 0
-                foreach(var slider in sliders) 
-                {
-                    slider.value = resetTo;
-                }
-            }
-        }
-
-
-        //Reset a single slider
-        internal static void ResetSlider(string sliderName, float resetTo = 0) 
-        {
-            if (cat == null) return;
-
-            //For each ui item check if its a slider
-            foreach(CurrentStateCategorySubItemBase subItem in cat.SubItems) 
-            {
-                if (!subItem.Created) continue;
-                var itemGo = subItem.RootGameObject;
-                var sliders = itemGo.GetComponentsInChildren<UnityEngine.UI.Slider>();
-
-                //For each slider component (should just be one per subItem) set to 0
-                foreach(var slider in sliders) 
-                {
-                    if (slider.name == "Slider " + sliderName) slider.value = resetTo;
-                }
-            }
         }
 
 
@@ -527,28 +487,6 @@ namespace KK_PregnancyPlus
 #endregion
                     }
                     
-                }
-            }
-        }
-
-
-        //Reset a toggle (Breaks the game currently lol)
-        internal static void ResetToggle(string toggleName, bool desiredState = false) 
-        {
-            if (cat == null) return;
-
-            //For each ui item check if its a toggle
-            foreach(CurrentStateCategorySubItemBase subItem in cat.SubItems) 
-            {
-                if (!subItem.Created || !subItem.Name.Contains(toggleName)) continue;
-                
-                var itemGo = subItem.RootGameObject;
-                var sliders = itemGo.GetComponentsInChildren<UnityEngine.UI.Toggle>();
-
-                //For each toggle item (should just be one per subItem), set the desited state
-                foreach(var slider in sliders) 
-                {
-                    slider.isOn = desiredState;
                 }
             }
         }

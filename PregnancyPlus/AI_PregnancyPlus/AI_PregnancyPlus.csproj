@@ -85,6 +85,10 @@
       <HintPath>..\..\packages\IllusionLibs.AIGirl.UniRx.2020.5.29.2\lib\net46\UniRx.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Unity.TextMeshPro,  Culture=neutral, processorArchitecture=MSIL" >
+      <HintPath>..\..\packages\IllusionLibs.AIGirl.Unity.TextMeshPro.2018.2.21.3\lib\net46\Unity.TextMeshPro.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="UnityEngine.CoreModule,  Culture=neutral, processorArchitecture=MSIL" >
       <HintPath>..\..\packages\IllusionLibs.AIGirl.UnityEngine.CoreModule.2018.2.21.3\lib\net46\UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
@@ -136,6 +140,7 @@
     <Compile Include="..\PregnancyPlus.Core\GUI\PPBlendShapeGui.Gui.cs" />
     <Compile Include="..\PregnancyPlus.Core\GUI\PPGui.Studio.cs" />
     <Compile Include="..\PregnancyPlus.Core\GUI\PPGui.Maker.cs" />
+    <Compile Include="..\PregnancyPlus.Core\GUI\PPGui.ButtonTimer.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPPlugin.cs" />
     <Compile Include="..\PregnancyPlus.Core\GUI\PPPlugin.PluginConfigGui.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPPlugin.Hooks.cs" />
@@ -154,6 +159,7 @@
     <Compile Include="..\PregnancyPlus.Core\Tools\MeshData.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\Threading.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\ThreadsafeCurve.cs" />
+    <Compile Include="..\PregnancyPlus.Core\Tools\UnityUiTools.cs" />
     <Compile Include="..\..\..\#DebugTools\DebugTools.cs" />
   </ItemGroup>
 

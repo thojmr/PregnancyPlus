@@ -125,6 +125,8 @@ namespace KK_PregnancyPlus
             if (!infConfig.UseOldCalcLogic()) yield return new WaitForEndOfFrame();
             if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" ApplySmoothing({includeClothMesh})");
 
+            PregnancyPlusGui.StartTextCountIncrement();
+
             //Trigger mesh recalculation to overwrite last smoothing pass changes if any existed
             MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: true, _freshStart: true), "ApplySmoothingCoroutine");
 
@@ -148,24 +150,10 @@ namespace KK_PregnancyPlus
                 var renderKey = GetMeshKey(bodySmr);
 
                 SmoothSingleMesh(bodySmr, renderKey);     
-            }
+            }            
 
             yield return null;
         }        
-
-
-        /// <summary>   
-        /// Update characters mesh with the new smoothed results
-        /// </summary>
-        internal void ApplySmoothResults(Vector3[] newMesh, string renderKey, SkinnedMeshRenderer smr = null) 
-        {
-            //Set the new smoothed mesh verts
-            if (newMesh != null) md[renderKey].inflatedVertices = newMesh;
-
-            if (smr == null) smr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderKey, searchInactive: false);
-            //Re-trigger ApplyInflation to set the new smoothed mesh           
-            ApplyInflation(smr, renderKey, true, blendShapeTempTagName);            
-        }
 
 
         /// <summary>   
@@ -209,6 +197,9 @@ namespace KK_PregnancyPlus
                 {
                     //Re-trigger ApplyInflation to set the new smoothed mesh
                     ApplySmoothResults(newVerts, renderKey, smr);
+
+                    //Stop updating GUI count when done
+                    if (threading.threadCount == 0) PregnancyPlusGui.StopTextCountIncrement();
                 };
 
                 //Append to result queue.  Will execute on next Update()
@@ -218,6 +209,20 @@ namespace KK_PregnancyPlus
 
             //Start this threaded task, and will be watched in Update() for completion
             threading.Start(threadAction);
+        }
+
+
+        /// <summary>   
+        /// Update characters mesh with the new smoothed results
+        /// </summary>
+        internal void ApplySmoothResults(Vector3[] newMesh, string renderKey, SkinnedMeshRenderer smr = null) 
+        {
+            //Set the new smoothed mesh verts
+            if (newMesh != null) md[renderKey].inflatedVertices = newMesh;
+
+            if (smr == null) smr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderKey, searchInactive: false);
+            //Re-trigger ApplyInflation to set the new smoothed mesh           
+            ApplyInflation(smr, renderKey, true, blendShapeTempTagName);            
         }
 
     }

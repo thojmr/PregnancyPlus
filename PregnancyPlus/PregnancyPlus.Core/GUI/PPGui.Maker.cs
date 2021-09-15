@@ -14,6 +14,8 @@ namespace KK_PregnancyPlus
     public static partial class PregnancyPlusGui
     {        
         public static List<MakerSlider> sliders = new List<MakerSlider>();
+        //Save reference to this input to add timer text to it later
+        public static MakerButton smoothBtn;
 
 
         //Slider input titles, and GameObject identifiers
@@ -253,12 +255,11 @@ namespace KK_PregnancyPlus
             });
             e.AddControl(new MakerText("Resets all P+ sliders to their default value", cat, _pluginInstance) { TextColor = hintColor });
 
-            var smoothBtn = e.AddControl(new MakerButton("Belly Mesh Smoothing", cat, _pluginInstance));
+            smoothBtn = e.AddControl(new MakerButton("Belly Mesh Smoothing", cat, _pluginInstance));
             smoothBtn.OnClick.AddListener(() => {
                 OnSmoothClicked();
             });
             e.AddControl(new MakerText("Applies smoothing to the mesh near the belly.  It will take a few seconds.  Resets on changes and character load.", cat, _pluginInstance) { TextColor = hintColor });
-
 
             var cothSmoothing = e.AddControl(new MakerToggle(cat, "Include cloth when smoothing", false, _pluginInstance));
             cothSmoothing.BindToFunctionController<PregnancyPlusCharaController, bool>(controller => includeClothSmoothing, (controller, value) => {

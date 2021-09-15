@@ -42,6 +42,7 @@ namespace KK_PregnancyPlus
         {
             meshWithBlendShapes = new List<MeshIdentifier>();
             blendShapeGui.CloseBlendShapeGui();
+            PregnancyPlusGui.StopTextCountIncrement();
         }
 
 

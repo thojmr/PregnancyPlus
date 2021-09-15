@@ -69,7 +69,7 @@ namespace KK_PregnancyPlus
             if (!temporary) AddBlendShapesToData(infConfig, meshBlendShapes);
 
             //Reset Preg+ slider 0 so the blendshape can be used with out interference
-            PregnancyPlusGui.ResetSlider(PregnancyPlusGui.inflationSize, 0);
+            UnityUiTools.ResetSlider(PregnancyPlusGui.cat, PregnancyPlusGui.inflationSize, 0);
 
             //Append the smrs that have new blendspahes to the blendshape GUI
             blendShapeGui.OnSkinnedMeshRendererBlendShapesCreated(meshWithBlendShapes);
