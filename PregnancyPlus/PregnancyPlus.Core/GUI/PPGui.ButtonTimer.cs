@@ -130,6 +130,11 @@ namespace KK_PregnancyPlus
                 //Reset the text to default
                 newText = currentText.Substring(0, timeIndex);
             }
+            else if (count < 0)
+            {
+                //No changes needed since the counter has not been set
+                return currentText;
+            }
             else if (timeIndex > 0)
             {
                 //Increment the text
