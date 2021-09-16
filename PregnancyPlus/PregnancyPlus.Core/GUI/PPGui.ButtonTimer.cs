@@ -28,14 +28,8 @@ namespace KK_PregnancyPlus
                 if (timePassed > 1f)
                 {
                     //Update text on the smoothing button every second
-                    if (!StudioAPI.InsideStudio)
-                    {
-                        UpdateMakerTextComponentText(PregnancyPlusGui.smoothBtn, secondsCount);
-                    }
-                    else
-                    {                        
-                        UpdateStudioTextComponentText(cat, PregnancyPlusGui.smoothBellyMeshText, secondsCount);
-                    }                    
+                    UpdateTextComponentText();
+
                     secondsCount += 1;
                     timePassed = 0f;
                 }
@@ -54,6 +48,9 @@ namespace KK_PregnancyPlus
 
             timePassed = 0f;
             secondsCount = 0;
+
+            //Sets text on the smoothing button
+            UpdateTextComponentText();
         }
 
 
@@ -65,7 +62,18 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" StopTextCountIncrement"); 
 
             secondsCount = -1;
-            //Reset text on the smoothing button
+            timePassed = 0f;
+
+            UpdateTextComponentText();            
+        }
+
+
+        /// <summary>
+        /// Set or Reset the timer on the smoothing button
+        /// </summary>
+        internal static void UpdateTextComponentText()
+        {
+            //Set or Reset text on the smoothing button
             if (!StudioAPI.InsideStudio)
             {
                 UpdateMakerTextComponentText(PregnancyPlusGui.smoothBtn, secondsCount);
@@ -74,7 +82,6 @@ namespace KK_PregnancyPlus
             {
                 UpdateStudioTextComponentText(cat, PregnancyPlusGui.smoothBellyMeshText, secondsCount);
             } 
-            timePassed = 0f;
         }
 
 
