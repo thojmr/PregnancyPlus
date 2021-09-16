@@ -366,10 +366,11 @@ namespace KK_PregnancyPlus
         {                                        
             #if KK       
                 //In KK we can't use .n_o_root because there are too many improperly imported meshes (wried local positions or rotations), use the parent body mesh bone instead
-                var bodyBone = ChaControl.sex == 0 ? "p_cm_body_00" : "p_cf_body_00";                            
-                var bodyBone2 = ChaControl.sex == 0 ? "p_cm_body_00_low" : "p_cf_body_00_low";                            
+                //Fix: ACP plugin adds multiple "p_cf_body_00" so we want the one under BodyTop
+                var bodyBone = ChaControl.sex == 0 ? "BodyTop.p_cm_body_00" : "BodyTop.p_cf_body_00";                            
+                var bodyBone2 = ChaControl.sex == 0 ? "BodyTop.p_cm_body_00_low" : "BodyTop.p_cf_body_00_low";                            
             #elif HS2 || AI
-                var bodyBone = ChaControl.sex == 0 ? "p_cm_body_00.n_o_root" : "p_cf_body_00.n_o_root";
+                var bodyBone = ChaControl.sex == 0 ? "BodyTop.p_cm_body_00.n_o_root" : "BodyTop.p_cf_body_00.n_o_root";
             #endif            
 
             var meshRootGo = PregnancyPlusHelper.GetBoneGO(ChaControl, bodyBone);
