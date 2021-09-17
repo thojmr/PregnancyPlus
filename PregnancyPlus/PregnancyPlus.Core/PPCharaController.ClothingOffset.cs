@@ -40,12 +40,7 @@ namespace KK_PregnancyPlus
         /// </summary>
         public Mesh CreateMeshCollider(SkinnedMeshRenderer bodySmr = null)
         {        
-            //If not passed in, fetch it
-            bodySmr = bodySmr != null ? bodySmr : GetBodyMeshRenderer();
-            if (bodySmr == null) return null;            
-
-            //Skip when the collider already exists
-            var colliderExists = bodySmr.transform.gameObject.GetComponent<MeshCollider>();
+            var colliderExists = GetMeshCollider(bodySmr);
             if (colliderExists != null) return null;
 
             //Check for body mesh data dict
@@ -85,15 +80,24 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
+        /// Get an existing body mesh collider
+        /// </summary>
+        public MeshCollider GetMeshCollider(SkinnedMeshRenderer bodyMeshRenderer = null)
+        {
+            if (bodyMeshRenderer == null) bodyMeshRenderer = GetBodyMeshRenderer();
+            if (bodyMeshRenderer == null) return null;
+
+            //Get the collider component if it exists
+            return bodyMeshRenderer.transform.gameObject.GetComponent<MeshCollider>();
+        }
+
+
+        /// <summary>
         /// Destroy an existing mesh collider
         /// </summary>
         public void RemoveMeshCollider()
         {
-            var bodyMeshRenderer = GetBodyMeshRenderer();
-            if (bodyMeshRenderer == null) return;
-
-            //Get the collider component if it exists
-            var collider = bodyMeshRenderer.transform.gameObject.GetComponent<MeshCollider>();
+            var collider = GetMeshCollider();
             if (collider != null) Destroy(collider);
         }
 
@@ -101,21 +105,15 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Raycast from the clothing vert to the direction passed and get the distance if it hits the mesh collider
         /// </summary>
-        public float RayCastToCenter(Vector3 clothVertWs, float maxDistance, Vector3 direction)
+        public float RayCastToMeshCollider(Vector3 origin, float maxDistance, Vector3 direction, MeshCollider meshCollider)
         {
-            var ray = new Ray(clothVertWs, direction);
-            //Raycast through any number of colliders
-            var hits = Physics.RaycastAll(ray, maxDistance);
+            var ray = new Ray(origin, direction);
 
-            //For each hit find the correct MeshCollider
-            foreach (RaycastHit hit in hits) 
-            {
-                //Ignore any non MeshCollider hits (like the stupid crosshair cam in studio)
-                if (hit.collider.GetType() == typeof(MeshCollider)) return hit.distance;                               
-            }
+            //Ray cast to the mesh collider
+            meshCollider.Raycast(ray, out var hit, maxDistance);
 
-            //If nothing hit, return the default maxDistance
-            return maxDistance;
+            //Will return maxDistance if nothing is hit
+            return hit.distance;
         }
 
 
@@ -158,7 +156,11 @@ namespace KK_PregnancyPlus
             var rayCastDist = bellyInfo.OriginalSphereRadius/2;            
             var minOffset = bellyInfo.ScaledWaistWidth/200;       
             //Apply and mesh offset needed, to make all meshes the same y height so the calculations below line up
-            var yOffsetDir = clothSmr.transform.up * md[renderKey].yOffset;           
+            var yOffsetDir = clothSmr.transform.up * md[renderKey].yOffset;         
+
+            //Get the mesh collider we will raycast to
+            var meshCollider = GetMeshCollider(bodySmr);
+            if (meshCollider == null) return null;
   
             GetRayCastTargetPositions();
 
@@ -191,7 +193,7 @@ namespace KK_PregnancyPlus
                 #if KK && !KKS
 
                     //Get raycast hit distance to the mesh collider on the skin
-                    GetClosestRayCast(origVertWs, sphereCenter, rayCastDist, out float closestHit, out Vector3 direction);
+                    GetClosestRayCast(meshCollider, origVertWs, sphereCenter, rayCastDist, out float closestHit, out Vector3 direction);
 
                 #elif HS2 || AI || KKS
 
@@ -347,7 +349,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Get the lowest distance of the cloth mesh to skin mesh based on a number of different raycast
         /// </summary>
-        public float GetClosestRayCast(Vector3 clothVertWs, Vector3 sphereCenter, float maxDistance, out float dist, out Vector3 direction)
+        public float GetClosestRayCast(MeshCollider meshCollider, Vector3 clothVertWs, Vector3 sphereCenter, float maxDistance, out float dist, out Vector3 direction)
         {
             var lowestDist = maxDistance;    
             direction = Vector3.zero;        
@@ -357,7 +359,7 @@ namespace KK_PregnancyPlus
             foreach(var bonePosition in rayCastTargetPositions)
             {
                 var _dir = bonePosition - clothVertWs;
-                var _currentDist = RayCastToCenter(clothVertWs, maxDistance, _dir);
+                var _currentDist = RayCastToMeshCollider(clothVertWs, maxDistance, _dir, meshCollider);
                 //Get closest raycast hit
                 if (_currentDist < lowestDist) 
                 {
@@ -368,7 +370,7 @@ namespace KK_PregnancyPlus
 
             //Also check raycast to the current sphereCenter
             var _direction = sphereCenter - clothVertWs;
-            var currentDist = RayCastToCenter(clothVertWs, maxDistance, _direction);
+            var currentDist = RayCastToMeshCollider(clothVertWs, maxDistance, _direction, meshCollider);
             if (currentDist < lowestDist) 
             {
                 lowestDist = currentDist;
