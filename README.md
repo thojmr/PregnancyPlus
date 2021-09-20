@@ -2,6 +2,7 @@
 This repository contains the PregnancyPlus plugin, that adds additional belly sliders in Studio and Maker.  It is intended to compliment the [KK_Pregnancy](https://github.com/ManlyMarco/KoikatuGameplayMods) plugin, but can be used without it.
 
 See `How To Install` for installation instructions
+See `Features` for all plugin features
 
 
 <img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/P+ All Menus.png"></img>
