@@ -9,6 +9,7 @@ See `Features` for all plugin features
 <img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/P+ All Menus.png"></img>
 
 ## Latest Features (I will update this occasionally)
+- "Smooth Belly Mesh" button timer when clicked
 - Ported to KKS
 - Copy Paste Belly buttons
 - Override KK_Pregnancy belly shape
