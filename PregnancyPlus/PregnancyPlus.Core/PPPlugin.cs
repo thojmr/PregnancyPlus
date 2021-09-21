@@ -11,8 +11,8 @@ namespace KK_PregnancyPlus
     [BepInPlugin(GUID, GUID, Version)]
     [BepInDependency("com.deathweasel.bepinex.uncensorselector", BepInDependency.DependencyFlags.SoftDependency)]
     #if KKS
-        [BepInDependency(KoikatuAPI.GUID, "1.24")]
-        //TODO add back for KKS Studio release  [BepInDependency("KKPE", BepInDependency.DependencyFlags.SoftDependency)]
+        [BepInDependency(KoikatuAPI.GUID, "1.26")]
+        [BepInDependency("KKPE", BepInDependency.DependencyFlags.SoftDependency)]
         [BepInDependency("KK_Pregnancy", BepInDependency.DependencyFlags.SoftDependency)]
     #elif KK
         [BepInDependency(KoikatuAPI.GUID, "1.14")]
