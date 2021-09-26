@@ -14,27 +14,28 @@ See `Features` for all plugin features
 - Copy Paste Belly buttons
 - Override KK_Pregnancy belly shape
 - Multithreaded computation
-- HS2 belly inflation logic
 
 </br>
 
 ## Features
 - Adds a number of sliders that will allow you to change the size and shape of a characters belly in Studio, Maker, and Main Gameplay.
-    - Slider values will save to scene or character card.
-    - In the main game you can further tweak all characters belly shapes with the F1 plugin config sliders.
-- Adds Timeline (KK) and VNGE (HS2/AI) integration for animating the belly by creating blendshapes that save to character card (see specific features below).
+    - In Main Game you can further tweak all character's belly shapes with the F1 plugin config sliders.
+- Adds Timeline (KK) and VNGE (HS2/AI) integration for belly animations.
 - Adds 3 configurable keybinds in plugin config that can be used to increase or decrease the belly size in Main Game, on the fly.   
-- Substitutes for stomach bulges/fat bellies as well, but it's original intent is pregnancy.    
-- Adds a "Main Game" mode config option.  Disable if you want to turn off this plugins' features temporarily while playing.
-- Adds an "Override KK_Pregnancy belly shape" toggle, that lets you replace the KK/AI_Pregnancy belly with the Preg+ one in Main Gameplay.
-- Adds a "Mesh Smoothing" button in Studio and Maker, that allows you to smooth the belly mesh and reduce any edges resulting from some slider combinations.
+- Adds a Fat Fold slider that explains itself, just make sure the Preg+ slider is above 0 as well.
+- Adds an "Override KK_Pregnancy belly shape" toggle, that lets you replace the KK/AI_Pregnancy belly with the Preg+ one in Main Gameplay (Instead of combining the two).
+- Adds a "Mesh Smoothing" button in Studio and Maker, that allows you to smooth the belly mesh and reduce any edge shadows.
     - The smoothing will reset on slider change or character load, so it's mostly for screenshots, animations, and blendshapes.
     - The smoothed mesh can be saved as a blendshape!    
-    - It's a slow prcess so give it some time to complete (extremely so when using a high poly mesh)
-- Somewhat compatible with "[ddaa33] Pregnant plugin (ShapeKeyPlugin)" if you wish to combine the effects of both, you can.  But the effects applied by that plugin will not save to the character card by default. (Only with Pregnancy+ captured blendshapes)
+    - It's a slow prcess so watch the timer on the button to see when its done. (extremely so when using a high poly mesh)
+- Hover over any Plugin Config options in game for a more detailed description
+
+</br>
 
 ## Honey Select 2 Only Features
 - Because I'm too lazy to port KK_Pregnancy to HS2, belly inflation logic has been added to Main Game HScenes when finishing inside (Thanks to Crescent696).  Similar to how KK_Pregnancy inflation works.  It is off by default, turn it on in Preg+ plugin config.
+
+</br>
 
 ## Koikatsu and AI Only Features
 - This was way too confusing, so I added the option to disable the KK_Pregnancy belly shape in favor of the Pregnancy+ belly in HScenes and Main Gameplay.  Both plugins will still work together, and pregnancy will progress.  You just have less to think about now!  Look for "Override KK_Pregnancy belly shape" in plugin config.
@@ -46,8 +47,10 @@ See `Features` for all plugin features
 - *Key thing to note*: If you just want to alter the KK/AI_Pregnancy shape.  Make sure to set the "Inflation Size" slider to 0 before saving character card.  When it is above 0 it will always be visible in Main Game even when not pregnant.
 </del>
 
-## Koikatsu Only Features
-- Studio Timeline integration via blendshapes.  Here's how to:
+</br>
+
+## Timeline Integration
+- Studio Timeline integration via blendshapes.  Here's how:
   - Set the P+ character sliders to the desired shape you want (including belly smoothing).
   - Click "Open Blendshapes" button. You will see a popup that will show you any existing P+ blendshapes.  If none are found, then use the "Create New" button.
     - Do not alter the Preg+ blendshapes ending in \[temp\] They are temporary and will not be saved.
@@ -55,8 +58,8 @@ See `Features` for all plugin features
   - Open Timeline with Ctrl+T, search for "Blendshape" and middle click to add.
   - Follow Timeline guides for further info
 
-## Honey Select 2 and AI Only Features
-- Studio VNGE integration via blendshapes.  Here's how to:
+## VNGE Integration
+- Studio VNGE integration in HS2 and AI via blendshapes.  Here's how:
   - Set the P+ character sliders to the desired shape you want (including belly smoothing).
   - Click "Open Blendshapes" button. You will see a popup that will show you any existing P+ blendshapes.  If none are found, then use the "Create New" button.
     - Do not alter the Preg+ blendshapes ending in \[temp\] They are temporary and will not be saved.
