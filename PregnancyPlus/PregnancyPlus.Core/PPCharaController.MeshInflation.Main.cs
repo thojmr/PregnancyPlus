@@ -91,6 +91,7 @@ namespace KK_PregnancyPlus
             {           
                 var threadedCompute = false;//Whether the computation has been threaded
                 var renderKey = GetMeshKey(smr);
+                if (renderKey == null) continue;
 
                 //Dont recompute verts if no sliders have changed or clothing added
                 var needsComputeVerts = NeedsComputeVerts(smr, renderKey, meshInflateFlags);
@@ -205,6 +206,7 @@ namespace KK_PregnancyPlus
             }
             
             // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" SMR pos {smr.transform.position} rot {smr.transform.rotation} parent {smr.transform.parent}");                     
+            if (!smr.sharedMesh.isReadable) ApplyReadableMeshDetour();
 
             var rendererName = GetMeshKey(smr);         
             md[rendererName].originalVertices = smr.sharedMesh.vertices;
@@ -256,6 +258,8 @@ namespace KK_PregnancyPlus
             var bellySidesAC = new ThreadsafeCurve(BellySidesAC);
             var bellyTopAC = new ThreadsafeCurve(BellyTopAC);
             var bellyEdgeAC = new ThreadsafeCurve(BellyEdgeAC);
+
+            UndoReadableMeshDetour();
 
             //Heavy compute task below, run in separate thread
             WaitCallback threadAction = (System.Object stateInfo) => 

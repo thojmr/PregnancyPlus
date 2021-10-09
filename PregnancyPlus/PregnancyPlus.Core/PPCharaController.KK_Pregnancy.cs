@@ -179,8 +179,11 @@ namespace KK_PregnancyPlus
         /// </summary>
         public void AppendToQuickInflateList(SkinnedMeshRenderer smr)
         {
+            if (!smr.sharedMesh.isReadable) ApplyReadableMeshDetour();
             var blendShapeName = MakeBlendShapeName(GetMeshKey(smr), blendShapeTempTagName);
             var blendshapeCtrl = new BlendShapeController(smr, blendShapeName);
+            UndoReadableMeshDetour();
+
             if (blendshapeCtrl.blendShape == null) return;
 
             blendShapeCtrlList.Add(blendshapeCtrl);

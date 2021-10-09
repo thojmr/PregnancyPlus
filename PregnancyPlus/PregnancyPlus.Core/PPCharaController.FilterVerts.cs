@@ -29,18 +29,14 @@ namespace KK_PregnancyPlus
             var bellyBoneIndexes = new List<int>();
             var hasBellyVerticies = false;            
 
-            if (!sharedMesh.isReadable) 
-            {
-                // PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_MeshNotReadable, 
-                //     $"GetFilteredVerticieIndexes > smr '{renderKey}' is not readable, skipping");
-                // if (!ignoreMeshList.Contains(renderKey)) ignoreMeshList.Add(renderKey);
-                // return false;
-            }
-
+            if (!sharedMesh.isReadable) ApplyReadableMeshDetour();
+            
             //return early if no bone weights found
             if (sharedMesh.boneWeights.Length == 0) 
             {
                 if (!ignoreMeshList.Contains(renderKey)) ignoreMeshList.Add(renderKey);//Ignore this mesh/key from now on
+
+                UndoReadableMeshDetour();
                 return false; 
             }
 
@@ -48,6 +44,8 @@ namespace KK_PregnancyPlus
             if (!indexesFound) 
             {
                 if (!ignoreMeshList.Contains(renderKey)) ignoreMeshList.Add(renderKey);
+
+                UndoReadableMeshDetour();
                 return false;             
             }
             
@@ -102,6 +100,7 @@ namespace KK_PregnancyPlus
                 }
             }
 
+            UndoReadableMeshDetour();
             return hasBellyVerticies;
         }
 

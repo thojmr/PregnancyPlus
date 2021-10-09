@@ -45,12 +45,7 @@ namespace KK_PregnancyPlus
             if (!bypassWhen0 && (infSize.Equals(null) || infSize == 0)) return false;      
 
             //Some meshes are not readable and cant be touched...  Nothing I can do about this right now
-            if (!smr.sharedMesh.isReadable) 
-            {
-                // PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_MeshNotReadable, 
-                //     $"ApplyInflation > smr '{renderKey}' is not readable, skipping");
-                // return false;
-            } 
+            if (!smr.sharedMesh.isReadable) ApplyReadableMeshDetour();
 
             //Check key exists in dict, remove it if it does not
             var exists = md.TryGetValue(renderKey, out MeshData _md);
@@ -59,6 +54,8 @@ namespace KK_PregnancyPlus
                 // if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo(
                 //      $"ApplyInflation > smr '{renderKey}' does not exists, skipping");
                 RemoveRenderKey(renderKey);
+
+                UndoReadableMeshDetour();
                 return false;
             }
 
@@ -67,6 +64,8 @@ namespace KK_PregnancyPlus
             {
                 PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_IncorrectVertCount, 
                     $"ApplyInflation > smr.sharedMesh '{renderKey}' has incorrect vert count {md[renderKey].inflatedVertices.Length}|{smr.sharedMesh.vertexCount}");
+
+                UndoReadableMeshDetour();
                 return false;
             }
 
@@ -74,6 +73,7 @@ namespace KK_PregnancyPlus
             ApplyBlendShapeWeight(smr, renderKey, needsOverwrite, blendShapeTempTagName);
 
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" mesh did ApplyInflation to {smr.name}");
+            UndoReadableMeshDetour();
             return true;
         }    
 
@@ -172,12 +172,7 @@ namespace KK_PregnancyPlus
 
             //Make a copy of the mesh. We dont want to affect the existing for this
             var meshCopyTarget = PregnancyPlusHelper.CopyMesh(smr.sharedMesh);   
-            if (!meshCopyTarget.isReadable) 
-            {
-                // PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_MeshNotReadable, 
-                //     $"SmoothSingleMesh > smr '{renderKey}' is not readable, skipping");                     
-                // return;
-            } 
+            if (!meshCopyTarget.isReadable) ApplyReadableMeshDetour();
 
             //Calculate the original normals, but don't show them.  We just want it for the blendshape target
             meshCopyTarget.vertices = md[renderKey].inflatedVertices;
@@ -186,12 +181,16 @@ namespace KK_PregnancyPlus
             //Since we are hacking this readable state, prevent hard crash when calculating tangents on originally unreadable meshes        
             if (meshCopyTarget.isReadable) meshCopyTarget.RecalculateTangents();
 
+            UndoReadableMeshDetour();
+
 
             // Lapacian Smoothing is exetemely costly, and can take multiple seconds to compute with even a small mesh
             //  So we want to put each mesh smoothing pass in its own thread, and apply the result when done
             WaitCallback threadAction = (System.Object stateInfo) => 
             {
+                if (!meshCopyTarget.isReadable) ApplyReadableMeshDetour();
                 var newVerts = SmoothMesh.Start(meshCopyTarget, md[renderKey].alteredVerticieIndexes);
+                UndoReadableMeshDetour();
 
                 //When this thread task is complete, execute the below in main thread
                 Action threadActionResult = () => 
