@@ -8,6 +8,12 @@ using System.Linq;
 using System.Reflection;
 using KKAPI.Maker;
 using KKAPI.Studio;
+#if !KK || KKS
+    using MonoMod.RuntimeDetour;
+    using HarmonyLib;
+    using BepInEx;
+#endif
+
 #if KK
     using KKAPI.MainGame;
 #elif HS2
@@ -73,6 +79,12 @@ namespace KK_PregnancyPlus
         //Used to multithread some complex tasks.  Cant use fancy new unity threading methods, because of KK's old unity version
         public Threading threading = new Threading();
 
+        //These detours override the mesh isReadable state to make it readable
+        #if !KK || KKS
+            NativeDetour nativeDetour;
+            NativeDetour nativeDetour2;
+        #endif
+
 #region overrides
 
         protected override void OnCardBeingSaved(GameMode currentGameMode)
@@ -118,8 +130,22 @@ namespace KK_PregnancyPlus
          
             #endif
 
+            //Create method detours to allow a mesh.isReadable = false, mesh to be read anyway.  Otherwise the clothing can not be read or altered
+            #if !KK || KKS
+                nativeDetour = new NativeDetour(AccessTools.Property(typeof(Mesh), "canAccess").GetMethod, AccessTools.Method(typeof(PregnancyPlusCharaController), "canAccess"));
+                nativeDetour.Apply();
+                nativeDetour2 = new NativeDetour(AccessTools.Property(typeof(Mesh), "isReadable").GetMethod, AccessTools.Method(typeof(PregnancyPlusCharaController), "canAccess"));
+                nativeDetour2.Apply();                                        
+            #endif
+
             base.Start();
         }        
+
+        //Detour override method
+        public bool canAccess()
+        {
+            return true;
+        }
 
 
         //The HS2 / AI way to detect clothing change
@@ -191,11 +217,16 @@ namespace KK_PregnancyPlus
         protected override void OnDestroy() 
         {
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnDestroy {charaFileName}"); 
+
+            //Remove the detours we made
+            #if !KK || KKS
+                nativeDetour.Undo();
+                nativeDetour2.Undo();           
+            #endif
         }
         
 
 #endregion overrides
-
 
     }
 }
