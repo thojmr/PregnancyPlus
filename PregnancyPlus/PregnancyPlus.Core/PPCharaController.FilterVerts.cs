@@ -31,10 +31,10 @@ namespace KK_PregnancyPlus
 
             if (!sharedMesh.isReadable) 
             {
-                PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_MeshNotReadable, 
-                    $"GetFilteredVerticieIndexes > smr '{renderKey}' is not readable, skipping");
-                if (!ignoreMeshList.Contains(renderKey)) ignoreMeshList.Add(renderKey);
-                return false;
+                // PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_MeshNotReadable, 
+                //     $"GetFilteredVerticieIndexes > smr '{renderKey}' is not readable, skipping");
+                // if (!ignoreMeshList.Contains(renderKey)) ignoreMeshList.Add(renderKey);
+                // return false;
             }
 
             //return early if no bone weights found

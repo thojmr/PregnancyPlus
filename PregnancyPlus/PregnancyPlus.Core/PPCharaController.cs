@@ -79,10 +79,9 @@ namespace KK_PregnancyPlus
         //Used to multithread some complex tasks.  Cant use fancy new unity threading methods, because of KK's old unity version
         public Threading threading = new Threading();
 
-        //These detours override the mesh isReadable state to make it readable
+        //This detour override the mesh isReadable state to make it readable/accessable
         #if !KK || KKS
             NativeDetour nativeDetour;
-            NativeDetour nativeDetour2;
         #endif
 
 #region overrides
@@ -133,9 +132,7 @@ namespace KK_PregnancyPlus
             //Create method detours to allow a mesh.isReadable = false, mesh to be read anyway.  Otherwise the clothing can not be read or altered
             #if !KK || KKS
                 nativeDetour = new NativeDetour(AccessTools.Property(typeof(Mesh), "canAccess").GetMethod, AccessTools.Method(typeof(PregnancyPlusCharaController), "canAccess"));
-                nativeDetour.Apply();
-                nativeDetour2 = new NativeDetour(AccessTools.Property(typeof(Mesh), "isReadable").GetMethod, AccessTools.Method(typeof(PregnancyPlusCharaController), "canAccess"));
-                nativeDetour2.Apply();                                        
+                nativeDetour.Apply();                                      
             #endif
 
             base.Start();
@@ -218,10 +215,9 @@ namespace KK_PregnancyPlus
         {
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnDestroy {charaFileName}"); 
 
-            //Remove the detours we made
+            //Remove the detour we made
             #if !KK || KKS
-                nativeDetour.Undo();
-                nativeDetour2.Undo();           
+                nativeDetour.Undo();         
             #endif
         }
         

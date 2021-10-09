@@ -47,9 +47,9 @@ namespace KK_PregnancyPlus
             //Some meshes are not readable and cant be touched...  Nothing I can do about this right now
             if (!smr.sharedMesh.isReadable) 
             {
-                PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_MeshNotReadable, 
-                    $"ApplyInflation > smr '{renderKey}' is not readable, skipping");
-                return false;
+                // PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_MeshNotReadable, 
+                //     $"ApplyInflation > smr '{renderKey}' is not readable, skipping");
+                // return false;
             } 
 
             //Check key exists in dict, remove it if it does not
@@ -174,16 +174,17 @@ namespace KK_PregnancyPlus
             var meshCopyTarget = PregnancyPlusHelper.CopyMesh(smr.sharedMesh);   
             if (!meshCopyTarget.isReadable) 
             {
-                PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_MeshNotReadable, 
-                    $"SmoothSingleMesh > smr '{renderKey}' is not readable, skipping");                     
-                return;
+                // PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_MeshNotReadable, 
+                //     $"SmoothSingleMesh > smr '{renderKey}' is not readable, skipping");                     
+                // return;
             } 
 
             //Calculate the original normals, but don't show them.  We just want it for the blendshape target
             meshCopyTarget.vertices = md[renderKey].inflatedVertices;
             meshCopyTarget.RecalculateBounds();
             NormalSolver.RecalculateNormals(meshCopyTarget, 40f, md[renderKey].alteredVerticieIndexes);
-            meshCopyTarget.RecalculateTangents();
+            //Since we are hacking this readable state, prevent hard crash when calculating tangents on originally unreadable meshes        
+            if (meshCopyTarget.isReadable) meshCopyTarget.RecalculateTangents();
 
 
             // Lapacian Smoothing is exetemely costly, and can take multiple seconds to compute with even a small mesh

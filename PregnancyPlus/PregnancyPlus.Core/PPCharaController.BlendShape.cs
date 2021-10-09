@@ -459,9 +459,9 @@ namespace KK_PregnancyPlus
             var meshCopyTarget = PregnancyPlusHelper.CopyMesh(smr.sharedMesh);   
             if (!meshCopyTarget.isReadable) 
             {
-                PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_MeshNotReadable, 
-                    $"CreateBlendShape > smr '{renderKey}' is not readable, skipping");                     
-                return null;
+                // PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_MeshNotReadable, 
+                //     $"CreateBlendShape > smr '{renderKey}' is not readable, skipping");                     
+                // return null;
             } 
 
             //Make sure we have an existing belly shape to work with (can be null if user hasnt used sliders yet)
@@ -485,7 +485,8 @@ namespace KK_PregnancyPlus
             meshCopyTarget.vertices = md[renderKey].inflatedVertices;
             meshCopyTarget.RecalculateBounds();
             NormalSolver.RecalculateNormals(meshCopyTarget, 40f, md[renderKey].alteredVerticieIndexes);
-            meshCopyTarget.RecalculateTangents();
+            //Since we are hacking this readable state, prevent hard crash when calculating tangents on originally unreadable meshes
+            if (meshCopyTarget.isReadable) meshCopyTarget.RecalculateTangents();
 
             var blendShapeName = MakeBlendShapeName(renderKey, blendShapeTag);
 
