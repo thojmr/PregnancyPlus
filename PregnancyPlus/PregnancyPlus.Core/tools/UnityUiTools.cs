@@ -5,6 +5,7 @@ using TMPro;
 
 namespace KK_PregnancyPlus
 {
+    // These tools are used to get and set Unity input buttons in Studio and Maker
     public static class UnityUiTools
     {
 
@@ -12,7 +13,7 @@ namespace KK_PregnancyPlus
         /// Get a Unity Text component from the Studio category
         /// </summary>
         #if HS2 || AI
-            //TODO KKS might use TextMeshPro as well
+
             public static TextMeshProUGUI GetTextComponent(CurrentStateCategory cat, string inputName)
             {
                 if (cat == null) return null;

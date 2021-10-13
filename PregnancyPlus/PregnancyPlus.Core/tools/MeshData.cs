@@ -9,9 +9,9 @@ namespace KK_PregnancyPlus
         public Vector3[] originalVertices;//The original untouched verts from the mesh
         public Vector3[] inflatedVertices;//The verts from the mesh after being inflated        
         public float[] clothingOffsets;//The distance we want to offset each vert from the body mesh when inflated
-        public bool[] bellyVerticieIndexes;//List of verticie indexes that belong to the belly area
-        public bool[] alteredVerticieIndexes;//List of verticie indexes inside the current belly radius from sphere center
-        public float yOffset = 0;//The distance the mesh needs to be offset to match all other meshes y height
+        public bool[] bellyVerticieIndexes;//When an index is True, that vertex is near the belly area
+        public bool[] alteredVerticieIndexes;//When an index is True that vertex's position has been altered by GetInflatedVerticies()
+        public float yOffset = 0;//The distance the mesh needs to be offset to match all other meshes y height, since some are not properly imported at the correct height
 
         public bool HasInflatedVerts
         {
@@ -34,7 +34,7 @@ namespace KK_PregnancyPlus
         }
 
 
-        //Initialize some props with mesh vert count length, we will popupate others as needed
+        //Initialize some fields, we will popupate others as needed
         public MeshData(int vertCount)
         {           
             bellyVerticieIndexes = new bool[vertCount];

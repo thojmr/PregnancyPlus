@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace KK_PregnancyPlus
 {
     //Unity Animation curves are not threadsafe, so unwrap them into an array and use that instead
-    //  Just make sure to call this in main thread
+    //  Just make sure to call this in main thread :/
     [System.Serializable]
     public class ThreadsafeCurve : ISerializationCallbackReceiver
     {

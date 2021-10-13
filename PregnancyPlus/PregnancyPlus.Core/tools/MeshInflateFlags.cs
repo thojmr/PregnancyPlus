@@ -1,6 +1,6 @@
 namespace KK_PregnancyPlus
 {
-    //These are the flags needed to determine whether we need to compute a mesh shape, and or how to do it
+    //These are the flags needed to determine whether we need to compute a mesh shape, and how to do it
     public class MeshInflateFlags 
     {
         //Check for any newly added meshes
@@ -40,7 +40,7 @@ namespace KK_PregnancyPlus
             }
         }
         
-        //Whether we need to overwrite the mesh blendshape with a new shape
+        //Whether we need to overwrite existing mesh blendshape with a new shape
         public bool OverWriteMesh 
         {            
             get { return (!OnlyInflationSizeChanged && SliderHaveChanged) || freshStart; }
@@ -74,7 +74,8 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Pass infConfig values to constructor to be used later in slider value comparisons
+        /// Constructor
+        ///     Pass infConfig values to constructor to be used later in slider value comparisons (Change detection)
         /// </summary>
         public MeshInflateFlags(PregnancyPlusCharaController ppcc, bool _checkForNewMesh = false, bool _freshStart = false, bool _pluginConfigSliderChanged = false, 
                                 bool _visibilityUpdate = false, bool _bypassWhen0 = false, bool _reMeasure = false) 

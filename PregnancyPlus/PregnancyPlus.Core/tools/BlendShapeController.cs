@@ -12,7 +12,8 @@ namespace KK_PregnancyPlus
         public BlendShape blendShape = new BlendShape();
         public SkinnedMeshRenderer smr = null;
 
-        //This format contains all the info a blendshape needs to be made.  It also server as the format we will save to a character card later
+
+        //This format contains all the info a blendshape needs to be created (For a single blendshape frame).  It also server as the format we will save to a character card later
         [MessagePackObject(keyAsPropertyName: true)]
         public class BlendShape //This is technically a blendshape frame, but w/e.  Its already set in stone
         {
@@ -54,11 +55,12 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Constructor that takes in a target skinned mesh renderer with verts and creates a blend shape object from it.  This blend shape will then be assigned to the mesh
+        /// Constructor that takes in a target skinned mesh renderer with verts and creates a blend shape object from it, and attaches it to the SMR
         /// </summary>
-        /// <param name="originalSmr">Original untouched mesh</param>
-        /// <param name="blendShapeName">Desired name of the blend shape, should be unique</param>
-        /// <param name="newSmr">The smr containing the target mesh shape</param>
+        /// <param name="originalSmr">The original untouched mesh</param>
+        /// <param name="targetSmrMesh">The target mesh</param>
+        /// <param name="blendShapeName">Desired name of the blend shape, should be unique</param>        
+        /// <param name="smr">The target SMR</param>        
         public BlendShapeController(Mesh originalSmrMesh, Mesh targetSmrMesh, string blendShapeName, SkinnedMeshRenderer smr) 
         {
             if (!blendShape.isInitilized) 
@@ -79,6 +81,7 @@ namespace KK_PregnancyPlus
 
         /// <summary>
         /// Constructor overload that takes a saved blendshape and sets it to the correct mesh
+        ///     Typically used when loading BlendShape from card
         /// </summary>
         /// <param name="smr">The current active mesh</param>
         /// <param name="_blendShape">The blendshape we loaded from character card</param>
@@ -91,9 +94,9 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Constructor overload that finds a blendshape by name
+        /// Constructor overload that finds a blendshape by name on a specific SMR
         /// </summary>
-        /// <param name="smr">The mesh to search on</param>
+        /// <param name="smr">The skinned mesh renderer to search on</param>
         /// <param name="blendShapeName">The blendshape name to search for</param>
         public BlendShapeController(SkinnedMeshRenderer _smr, string blendShapeName)         
         {
@@ -102,14 +105,18 @@ namespace KK_PregnancyPlus
             smr = _smr;
         }
         
+
         /// <summary>
-        /// Use this constructor just to access any methods inside without having to set up a blendshape
+        /// Use this constructor just to access any methods inside
         /// </summary>
         public BlendShapeController() { }
 
 
+
+
+
         /// <summary>
-        /// This will apply the previously created BlendShape object to an existing skinned mesh renderer
+        /// This will apply the current BlendShape object to an existing skinned mesh renderer
         /// </summary>
         /// <param name="smr">The skinned mesh renderer to attach the blend shape</param>
         public bool AddBlendShapeToMesh(SkinnedMeshRenderer smr) 
@@ -126,15 +133,15 @@ namespace KK_PregnancyPlus
 
             if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" smr.sharedMesh.tangents {smr.sharedMesh.tangents.Length}, blendShape.tangents {blendShape.tangents.Length}"); 
 
-            //When tangents are empty, pad them to the same length as the vert count
-            //  Not sure why they would be unless the mesh import was bad?
+            //When tangents are empty, pad them to the same length as the vert count to prevent errors
+            //  Not sure why they would be empty in the first place?
             if (blendShape.tangents.Length == 0)
             {                
                 blendShape.tangents = new Vector3[smr.sharedMesh.vertexCount ];
                 if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" smr.sharedMesh.tangents {smr.sharedMesh.tangents.Length}, blendShape.tangents {blendShape.tangents.Length}"); 
             }
 
-            //Create instance on character to prevent changes leaking to other characters
+            //Create mesh instance on character to prevent changes leaking to other characters
             smr.sharedMesh = (Mesh)UnityEngine.Object.Instantiate(smr.sharedMesh); 
 
             //Not going to try to debug this unity problem with blendshapes not being found by name, just always overwright the existing blendshape...
@@ -144,12 +151,13 @@ namespace KK_PregnancyPlus
                 if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" AddBlendShape > overwriting {blendShape.name}");                       
                 OverwriteBlendShape(smr, blendShape);
 
-                //Fix for some shared mesh properties not updating after AddBlendShapeFrame
+                //Fix for some shared mesh properties not updating after AddBlendShapeFrame (Thanks Unity!)
                 smr.sharedMesh = smr.sharedMesh;
                 return true;
             }
 
             if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" AddBlendShape > {blendShape.log}");
+            //Actually attach the blendspape
             smr.sharedMesh.AddBlendShapeFrame(blendShape.name, blendShape.frameWeight, blendShape.verticies, blendShape.normals, blendShape.tangents);    
             //Fix for some shared mesh properties not updating after AddBlendShapeFrame
             smr.sharedMesh = smr.sharedMesh; //I hate this line of code        
@@ -160,8 +168,9 @@ namespace KK_PregnancyPlus
 
         /// <summary>
         /// This will replace an existing blendshape of the same name.  Will only use a single frame of the newly added blendshape
+        //      Unnfortulately Unity does not let you remove a single blendshape, so we have to copy all, delete all, and add all back including the new one
         /// </summary>
-        /// <param name="smrMesh">The skinned mesh renderer to overwrite the blend shape</param>
+        /// <param name="smr">The skinned mesh renderer that contains the blendshape</param>
         /// <param name="newBs">The new blend shape to overwrite the existing one (must have same name)</param>
         private void OverwriteBlendShape(SkinnedMeshRenderer smr, BlendShape newBs) 
         {
@@ -192,7 +201,7 @@ namespace KK_PregnancyPlus
                 }
             }
 
-            //If not found then just add it as per normal
+            //If not found then just add it as per normal (You'll end up with duplicates if they don't have the same name!)
             if (!found) 
             {
                 smrMesh.AddBlendShapeFrame(newBs.name, newBs.frameWeight, newBs.verticies, newBs.normals, newBs.tangents);    
@@ -201,7 +210,7 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// This will change the weight (apperance) of an existing BlendShape attached to a skinned mesh renderer. Weight 0 will reset to the default shape (Not used here)
+        /// This will change the weight (apperance) of an existing BlendShape. Weight 0 will reset to the default shape.
         /// </summary>
         /// <param name="smr">The skinned mesh renderer to update the blend shape weight</param>
         /// <param name="weight">Float value from 0-40 that will increase the blend to the target shape as the number grows</param>
@@ -216,7 +225,7 @@ namespace KK_PregnancyPlus
             smr.sharedMesh = smr.sharedMesh;
 
             //Belly size goes from 0-40, but blendShapes have to be 0-100
-            //  Technically unity 2018x + can go above 100 when unclamped, but not any illusion games yet
+            //  Technically unity 2018x + can go above 100 when unclamped, but not any illusion games yet (Requires some game compile flag)
             var lerpWeight = floatLerp ? Mathf.Lerp(0, 100, weight/40) : weight;
             var shapeIndex = GetBlendShapeIndex(smr, blendShape.name);
             //If the blendshape is not found, return
@@ -227,14 +236,13 @@ namespace KK_PregnancyPlus
             var shapeName = smr.sharedMesh.GetBlendShapeName(shapeIndex);
             var shapeCount = smr.sharedMesh.blendShapeCount;                 
 
-            // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" ApplyBlendShapeWeight {smr.name} > shapeIndex {shapeIndex} shapeWeight {shapeWeight} shapeCount {shapeCount} shapeFrameCount {shapeFrameCount} lerpWeight {lerpWeight}");            
             smr.SetBlendShapeWeight(shapeIndex, lerpWeight);
 
             return true;
         }
 
 
-        //Override for when the smr is already included in this controller
+        //Override for when the smr is already included in this controller.
         public bool ApplyBlendShapeWeight(float weight) 
         {
             return ApplyBlendShapeWeight(smr, weight);
@@ -242,7 +250,7 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Get an existing blendshape by name.null  Only returns the first frame since thats all Preg+ uses
+        /// Get an existing blendshape by name.  Only returns the first frame since thats all Preg+ uses
         /// </summary>
         /// <param name="smr">The skinned mesh renderer to search for the blend shape</param>
         /// <param name="blendShapeName">The blendshape name to search for</param>
@@ -254,21 +262,13 @@ namespace KK_PregnancyPlus
                 return null;
             }
 
-            if (smr.sharedMesh.blendShapeCount <= 0) 
-            {
-                // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" GetBlendShapeByName > no blendshapaes on {smr.name}");
-                return null;
-            }
+            if (smr.sharedMesh.blendShapeCount <= 0) return null;
 
             //Check whether the blendshape exists
             var shapeIndex = GetBlendShapeIndex(smr, blendShapeName);
 
             //If the blendshape is not found return
-            if (shapeIndex < 0) 
-            {
-                // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" GetBlendShapeByName > not found {blendShapeName}");
-                return null;
-            }
+            if (shapeIndex < 0) return null;
 
             var shapeFrameCount = smr.sharedMesh.GetBlendShapeFrameCount(shapeIndex);
             if (shapeFrameCount <= 0) 
@@ -301,7 +301,8 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Unity blendshape API for "sharedMesh.GetBlendShapeIndex(string)" sometimes fails to match the name, so do it manually...
+        /// Full proof method to fetch the blendshape Index
+        ///     Unity API "sharedMesh.GetBlendShapeIndex(string)" sometimes fails to match the name, so do it manually...  (Thanks Unity!)
         /// </summary>
         public int GetBlendShapeIndex(SkinnedMeshRenderer smr, string blendShapeName) 
         {
@@ -331,8 +332,10 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Remove a single blendshape from a mesh
         /// </summary>
+        /// <param name="smr">The mesh containing the blendshapes</param>
         public bool RemoveBlendShape(SkinnedMeshRenderer smr) 
         {
+            //Make sure a blendshape is referenced
             if (blendShape == null) return false;
 
             var smrMesh = smr.sharedMesh;            
@@ -353,7 +356,7 @@ namespace KK_PregnancyPlus
                     //If this is the BS we want to remove, skip it
                     if (existingBlendShapes[i][f].name == blendShape.name) continue;
 
-                    //Otherwise add back the old blend shapes, and weights in the same order (shifted around the removed one)
+                    //Otherwise add back the old blend shapes, and weights in the same order (collapsed around the removed one)
                     smrMesh.AddBlendShapeFrame(existingBlendShapes[i][f].name, existingBlendShapes[i][f].frameWeight, existingBlendShapes[i][f].verticies, 
                         existingBlendShapes[i][f].normals, existingBlendShapes[i][f].tangents);
                 }
@@ -366,7 +369,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Copy all existing blendshape frames on a mesh
         /// </summary>
-        /// <param name="smrMesh">The mesh contining the blendshapes</param>
+        /// <param name="smr">The mesh containing the blendshapes</param>
         internal Dictionary<int, BlendShape[]> CopyAllBlendShapeFrames(SkinnedMeshRenderer smr) 
         {
             var existingBlendShapes = new Dictionary<int, BlendShape[]>();
@@ -433,7 +436,7 @@ namespace KK_PregnancyPlus
 
         internal Mesh CopyMesh(Mesh mesh)
         {
-            //Copy mesh the unity way (before I did it one prop at a time, and that missed some props)
+            //Copy mesh the unity way (before I did it one field at a time, and that missed some fields)
             Mesh newmesh = (Mesh)UnityEngine.Object.Instantiate(mesh);
 
             return newmesh;
@@ -443,11 +446,10 @@ namespace KK_PregnancyPlus
         internal Vector3[] ConvertV4ToV3(Vector4[] v4s) 
         {
             var v3s = new Vector3[v4s.Length];
-            var i = 0;//I know, I know....
 
-            foreach(var v4 in v4s) 
+            for (var i = 0; i < v4s.Length; i++) 
             {
-                v3s[i] = new Vector3(v4.x, v4.y, v4.z);
+                v3s[i] = new Vector3(v4s[i].x, v4s[i].y, v4s[i].z);
                 i++;
             }
 

@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace KK_PregnancyPlus
 {
-    //Contains generic threading methods used to multithread some heavy compute tasks
+    //Contains generic threading methods used to multithread some heavy compute tasks (Can't use Unity Jobs because Koikatsu is too old)
     public class Threading
     {   
         //List of active thread result functions, that we will execute on thread completion
