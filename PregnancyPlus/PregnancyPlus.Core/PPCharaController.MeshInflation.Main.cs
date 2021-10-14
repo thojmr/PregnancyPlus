@@ -206,7 +206,7 @@ namespace KK_PregnancyPlus
             }
             
             // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" SMR pos {smr.transform.position} rot {smr.transform.rotation} parent {smr.transform.parent}");                     
-            if (!smr.sharedMesh.isReadable) ApplyReadableMeshDetour();
+            if (!smr.sharedMesh.isReadable) nativeDetour.Apply();
 
             var rendererName = GetMeshKey(smr);         
             md[rendererName].originalVertices = smr.sharedMesh.vertices;
@@ -259,7 +259,7 @@ namespace KK_PregnancyPlus
             var bellyTopAC = new ThreadsafeCurve(BellyTopAC);
             var bellyEdgeAC = new ThreadsafeCurve(BellyEdgeAC);
 
-            UndoReadableMeshDetour();
+            nativeDetour.Undo();
 
             //Heavy compute task below, run in separate thread
             WaitCallback threadAction = (System.Object stateInfo) => 

@@ -8,11 +8,6 @@ using System.Linq;
 using System.Reflection;
 using KKAPI.Maker;
 using KKAPI.Studio;
-#if !KK || KKS
-    using MonoMod.RuntimeDetour;
-    using HarmonyLib;
-    using BepInEx;
-#endif
 
 #if KK
     using KKAPI.MainGame;
@@ -80,9 +75,7 @@ namespace KK_PregnancyPlus
         public Threading threading = new Threading();
 
         //This detour override the mesh canAccess state to make it readable/accessable
-        #if !KK || KKS
-            public NativeDetour nativeDetour;
-        #endif
+        public NativeDetourMesh nativeDetour;
 
 #region overrides
 
@@ -129,19 +122,10 @@ namespace KK_PregnancyPlus
          
             #endif
 
-            //Create method detours to allow a mesh.isReadable = false, mesh to be read anyway.  Otherwise the clothing can not be read or altered
-            #if !KK || KKS
-                nativeDetour = new NativeDetour(AccessTools.Property(typeof(Mesh), "canAccess").GetMethod, AccessTools.Method(typeof(PregnancyPlusCharaController), "canAccess"));                                     
-            #endif
+            nativeDetour = new NativeDetourMesh();
 
             base.Start();
         }        
-
-        //Detour override method
-        public bool canAccess()
-        {
-            return true;
-        }
 
 
         //The HS2 / AI way to detect clothing change
@@ -215,9 +199,7 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnDestroy {charaFileName}"); 
 
             //Remove the detour we made
-            #if !KK || KKS
-                nativeDetour.Dispose();         
-            #endif
+            nativeDetour?.Dispose();         
         }
         
 

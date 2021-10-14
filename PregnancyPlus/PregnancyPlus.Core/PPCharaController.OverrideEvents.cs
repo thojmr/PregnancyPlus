@@ -369,26 +369,6 @@ namespace KK_PregnancyPlus
             } 
         }
 
-
-        /// <summary>
-        /// When active, a mesh will act as if is is readable, even when it is marked as isReadable = false by making canAccess() return true
-        ///   Only use this while the mesh is being read/altered by Preg+.  Then call Undo() to set it back to normal to prevent potential plugin conflicts
-        /// </summary>
-        internal void ApplyReadableMeshDetour()
-        {
-            #if !KK || KKS
-                nativeDetour?.Apply();                                      
-            #endif
-        }
-
-
-        internal void UndoReadableMeshDetour()
-        {
-            #if !KK || KKS
-               nativeDetour?.Undo();                                      
-            #endif
-        }
-
     }
 }
 

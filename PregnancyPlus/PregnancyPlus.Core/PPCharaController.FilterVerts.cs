@@ -29,14 +29,14 @@ namespace KK_PregnancyPlus
             var bellyBoneIndexes = new List<int>();
             var hasBellyVerticies = false;            
 
-            if (!sharedMesh.isReadable) ApplyReadableMeshDetour();
+            if (!sharedMesh.isReadable) nativeDetour.Apply();
             
             //return early if no bone weights found
             if (sharedMesh.boneWeights.Length == 0) 
             {
                 if (!ignoreMeshList.Contains(renderKey)) ignoreMeshList.Add(renderKey);//Ignore this mesh/key from now on
 
-                UndoReadableMeshDetour();
+                nativeDetour.Undo();
                 return false; 
             }
 
@@ -45,7 +45,7 @@ namespace KK_PregnancyPlus
             {
                 if (!ignoreMeshList.Contains(renderKey)) ignoreMeshList.Add(renderKey);
 
-                UndoReadableMeshDetour();
+                nativeDetour.Undo();
                 return false;             
             }
             
@@ -100,7 +100,7 @@ namespace KK_PregnancyPlus
                 }
             }
 
-            UndoReadableMeshDetour();
+            nativeDetour.Undo();
             return hasBellyVerticies;
         }
 

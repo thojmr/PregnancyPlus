@@ -164,6 +164,7 @@
     <Compile Include="..\PregnancyPlus.Core\Tools\Threading.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\ThreadsafeCurve.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\UnityUiTools.cs" />
+    <Compile Include="..\PregnancyPlus.Core\Tools\NativeDetourMesh.cs" />
     <Compile Include="..\..\..\#DebugTools\DebugTools.cs" />
   </ItemGroup>
 

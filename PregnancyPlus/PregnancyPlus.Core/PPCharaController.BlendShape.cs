@@ -458,7 +458,7 @@ namespace KK_PregnancyPlus
             //Make a copy of the mesh. We dont want to affect the existing for this
             var meshCopyTarget = PregnancyPlusHelper.CopyMesh(smr.sharedMesh);   
             //When the mesh is not readable, temporarily make it readble
-            if (!meshCopyTarget.isReadable) ApplyReadableMeshDetour();
+            if (!meshCopyTarget.isReadable) nativeDetour.Apply();
 
             //Make sure we have an existing belly shape to work with (can be null if user hasnt used sliders yet)
             var exists = md.TryGetValue(renderKey, out MeshData _md);
@@ -467,7 +467,7 @@ namespace KK_PregnancyPlus
                 if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo(
                      $"CreateBlendShape > smr '{renderKey}' meshData do not exists, skipping");
 
-                UndoReadableMeshDetour();
+                nativeDetour.Undo();
                 return null;
             }
 
@@ -477,7 +477,7 @@ namespace KK_PregnancyPlus
                 PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_IncorrectVertCount, 
                     $"CreateBlendShape > smr.sharedMesh '{renderKey}' has incorrect vert count {md[renderKey].inflatedVertices.Length}|{meshCopyTarget.vertexCount}");  
 
-                UndoReadableMeshDetour();
+                nativeDetour.Undo();
                 return null;
             }
 
@@ -493,7 +493,7 @@ namespace KK_PregnancyPlus
             //Create a blend shape object on the mesh, and return the controller object
             var bsc = new BlendShapeController(smr.sharedMesh, meshCopyTarget, blendShapeName, smr);            
 
-            UndoReadableMeshDetour();
+            nativeDetour.Undo();
             return bsc;
         }  
 
