@@ -9,12 +9,12 @@ See `Features` for all plugin features
 <img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/P+ All Menus.png"></img>
 
 ## Latest Features (I will update this occasionally)
+- Preg+ works with all clothing now
 - "Smooth Belly Mesh" button timer when clicked
 - Ported to KKS
 - Copy Paste Belly buttons
 - Override KK_Pregnancy belly shape
 - Multithreaded computation
-- HS2 belly inflation logic
 
 </br>
 
@@ -93,7 +93,7 @@ See `Features` for all plugin features
 - Q: Where do I put the PregnancyPlus.dll?
     - A: It should end up under {Root game folder}/BepinEx/Plugins/xx_PregnancyPlus.dll
 - Q: Why are some outfits not affected by the sliders?
-    - A: Some outifts in Unity are marked as not readable, and the mesh of these outfits can not be altered at runtime.
+    - A: Most likley the mesh was imported in an unusual way.  Feel free to send me a character card with the clothing to debug it.
 - Q: There are no slider effects when the character has no legs.
     - A: The character must have a leg scale > 0 for the belly sliders to work correctly.
 - Q: The heck is a BlendShape?
@@ -116,7 +116,7 @@ See `Features` for all plugin features
 
 ### Some of the drawbacks of generating blendshapes instead of manipulating bones directly
 - Right now clothing can be hit or miss, because of the way the belly grows the mesh loses its local positional data causing clipping.  With bone scaling, clothes shift automagically via bone weights which usually results in less clipping.
-    - There are some clothing items in HS2 and AI that simply wont work at all with blendshapes because they are marked as not readable in Unity
+    - Fixed! ~~There are some clothing items in HS2 and AI that simply wont work at all with blendshapes because they are marked as not readable in Unity~~
 - Acessories won't automatically move with the mesh as they do when you manipulate bones
 - It has bigger impact on performance (only when changing a slider) because of the computation it has to perform. However once the shape is calculated the performance is equally as fast as bone manipulation.
 - Unity doesn't have great blendshape support in older versions like KK is running on.
