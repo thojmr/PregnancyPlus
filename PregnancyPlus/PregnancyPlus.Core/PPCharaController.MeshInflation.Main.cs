@@ -215,7 +215,7 @@ namespace KK_PregnancyPlus
 
             //set sphere center and allow for adjusting its position from the UI sliders  
             Vector3 sphereCenter = GetSphereCenter(meshRootTf);
-            md[rendererName].yOffset = ApplyConditionalSphereCenterOffset(isClothingMesh, sphereCenter, smr, meshRootTf); 
+            md[rendererName].yOffset = ApplyConditionalSphereCenterOffset(isClothingMesh, sphereCenter, smr, meshRootTf, bodySmr); 
 
             //Create mesh collider to make clothing measurements from skin (if it doesnt already exists)            
             if (NeedsClothMeasurement(smr, bodySmr, sphereCenter)) CreateMeshCollider(bodySmr); 
@@ -322,14 +322,13 @@ namespace KK_PregnancyPlus
                     //If you need to debug the calculated vert positions visually
                     if (PregnancyPlusPlugin.DebugLog.Value) 
                     {
-                        // var _origVerts = md[rendererName].originalVertices;
                         // //Clear old spheres (and shows mesh root position)
                         // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(smr.transform, 0.01f, Vector3.zero, removeExisting: true);
 
-                        // for (int i = 0; i < _origVerts.Length; i++)
+                        // for (int i = 0; i < origVerts.Length; i++)
                         // {
                         //     //Place spheres on each vert to debug the mesh calculated position relative to other meshes
-                        //     // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(smr.transform, 0.02f, _origVerts[i] - yOffsetDir, removeExisting: false);  
+                        //     if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(smr.transform, 0.02f, origVerts[i] - yOffsetDir, removeExisting: false);  
      
                         //     //Original non offset mesh      
                         //     // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(ChaControl.transform, 0.02f, smr.transform.TransformPoint(origVerts[i]), false);
@@ -341,6 +340,8 @@ namespace KK_PregnancyPlus
                         // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLineAndAttach(meshRootTf, 5, topExtentPosLs, removeExisting: false);                        
                         // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLineAndAttach(meshRootTf, 5, topExtentPosLs + meshRootTf.up * -topExtentOffset, removeExisting: false);                        
                         // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLineAndAttach(meshRootTf, 5, meshRootTf.InverseTransformPoint(sphereCenter));  
+                       
+                        // if (PregnancyPlusPlugin.DebugLog.Value && isClothingMesh) DebugTools.DrawLineAndAttach(smr.transform, 1, smr.sharedMesh.bounds.center - yOffsetDir);
                     }                    
 
                     //Apply computed mesh back to body
@@ -420,32 +421,65 @@ namespace KK_PregnancyPlus
         /// In special cases we need to apply a small offset to the sphereCenter to align the mesh correctly with the other meshes.  Otherwise you get tons of clipping
         ///  Mostly used to fix the default KK body which seems to be mis aligned from uncensor, and AI/HS2 meshes
         /// </summary>
-        public float ApplyConditionalSphereCenterOffset(bool isClothingMesh, Vector3 _sphereCenter, SkinnedMeshRenderer smr, Transform meshRootTf)
+        public float ApplyConditionalSphereCenterOffset(bool isClothingMesh, Vector3 _sphereCenter, SkinnedMeshRenderer smr, Transform meshRootTf, SkinnedMeshRenderer bodySmr)
         {
-            #if KK      
-                //When mesh is an uncensor body, we have to adjust the mesh center offset, to match its special localspace positioning
+            #if KK                  
+                //When mesh is an uncensor body, we have to adjust the mesh height to match other meshes
+                //  Do the same for any clothing that is not lined up as well
                 //  This lines up the body mesh infaltion with clothing mesh inflation
+                //** Note: There seem to be unlimited ways to incorrectly import a mesh into Koikatsu (offset too high/low, mesh rotated sideways, offset left/right), 
+                //  so this code is here to correct the most frequently seen mistakes (vertical offsets) and even then it's a best guess correction.  Can't fix people, and I dont want to alter skinned meshes.                
+
+                //The desired final offset of a badly imported mesh
                 var yOffset = 0f;
+                //The height of the mesh's root position (near chest)
+                var meshYPosLs = meshRootTf.InverseTransformPoint(smr.transform.position).y;                                
+
                 var isDefaultBody = !PregnancyPlusPlugin.Hooks_Uncensor.IsUncensorBody(ChaControl, UncensorCOMName);
-                //When the mesh shares similar local vertex positions as the default body.  Bounds are the only way I can reliably detect this...
+                //When the mesh shares similar local vertex positions as the default body use Bounds to determine if the mesh is not aligned
+                //  Bounds are the only way I could come up with to detect an offset mesh...
                 var isLikeDefaultBody = smr.localBounds.center.y < 0 && smr.sharedMesh.bounds.center.y < 0;
-                var isOffsetClothMesh = smr.localBounds.center.y < 0 && smr.sharedMesh.bounds.center.y > Math.Abs(smr.localBounds.center.y * 1.5f);
+                //When the mesh is imported too high, we have to offset it down to line up with other clothing before computing belly
+                var needsyOffsetClothHalf = smr.localBounds.center.y < 0 && smr.sharedMesh.bounds.center.y > meshYPosLs * 0.33f;
+                var needsyOffsetClothFull = smr.localBounds.center.y < 0 && smr.sharedMesh.bounds.center.y > meshYPosLs * 0.75f;
+
+                //When the mesh is imported at 0,0,0, we have to offset it up to line up with other clothing before computing belly
+                //  This offset may happen less frequently, but ill leave it in for now
+                var needsyOffsetClothFullUp = false;
+                var bodyMeshYPosLs = meshYPosLs;
+                if (meshYPosLs == 0f && bodySmr != null)
+                {
+                    bodyMeshYPosLs = meshRootTf.InverseTransformPoint(bodySmr.transform.position).y;
+                    needsyOffsetClothFullUp = smr.localBounds.center.y < 0 && smr.sharedMesh.bounds.center.y < bodyMeshYPosLs * 0.33f;
+                }
 
                 //If uncensor body
                 if (!isClothingMesh && !isDefaultBody && !isLikeDefaultBody) 
                 {
                     //Uncensor mesh is about twice the height in local space than default mesh, so save the current offset to be used later
-                    yOffset = meshRootTf.InverseTransformPoint(smr.transform.position).y;
+                    yOffset = meshYPosLs;
                     if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] setting yOffset {yOffset} isDefaultBody {isDefaultBody} isLikeDefaultBody {isLikeDefaultBody}");                           
-                }
-                else if (isClothingMesh && isOffsetClothMesh) 
+                }                                                                                                                     
+                else if (isClothingMesh && needsyOffsetClothFull) 
                 {
-                    //there is one type of clothing that is not locally positioned correctly, similar to uncensor meshes. Though it's rare
-                    yOffset = meshRootTf.InverseTransformPoint(smr.transform.position).y/2;//Who knows why these need to be divided by 2 to correct the offset, when the uncensor check above is not divided by 2 ...
-                    if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] setting yOffset {yOffset} isOffsetClothMesh {isOffsetClothMesh}");                                                                                       
-                }                                                           
+                    //Offset by the full mesh root height down
+                    yOffset = meshYPosLs;
+                    if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] setting yOffset {yOffset} needsyOffsetClothFull");                                                                                       
+                }
+                else if (isClothingMesh && needsyOffsetClothFullUp) 
+                {
+                    //Offset by the full mesh root height up.  Use bodySmr.position since meshYPosLs height will be 0
+                    yOffset = -bodyMeshYPosLs;
+                    if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] setting yOffset {yOffset} needsyOffsetClothFullUp");                                                                                       
+                }                                                                                                                       
+                else if (isClothingMesh && needsyOffsetClothHalf) 
+                {
+                    //Offset by half the mesh root height down (What app imported these meshes at +0.5x height?  lol)
+                    yOffset = meshYPosLs/2;
+                    if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] setting yOffset {yOffset} needsyOffsetClothHalf");                                                                                       
+                }                                                                                                                      
 
-                if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] local bounds {smr.localBounds.center.y} sm.bounds {smr.sharedMesh.bounds.center.y}");                           
+                if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] local bounds {smr.localBounds.center.y} sm.bounds {smr.sharedMesh.bounds.center.y} meshYPosLs {meshYPosLs} smr.position {smr.transform.position}");                           
 
                 return yOffset;
 
