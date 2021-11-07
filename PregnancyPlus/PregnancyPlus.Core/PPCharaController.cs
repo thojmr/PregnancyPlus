@@ -52,7 +52,8 @@ namespace KK_PregnancyPlus
         public const string DefaultBodyFemaleGUID = "Default.Body.Female";
         public const string DefaultBodyMaleGUID = "Default.Body.Male";
 
-        #if KK //key that allows us to pull KK_pregnancy data values
+        //key that allows us to pull KK_pregnancy data values
+        #if KK || KKS
             public const string KK_PregnancyPluginName = "KK_Pregnancy";
         #elif AI
             public const string KK_PregnancyPluginName = "AI_Pregnancy";
