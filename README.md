@@ -97,7 +97,7 @@ See `Features` for all plugin features
 - Q: Where do I put the PregnancyPlus.dll?
     - A: It should end up under {Root game folder}/BepinEx/Plugins/xx_PregnancyPlus.dll
 - Q: Why are some outfits not affected by the sliders?
-    - A: Most likley the mesh was imported in an unusual way.  Feel free to send me a character card with the clothing to debug it.
+    - A: Most likley the unskinned mesh was imported in an unusual way, and would have to be re-imported by the creator.  Feel free to send me a character card with the clothing to debug it.
 - Q: There are no slider effects when the character has no legs.
     - A: The character must have a leg scale > 0 for the belly sliders to work correctly.
 - Q: The heck is a BlendShape?
