@@ -141,43 +141,43 @@ See `Features` for all plugin features
 - https://docs.microsoft.com/en-us/visualstudio/ide/troubleshooting-broken-references?view=vs-2019
  </details>
 
-## (Developers only) Compiling with Visual Studio Code (Not the suggested way, but my way)
+## (Developers only) Compiling with Visual Studio Code (My way)
 <details>
   <summary>Click to expand</summary>
- 
-Simply clone this repository to your drive and use Visual Studio Code.  
-Install the C# extension for VSCode. 
-Make sure the following directory exists `C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/MSBuild/Current/Bin/msbuild.exe`.  
-If not you will need to install the VS2019 MS build tools (There may be other ways to build, but this is the one that eventually worked for me)
-Install nuget.exe and set the environment path to it. 
-Use `nuget install -OutputDirectory ../packages` to install the dependancies from the \KK_PregnancyPlus.csproj directory.  
-Finally create a build script with tasks.json in VSCode.
-If you see a .net version error, you will need to install that version of .net development kit (probably 3.5 for KK)
-Example build task:
+
+### Setup:
+
+- Clone this repository to your drive and use Visual Studio Code.  
+- Install the C# extension for VSCode. 
+- Make sure the following directory exists `C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/MSBuild/Current/Bin/msbuild.exe`
+  - If not you will need to install the VS2019 MS build tools (There may be other ways to build, but this is the one that eventually worked for me)
+- Install nuget.exe and add it to your enviroment variables PATH. 
+- Run `nuget install -OutputDirectory ../../packages` to install the dependancies from the `./PregnancyPlus/KK_PregnancyPlus.csproj` directory.  
+- Finally create a build script with tasks.json in VSCode, to automate builds and releases.
+
+Note: If you see a .net version error, you will need to install that version of .net development kit (3.5 for KK, and 4.6 for others)
+
+Example build task:  Debug and Release Tasks
 ```json
 {
-    "label": "build-KK_PregnancyPlus",
+    "label": "_debug",
     "command": "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/MSBuild/Current/Bin/msbuild.exe",
     "type": "process",
     "args": [
-        "${workspaceFolder}/KK_PregnancyPlus/KK_PregnancyPlus.csproj",
+        "${workspaceFolder}/PregnancyPlus.sln",
         "/property:GenerateFullPaths=true;Configuration=Debug",
         "/consoleloggerparameters:NoSummary"
     ],
     "presentation": {
         "reveal": "silent"
     },
-    "problemMatcher": "$msCompile",
+    "problemMatcher": "$msCompile"
 },
 {
-    "label": "build-and-copy",
+    "label": "build-debug+copy-output",
     "type": "shell",
-    "command": "cp ./bin/KK_PregnancyPlus.dll '<KK_Install_DIR>/BepInEx/plugins/'",
-    "dependsOn": "build-KK_PregnancyPlus",
-    "group": {
-        "kind": "build",
-        "isDefault": true
-    },
+    "command": "cp ./bin/KK_PregnancyPlus/BepInEx/plugins/KK_PregnancyPlus.dll 'C:/<game directory>/BepInEx/plugins/'",
+    "dependsOn": "_debug",
     "presentation": {
         "echo": true,
         "reveal": "silent",
@@ -185,8 +185,39 @@ Example build task:
         "panel": "shared",
         "showReuseMessage": true,
         "clear": false
-    }
+    },
+    "group": {
+        "kind": "build",
+        "isDefault": true
+    },
+    "problemMatcher": []
+},
+{
+    "label": "_release",
+    "command": "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/MSBuild/Current/Bin/msbuild.exe",
+    "type": "process",
+    "args": [
+        "${workspaceFolder}/PregnancyPlus.sln",
+        "/property:GenerateFullPaths=true;Configuration=Release",
+        "/consoleloggerparameters:NoSummary"
+    ],
+    "presentation": {
+        "reveal": "silent"
+    },
+    "problemMatcher": "$msCompile"
+},
+{
+    "label": "build-release",
+    "type": "shell",
+    "command": "./release.cmd",
+    "dependsOn": "_release",
+    "problemMatcher": []
 }
 ```
-If sucessfull you should see a KK_PregnancyPlus.dll file nested in .\bin\
+If sucessfull you should see a KK_PregnancyPlus.dll file nested in `.\bin\` after building (Ctrl + SHIFT + B)
+    
+### Additional:
+    
+One drawback of using VSCode is that you have to manage adding/updating new packages to .config and .csproj files.  Maybe it can be automated, but im too lazy to check.
+    
 </details>
