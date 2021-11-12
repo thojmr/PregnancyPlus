@@ -95,7 +95,7 @@ namespace KK_PregnancyPlus
                 PregnancyPlusPlugin.Logger.LogInfo($" inflationCount {inflationCount} maxInflationCount {maxInflationCount} kkInflationSize {kkInflationSize}");
 
             //No additional preg+ inflation until the KKinflation amount is >= the current inflation.config.  We want both sizes to grow together.
-            if (infConfig.inflationSize > kkInflationSize) return;
+            if (infConfig.inflationSize > kkInflationSize && kkInflationSize > 0) return;
 
             #if !HS2
                 //No Preg+ inflation when the max additional size is set to 0
@@ -203,7 +203,9 @@ namespace KK_PregnancyPlus
             if (fullReset)
             {
                 //Reset belly back to where it started before HScene
-                _inflationStartSize = _inflationChange = TargetPregPlusSize = currentWeeks;
+                _inflationStartSize = _inflationChange = currentWeeks;
+                TargetPregPlusSize = 0;
+                _inflationChange = 0;
             }
         }
 
