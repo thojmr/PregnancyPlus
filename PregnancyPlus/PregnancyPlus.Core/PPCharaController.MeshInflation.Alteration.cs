@@ -62,7 +62,7 @@ namespace KK_PregnancyPlus
             //Check that the mesh did not change behind the scenes.  It will have a different vert count if it did (possible to be the same though...)
             if (md[renderKey].VertexCount != smr.sharedMesh.vertexCount) 
             {
-                PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_IncorrectVertCount, 
+                PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(charaFileName, ErrorCode.PregPlus_IncorrectVertCount, 
                     $"ApplyInflation > smr.sharedMesh '{renderKey}' has incorrect vert count {md[renderKey].inflatedVertices.Length}|{smr.sharedMesh.vertexCount}");
 
                 nativeDetour.Undo();

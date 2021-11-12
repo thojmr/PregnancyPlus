@@ -345,7 +345,7 @@ namespace KK_PregnancyPlus
             //If we dont want to allow uncensor changes automatically, just log the warning
             if (!updateUncensor)
             {
-                PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_BodyUncensorChanged, 
+                PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(charaFileName, ErrorCode.PregPlus_BodyUncensorChanged, 
                         $" !BlendShape uncensorGUID '{validUncensorGUID}' does not match the current uncensor '{uncensorGUID}' for the body BlendShape.  Skipping"); 
                 return false;
             }
@@ -395,7 +395,7 @@ namespace KK_PregnancyPlus
                 else if (smr.name == meshName && smr.sharedMesh.vertexCount != vertexCount)
                 {                  
                     //When the mesh vertex count is different now, warn the user that their blendshape is not going to load
-                    PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_BodyMeshVertexChanged, 
+                    PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(charaFileName, ErrorCode.PregPlus_BodyMeshVertexChanged, 
                         $" Mesh '{smr.name}' has a different vertex count, and no longer fits the BlendShape saved to this card {smr.sharedMesh.vertexCount} => {vertexCount}.  Blendshape {meshBlendShape.BlendShape.name} skipped."); 
                 }                               
             }              
@@ -474,7 +474,7 @@ namespace KK_PregnancyPlus
             //Make sure the vertex count matches what the blendshape has (differs when swapping meshes)
             if (md[renderKey].VertexCount != meshCopyTarget.vertexCount) 
             {
-                PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_IncorrectVertCount, 
+                PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(charaFileName, ErrorCode.PregPlus_IncorrectVertCount, 
                     $"CreateBlendShape > smr.sharedMesh '{renderKey}' has incorrect vert count {md[renderKey].inflatedVertices.Length}|{meshCopyTarget.vertexCount}");  
 
                 nativeDetour.Undo();

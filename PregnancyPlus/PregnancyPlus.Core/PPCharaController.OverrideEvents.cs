@@ -78,7 +78,7 @@ namespace KK_PregnancyPlus
         internal bool IsNewChar(ChaFileControl chaFileControl) 
         {   
             var isNew = (charaFileName != chaFileControl.parameter.fullname);
-            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" IsNewChar {charaFileName} -> {chaFileControl.parameter.fullname}"); 
+            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" IsNewChar {charaFileName} -> {chaFileControl.parameter.fullname} "); 
             return isNew;
         }
 

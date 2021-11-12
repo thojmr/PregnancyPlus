@@ -96,7 +96,7 @@ namespace KK_PregnancyPlus
 			}	
 			catch (Exception e)
 			{
-				PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(-1, ErrorCode.PregPlus_HSPENotFound, 
+				PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode("-1", ErrorCode.PregPlus_HSPENotFound, 
                     	$" OnRemoveAllBlendShapes > HSPE not found {e.Message} ");
 			}	
 
@@ -144,7 +144,7 @@ namespace KK_PregnancyPlus
 			}	
 			catch (Exception e)
 			{
-				PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(-1, ErrorCode.PregPlus_HSPENotFound, 
+				PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode("-1", ErrorCode.PregPlus_HSPENotFound, 
                     	$" CloseWindow > HSPE not found {e.Message} ");
 			}
 			guiSkinnedMeshRenderers = new List<MeshIdentifier>();

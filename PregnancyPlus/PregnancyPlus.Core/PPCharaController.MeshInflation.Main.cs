@@ -60,13 +60,18 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value)  PregnancyPlusPlugin.Logger.LogInfo($" ");
 
             //Get the measurements that determine the base belly size
-            var hasMeasuerments = MeasureWaistAndSphere(ChaControl, meshInflateFlags.reMeasure);                     
-            if (!hasMeasuerments) 
+            var hasMeasuerments = MeasureWaistAndSphere(ChaControl, meshInflateFlags.reMeasure);    
+            //If the character is visible and can't get measurements, throw warning                 
+            if (!hasMeasuerments && lastVisibleState) 
             {
-                PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_BadMeasurement, 
+                PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(charaFileName, ErrorCode.PregPlus_BadMeasurement, 
                     $"Could not get one or more belly measurements from character (This is normal when a character is loaded but inactive)");
                 return;
-            }           
+            } else if (!hasMeasuerments && !lastVisibleState) 
+            {
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" Character not visible, can't take belly measurements yet {charaFileName}");  
+                return; 
+            }       
 
             //Get all mesh renderers, calculate, and apply inflation changes
             var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, findAll: true);
@@ -193,7 +198,7 @@ namespace KK_PregnancyPlus
             //Found out body mesh can be nested under cloth game objects...   Make sure to flag it as non-clothing
             if (isClothingMesh && BodyNestedUnderCloth(smr, bodySmr)) 
             {
-                PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_BodyMeshDisguisedAsCloth, 
+                PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(charaFileName, ErrorCode.PregPlus_BodyMeshDisguisedAsCloth, 
                     $" body mesh {smr.name} was nested under cloth object {smr.transform.parent.name}.  This is usually not an issue.");
                 isClothingMesh = false;            
             }
@@ -389,7 +394,7 @@ namespace KK_PregnancyPlus
 
             if (meshRootGo == null) 
             {
-                PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(ChaControl.chaID, ErrorCode.PregPlus_NoMeshRootFound, 
+                PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(charaFileName, ErrorCode.PregPlus_NoMeshRootFound, 
                         $" This characters root body bone ({bodyBone}) could not be found.  Preg+ won't work without the correct bone name.  Please report this!"); 
                 return null;
             }

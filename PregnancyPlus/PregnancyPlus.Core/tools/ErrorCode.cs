@@ -22,7 +22,7 @@ namespace KK_PregnancyPlus
     public class ErrorCodeController
     {    
         // Tracks the existing thrown error codes for a given character, so we don't log the same error multuple times (No one likes spam!)
-        public Dictionary<int, List<ErrorCode>> charErrorCodes = new Dictionary<int, List<ErrorCode>>();
+        public Dictionary<string, List<ErrorCode>> charErrorCodes = new Dictionary<string, List<ErrorCode>>();
         public ManualLogSource logger;
         public bool debugLog = false;//When true, always show error code log
 
@@ -47,7 +47,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Check for existing error code for a character id
         /// </summary>
-        public bool ErrorCodeExists(int charId, ErrorCode errorCode)
+        public bool ErrorCodeExists(string charId, ErrorCode errorCode)
         {
             if (charId.Equals(null)) return false;
 
@@ -61,7 +61,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Append error code to the character id list
         /// </summary>
-        public void AppendErrorCode(int charId, ErrorCode errorCode)
+        public void AppendErrorCode(string charId, ErrorCode errorCode)
         {
             var exists = charErrorCodes.TryGetValue(charId, out List<ErrorCode> _errorCodes);
 
@@ -82,7 +82,7 @@ namespace KK_PregnancyPlus
         /// Log an error code to the output.log for debugging
         ///     1 log allowed per error code type per character to avoid spamming log
         /// </summary>
-        public void LogErrorCode(int charId, ErrorCode errorCode, string message)
+        public void LogErrorCode(string charId, ErrorCode errorCode, string message)
         {
             //Always log Error Codes when debug is true
             if (!debugLog && ErrorCodeExists(charId, errorCode)) 
