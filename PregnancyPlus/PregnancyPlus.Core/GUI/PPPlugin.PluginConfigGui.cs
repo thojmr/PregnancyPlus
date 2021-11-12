@@ -57,7 +57,7 @@ namespace KK_PregnancyPlus
             //**** Debug Config *******/
             //*************************/
             MakeBalloon = Config.Bind<bool>("Debug", "Balloon mode (Debug mode)", false,
-                new ConfigDescription("Debug mesh mode, disable to go back to normal.  This will disable some Preg+ sliders temporarily.",
+                new ConfigDescription("This will allow me to debug where the mesh is, or is not, affected by the main Preg+ slider.  This will disable some Preg+ sliders temporarily. Don't leave enabled.",
                     null,
                     new ConfigurationManagerAttributes { Order = 10, IsAdvanced = true })
                 );
@@ -65,7 +65,7 @@ namespace KK_PregnancyPlus
 
 
             DebugAnimations = Config.Bind<bool>("Debug", "Refresh X Ticks (Debug mode)", false,
-                new ConfigDescription( "Will force update the belly shape every x ticks to help debug belly shape during animations.  Don't leave enabled.",
+                new ConfigDescription( "Will force update the belly shape every x ticks to help debug belly shape changes during animations.  Don't leave enabled.",
                     null,
                     new ConfigurationManagerAttributes { Order = 9, IsAdvanced = true })
                 );        
