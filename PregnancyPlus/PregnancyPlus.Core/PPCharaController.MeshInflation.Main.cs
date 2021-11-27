@@ -327,17 +327,9 @@ namespace KK_PregnancyPlus
                     //If you need to debug the calculated vert positions visually
                     if (PregnancyPlusPlugin.DebugLog.Value) 
                     {
-                        // //Clear old spheres (and shows mesh root position)
-                        // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(smr.transform, 0.01f, Vector3.zero, removeExisting: true);
 
-                        // for (int i = 0; i < origVerts.Length; i++)
-                        // {
-                        //     //Place spheres on each vert to debug the mesh calculated position relative to other meshes
-                        //     if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(smr.transform, 0.02f, origVerts[i] - yOffsetDir, removeExisting: false);  
-     
-                        //     //Original non offset mesh      
-                        //     // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(ChaControl.transform, 0.02f, smr.transform.TransformPoint(origVerts[i]), false);
-                        // } 
+                        //Debug mesh with spheres, and include mesh offset
+                        // DebugTools.DebugMeshVerts(smr, origVerts, new Vector3(0, md[rendererName].yOffset, 0));
 
                         //Some other internally measured points/boundaries
                         // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(smr.transform, 0.2f, sphereCenter);

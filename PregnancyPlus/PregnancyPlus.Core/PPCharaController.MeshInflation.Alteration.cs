@@ -69,6 +69,9 @@ namespace KK_PregnancyPlus
                 return false;
             }
 
+            //If you need to debug the calculated vert positions visually
+            // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DebugMeshVerts(smr, md[renderKey].inflatedVertices, new Vector3(0, md[renderKey].yOffset, 0));
+
             //Create or update the smr blendshape
             ApplyBlendShapeWeight(smr, renderKey, needsOverwrite, blendShapeTempTagName);
 
