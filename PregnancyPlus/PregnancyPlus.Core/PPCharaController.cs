@@ -163,7 +163,7 @@ namespace KK_PregnancyPlus
             CheckBlendShapes();        
 
             //Apply belly shape slider values saved on char card
-            StartCoroutine(ReloadStoryInflation(0.5f, "Reload-story"));     
+            StartCoroutine(ReloadStoryInflation(0.5f, "Reload-story"));   
             StartCoroutine(ReloadStudioMakerInflation(1.5f, reMeasure: true, "Reload"));  //Give time for character to load, and settle  
 
             firstStart = false;

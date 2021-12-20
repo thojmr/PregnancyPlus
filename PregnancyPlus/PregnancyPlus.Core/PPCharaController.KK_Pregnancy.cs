@@ -63,17 +63,17 @@ namespace KK_PregnancyPlus
                 //Set the initial target size to be the current week.  Otherwise inflation would always start at 0 weeks.
                 currentWeeks = weeks;
 
-                if (weeks < 0) 
+                if (weeks <= 0) 
                 {
-                    //Fix for when character gives birth, we potentially need to reset belly
-                    if (infConfig.inflationSize > 0) MeshInflate(0, "GetWeeksAndSetBellySize");
+                    //Fix for when character gives birth, we need to reset belly
+                    MeshInflate(0, "GetWeeksAndSetBellySize");
                     return;
                 }
 
                 //If no infConfig is set for this character, use a predefined one for the best KK_Pregnancy look, since the default shape tend to look a little strange.
                 if (!infConfig.HasAnyValue(includeSize: false)) infConfig = GetDefaultShapeFor_KK_Pregnancy();
 
-                //Compute the additonal belly size added based on user configured vallue from 0-40
+                //Compute the additonal belly size added based on user configured value from 0-40
                 var additionalPregPlusSize = Mathf.Lerp(0, weeks, PregnancyPlusPlugin.MaxStoryModeBelly.Value/40);
                 
                 MeshInflate(additionalPregPlusSize, "GetWeeksAndSetBellySize", new MeshInflateFlags(this, _checkForNewMesh: checkNewMesh, _pluginConfigSliderChanged: slidersChanged));

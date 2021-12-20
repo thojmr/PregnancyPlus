@@ -86,7 +86,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Triggered by OnReload but only for logic in Story mode
         /// </summary>
-        internal IEnumerator ReloadStoryInflation(float time, string callee)
+        internal IEnumerator ReloadStoryInflation(float time, string callee, bool checkNewMesh = true)
         {
             //Only reload when story mode enabled.
             if (PregnancyPlusPlugin.StoryMode != null && !PregnancyPlusPlugin.StoryMode.Value) 
@@ -104,11 +104,11 @@ namespace KK_PregnancyPlus
             if (!infConfig.UseOldCalcLogic()) yield return new WaitForEndOfFrame();
 
             #if KK || AI
-                GetWeeksAndSetBellySize(checkNewMesh: true);  
+                GetWeeksAndSetBellySize(checkNewMesh: checkNewMesh);  
 
             #elif HS2
                 //For HS2 AI, we set global belly size from plugin config, or character card                    
-                MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: true), callee);   
+                MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: checkNewMesh), callee);   
 
             #endif      
             isReloading = false;                                     

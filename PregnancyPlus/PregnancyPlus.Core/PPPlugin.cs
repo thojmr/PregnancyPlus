@@ -5,6 +5,9 @@ using System;
 using KKAPI;
 using KKAPI.Studio;
 using KKAPI.Chara;
+#if KK || AI
+    using KKAPI.MainGame;
+#endif
 
 namespace KK_PregnancyPlus
 {       
@@ -48,6 +51,9 @@ namespace KK_PregnancyPlus
 
             //Attach the mesh inflation logic to each character
             CharacterApi.RegisterExtraBehaviour<PregnancyPlusCharaController>(GUID);
+            #if KK || AI
+                GameAPI.RegisterExtraBehaviour<PregnancyPlusGameController>(GUID);
+            #endif
 
             var hi = new Harmony(GUID);
             Hooks.InitHooks(hi);

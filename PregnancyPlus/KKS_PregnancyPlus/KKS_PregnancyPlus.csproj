@@ -135,6 +135,7 @@
     <Compile Include="..\PregnancyPlus.Core\PPCharaController.Legacy.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPCharaController.KK_Pregnancy.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPCharaController.HookEvents.cs" />
+    <Compile Include="..\PregnancyPlus.Core\PPGameController.cs" />
     <Compile Include="..\PregnancyPlus.Core\GUI\PPGui.cs" />
     <Compile Include="..\PregnancyPlus.Core\GUI\PPBlendShapeGui.cs" />
     <Compile Include="..\PregnancyPlus.Core\GUI\PPBlendShapeGui.Style.cs" />
