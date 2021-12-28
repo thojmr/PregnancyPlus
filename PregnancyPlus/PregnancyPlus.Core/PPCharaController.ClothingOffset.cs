@@ -155,13 +155,14 @@ namespace KK_PregnancyPlus
             //Lerp the final offset based on the inflation size.  Since clothes will be most flatteded at the largest size (40), and no change needed at default belly size
             var rayCastDist = bellyInfo.OriginalSphereRadius/2;            
             var minOffset = bellyInfo.ScaledWaistWidth/200;       
-            //Apply and mesh offset needed, to make all meshes the same y height so the calculations below line up
+            //Get the mesh offset needed, to make all meshes the same y height so the calculations below line up
             var yOffsetDir = clothSmr.transform.up * md[renderKey].yOffset;         
 
-            //Get the mesh collider we will raycast to
+            //Get the mesh collider we will raycast to (The body mesh)
             var meshCollider = GetMeshCollider(bodySmr);
             if (meshCollider == null) return null;
   
+            //Get the 4 or 5 points inside the body we want to raycast to
             GetRayCastTargetPositions();
 
             if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" Pre-calculating clothing offset values");
@@ -169,7 +170,7 @@ namespace KK_PregnancyPlus
             //In newer versions of Unity we can use RaycastCommand to run a list of raycast in parallel for speed!
             #if HS2 || AI || KKS
 
-                // +1 is where we will insert the, sphere center position.  The rest of the targets are a list of bones
+                // the last index (+1) is the sphere center position.  The rest of the indexes are a list of bone positions
                 var raycastTargetCount = rayCastTargetPositions.Length + 1;
                 var rayCastHits = ProcessRayCastCommands(clothSmr, origVerts, bellyVerticieIndexes, yOffsetDir, sphereCenter, rayCastDist);                
 
@@ -178,7 +179,7 @@ namespace KK_PregnancyPlus
             // Clear existing lines on this mesh
             // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLineAndAttach(clothSmr.transform, Vector3.zero, Vector3.zero, Vector3.zero, true); 
 
-            //When we need to initially caluculate the offsets (or rebuild).  For each vert raycast to center and see if it hits
+            //When we need to initially caluculate the offsets.  For each vert triger raycast and check for hit
             for (var i = 0; i < origVerts.Length; i++)
             {
                 //Skip untouched verts
@@ -192,7 +193,7 @@ namespace KK_PregnancyPlus
                 
                 #if KK && !KKS
 
-                    //Get raycast hit distance to the mesh collider on the skin
+                    //For each of the 4 or 5 raycasts, get the closest hit vlaue
                     GetClosestRayCast(meshCollider, origVertWs, sphereCenter, rayCastDist, out float closestHit, out Vector3 direction);
 
                 #elif HS2 || AI || KKS
@@ -201,7 +202,7 @@ namespace KK_PregnancyPlus
                     var closestHit = rayCastDist;
                     var direction = Vector3.zero;
 
-                    //For each ray cast target group, compute closest hit
+                    //For each ray cast target group, unroll and compute closest hit
                     for (int t = 0; t < raycastTargetCount; t++)
                     {
                         //Compute true index of this raycaast command
@@ -217,7 +218,7 @@ namespace KK_PregnancyPlus
 
                 #endif
 
-                //Ignore any distance that didnt hit the mesh collider
+                //Ignore any raycast that didnt hit the mesh collider
                 if (closestHit >= rayCastDist) 
                 {
                     clothOffsets[i] = minOffset;
@@ -285,14 +286,14 @@ namespace KK_PregnancyPlus
                     }
                 }                
 
-                //Create and execute raycast commands in parallel
+                //Create and execute raycast commands that run in parallel
                 return ExecuteRayCastCommands(rayCastOrigins, rayCastDirections, maxDistance);
             }
 
 
             /// <summary>
             /// Compute a list of raycast in parallel for faster processing
-            ///     We could optimze this by only raycasing belly verts, instead of all verts.  But since RaycastCommand is parallel does it really save that much?
+            ///     We could optimze this by only raycasing belly verts, instead of all verts.  But since RaycastCommand is parallel does it really help that much?  Its still way faster now
             /// </summary>
             internal RaycastHit[] ExecuteRayCastCommands(Vector3[] origins, Vector3[] directions, float maxDistance)
             {

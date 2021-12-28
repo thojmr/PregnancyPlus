@@ -14,6 +14,9 @@ namespace KK_PregnancyPlus
     public partial class PregnancyPlusCharaController: CharaCustomFunctionController
     {           
 
+        const float minBoneWeight = 0.02f;
+
+
         /// <summary>
         /// This will get all of the indexes of verticies that have a weight attached to a belly bone (bone filter).
         /// This lets us filter out all other verticies since we only care about the belly anyway. Saves on compute time.
@@ -69,7 +72,7 @@ namespace KK_PregnancyPlus
                 {                    
                     //If it has a weight, and the bone is a belly bone. Weight goes (0-1f) Ignore 0 and maybe filter below 0.1 as well
                     //Include all if debug = true
-                    if ((boneWeights[i] > 0.02f && bellyBoneIndexes.Contains(boneIndicies[i]) || PregnancyPlusPlugin.MakeBalloon.Value))
+                    if ((boneWeights[i] > minBoneWeight && bellyBoneIndexes.Contains(boneIndicies[i]) || PregnancyPlusPlugin.MakeBalloon.Value))
                     {
                         //Make sure to exclude verticies on characters back, we only want to modify the front.  No back bellies!
                         //add all vertexes in debug mode

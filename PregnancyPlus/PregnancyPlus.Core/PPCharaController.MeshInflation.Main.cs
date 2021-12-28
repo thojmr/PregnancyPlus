@@ -280,13 +280,13 @@ namespace KK_PregnancyPlus
                     if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" Mesh affected vert count {bellyVertsCount}");
                 #endif
 
-                //Set each verticies inflated postion, with some constraints (SculptInflatedVerticie) to make it look more natural
+                //Set each verticie's inflated postion, with some constraints (SculptInflatedVerticie) to make it look more natural
                 for (int i = 0; i < vertsLength; i++)
                 {
                     //Only care about inflating belly verticies
                     if (!bellyVertIndex[i] && !PregnancyPlusPlugin.DebugVerts.Value) continue;
                                     
-                    //Convert to worldspace (in a threadsafe way), and apply and mesh offset needed
+                    //Convert to worldspace (in a threadsafe way), and apply any mesh offset needed
                     var origVertWs = smrTfTransPt.MultiplyPoint3x4(origVerts[i] - yOffsetDir);
                     var vertDistance = Vector3.Distance(origVertWs, sphereCenter);                    
 
@@ -298,6 +298,7 @@ namespace KK_PregnancyPlus
                     reduceClothFlattenOffset = 0f; 
 
                     // If the vert is within the calculated normals radius, then consider it as an altered vert that needs normal recalculation when applying inflation
+                    // This also means we can ignore other verts later saving compute time
                     //  Hopefully this will reduce breast shadows for smaller bellies
                     if (vertDistance <= vertNormalCaluRadius) alteredVerts[i] = true;                                                                          
                     
@@ -618,7 +619,7 @@ namespace KK_PregnancyPlus
                 smoothedVectorWs = new Vector3(originalVerticeWs.x, smoothedVectorWs.y, originalVerticeWs.z);
             }
 
-            //Get the new distances from mesh vert to center
+            //Compute the new distances from vert to sphereCenter
             var currentVectorDistance = Math.Abs(Vector3.Distance(sphereCenterWs, smoothedVectorWs));
             var pmCurrentVectorDistance = Math.Abs(Vector3.Distance(preMorphSphereCenterWs, smoothedVectorWs)); 
 
@@ -634,10 +635,10 @@ namespace KK_PregnancyPlus
                 return originalVerticeWs;
             }
 
-            //Don't allow any morphs to move behind the original verticie z position (ignoring ones already behind sphere center)
+            //Don't allow any morphs to move behind the original verticie z position, only forward expansion (ignoring ones already behind sphere center)
             if (originalVerticeLs.z > smoothedVectorLs.z && originalVerticeLs.z > sphereCenterLs.z) 
             {
-                //Get the average(not really average) x and y change to move the new position halfway back to the oiriginal vert (hopefullt less strange triangles near belly to body edge)
+                //Get the average(not really average after all...) x and y change to move the new position halfway back to the oiriginal vert (hopefullt less strange triangles near belly to body edge)
                 var yChangeAvg = (smoothedVectorWs.y - originalVerticeWs.y)/3;
                 var xChangeAvg = (smoothedVectorWs.x - originalVerticeWs.x)/3;
                 smoothedVectorWs = new Vector3(smoothedVectorWs.x - xChangeAvg, smoothedVectorWs.y - yChangeAvg, originalVerticeWs.z);
