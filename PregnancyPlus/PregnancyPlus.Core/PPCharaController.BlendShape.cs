@@ -491,7 +491,7 @@ namespace KK_PregnancyPlus
             var blendShapeName = MakeBlendShapeName(renderKey, blendShapeTag);
 
             //Create a blend shape object on the mesh, and return the controller object
-            var bsc = new BlendShapeController(smr.sharedMesh, meshCopyTarget, blendShapeName, smr);            
+            var bsc = new BlendShapeController(smr.sharedMesh, md[renderKey].originalVertices, meshCopyTarget, blendShapeName, smr);            
 
             nativeDetour.Undo();
             return bsc;

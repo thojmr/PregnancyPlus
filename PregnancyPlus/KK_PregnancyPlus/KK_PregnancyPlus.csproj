@@ -139,6 +139,7 @@
     <Compile Include="..\PregnancyPlus.Core\Tools\ErrorCode.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\MeshInflateFlags.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\MeshData.cs" />
+    <Compile Include="..\PregnancyPlus.Core\Tools\MeshSkinning.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\Threading.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\ThreadsafeCurve.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\UnityUiTools.cs" />

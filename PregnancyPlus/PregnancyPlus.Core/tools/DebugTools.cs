@@ -147,11 +147,15 @@ public static class DebugTools
     {
         var sphere = DrawSphere(radius);
 
-        //If parent has a debug sphere delete it
-        var existingSphere = parent.Find("DebugSphere");
-        if (existingSphere != null && removeExisting)
+        //If parent has debug spheres delete it
+        if (removeExisting)
         {
-            GameObject.DestroyImmediate(existingSphere.gameObject);
+            GameObject[] children = parent.GetComponents<GameObject>();
+            foreach (var child in children )
+            {
+                if(child.name == "DebugSphere")
+                    GameObject.DestroyImmediate(child); 
+            }
         }
 
         //Attach and move to parent position

@@ -78,6 +78,8 @@ namespace KK_PregnancyPlus
             LoopAndApplyMeshChanges(bodyRenderers, meshInflateFlags);
             var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);            
             LoopAndApplyMeshChanges(clothRenderers, meshInflateFlags, true, GetBodyMeshRenderer());                           
+            var accessoryRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objAccessory);            
+            LoopAndApplyMeshChanges(accessoryRenderers, meshInflateFlags, true, GetBodyMeshRenderer());                           
         }
 
 
@@ -213,10 +215,21 @@ namespace KK_PregnancyPlus
             // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" SMR pos {smr.transform.position} rot {smr.transform.rotation} parent {smr.transform.parent}");                     
             if (!smr.sharedMesh.isReadable) nativeDetour.Apply();
 
+            //Bake mesh to compute the reversed skin (T-pose)
+            var bakedMesh = new Mesh();
+            smr.BakeMesh(bakedMesh);
+
+            //Matricies used to compute the reverse skin
+            var boneMatrices = MeshSkinning.GetBoneMatrices(smr);//TODO move to MeshData init
+            var boneWeights = smr.sharedMesh.boneWeights;
+            var bakedVerts = bakedMesh.vertices;            
+
             var rendererName = GetMeshKey(smr);         
-            md[rendererName].originalVertices = smr.sharedMesh.vertices;
-            md[rendererName].inflatedVertices = smr.sharedMesh.vertices;
+            md[rendererName].originalVertices = new Vector3[smr.sharedMesh.vertexCount];
+            md[rendererName].inflatedVertices = new Vector3[smr.sharedMesh.vertexCount];
             md[rendererName].alteredVerticieIndexes = new bool[smr.sharedMesh.vertexCount];
+            //On first pass we need to compute all unskinned originalVertices and unskinned inflatedVertices
+            var firstPass = md[rendererName].isFirstPass;
 
             //set sphere center and allow for adjusting its position from the UI sliders  
             Vector3 sphereCenter = GetSphereCenter(meshRootTf);
@@ -227,7 +240,7 @@ namespace KK_PregnancyPlus
            
             //Get the cloth offset for each cloth vertex via raycast to skin
             //  Unfortunately this cant be inside the thread below because Unity Raycast are not thread safe...
-            var clothOffsets = DoClothMeasurement(smr, bodySmr, sphereCenter);
+            float[] clothOffsets = null;//TODO add back  DoClothMeasurement(smr, bodySmr, sphereCenter);
             if (clothOffsets == null) clothOffsets = new float[md[rendererName].originalVertices.Length];
 
             var origVerts = md[rendererName].originalVertices;
@@ -278,20 +291,38 @@ namespace KK_PregnancyPlus
                         if (bellyVertIndex[i]) bellyVertsCount++;
                     }
                     if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" Mesh affected vert count {bellyVertsCount}");
-                #endif
+                #endif                
 
                 //Set each verticie's inflated postion, with some constraints (SculptInflatedVerticie) to make it look more natural
                 for (int i = 0; i < vertsLength; i++)
                 {
-                    //Only care about inflating belly verticies
-                    if (!bellyVertIndex[i] && !PregnancyPlusPlugin.DebugVerts.Value) continue;
-                                    
-                    //Convert to worldspace (in a threadsafe way), and apply any mesh offset needed
-                    var origVertWs = smrTfTransPt.MultiplyPoint3x4(origVerts[i] - yOffsetDir);
+                    //Only care about inflating belly verticies, except frst pass where we need to set Original and Inflated unskinned verts list
+                    if (!firstPass && !bellyVertIndex[i] && !PregnancyPlusPlugin.DebugVerts.Value) continue;                
+
+                    //Get the reversed skinned vertex position (T-pose)
+                    // var origVertWs = smrTfTransPt.MultiplyPoint3x4(origVerts[i] - yOffsetDir);
+                    var origVertWs = smrTfInvTransPt.MultiplyPoint3x4(MeshSkinning.BakedToUnskinnedVertex(bakedVerts[i], smrTfTransPt, boneMatrices, boneWeights[i], bellyInfo.TotalCharScale)) - yOffsetDir;
+                    
+                    //Set the original unskinned verts localspace here
+                    if (firstPass) origVerts[i] = origVertWs;  
+                    // if (firstPass) origVerts[i] = origVertWs;  
+
+                    //If not a belly vert just use original vert as inflated vert
+                    if (firstPass && !bellyVertIndex[i])
+                    {
+                        inflatedVerts[i] = origVerts[i];
+                        continue;
+                    }
+
                     var vertDistance = Vector3.Distance(origVertWs, sphereCenter);                    
 
                     //Ignore verts outside the sphere radius
-                    if (vertDistance > vertNormalCaluRadius && !PregnancyPlusPlugin.DebugVerts.Value) continue;
+                    if (vertDistance > vertNormalCaluRadius && !PregnancyPlusPlugin.DebugVerts.Value)
+                    {
+                        if (firstPass) inflatedVerts[i] = origVerts[i];
+                         continue;
+                    }
+
                     
                     Vector3 inflatedVertWs;                    
                     Vector3 verticieToSpherePos;       
@@ -318,9 +349,10 @@ namespace KK_PregnancyPlus
                                                              backExtentPos, topExtentPos, sphereCenterLs, pmSphereCenterLs, backExtentPosLs, 
                                                              topExtentPosLs, bellySidesAC, bellyTopAC, bellyEdgeAC);   
 
-                    //Convert back to local space, and undo any temporary offset                                                                
-                    inflatedVerts[i] = smrTfInvTransPt.MultiplyPoint3x4(inflatedVertWs) + yOffsetDir;                                                  
-                }  
+                    //Convert back to local space, and re-skin                                                             
+                    // inflatedVerts[i] = smrTfInvTransPt.MultiplyPoint3x4(inflatedVertWs + yOffsetDir);                                                  
+                    inflatedVerts[i] = inflatedVertWs;                                                  
+                }                  
 
                 //When this thread task is complete, execute the below in main thread
                 Action threadActionResult = () => 
@@ -337,10 +369,12 @@ namespace KK_PregnancyPlus
                         // var topExtentOffset = topExtentPosLs.y/10;
                         // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLineAndAttach(meshRootTf, 5, topExtentPosLs, removeExisting: false);                        
                         // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLineAndAttach(meshRootTf, 5, topExtentPosLs + meshRootTf.up * -topExtentOffset, removeExisting: false);                        
-                        // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLineAndAttach(meshRootTf, 5, meshRootTf.InverseTransformPoint(sphereCenter));  
+                        if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLineAndAttach(meshRootTf, 5, meshRootTf.InverseTransformPoint(sphereCenter));  
                        
                         // if (PregnancyPlusPlugin.DebugLog.Value && isClothingMesh) DebugTools.DrawLineAndAttach(smr.transform, 1, smr.sharedMesh.bounds.center - yOffsetDir);
                     }                    
+
+                    md[rendererName].isFirstPass = false;
 
                     //Apply computed mesh back to body
                     var appliedMeshChanges = ApplyInflation(smr, rendererName, meshInflateFlags.OverWriteMesh, blendShapeTempTagName, meshInflateFlags.bypassWhen0);
@@ -482,7 +516,7 @@ namespace KK_PregnancyPlus
                 return yOffset;
 
             #else
-                return 0f;
+                return -ChaControl.transform.position.y;
             #endif                
         }
 

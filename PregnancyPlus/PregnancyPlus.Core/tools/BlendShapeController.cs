@@ -61,7 +61,7 @@ namespace KK_PregnancyPlus
         /// <param name="targetSmrMesh">The target mesh</param>
         /// <param name="blendShapeName">Desired name of the blend shape, should be unique</param>        
         /// <param name="smr">The target SMR</param>        
-        public BlendShapeController(Mesh originalSmrMesh, Mesh targetSmrMesh, string blendShapeName, SkinnedMeshRenderer smr) 
+        public BlendShapeController(Mesh originalSmrMesh, Vector3[] originalVerts, Mesh targetSmrMesh, string blendShapeName, SkinnedMeshRenderer smr) 
         {
             if (!blendShape.isInitilized) 
             {
@@ -70,7 +70,7 @@ namespace KK_PregnancyPlus
                 blendShape.name = blendShapeName;
 
                 //Get delta diffs of the two meshes for the blend shape
-                blendShape.verticies = GetV3Deltas(originalSmrMesh.vertices, targetSmrMesh.vertices);
+                blendShape.verticies = GetV3Deltas(originalVerts, targetSmrMesh.vertices);
                 blendShape.normals = GetV3Deltas(originalSmrMesh.normals, targetSmrMesh.normals);
                 blendShape.tangents = GetV3Deltas(ConvertV4ToV3(originalSmrMesh.tangents), ConvertV4ToV3(targetSmrMesh.tangents));                            
             }
