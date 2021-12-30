@@ -40,6 +40,7 @@ namespace KK_PregnancyPlus
         {           
             bellyVerticieIndexes = new bool[vertCount];
             alteredVerticieIndexes = new bool[vertCount];
+            isFirstPass = true;
         }
     }
 }

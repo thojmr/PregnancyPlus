@@ -233,22 +233,21 @@ public static class DebugTools
         DrawLineAndAttach(parent, Vector3.zero, new Vector3(0, 0, 1)* length, localPosition, removeExisting, worldPositionStays);
     }
 
-
-
+    
     /// <summary>
     /// This will create a sphere on every vert in the given mesh so you can visually see changes in a computed mesh
     ///     (In Koikatsu this only works in character maker, not studio)
     /// </summary>
-    public static void DebugMeshVerts(SkinnedMeshRenderer smr, Vector3[] verticies, Vector3 visualOffset = new Vector3()) {
+    public static void DebugMeshVerts(GameObject go, Vector3[] verticies, Vector3 visualOffset = new Vector3(), bool removeExisting = true) {
         if (verticies == null || verticies.Length <= 0) return;
 
         //Clear old spheres from previous runs
-        DebugTools.DrawSphereAndAttach(smr.transform, 0.01f, Vector3.zero, removeExisting: true);
+        if (removeExisting) DebugTools.DrawSphereAndAttach(go.transform, 0.01f, Vector3.zero, removeExisting: true);
 
         for (int i = 0; i < verticies.Length; i++)
         {
             //Place spheres on each vert to debug the mesh calculated position relative to other meshes
-            DebugTools.DrawSphereAndAttach(smr.transform, 0.02f, verticies[i] - visualOffset, removeExisting: false);  
+            DebugTools.DrawSphereAndAttach(go.transform, 0.02f, verticies[i] - visualOffset, removeExisting: false);  
         } 
     }
 }

@@ -52,7 +52,7 @@ namespace KK_PregnancyPlus
                 return false;             
             }
             
-            //Create new mesh dictionary key for bone indexes, or overwrite existing
+            //Create new mesh dictionary key for bone indexes
             md[renderKey] = new MeshData(sharedMesh.vertexCount);           
             var bellyVertIndex = md[renderKey].bellyVerticieIndexes;
             var verticies = sharedMesh.vertices;
