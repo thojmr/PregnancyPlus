@@ -238,7 +238,7 @@ public static class DebugTools
     /// This will create a sphere on every vert in the given mesh so you can visually see changes in a computed mesh
     ///     (In Koikatsu this only works in character maker, not studio)
     /// </summary>
-    public static void DebugMeshVerts(GameObject go, Vector3[] verticies, Vector3 visualOffset = new Vector3(), bool removeExisting = true) {
+    public static void DebugMeshVerts(GameObject go, Vector3[] verticies, Vector3 visualOffset = new Vector3(), bool removeExisting = true, bool worldPositionStays = false) {
         if (verticies == null || verticies.Length <= 0) return;
 
         //Clear old spheres from previous runs
@@ -247,7 +247,20 @@ public static class DebugTools
         for (int i = 0; i < verticies.Length; i++)
         {
             //Place spheres on each vert to debug the mesh calculated position relative to other meshes
-            DebugTools.DrawSphereAndAttach(go.transform, 0.02f, verticies[i] - visualOffset, removeExisting: false);  
+            DebugTools.DrawSphereAndAttach(go.transform, 0.02f, verticies[i] - visualOffset, removeExisting: false, worldPositionStays);  
+        } 
+    }
+
+    /// <summary>
+    /// Overload for DebugMeshVerts when you just want worldspace positions
+    /// </summary>
+    public static void DebugMeshVerts(Vector3[] verticies, Vector3 visualOffset = new Vector3()) {
+        if (verticies == null || verticies.Length <= 0) return;
+
+        for (int i = 0; i < verticies.Length; i++)
+        {
+            //Place spheres on each vert to debug the mesh calculated position relative to other meshes
+            DebugTools.DrawSphere(0.02f, verticies[i] - visualOffset);  
         } 
     }
 }

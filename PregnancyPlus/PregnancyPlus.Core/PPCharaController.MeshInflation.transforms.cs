@@ -16,9 +16,9 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Calculate the user input move distance
         /// </summary>
-        internal Vector3 GetUserMoveTransform(Transform fromPosition) 
+        internal Vector3 GetUserMoveTransform() 
         {
-            return fromPosition.up * GetInflationMoveY() + fromPosition.forward * GetInflationMoveZ();
+            return Vector3.up * GetInflationMoveY() + Vector3.forward * GetInflationMoveZ();
         }
 
 

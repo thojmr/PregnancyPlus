@@ -11,7 +11,7 @@ namespace KK_PregnancyPlus
         public float[] clothingOffsets;//The distance we want to offset each vert from the body mesh when inflated
         public bool[] bellyVerticieIndexes;//When an index is True, that vertex is near the belly area
         public bool[] alteredVerticieIndexes;//When an index is True that vertex's position has been altered by GetInflatedVerticies()
-        public float yOffset = 0;//The distance the mesh needs to be offset to match all other meshes y height, since some are not properly imported at the correct height
+        public Vector3 meshOffset = Vector3.zero;//The offset for this mesh in order to move the unskinned verts to the characters root position
         public bool isFirstPass = true;
 
         public bool HasInflatedVerts

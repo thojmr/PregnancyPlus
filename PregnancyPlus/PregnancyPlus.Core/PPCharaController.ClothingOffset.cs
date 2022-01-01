@@ -47,11 +47,11 @@ namespace KK_PregnancyPlus
             var hasData = md.TryGetValue(GetMeshKey(bodySmr), out MeshData _md);
 
             //When the mesh has a y offset, we need to shift the mesh collider to match it (like KK uncensor meshes)
-            var yOffsetDir = hasData ? Vector3.up * _md.yOffset : Vector3.zero; 
+            var meshOffset = hasData ? _md.meshOffset : Vector3.zero; 
             Vector3[] shiftedVerts = null;
 
             //Shift verticies in y direction before making the collider mesh
-            if (yOffsetDir != Vector3.zero)
+            if (meshOffset != Vector3.zero)
             {
                 var originalVerts = bodySmr.sharedMesh.vertices;
 
@@ -61,7 +61,7 @@ namespace KK_PregnancyPlus
 
                 for (int i = 0; i < originalVerts.Length; i++)
                 {
-                    shiftedVerts[i] = originalVerts[i] - yOffsetDir;
+                    shiftedVerts[i] = originalVerts[i] - meshOffset;
                 }
             }
 
@@ -71,7 +71,7 @@ namespace KK_PregnancyPlus
             var meshCopy = (Mesh)UnityEngine.Object.Instantiate(bodySmr.sharedMesh); 
 
             //If the verts were shifted use them for the mesh collider
-            if (yOffsetDir != Vector3.zero) meshCopy.vertices = shiftedVerts;
+            if (meshOffset != Vector3.zero) meshCopy.vertices = shiftedVerts;
 
             collider.sharedMesh = meshCopy;
 
@@ -156,7 +156,7 @@ namespace KK_PregnancyPlus
             var rayCastDist = bellyInfo.OriginalSphereRadius/2;            
             var minOffset = bellyInfo.ScaledWaistWidth/200;       
             //Get the mesh offset needed, to make all meshes the same y height so the calculations below line up
-            var yOffsetDir = clothSmr.transform.up * md[renderKey].yOffset;         
+            var yOffsetDir = md[renderKey].meshOffset;         
 
             //Get the mesh collider we will raycast to (The body mesh)
             var meshCollider = GetMeshCollider(bodySmr);

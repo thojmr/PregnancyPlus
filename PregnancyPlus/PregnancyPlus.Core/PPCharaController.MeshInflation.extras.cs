@@ -98,10 +98,10 @@ namespace KK_PregnancyPlus
         /// <summary>   
         /// Move the sphereCenter this much up or down to place it better visually
         /// </summary>
-        internal Vector3 GetBellyButtonOffsetVector(Transform fromPosition, float currentHeight) 
+        internal Vector3 GetBellyButtonOffsetVector(float currentHeight) 
         {
             //Makes slight vertical adjustments to put the sphere at the correct point                  
-            return fromPosition.up * GetBellyButtonOffset(currentHeight);     
+            return Vector3.up * GetBellyButtonOffset(currentHeight);     
         }
 
 
@@ -198,8 +198,7 @@ namespace KK_PregnancyPlus
 
             //Does the smr have the bodymesh name inside it?
             return shouldEvenConsider && smr.name.Contains(BodyMeshName);
-        }
-         
+        }         
 
     }
 }
