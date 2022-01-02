@@ -10,7 +10,8 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Get the bone matricies of the characters T-pose position
         ///     This extracts the T-pose bone positions from the BindPose, so it doesn't matter what animation the character is currently in
-        /// </summary>        
+        /// </summary>     
+        /// <param name="meshOffset">Allows the mesh to be position around worldspace 0,0,0 for simplicity</param>   
         public static Matrix4x4[] GetBoneMatrices(SkinnedMeshRenderer smr, Vector3 meshOffset, Quaternion meshOffsetRotation = new Quaternion()) 
         {
             Transform[] skinnedBones = smr.bones;
@@ -29,6 +30,7 @@ namespace KK_PregnancyPlus
 
                     //Compute the initial Bindpose for this bone
                     GetBindPoseBoneTransform(smrMatrix, smr.sharedMesh.bindposes[j], smr.bones[j], out position, out rotation);
+                    //Make sure the bindpose is centered around 0,0,0 in worldspace (rather deal with alignment here, than having to align each vert separately)
                     synthTransform.position = position - meshOffset;
                     synthTransform.rotation = rotation * meshOffsetRotation;
                     
@@ -125,6 +127,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Add debug lines at each bindPose point to see the bindPose in worldspace
         /// </summary> 
+        /// <param name="meshOffset">Allows the mesh to be position around worldspace 0,0,0 for simplicity</param>   
         public static void ShowBindPose(SkinnedMeshRenderer smr, Vector3 meshOffset = new Vector3(), Quaternion meshOffsetRotation = new Quaternion())
         {
             #if KK 
