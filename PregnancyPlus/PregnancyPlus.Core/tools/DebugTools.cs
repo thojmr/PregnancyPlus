@@ -168,7 +168,7 @@ public static class DebugTools
     /// <summary>
     /// Draw a debug line renderer
     /// </summary>
-    public static GameObject DrawLine(Vector3 fromVector = new Vector3(), Vector3 toVector = new Vector3(), float width = 0.002f)
+    public static GameObject DrawLine(Vector3 fromVector = new Vector3(), Vector3 toVector = new Vector3(), float width = 0.001f, bool useWorldSpace = false)
     {
         //Draw forward by default
         if (toVector == Vector3.zero) toVector = new Vector3(0, 0, 1);
@@ -177,10 +177,10 @@ public static class DebugTools
         var lineRenderer = lineRendGO.AddComponent<LineRenderer>();
 
         #if HS2 || AI
-            width = width * 7;
+            width = width * 10;
         #endif
         
-        lineRenderer.useWorldSpace = false;
+        lineRenderer.useWorldSpace = useWorldSpace;
         lineRenderer.startColor = Color.blue;
         lineRenderer.endColor = Color.red;
         // lineRenderer.material = new Material(CommonLib.LoadAsset<Shader>("chara/goo.unity3d", "goo.shader"));
@@ -247,7 +247,7 @@ public static class DebugTools
         for (int i = 0; i < verticies.Length; i++)
         {
             //Place spheres on each vert to debug the mesh calculated position relative to other meshes
-            DebugTools.DrawSphereAndAttach(go.transform, 0.02f, verticies[i] - visualOffset, removeExisting: false, worldPositionStays);  
+            DebugTools.DrawSphereAndAttach(go.transform, 0.01f, verticies[i] - visualOffset, removeExisting: false, worldPositionStays);  
         } 
     }
 
@@ -260,7 +260,7 @@ public static class DebugTools
         for (int i = 0; i < verticies.Length; i++)
         {
             //Place spheres on each vert to debug the mesh calculated position relative to other meshes
-            DebugTools.DrawSphere(0.02f, verticies[i] - visualOffset);  
+            DebugTools.DrawSphere(0.01f, verticies[i] - visualOffset);  
         } 
     }
 }

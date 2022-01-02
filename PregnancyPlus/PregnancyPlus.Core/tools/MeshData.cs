@@ -11,7 +11,8 @@ namespace KK_PregnancyPlus
         public float[] clothingOffsets;//The distance we want to offset each vert from the body mesh when inflated
         public bool[] bellyVerticieIndexes;//When an index is True, that vertex is near the belly area
         public bool[] alteredVerticieIndexes;//When an index is True that vertex's position has been altered by GetInflatedVerticies()
-        public Vector3 meshOffset = Vector3.zero;//The offset for this mesh in order to move the unskinned verts to the characters root position
+        public Vector3 meshOffsetPosition = Vector3.zero;//The offset for this mesh in order to move the unskinned verts to the characters root position
+        public Quaternion meshOffsetRotation = Quaternion.identity;
         public bool isFirstPass = true;
 
         public bool HasInflatedVerts

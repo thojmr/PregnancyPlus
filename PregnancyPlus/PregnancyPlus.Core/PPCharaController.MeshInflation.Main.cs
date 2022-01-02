@@ -223,28 +223,27 @@ namespace KK_PregnancyPlus
             //On first pass we need to compute all unskinned originalVertices and unskinned inflatedVertices
             var firstPass = md[rendererName].isFirstPass;
 
+            //Used to align all meshes back to 0,0,0 worldspace
+            GetMeshOffset(out var meshOffsetPosition, out var meshOffsetRotation); 
+            md[rendererName].meshOffsetPosition = meshOffsetPosition;
+            md[rendererName].meshOffsetRotation = meshOffsetRotation; 
 
-            //Bake mesh to compute the reversed skin (T-pose)
-            Mesh bakedMesh = null;
             Matrix4x4[] boneMatrices = null;
             BoneWeight[] boneWeights = null;
-            Vector3[] bakedVerts = null; 
+            Vector3[] unskinnedVerts = null; 
 
             if (firstPass)
-            {
-                bakedMesh = new Mesh();
-                smr.BakeMesh(bakedMesh);
+            {                
+                if (PregnancyPlusPlugin.DebugLog.Value) MeshSkinning.ShowBindPose(smr, meshOffsetPosition, meshOffsetRotation);     
 
                 //Matricies used to compute the reverse skin
-                boneMatrices = MeshSkinning.GetBoneMatrices(smr);//TODO move to MeshData init
+                boneMatrices = MeshSkinning.GetBoneMatrices(smr, meshOffsetPosition, meshOffsetRotation);//TODO move to MeshData init
                 boneWeights = smr.sharedMesh.boneWeights;
-                bakedVerts = bakedMesh.vertices;  
+                unskinnedVerts = smr.sharedMesh.vertices;   
             }
 
-            //Used to align all meshes
-            md[rendererName].meshOffset = ApplyConditionalSphereCenterOffset(isClothingMesh, smr, meshRootTf, bodySmr); 
             //set sphere center and allow for adjusting its position from the UI sliders  
-            Vector3 sphereCenter = GetSphereCenter(md[rendererName].meshOffset);            
+            Vector3 sphereCenter = GetSphereCenter(meshOffsetPosition);            
 
             //Create mesh collider to make clothing measurements from skin (if it doesnt already exists)            
             if (NeedsClothMeasurement(smr, bodySmr, sphereCenter)) CreateMeshCollider(bodySmr); 
@@ -270,8 +269,7 @@ namespace KK_PregnancyPlus
             //calculate the furthest top morph point based under the breast position, include character animated height differences
             var topExtentPos = new Vector3(preMorphSphereCenter.x, preMorphSphereCenter.y, preMorphSphereCenter.z) + meshRootTf.up * bellyInfo.YLimit;
             var topExtentPosLs = meshRootTf.InverseTransformPoint(topExtentPos);
-            var vertNormalCaluRadius = sphereRadius + waistWidth/10;//Only recalculate normals for verts within this radius to prevent shadows under breast at small belly sizes
-            var meshOffset = md[rendererName].meshOffset;//Any offset direction needed to align all meshes to the same local y height            
+            var vertNormalCaluRadius = sphereRadius + waistWidth/10;//Only recalculate normals for verts within this radius to prevent shadows under breast at small belly sizes          
 
             //I dont think transforms are thread safe so get the values we need now
             var meshRootTfPos = meshRootTf.position;
@@ -310,9 +308,7 @@ namespace KK_PregnancyPlus
                     for (int i = 0; i < vertsLength; i++)
                     {
                         //Get the unskinned mesh position from the baked mesh
-                        var origVertWs = MeshSkinning.BakedToUnskinnedVertex(bakedVerts[i], smrTfTransPt, boneMatrices, boneWeights[i], bellyInfo.TotalCharScale);
-                        // var origVertWs = MeshSkinning.UnskinnedToSKinnedVertex(bakedVerts[i], smrTfTransPt, boneMatrices, boneWeights[i], bellyInfo.TotalCharScale);
-                        // var origVertWs = smrTfTransPt.MultiplyPoint3x4(bakedVerts[i]);
+                        var origVertWs = MeshSkinning.UnskinnedToSKinnedVertex(unskinnedVerts[i], smrTfTransPt, boneMatrices, boneWeights[i], bellyInfo.TotalCharScale);
 
                         //Store them in MeshData to cache for later
                         origVerts[i] = origVertWs; 
@@ -332,7 +328,7 @@ namespace KK_PregnancyPlus
                     }
 
                     //Get the original unskinned vertex position (T-pose)
-                    var origVertWs = origVerts[i] - meshOffset;                
+                    var origVertWs = origVerts[i] - meshOffsetPosition;                
                     var vertDistance = Vector3.Distance(origVertWs, sphereCenter);                    
 
                     //Ignore verts outside the sphere radius
@@ -368,7 +364,7 @@ namespace KK_PregnancyPlus
                                                              topExtentPosLs, bellySidesAC, bellyTopAC, bellyEdgeAC);   
 
                     //Convert back to local space, and re-skin                                                             
-                    inflatedVerts[i] = inflatedVertWs + meshOffset;                                                  
+                    inflatedVerts[i] = inflatedVertWs + meshOffsetPosition;                                                  
                 }                  
 
                 //When this thread task is complete, execute the below in main thread
@@ -477,18 +473,23 @@ namespace KK_PregnancyPlus
         /// In special cases we need to apply a small offset to the sphereCenter to align the mesh correctly with the other meshes.  Otherwise you get tons of clipping
         ///  Mostly used to fix the default KK body which seems to be mis aligned from uncensor, and AI/HS2 meshes
         /// </summary>
-        public Vector3 ApplyConditionalSphereCenterOffset(bool isClothingMesh, SkinnedMeshRenderer smr, Transform meshRootTf, SkinnedMeshRenderer bodySmr)
+        public void GetMeshOffset(out Vector3 position, out Quaternion rotation)
         {
+            position = Vector3.zero;
+            rotation = Quaternion.identity;
+
             #if KK                  
                 // if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] local bounds {smr.localBounds.center.y} sm.bounds {smr.sharedMesh.bounds.center.y} meshYPosLs {meshYPosLs} smr.position {smr.transform.position}");                           
                 // return yOffset;
-                return -ChaControl.transform.position;
-
+                position = -ChaControl.transform.position;
+                rotation = ChaControl.transform.rotation;
             #else
 
                 //Keep the localspace mesh at the characters root position for old calculations sake (Dont want to rewrite them)
                 //TODO need to capture rotation too
-                return -ChaControl.transform.position;
+                position = -ChaControl.transform.position;
+                rotation = ChaControl.transform.rotation;
+
             #endif                
         }
 

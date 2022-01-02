@@ -47,7 +47,7 @@ namespace KK_PregnancyPlus
             var hasData = md.TryGetValue(GetMeshKey(bodySmr), out MeshData _md);
 
             //When the mesh has a y offset, we need to shift the mesh collider to match it (like KK uncensor meshes)
-            var meshOffset = hasData ? _md.meshOffset : Vector3.zero; 
+            var meshOffset = hasData ? _md.meshOffsetPosition : Vector3.zero; 
             Vector3[] shiftedVerts = null;
 
             //Shift verticies in y direction before making the collider mesh
@@ -156,7 +156,7 @@ namespace KK_PregnancyPlus
             var rayCastDist = bellyInfo.OriginalSphereRadius/2;            
             var minOffset = bellyInfo.ScaledWaistWidth/200;       
             //Get the mesh offset needed, to make all meshes the same y height so the calculations below line up
-            var yOffsetDir = md[renderKey].meshOffset;         
+            var yOffsetDir = md[renderKey].meshOffsetPosition;         
 
             //Get the mesh collider we will raycast to (The body mesh)
             var meshCollider = GetMeshCollider(bodySmr);
