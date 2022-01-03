@@ -198,7 +198,32 @@ namespace KK_PregnancyPlus
 
             //Does the smr have the bodymesh name inside it?
             return shouldEvenConsider && smr.name.Contains(BodyMeshName);
+        }
+
+
+        public void logCharMeshInfo(MeshData md, SkinnedMeshRenderer smr, Transform meshRootTf, Vector3 sphereCenter) 
+        {
+            if (!PregnancyPlusPlugin.DebugCalcs.Value) return;
+
+            PregnancyPlusPlugin.Logger.LogInfo($" ******CharMeshInfo******");        
+            PregnancyPlusPlugin.Logger.LogInfo($" ChaControl.position   {ChaControl.transform.position}");
+            PregnancyPlusPlugin.Logger.LogInfo($" smr.position          {Round(smr.transform.position)}");
+            PregnancyPlusPlugin.Logger.LogInfo($" smr.rootBone.position {Round(smr.rootBone.position)}");
+            PregnancyPlusPlugin.Logger.LogInfo($" smr.rootBone.name     {smr.rootBone.name}");
+            PregnancyPlusPlugin.Logger.LogInfo($" meshRootTf            {meshRootTf.position}");
+            PregnancyPlusPlugin.Logger.LogInfo($" bbHeight              {bellyInfo.BellyButtonHeight}");
+            PregnancyPlusPlugin.Logger.LogInfo($" sphereCenter          {sphereCenter}");
+            PregnancyPlusPlugin.Logger.LogInfo($" meshOffsetPosition    {md.meshOffsetPosition}");
+            PregnancyPlusPlugin.Logger.LogInfo($" meshOffsetRotation    {md.meshOffsetRotation}");
+            PregnancyPlusPlugin.Logger.LogInfo($" bindPoseCorrection    {md.bindPoseCorrection}");
+            PregnancyPlusPlugin.Logger.LogInfo($" ************************");
+
         }         
+
+        public string Round(Vector3 vector, int digits = 4) 
+        {
+            return $"({Math.Round(vector.x, digits)}, {Math.Round(vector.y, digits)}, {Math.Round(vector.z, digits)})";
+        }
 
     }
 }

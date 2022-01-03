@@ -33,7 +33,7 @@ namespace KK_PregnancyPlus
                     //Make sure the bindpose is centered around 0,0,0 in worldspace (rather deal with alignment here, than having to align each vert separately)
                     synthTransform.position = position - meshOffset;
                     synthTransform.rotation = rotation * meshOffsetRotation;
-                    
+
                     //Use the BindPose transform to compute the boneMatrix used later in skinning the mesh
                     boneMatrices[j] = synthTransform.localToWorldMatrix * bindposes[j];
 
@@ -58,8 +58,7 @@ namespace KK_PregnancyPlus
             if (boneMatrices == null) return Vector3.zero;
             
             Matrix4x4 skinningMatrix = GetSkinningMatrix(boneMatrices, boneWeight);
-            //Skin a vert, then convert back to localspace
-            return RendererLocalToWorldMatrix.inverse.MultiplyPoint3x4(skinningMatrix.MultiplyPoint3x4(unskinnedVert));
+            return skinningMatrix.MultiplyPoint3x4(unskinnedVert);
         }
 
 
@@ -78,7 +77,7 @@ namespace KK_PregnancyPlus
             Vector3 mP = new Vector3(bindPoseMatrixGlobal.m03, bindPoseMatrixGlobal.m13, bindPoseMatrixGlobal.m23);
 
             // Set position
-            position = mP;
+            position = smrMatrix.inverse.MultiplyPoint3x4(mP);
 
             // Set rotation
             // Check if scaling is negative and handle accordingly

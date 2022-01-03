@@ -47,13 +47,13 @@ namespace KK_PregnancyPlus
             var hasData = md.TryGetValue(GetMeshKey(bodySmr), out MeshData _md);
 
             //When the mesh has a y offset, we need to shift the mesh collider to match it (like KK uncensor meshes)
-            var meshOffset = hasData ? _md.meshOffsetPosition : Vector3.zero; 
+            var meshOffset = hasData ? _md.TotalMeshOffset : Vector3.zero; 
             Vector3[] shiftedVerts = null;
 
             //Shift verticies in y direction before making the collider mesh
             if (meshOffset != Vector3.zero)
             {
-                var originalVerts = bodySmr.sharedMesh.vertices;
+                var originalVerts = _md.originalVertices;
 
                 //Create mesh instance
                 bodySmr.sharedMesh = bodySmr.sharedMesh;
@@ -156,7 +156,7 @@ namespace KK_PregnancyPlus
             var rayCastDist = bellyInfo.OriginalSphereRadius/2;            
             var minOffset = bellyInfo.ScaledWaistWidth/200;       
             //Get the mesh offset needed, to make all meshes the same y height so the calculations below line up
-            var yOffsetDir = md[renderKey].meshOffsetPosition;         
+            var meshOffset = md[renderKey].meshOffsetPosition + md[renderKey].bindPoseCorrection;         
 
             //Get the mesh collider we will raycast to (The body mesh)
             var meshCollider = GetMeshCollider(bodySmr);
@@ -172,7 +172,7 @@ namespace KK_PregnancyPlus
 
                 // the last index (+1) is the sphere center position.  The rest of the indexes are a list of bone positions
                 var raycastTargetCount = rayCastTargetPositions.Length + 1;
-                var rayCastHits = ProcessRayCastCommands(clothSmr, origVerts, bellyVerticieIndexes, yOffsetDir, sphereCenter, rayCastDist);                
+                var rayCastHits = ProcessRayCastCommands(clothSmr, origVerts, bellyVerticieIndexes, meshOffset, sphereCenter, rayCastDist);                
 
             #endif
 
@@ -189,7 +189,7 @@ namespace KK_PregnancyPlus
                 }
 
                 //Convert to worldspace since thats where the mesh collider lives, apply any offset needed to align meshes to same y height
-                var origVertWs = clothSmr.transform.TransformPoint(origVerts[i] + yOffsetDir);
+                var origVertWs = clothSmr.transform.TransformPoint(origVerts[i] + meshOffset);
                 
                 #if KK && !KKS
 
