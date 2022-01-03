@@ -11,30 +11,26 @@ namespace KK_PregnancyPlus
         /// Get the bone matricies of the characters T-pose position
         ///     This extracts the T-pose bone positions from the BindPose, so it doesn't matter what animation the character is currently in
         /// </summary>     
-        /// <param name="meshOffset">Allows the mesh to be position around worldspace 0,0,0 for simplicity</param>   
-        public static Matrix4x4[] GetBoneMatrices(SkinnedMeshRenderer smr, Vector3 meshOffset, Quaternion meshOffsetRotation = new Quaternion()) 
+        public static Matrix4x4[] GetBoneMatrices(SkinnedMeshRenderer smr) 
         {
             Transform[] skinnedBones = smr.bones;
             Matrix4x4[] boneMatrices = new Matrix4x4[smr.bones.Length];
             Matrix4x4[] bindposes = smr.sharedMesh.bindposes;                         
+            Matrix4x4 smrMatrix = smr.transform.localToWorldMatrix;
 
             for (int j = 0; j < boneMatrices.Length; j++)
             {
                 if (skinnedBones[j] != null && bindposes[j] != null)
-                {                    
-                    Vector3 position;
-                    Quaternion rotation;
-                    Matrix4x4 smrMatrix = smr.transform.localToWorldMatrix;
+                {                                                            
                     //Create dummy transform to store a BindPose position
                     var synthTransform = new GameObject().transform;
 
-                    //Compute the initial Bindpose for this bone
-                    GetBindPoseBoneTransform(smrMatrix, smr.sharedMesh.bindposes[j], smr.bones[j], out position, out rotation);
-                    //Make sure the bindpose is centered around 0,0,0 in worldspace (rather deal with alignment here, than having to align each vert separately)
-                    synthTransform.position = position - meshOffset;
-                    synthTransform.rotation = rotation * meshOffsetRotation;
+                    //Compute bind pose for a bone
+                    GetBoneBindPose(smrMatrix, smr.sharedMesh.bindposes[j], smr.bones[j], out var position, out var rotation);
+                    synthTransform.position = position;
+                    synthTransform.rotation = rotation;
 
-                    //Use the BindPose transform to compute the boneMatrix used later in skinning the mesh
+                    //Compute bone matrix used to skin the T-pose bone
                     boneMatrices[j] = synthTransform.localToWorldMatrix * bindposes[j];
 
                     GameObject.Destroy(synthTransform.gameObject);
@@ -46,6 +42,21 @@ namespace KK_PregnancyPlus
             }
 
             return boneMatrices;
+        }
+
+
+        /// <summary>
+        /// Get a single Bind pose from a bone and an smr (apply offset or rotation if needed)
+        /// </summary>  
+        /// <param name="position">The T-pose position of this bone, localspace</param>   
+        /// <param name="rotation">The T-pose rotation of this bone, localspace</param>   
+        public static void GetBoneBindPose(Matrix4x4 smrMatrix, Matrix4x4 bindPose, Transform bone, out Vector3 position, out Quaternion rotation) 
+        {
+            //Compute the initial Bindpose for this bone
+            GetBindPoseBoneTransform(smrMatrix, bindPose, bone, out position, out rotation);
+
+            //make bindpose points localspace oriented (The devault value of rotaion here carries the characters origin rotation, and we dont want that)
+            rotation = Quaternion.LookRotation(Vector3.forward, Vector3.up);
         }
 
 
@@ -76,7 +87,7 @@ namespace KK_PregnancyPlus
             Vector3 mZ = new Vector3(bindPoseMatrixGlobal.m02, bindPoseMatrixGlobal.m12, bindPoseMatrixGlobal.m22);
             Vector3 mP = new Vector3(bindPoseMatrixGlobal.m03, bindPoseMatrixGlobal.m13, bindPoseMatrixGlobal.m23);
 
-            // Set position
+            // Set position into localspace
             position = smrMatrix.inverse.MultiplyPoint3x4(mP);
 
             // Set rotation
@@ -126,8 +137,8 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Add debug lines at each bindPose point to see the bindPose in worldspace
         /// </summary> 
-        /// <param name="meshOffset">Allows the mesh to be position around worldspace 0,0,0 for simplicity</param>   
-        public static void ShowBindPose(SkinnedMeshRenderer smr, Vector3 meshOffset = new Vector3(), Quaternion meshOffsetRotation = new Quaternion())
+        /// <param name="parent">optional: Attach lines to this parent transform</param>   
+        public static void ShowBindPose(SkinnedMeshRenderer smr, Transform parent = null)
         {
             #if KK 
                 var lineLen = 0.03f;
@@ -138,18 +149,21 @@ namespace KK_PregnancyPlus
             Matrix4x4 smrMatrix = smr.transform.localToWorldMatrix;
             for (int i = 0; i < smr.bones.Length; i++)
             {
-                Vector3 position;
-                Quaternion rotation;
-
                 //Get a bone's bindPose position/rotation
-                GetBindPoseBoneTransform(smrMatrix, smr.sharedMesh.bindposes[i], smr.bones[i], out position, out rotation);
-                
-                position = position - meshOffset;
-                rotation = rotation * meshOffsetRotation;
+                GetBoneBindPose(smrMatrix, smr.sharedMesh.bindposes[i], smr.bones[i], out var position, out var rotation);        
 
-                DebugTools.DrawLine(position, position + rotation * Vector3.right * lineLen, width: 0.005f);
-                DebugTools.DrawLine(position, position + rotation * Vector3.up * lineLen, width: 0.005f);
-                DebugTools.DrawLine(position, position + rotation * Vector3.forward * lineLen, width: 0.005f);
+                if (parent == null) 
+                {
+                    DebugTools.DrawLine(position, position + rotation * Vector3.right * lineLen, width: 0.005f);
+                    DebugTools.DrawLine(position, position + rotation * Vector3.up * lineLen, width: 0.005f);
+                    DebugTools.DrawLine(position, position + rotation * Vector3.forward * lineLen, width: 0.005f);
+                } 
+                else
+                {
+                    DebugTools.DrawLineAndAttach(parent, position, position + rotation * Vector3.right * lineLen, width: 0.005f, removeExisting: false);
+                    DebugTools.DrawLineAndAttach(parent, position, position + rotation * Vector3.up * lineLen, width: 0.005f, removeExisting: false);
+                    DebugTools.DrawLineAndAttach(parent, position, position + rotation * Vector3.forward * lineLen, width: 0.005f, removeExisting: false);
+                }
             }
         }
     }

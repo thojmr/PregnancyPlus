@@ -205,7 +205,7 @@ namespace KK_PregnancyPlus
         {
             if (!PregnancyPlusPlugin.DebugCalcs.Value) return;
 
-            PregnancyPlusPlugin.Logger.LogInfo($" ******CharMeshInfo******");        
+            PregnancyPlusPlugin.Logger.LogInfo($" ******CharMeshInfo****** {smr.name}");        
             PregnancyPlusPlugin.Logger.LogInfo($" ChaControl.position   {ChaControl.transform.position}");
             PregnancyPlusPlugin.Logger.LogInfo($" smr.position          {Round(smr.transform.position)}");
             PregnancyPlusPlugin.Logger.LogInfo($" smr.rootBone.position {Round(smr.rootBone.position)}");
@@ -215,8 +215,9 @@ namespace KK_PregnancyPlus
             PregnancyPlusPlugin.Logger.LogInfo($" sphereCenter          {sphereCenter}");
             PregnancyPlusPlugin.Logger.LogInfo($" meshOffsetPosition    {md.meshOffsetPosition}");
             PregnancyPlusPlugin.Logger.LogInfo($" meshOffsetRotation    {md.meshOffsetRotation}");
-            PregnancyPlusPlugin.Logger.LogInfo($" bindPoseCorrection    {md.bindPoseCorrection}");
+            PregnancyPlusPlugin.Logger.LogInfo($" bindPoseCorrection    {Round(md.bindPoseCorrection)}");
             PregnancyPlusPlugin.Logger.LogInfo($" ************************");
+            PregnancyPlusPlugin.Logger.LogInfo($" ");
 
         }         
 

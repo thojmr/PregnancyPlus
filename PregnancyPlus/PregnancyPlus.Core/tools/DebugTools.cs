@@ -168,7 +168,7 @@ public static class DebugTools
     /// <summary>
     /// Draw a debug line renderer
     /// </summary>
-    public static GameObject DrawLine(Vector3 fromVector = new Vector3(), Vector3 toVector = new Vector3(), float width = 0.001f, bool useWorldSpace = false)
+    public static GameObject DrawLine(Vector3 fromVector = new Vector3(), Vector3 toVector = new Vector3(), float width = 0.005f, bool useWorldSpace = false)
     {
         //Draw forward by default
         if (toVector == Vector3.zero) toVector = new Vector3(0, 0, 1);
@@ -207,9 +207,9 @@ public static class DebugTools
     /// Draw line and attach to a parent transform (optional offset)
     /// </summary>
     public static void DrawLineAndAttach(Transform parent, Vector3 fromVector = new Vector3(), Vector3 toVector = new Vector3(), Vector3 localPosition = new Vector3(), 
-                                         bool removeExisting = true, bool worldPositionStays = false)
+                                         bool removeExisting = true, bool worldPositionStays = false, float width = 0.001f)
     {
-        var line = DrawLine(fromVector, toVector);
+        var line = DrawLine(fromVector, toVector, width);
 
         //If parent has a debug sphere delete it
         var existingLine = parent.Find("DebugLineRenderer");
