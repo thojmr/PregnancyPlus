@@ -23,23 +23,11 @@ namespace KK_PregnancyPlus
         public class BellyInfo 
         {
             public float WaistWidth;
-            public float ScaledWaistWidth
-            {
-                get { return WaistWidth * TotalCharScale.x; }
-            }
-            
             public float WaistHeight;
-            public float ScaledWaistHeight
-            {
-                get { return WaistHeight * TotalCharScale.y; }
-            }
-
             public float WaistThick;
-            public float ScaledWaistThick
-            {
-                get { return WaistThick * TotalCharScale.z; }
-            }
 
+
+            //Well, with the BindPose changes, I've almost completely removed the need for these scalers. yey
             public Vector3 CharacterScale;//ChaControl.transform scale (set by the Axis scale control)
             public Vector3 BodyTopScale;//BodyTop bone scale
             public Vector3 NHeightScale;//n_height bone scale
@@ -57,20 +45,16 @@ namespace KK_PregnancyPlus
             public float ZLimit
             {
                 //Get the distance from center -> spine, where the belly is allowed to wrap around to (total distance from 0 to back bone /some scale that looks good)
-                get { return ScaledWaistThick/2f; }
+                get { return WaistThick/2f; }
             }
 
             public float BellyToBreastDist;//Belly button to breast distance
-            public float ScaledBellyToBreastDist
-            {
-                get { return BellyToBreastDist * TotalCharScale.y; }
-            }
 
             //From char belly button to breast distance
             public float YLimit
             {
                 //Get the distance from center -> ribs, with scale applied
-                get { return ScaledBellyToBreastDist; }
+                get { return BellyToBreastDist * 0.8f; }
             }
 
             public float BellyButtonHeight;//Foot to belly button height
@@ -80,23 +64,6 @@ namespace KK_PregnancyPlus
             public bool IsInitialized 
             {
                 get { return WaistWidth > 0 && WaistHeight > 0; }
-            }
-
-            //Get the sphere radius asjusted by the characters scale
-            public float ScaledRadius(BellyDir dir)
-            {
-                if (dir == BellyDir.x) return SphereRadius/TotalCharScale.x;
-                if (dir == BellyDir.y) return SphereRadius/TotalCharScale.y;
-                if (dir == BellyDir.z) return SphereRadius/TotalCharScale.z;
-                return -1;
-            }
-
-            public float ScaledOrigRadius(BellyDir dir)
-            {
-                if (dir == BellyDir.x) return OriginalSphereRadius/TotalCharScale.x;
-                if (dir == BellyDir.y) return OriginalSphereRadius/TotalCharScale.y;
-                if (dir == BellyDir.z) return OriginalSphereRadius/TotalCharScale.z;
-                return -1;
             }
 
             internal BellyInfo(float waistWidth, float waistHeight, float sphereRadius, float originalSphereRadius, 
@@ -166,7 +133,6 @@ namespace KK_PregnancyPlus
             var bodyTopScale = PregnancyPlusHelper.GetBodyTopScale(ChaControl);
             var nHeightScale = PregnancyPlusHelper.GetN_HeightScale(ChaControl);
             var charScale = ChaControl.transform.localScale;
-            var totalScale = new Vector3(bodyTopScale.x * charScale.x, bodyTopScale.y * charScale.y, bodyTopScale.z * charScale.z);
             var needsWaistRecalc = bellyInfo != null ? bellyInfo.NeedsBoneDistanceRecalc(bodyTopScale, nHeightScale, charScale) : true;
             var needsSphereRecalc = bellyInfo != null ? bellyInfo.NeedsSphereRecalc(infConfig, GetInflationMultiplier()) : true;
 
@@ -177,15 +143,14 @@ namespace KK_PregnancyPlus
             {
                 if (needsSphereRecalc && !needsWaistRecalc)//Sphere radius calc needed
                 {
-                    var _valid = MeasureSphere(chaControl, bodyTopScale, nHeightScale, totalScale);
+                    var _valid = MeasureSphere(chaControl, bodyTopScale, nHeightScale);
                     if (PregnancyPlusPlugin.DebugCalcs.Value)  PregnancyPlusPlugin.Logger.LogInfo(bellyInfo.Log()); 
                     return _valid;
                 }
                 else if (needsWaistRecalc && !needsSphereRecalc)//Measurements needed which also requires sphere recalc
                 {
-                    var _valid = MeasureWaist(chaControl, charScale, nHeightScale, bodyTopScale, 
-                                        out float _waistToRibDist, out float _waistToBackThickness, out float _waistWidth, out float _bellyToBreastDist);
-                    MeasureSphere(chaControl, bodyTopScale, nHeightScale, totalScale);
+                    var _valid = MeasureWaist(chaControl, bodyTopScale, out float _waistToRibDist, out float _waistToBackThickness, out float _waistWidth, out float _bellyToBreastDist);
+                    MeasureSphere(chaControl, bodyTopScale, nHeightScale);
 
                     //Store all these values for reuse later
                     bellyInfo = new BellyInfo(_waistWidth, _waistToRibDist, bellyInfo.SphereRadius, bellyInfo.OriginalSphereRadius, bodyTopScale, 
@@ -209,14 +174,13 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" MeasureWaistAndSphere init ");
 
             //Get waist measurements from bone distances
-            var valid = MeasureWaist(chaControl, charScale, nHeightScale, bodyTopScale,
-                                     out float waistToRibDist, out float waistToBackThickness, out float waistWidth, out float bellyToBreastDist);
+            var valid = MeasureWaist(chaControl, bodyTopScale, out float waistToRibDist, out float waistToBackThickness, out float waistWidth, out float bellyToBreastDist);
 
             //Check for bad values
             if (!valid) return false;
 
             //Calculate sphere radius based on distance from waist to ribs (seems big, but lerping later will trim much of it), added Math.Min for skinny waists
-            var sphereRadius = GetSphereRadius(waistToRibDist, waistWidth, totalScale);
+            var sphereRadius = GetSphereRadius(waistToRibDist, waistWidth);
             var sphereRadiusMultiplied = sphereRadius * (GetInflationMultiplier() + 1);   
 
             //Store all these values for reuse later
@@ -234,7 +198,7 @@ namespace KK_PregnancyPlus
         /// Calculate the waist mesaurements that are used to set the default belly size
         /// </summary>
         /// <returns>Boolean if all measurements are valid</returns>
-        internal bool MeasureWaist(ChaControl chaControl, Vector3 charScale, Vector3 nHeightScale, Vector3 bodyTopScale,
+        internal bool MeasureWaist(ChaControl chaControl, Vector3 bodyTopScale,
                                    out float waistToRibDist, out float waistToBackThickness, out float waistWidth, out float bellyToBreastDist) 
         {
             //Bone names
@@ -263,8 +227,6 @@ namespace KK_PregnancyPlus
             waistToBackThickness = 0;
             waistWidth = 0;
             bellyToBreastDist = 0;
-
-            var allCharScales = new Vector3(bodyTopScale.x * charScale.x, bodyTopScale.y * charScale.y, bodyTopScale.z * charScale.z);
 
             //Get the characters Y bones to measure from
             var ribBone = PregnancyPlusHelper.GetBone(ChaControl, ribName);
@@ -304,10 +266,10 @@ namespace KK_PregnancyPlus
         /// Get the measurements used to determine the sphere position and radius
         /// </summary>
         /// <returns>Boolean if all measurements are valid</returns>
-        internal bool MeasureSphere(ChaControl chaControl, Vector3 charScale, Vector3 nHeightScale, Vector3 totalScale) 
+        internal bool MeasureSphere(ChaControl chaControl, Vector3 charScale, Vector3 nHeightScale) 
         {
             //Measeurements need to be recalculated from saved values (Does not change waistWidth! or height)
-            var newSphereRadius = GetSphereRadius(bellyInfo.WaistHeight, bellyInfo.WaistWidth, totalScale);
+            var newSphereRadius = GetSphereRadius(bellyInfo.WaistHeight, bellyInfo.WaistWidth);
             var newSphereRadiusMult = newSphereRadius * (GetInflationMultiplier() + 1); 
 
             //Store new values for later checks

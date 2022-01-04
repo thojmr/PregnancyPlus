@@ -81,12 +81,12 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Calculate the initial sphere radius by taking the smaller of the wasit width or waist to rib height. This is pre InflationMultiplier
+        /// Calculate the initial sphere radius by taking the smaller of the wasit width or waist to rib height.static  InflationMultiplier will augment this
         /// </summary>
-        internal float GetSphereRadius(float wasitToRibDist, float wasitWidth, Vector3 charScale) 
+        internal float GetSphereRadius(float wasitToRibDist, float wasitWidth) 
         {
             //The float numbers are just arbitrary numbers that ended up looking porportional
-            var radius = Math.Min(wasitToRibDist/1.25f, wasitWidth/1.3f) * charScale.y;
+            var radius = Math.Min(wasitToRibDist/1.25f, wasitWidth/1.3f);
 
             //Older cards had slightly smaller radiuses because of less accuraate belly bone measurements, adjust these old cards to look similar in size with new bone logic
             radius = infConfig.UseOldCalcLogic() ? radius * 0.9f : radius;
@@ -176,6 +176,7 @@ namespace KK_PregnancyPlus
             return bodyMeshRenderers.Find(x => x.name == BodyMeshName);
         }
 
+
         /// <summary>
         /// Whether the body mesh render is currently active
         /// </summary>
@@ -184,6 +185,7 @@ namespace KK_PregnancyPlus
             var bodySmr = GetBodyMeshRenderer();
             return bodySmr.enabled;
         }
+
 
         /// <summary>
         /// Detect when this mesh is a body mesh nested under a cloth tree (body replacement plugin probably)
@@ -201,7 +203,7 @@ namespace KK_PregnancyPlus
         }
 
 
-        public void logCharMeshInfo(MeshData md, SkinnedMeshRenderer smr, Transform meshRootTf, Vector3 sphereCenter) 
+        public void logCharMeshInfo(MeshData md, SkinnedMeshRenderer smr, Vector3 sphereCenter) 
         {
             if (!PregnancyPlusPlugin.DebugCalcs.Value) return;
 
@@ -209,12 +211,10 @@ namespace KK_PregnancyPlus
             PregnancyPlusPlugin.Logger.LogInfo($" ChaControl.position   {ChaControl.transform.position}");
             PregnancyPlusPlugin.Logger.LogInfo($" smr.position          {Round(smr.transform.position)}");
             PregnancyPlusPlugin.Logger.LogInfo($" smr.rootBone.position {Round(smr.rootBone.position)}");
-            PregnancyPlusPlugin.Logger.LogInfo($" smr.rootBone.name     {smr.rootBone.name}");
-            PregnancyPlusPlugin.Logger.LogInfo($" meshRootTf            {meshRootTf.position}");
+            PregnancyPlusPlugin.Logger.LogInfo($" smr.rootBone.name     {smr.rootBone.name}");            
             PregnancyPlusPlugin.Logger.LogInfo($" bbHeight              {bellyInfo.BellyButtonHeight}");
             PregnancyPlusPlugin.Logger.LogInfo($" sphereCenter          {sphereCenter}");
             PregnancyPlusPlugin.Logger.LogInfo($" meshOffsetPosition    {md.meshOffsetPosition}");
-            PregnancyPlusPlugin.Logger.LogInfo($" meshOffsetRotation    {md.meshOffsetRotation}");
             PregnancyPlusPlugin.Logger.LogInfo($" bindPoseCorrection    {Round(md.bindPoseCorrection)}");
             PregnancyPlusPlugin.Logger.LogInfo($" ************************");
             PregnancyPlusPlugin.Logger.LogInfo($" ");

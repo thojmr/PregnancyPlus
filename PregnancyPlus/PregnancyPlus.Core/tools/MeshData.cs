@@ -12,7 +12,6 @@ namespace KK_PregnancyPlus
         public bool[] bellyVerticieIndexes;//When an index is True, that vertex is near the belly area
         public bool[] alteredVerticieIndexes;//When an index is True that vertex's position has been altered by GetInflatedVerticies()
         public Vector3 meshOffsetPosition = Vector3.zero;//The offset for this mesh in order to move the unskinned verts to the characters root position
-        public Quaternion meshOffsetRotation = Quaternion.identity;
         public Vector3 bindPoseCorrection = Vector3.zero;//The offset that one bindpose is from another, used to align the mesh after skinning (Only happens in KK)
         public bool isFirstPass = true;
 

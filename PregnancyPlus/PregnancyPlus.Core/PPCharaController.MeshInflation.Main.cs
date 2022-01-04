@@ -208,10 +208,9 @@ namespace KK_PregnancyPlus
             if (md[rendererName].originalVertices == null) md[rendererName].originalVertices = new Vector3[smr.sharedMesh.vertexCount];
 
             //Used to align all meshes to 0,0,0 worldspace
-            GetMeshOffset(smr, bodySmr, out var meshOffsetPosition, out var meshOffsetRotation, out var bindPoseCorrection); 
+            GetMeshOffset(smr, bodySmr, out var meshOffsetPosition, out var bindPoseCorrection); 
             md[rendererName].meshOffsetPosition = meshOffsetPosition;
             //TODO I dont think we need rotation either
-            md[rendererName].meshOffsetRotation = meshOffsetRotation; 
             md[rendererName].bindPoseCorrection = bindPoseCorrection; 
 
             Matrix4x4[] boneMatrices = null;
@@ -239,7 +238,7 @@ namespace KK_PregnancyPlus
                 for (int i = 0; i < vertsLength; i++)
                 {
                     //Get the skinned vert position from the T-pose bindpose we computed earlier
-                    origVerts[i] = MeshSkinning.UnskinnedToSKinnedVertex(unskinnedVerts[i], smrTfTransPt, boneMatrices, boneWeights[i], bellyInfo.TotalCharScale);
+                    origVerts[i] = MeshSkinning.UnskinnedToSKinnedVertex(unskinnedVerts[i], smrTfTransPt, boneMatrices, boneWeights[i]);
                 }
 
                 //When this thread task is complete, execute the below in main thread
@@ -289,14 +288,6 @@ namespace KK_PregnancyPlus
                     $" body mesh {smr.name} was nested under cloth object {smr.transform.parent.name}.  This is usually not an issue.");
                 isClothingMesh = false;            
             }
-
-            //TODO I think we caan remove meshRootTF now
-            var meshRootTf = GetMeshRoot(smr);
-            if (meshRootTf == null) 
-            {
-                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" GetInflatedVerticies meshRootTf was null"); 
-                return false;
-            }
             
             // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" SMR pos {smr.transform.position} rot {smr.transform.rotation} parent {smr.transform.parent}");                     
             if (!smr.sharedMesh.isReadable) nativeDetour.Apply();          
@@ -341,7 +332,7 @@ namespace KK_PregnancyPlus
             var bellyTopAC = new ThreadsafeCurve(BellyTopAC);
             var bellyEdgeAC = new ThreadsafeCurve(BellyEdgeAC);
 
-            logCharMeshInfo(md[rendererName], smr, meshRootTf, sphereCenter);
+            logCharMeshInfo(md[rendererName], smr, sphereCenter);
 
             nativeDetour.Undo();
 
@@ -420,6 +411,7 @@ namespace KK_PregnancyPlus
                         //Some other internally measured points/boundaries
                         // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(smr.transform, 0.2f, sphereCenter);
                         // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLine(topExtentPos, topExtentPos + Vector3.back * 4);                        
+                        // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLine(topExtentPos + Vector3.down * topExtentPos.y/10, topExtentPos + Vector3.down * topExtentPos.y/10 + Vector3.back * 4);                        
                         // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLine(backExtentPos, backExtentPos + Vector3.left * 4);                        
                         // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLine(sphereCenter, sphereCenter + Vector3.forward * 1);  
                         // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphere(0.1f, preMorphSphereCenter);
@@ -505,10 +497,9 @@ namespace KK_PregnancyPlus
         /// <param name="position">The bindpose bone position</param>
         /// <param name="rotation">The bindpose bone rotation</param>
         /// <param name="bindPoseCorrection">Some bindposes are offset from others in KK.  This returns that difference to we can align the skinned mesh properly</param>
-        public void GetMeshOffset(SkinnedMeshRenderer smr, SkinnedMeshRenderer bodySmr, out Vector3 position, out Quaternion rotation, out Vector3 bindPoseCorrection)
+        public void GetMeshOffset(SkinnedMeshRenderer smr, SkinnedMeshRenderer bodySmr, out Vector3 position, out Vector3 bindPoseCorrection)
         {
             position = Vector3.zero;
-            rotation = Quaternion.identity;
             bindPoseCorrection = Vector3.zero;
 
             #if KK        
@@ -529,12 +520,10 @@ namespace KK_PregnancyPlus
                 }
 
                 position = -ChaControl.transform.position;
-                rotation = ChaControl.transform.rotation;
             #else
 
                 //Keep the localspace mesh at the characters root position for old calculations sake (Dont want to rewrite them)
                 position = -ChaControl.transform.position;
-                rotation = ChaControl.transform.rotation;
 
             #endif                
         }

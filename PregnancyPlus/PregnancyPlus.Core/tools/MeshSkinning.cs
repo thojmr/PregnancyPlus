@@ -63,7 +63,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Convert an unskinned mesh vert into the default T-pose mesh vert using the bindpose bone positions
         /// </summary>
-        public static Vector3 UnskinnedToSKinnedVertex(Vector3 unskinnedVert, Matrix4x4 RendererLocalToWorldMatrix, Matrix4x4[] boneMatrices, BoneWeight boneWeight, Vector3 charScale)
+        public static Vector3 UnskinnedToSKinnedVertex(Vector3 unskinnedVert, Matrix4x4 RendererLocalToWorldMatrix, Matrix4x4[] boneMatrices, BoneWeight boneWeight)
         {
             if (boneWeight == null) return Vector3.zero;
             if (boneMatrices == null) return Vector3.zero;

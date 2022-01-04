@@ -23,13 +23,13 @@ namespace KK_PregnancyPlus
         internal Vector3[] rayCastTargetPositions = new Vector3[4];
         
         #if KK      
-            //The bones we want to make raycast targets
-            internal string[] rayCastTargetNames = new string[4] { "cf_j_spine02", "cf_j_waist01", "cf_j_thigh00_L", "cf_j_thigh00_R" };        
+            //The bones we want to make raycast targets.  They must be skinned by the body mesh as well
+            internal string[] rayCastTargetNames = new string[4] { "cf_s_spine02", "cf_s_waist01", "cf_s_thigh01_L", "cf_s_thigh01_R" };        
             //Clothing layers, based on clothing name
             internal string[] innerLayers = {"o_bra_a", "o_bra_b", "o_shorts_a", "o_shorts_b", "o_panst_garter1", "o_panst_a", "o_panst_b"};
 
         #elif HS2 || AI                
-            internal string[] rayCastTargetNames = new string[4] { "cf_J_Spine02", "cf_J_Kosi01", "cf_J_LegUp00_L", "cf_J_LegUp00_R" };
+            internal string[] rayCastTargetNames = new string[4] { "cf_J_Spine02_s", "cf_J_Kosi01_s", "cf_J_LegUp01_s_L", "cf_J_LegUp01_s_R" };
             internal string[] innerLayers = {"o_bra_a", "o_bra_b", "o_shorts_a", "o_shorts_b", "o_panst_garter1", "o_panst_a", "o_panst_b"};
             
         #endif   
@@ -154,7 +154,7 @@ namespace KK_PregnancyPlus
 
             //Lerp the final offset based on the inflation size.  Since clothes will be most flatteded at the largest size (40), and no change needed at default belly size
             var rayCastDist = bellyInfo.OriginalSphereRadius/2;            
-            var minOffset = bellyInfo.ScaledWaistWidth/200;       
+            var minOffset = bellyInfo.WaistWidth/200;       
             //Get the mesh offset needed, to make all meshes the same y height so the calculations below line up
             var meshOffset = md[renderKey].bindPoseCorrection;         
 
@@ -163,7 +163,7 @@ namespace KK_PregnancyPlus
             if (meshCollider == null) return null;
   
             //Get the 4 or 5 points inside the body we want to raycast to
-            GetRayCastTargetPositions();
+            GetRayCastTargetPositions(sphereCenter);
 
             if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" Pre-calculating clothing offset values");
 
@@ -396,15 +396,31 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Get the positions of a few bones that we will raycast to
         /// </summary>
-        public void GetRayCastTargetPositions()
+        public void GetRayCastTargetPositions(Vector3 sphereCenter)
         {
+            //Get the t-pose positions of these bones that we want to raycast to
+            var bodySmr = GetBodyMeshRenderer();
+            if (bodySmr == null) return;
+
             for (int i = 0; i < rayCastTargetNames.Length; i++)
             {
-                var bone = PregnancyPlusHelper.GetBone(ChaControl, rayCastTargetNames[i]);
-                //Calculate the bone position including the nHeight y scale since that will align the bones to the mesh better
-                var scaledBonePosition = bone.position + bone.transform.up * (1 - bellyInfo.NHeightScale.y) * bone.position.y;                
-                rayCastTargetPositions[i] = scaledBonePosition;
-                // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphere(0.1f, scaledBonePosition); 
+                //Incase the below fails, fall back to sphere center
+                rayCastTargetPositions[i] = sphereCenter;
+
+                //Get the target bone name index
+                var j = Array.FindIndex(bodySmr.bones, b => b.name == rayCastTargetNames[i]);
+                if (j < 0) 
+                {
+                    PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(charaFileName, ErrorCode.PregPlus_MeshNotSkinnedToBone, 
+                        $" This this bone `{rayCastTargetNames[i]}` is not skinned to the body mesh, so a measurement was skipped."); 
+                    return;
+                };
+
+                //Compute the bind pose position
+                MeshSkinning.GetBoneBindPose(bodySmr.transform.localToWorldMatrix, bodySmr.sharedMesh.bindposes[j], bodySmr.bones[j], out var position, out var rotation);
+
+                rayCastTargetPositions[i] = position;
+                // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphere(0.1f, position); 
             }            
         }
 
@@ -461,7 +477,7 @@ namespace KK_PregnancyPlus
             var inflationOffset = GetInflationClothOffset(infConfigClone);
 
             //The size of the area to spread the flattened offsets over like shrinking center dist -> inflated dist into a small area shifted outside the radius.  So hard to explin with words...
-            var shrinkedOffset = offset + (bellyInfo.ScaledWaistWidth/100 * inflationOffset);
+            var shrinkedOffset = offset + (bellyInfo.WaistWidth/100 * inflationOffset);
 
             // //The closer the cloth is to the end of the sphere radius, the less we want to move it on offset
             var clothFromEndDistLerp = Vector3.Distance(sphereCenterWs, origVertWS)/sphereRadius;    
@@ -486,7 +502,7 @@ namespace KK_PregnancyPlus
             }
 
             //The mininum distance offset for each cloth layer, adjusted by user
-            float additonalOffset = (bellyInfo.ScaledWaistWidth/120) + (bellyInfo.ScaledWaistWidth/100) * GetInflationClothOffset(infConfigClone);
+            float additonalOffset = (bellyInfo.WaistWidth/120) + (bellyInfo.WaistWidth/100) * GetInflationClothOffset(infConfigClone);
 
             //If outer layer then add the offset
             return additonalOffset;
@@ -506,11 +522,11 @@ namespace KK_PregnancyPlus
                                              float waistWidth, Vector3 origVertWS, string meshName) 
         {  
             //The size of the area to spread the flattened offsets over like shrinking center dist -> inflated dist into a small area shifted outside the radius.  So hard to explin with words...
-            float shrinkBy = bellyInfo.ScaledWaistWidth/20 + (bellyInfo.ScaledWaistWidth/20 * GetInflationClothOffset(infConfigClone));
+            float shrinkBy = bellyInfo.WaistWidth/20 + (bellyInfo.WaistWidth/20 * GetInflationClothOffset(infConfigClone));
 
             var inflatedVerWS = (origVertWS - sphereCenterWs).normalized * sphereRadius + sphereCenterWs;//Get the line we want to do measurements on            
             //We dont care about empty space at sphere center, move outwards a bit before determining vector location on the line
-            float awayFromCenter = (bellyInfo.ScaledWaistWidth/3);
+            float awayFromCenter = (bellyInfo.WaistWidth/3);
 
             //The total radial distance after removing the distance we want to ignore
             var totatDist = (sphereRadius - awayFromCenter);
@@ -538,7 +554,7 @@ namespace KK_PregnancyPlus
             }
 
             //The mininum distance offset for each cloth layer, adjusted by user
-            float additonalOffset = (bellyInfo.ScaledWaistWidth/60) + ((bellyInfo.ScaledWaistWidth/60) * GetInflationClothOffset(infConfigClone));
+            float additonalOffset = (bellyInfo.WaistWidth/60) + ((bellyInfo.WaistWidth/60) * GetInflationClothOffset(infConfigClone));
 
             //If outer layer then add the offset
             return additonalOffset;
