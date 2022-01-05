@@ -312,7 +312,7 @@ namespace KK_PregnancyPlus
         /// </summary>
         internal void CheckBellyPreservation()
         {
-            //TODO there has to be a better way to detect swapping characters
+            //TODO there has to be a better way to detect swapping characters?
             //When in studio and the source character has a belly
             if (StudioAPI.InsideStudio && (infConfigHistory.HasAnyValue() || infConfigHistory.HasBlendShape()))
             {

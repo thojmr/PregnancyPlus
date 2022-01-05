@@ -56,7 +56,7 @@ namespace KK_PregnancyPlus
             GetBindPoseBoneTransform(smrMatrix, bindPose, bone, out position, out rotation);
 
             //make bindpose points localspace oriented (The devault value of rotaion here carries the characters origin rotation, and we dont want that)
-            rotation = Quaternion.LookRotation(Vector3.forward, Vector3.up);
+            // rotation = Quaternion.LookRotation(Vector3.forward, Vector3.up);
         }
 
 
@@ -69,7 +69,7 @@ namespace KK_PregnancyPlus
             if (boneMatrices == null) return Vector3.zero;
             
             Matrix4x4 skinningMatrix = GetSkinningMatrix(boneMatrices, boneWeight);
-            return skinningMatrix.MultiplyPoint3x4(unskinnedVert);
+            return RendererLocalToWorldMatrix.MultiplyPoint3x4(skinningMatrix.MultiplyPoint3x4(unskinnedVert));
         }
 
 
@@ -87,8 +87,10 @@ namespace KK_PregnancyPlus
             Vector3 mZ = new Vector3(bindPoseMatrixGlobal.m02, bindPoseMatrixGlobal.m12, bindPoseMatrixGlobal.m22);
             Vector3 mP = new Vector3(bindPoseMatrixGlobal.m03, bindPoseMatrixGlobal.m13, bindPoseMatrixGlobal.m23);
 
-            // Set position into localspace
-            position = smrMatrix.inverse.MultiplyPoint3x4(mP);
+            // Set position
+            // Adjust scale of matrix to compensate for difference in binding scale and model scale
+            float bindScale = mZ.magnitude;
+            position = mP * bindScale;
 
             // Set rotation
             // Check if scaling is negative and handle accordingly

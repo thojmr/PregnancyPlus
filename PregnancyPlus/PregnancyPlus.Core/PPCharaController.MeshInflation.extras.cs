@@ -96,7 +96,7 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>   
-        /// Move the sphereCenter this much up or down to place it better visually
+        /// Move the sphereCenter this much up or down to place it better visually (This used to be way more complucated,  too lazy to reduce it)
         /// </summary>
         internal Vector3 GetBellyButtonOffsetVector(float currentHeight) 
         {
@@ -210,6 +210,7 @@ namespace KK_PregnancyPlus
             PregnancyPlusPlugin.Logger.LogInfo($" ******CharMeshInfo****** {smr.name}");        
             PregnancyPlusPlugin.Logger.LogInfo($" ChaControl.position   {ChaControl.transform.position}");
             PregnancyPlusPlugin.Logger.LogInfo($" smr.position          {Round(smr.transform.position)}");
+            PregnancyPlusPlugin.Logger.LogInfo($" smr.rotation          {smr.transform.localRotation}");
             PregnancyPlusPlugin.Logger.LogInfo($" smr.rootBone.position {Round(smr.rootBone.position)}");
             PregnancyPlusPlugin.Logger.LogInfo($" smr.rootBone.name     {smr.rootBone.name}");            
             PregnancyPlusPlugin.Logger.LogInfo($" bbHeight              {bellyInfo.BellyButtonHeight}");
