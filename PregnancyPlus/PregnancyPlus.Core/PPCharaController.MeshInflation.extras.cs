@@ -215,8 +215,7 @@ namespace KK_PregnancyPlus
             PregnancyPlusPlugin.Logger.LogInfo($" smr.rootBone.name     {smr.rootBone.name}");            
             PregnancyPlusPlugin.Logger.LogInfo($" bbHeight              {bellyInfo.BellyButtonHeight}");
             PregnancyPlusPlugin.Logger.LogInfo($" sphereCenter          {sphereCenter}");
-            PregnancyPlusPlugin.Logger.LogInfo($" meshOffsetPosition    {md.meshOffsetPosition}");
-            PregnancyPlusPlugin.Logger.LogInfo($" bindPoseCorrection    {Round(md.bindPoseCorrection)}");
+            PregnancyPlusPlugin.Logger.LogInfo($" bindPoseCorrection    {md.bindPoseCorrection != Matrix4x4.identity}");
             PregnancyPlusPlugin.Logger.LogInfo($" ************************");
             PregnancyPlusPlugin.Logger.LogInfo($" ");
 

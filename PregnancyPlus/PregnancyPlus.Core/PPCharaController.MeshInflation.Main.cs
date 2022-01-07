@@ -205,21 +205,23 @@ namespace KK_PregnancyPlus
 
             var rendererName = GetMeshKey(smr);
             //initialize original verts if not already
-            if (md[rendererName].originalVertices == null) md[rendererName].originalVertices = new Vector3[smr.sharedMesh.vertexCount];
+            if (md[rendererName].originalVertices == null) md[rendererName].originalVertices = new Vector3[smr.sharedMesh.vertexCount];           
 
-            //Used to align all meshes to 0,0,0 worldspace
-            GetMeshOffset(smr, bodySmr, out var meshOffsetPosition, out var bindPoseCorrection); 
-            md[rendererName].meshOffsetPosition = meshOffsetPosition;
-            md[rendererName].bindPoseCorrection = bindPoseCorrection; 
+            //Fixes some meshes in KK having incorrectly offset y direction bind poses
+            var bindPoseOffset = Matrix4x4.identity;
+            #if KK
+                bindPoseOffset = MeshSkinning.OffsetBindPosePosition(smr, bodySmr, ChaControl, isClothingMesh, UncensorCOMName);  
+                md[rendererName].bindPoseCorrection = bindPoseOffset; 
+            #endif            
 
             Matrix4x4[] boneMatrices = null;
             BoneWeight[] boneWeights = null;
             Vector3[] unskinnedVerts = null; 
-
-            if (PregnancyPlusPlugin.DebugCalcs.Value) MeshSkinning.ShowBindPose(smr);    
+        
+            // if (PregnancyPlusPlugin.DebugCalcs.Value) MeshSkinning.ShowBindPose(smr, bindPoseOffset);    
 
             //Matricies used to compute the T-pose mesh
-            boneMatrices = MeshSkinning.GetBoneMatrices(smr);
+            boneMatrices = MeshSkinning.GetBoneMatrices(smr, bindPoseOffset);
             boneWeights = smr.sharedMesh.boneWeights;
             unskinnedVerts = smr.sharedMesh.vertices;   
 
@@ -237,7 +239,7 @@ namespace KK_PregnancyPlus
                 for (int i = 0; i < vertsLength; i++)
                 {
                     //Get the skinned vert position from the T-pose bindpose we computed earlier
-                    origVerts[i] = MeshSkinning.UnskinnedToSKinnedVertex(unskinnedVerts[i], smrTfTransPt, boneMatrices, boneWeights[i]);
+                    origVerts[i] = MeshSkinning.UnskinnedToSkinnedVertex(unskinnedVerts[i], smrTfTransPt, boneMatrices, boneWeights[i]);
                 }
 
                 //When this thread task is complete, execute the below in main thread
@@ -358,8 +360,8 @@ namespace KK_PregnancyPlus
                     }
 
                     //Get the original skinned vertex position (T-pose) shifted to 0,0,0
-                    var origVertWs = origVerts[i] - bindPoseCorrection;                
-                    var vertDistance = Vector3.Distance(origVertWs, sphereCenter);                    
+                    var origVertLs = origVerts[i];                
+                    var vertDistance = Vector3.Distance(origVertLs, sphereCenter);                    
 
                     //Ignore verts outside the sphere radius
                     if (vertDistance > vertNormalCaluRadius && !PregnancyPlusPlugin.DebugVerts.Value) 
@@ -368,7 +370,7 @@ namespace KK_PregnancyPlus
                         continue;                
                     }
                     
-                    Vector3 inflatedVertWs;                    
+                    Vector3 inflatedVertLs;                    
                     Vector3 verticieToSpherePos;       
                     reduceClothFlattenOffset = 0f; 
 
@@ -380,19 +382,19 @@ namespace KK_PregnancyPlus
                     if (isClothingMesh) 
                     {                        
                         //Calculate clothing offset distance                   
-                        reduceClothFlattenOffset = GetClothesFixOffset(infConfigClone, sphereCenter, sphereRadius, waistWidth, origVertWs, smr.name, clothOffsets[i]);
+                        reduceClothFlattenOffset = GetClothesFixOffset(infConfigClone, sphereCenter, sphereRadius, waistWidth, origVertLs, smr.name, clothOffsets[i]);
                     }
                         
                     //Shift each belly vertex away from sphere center in a sphere pattern.  This is the core of the Preg+ belly shape
-                    verticieToSpherePos = (origVertWs - sphereCenter).normalized * (sphereRadius + reduceClothFlattenOffset) + sphereCenter;                                                    
+                    verticieToSpherePos = (origVertLs - sphereCenter).normalized * (sphereRadius + reduceClothFlattenOffset) + sphereCenter;                                                    
 
                     //Make adjustments to the shape to make it smooth, and feed in user slider input
-                    inflatedVertWs =  SculptInflatedVerticie(infConfigClone, origVertWs, verticieToSpherePos, sphereCenter, waistWidth, 
+                    inflatedVertLs =  SculptInflatedVerticie(infConfigClone, origVertLs, verticieToSpherePos, sphereCenter, waistWidth, 
                                                              preMorphSphereCenter, sphereRadius, backExtentPos, topExtentPos, 
                                                              bellySidesAC, bellyTopAC, bellyEdgeAC);   
 
                     //store the new inflated vert, unshifted from 0,0,0                                                           
-                    inflatedVerts[i] = inflatedVertWs + bindPoseCorrection;                                                  
+                    inflatedVerts[i] = inflatedVertLs;                                                  
                 }                  
 
                 //When this thread task is complete, execute the below in main thread
@@ -450,43 +452,6 @@ namespace KK_PregnancyPlus
 
             //Include user slider values "Move Y" and "Move Z"
             return bellyButtonPos + GetUserMoveTransform() + GetBellyButtonOffsetVector(bbHeight);                                         
-        }
-
-
-        /// <summary>
-        /// Compute the offset needed to align the T-posed mesh back to worldspace 0,0,0, to make mesh computations easier
-        /// </summary>
-        /// <param name="position">The bindpose bone position</param>
-        /// <param name="bindPoseCorrection">Some bindposes are offset from others in KK.  This returns that difference to we can align the skinned mesh properly</param>
-        public void GetMeshOffset(SkinnedMeshRenderer smr, SkinnedMeshRenderer bodySmr, out Vector3 position, out Vector3 bindPoseCorrection)
-        {
-            position = Vector3.zero;
-            bindPoseCorrection = Vector3.zero;
-
-            #if KK        
-                // if (bodySmr)
-                // {
-                //     //Note: this is much more deterministic than the way we used to handle this by fudgine the bounds coordinates
-                //     //We use the waist bone to determine when one smr bindpose is offset from another (Not even sure why this happens only in KK)
-                //     var i = Array.FindIndex(smr.bones, b => b.name == "cf_s_waist01");
-                //     MeshSkinning.GetBindPoseBoneTransform(smr.transform.localToWorldMatrix, smr.sharedMesh.bindposes[i], smr.bones[i], out var smrPosition, out var sRotation);
-
-                //     var j = Array.FindIndex(bodySmr.bones, b => b.name == "cf_s_waist01");
-                //     MeshSkinning.GetBindPoseBoneTransform(bodySmr.transform.localToWorldMatrix, bodySmr.sharedMesh.bindposes[j], bodySmr.bones[j], out var bodySmrPosition, out var bRotation);
-
-                //     //TODO Body Smr is not always in the correct offset either, not for default body mesh anyway
-
-                //     //Subtract the two to get the correct offset to align the meshes after skinning
-                //     bindPoseCorrection = new Vector3(0, -(bodySmrPosition.y - smrPosition.y), 0);
-                // }
-
-                position = -ChaControl.transform.position;
-            #else
-
-                //Keep the localspace mesh at the characters root position for old calculations sake (Dont want to rewrite them)
-                position = -ChaControl.transform.position;
-
-            #endif                
         }
 
 

@@ -45,8 +45,6 @@ namespace KK_PregnancyPlus
         public Dictionary<string, MeshData> md = new Dictionary<string, MeshData>();
         public List<string> ignoreMeshList = new List<string>();//List of mesh names/keys to ignore since they dont have belly verts
 
-
-
         //For fetching uncensor body guid data (bugfix for uncensor body vertex positions)
         public const string UncensorCOMName = "com.deathweasel.bepinex.uncensorselector";
         public const string DefaultBodyFemaleGUID = "Default.Body.Female";

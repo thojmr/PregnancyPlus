@@ -68,9 +68,8 @@ namespace KK_PregnancyPlus
                 nativeDetour.Undo();
                 return false;
             }
-
-            // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DebugMeshVerts(smr, md[renderKey].originalVertices, new Vector3(0, md[renderKey].yOffset, 0));
-            // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DebugMeshVerts(ChaControl.gameObject, md[renderKey].originalVertices, md[renderKey].meshOffset, removeExisting: false);
+            
+            // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DebugMeshVerts(ChaControl.gameObject, md[renderKey].originalVertices, removeExisting: false);
             // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DebugMeshVerts(md[renderKey].originalVertices);
             // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DebugMeshVerts(smr.sharedMesh.vertices);
 
