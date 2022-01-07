@@ -78,6 +78,10 @@ namespace KK_PregnancyPlus
         //This detour override the mesh canAccess state to make it readable/accessable
         public NativeDetourMesh nativeDetour;
 
+        //Stores localspace T-pose skeleton info  (Not used yet, need to get it working)
+        // public Skeleton skeleton = new Skeleton();
+
+
 #region overrides
 
         protected override void OnCardBeingSaved(GameMode currentGameMode)
@@ -89,7 +93,6 @@ namespace KK_PregnancyPlus
             CaptureNewBlendshapeWeights();            
             SetExtendedData(infConfig.Save());
         }
-
 
         protected override void Start() 
         {  
@@ -123,7 +126,11 @@ namespace KK_PregnancyPlus
          
             #endif
 
-            nativeDetour = new NativeDetourMesh();
+            nativeDetour = new NativeDetourMesh();       
+
+            //Set T-pose bones of the character (Not used yet)
+            // skeleton.SetTPoseBones(ChaControl.transform); 
+            // StartCoroutine(skeleton.ClearAllCharBoneRotations(ChaControl.transform));
 
             base.Start();
         }        

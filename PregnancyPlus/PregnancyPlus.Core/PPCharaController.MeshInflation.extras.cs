@@ -210,7 +210,7 @@ namespace KK_PregnancyPlus
             PregnancyPlusPlugin.Logger.LogInfo($" ******CharMeshInfo****** {smr.name}");        
             PregnancyPlusPlugin.Logger.LogInfo($" ChaControl.position   {ChaControl.transform.position}");
             PregnancyPlusPlugin.Logger.LogInfo($" smr.position          {Round(smr.transform.position)}");
-            PregnancyPlusPlugin.Logger.LogInfo($" smr.rotation          {smr.transform.localRotation}");
+            PregnancyPlusPlugin.Logger.LogInfo($" smr.lRotation          {smr.transform.localRotation}");
             PregnancyPlusPlugin.Logger.LogInfo($" smr.rootBone.position {Round(smr.rootBone.position)}");
             PregnancyPlusPlugin.Logger.LogInfo($" smr.rootBone.name     {smr.rootBone.name}");            
             PregnancyPlusPlugin.Logger.LogInfo($" bbHeight              {bellyInfo.BellyButtonHeight}");

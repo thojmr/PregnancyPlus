@@ -16,17 +16,16 @@ namespace KK_PregnancyPlus
             Transform[] skinnedBones = smr.bones;
             Matrix4x4[] boneMatrices = new Matrix4x4[smr.bones.Length];
             Matrix4x4[] bindposes = smr.sharedMesh.bindposes;                         
-            Matrix4x4 smrMatrix = smr.transform.localToWorldMatrix;
-
+            
             for (int j = 0; j < boneMatrices.Length; j++)
             {
                 if (skinnedBones[j] != null && bindposes[j] != null)
                 {                                                            
-                    //Create dummy transform to store a BindPose position
+                    //Create dummy transform to store this bone's BindPose position
                     var synthTransform = new GameObject().transform;
 
                     //Compute bind pose for a bone
-                    GetBoneBindPose(smrMatrix, smr.sharedMesh.bindposes[j], smr.bones[j], out var position, out var rotation);
+                    GetBindPoseBoneTransform(smr, smr.sharedMesh.bindposes[j], smr.bones[j], out var position, out var rotation);
                     synthTransform.position = position;
                     synthTransform.rotation = rotation;
 
@@ -46,58 +45,29 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Get a single Bind pose from a bone and an smr (apply offset or rotation if needed)
-        /// </summary>  
-        /// <param name="position">The T-pose position of this bone, localspace</param>   
-        /// <param name="rotation">The T-pose rotation of this bone, localspace</param>   
-        public static void GetBoneBindPose(Matrix4x4 smrMatrix, Matrix4x4 bindPose, Transform bone, out Vector3 position, out Quaternion rotation) 
-        {
-            //Compute the initial Bindpose for this bone
-            GetBindPoseBoneTransform(smrMatrix, bindPose, bone, out position, out rotation);
-
-            //make bindpose points localspace oriented (The devault value of rotaion here carries the characters origin rotation, and we dont want that)
-            // rotation = Quaternion.LookRotation(Vector3.forward, Vector3.up);
-        }
-
-
-        /// <summary>
         /// Convert an unskinned mesh vert into the default T-pose mesh vert using the bindpose bone positions
         /// </summary>
-        public static Vector3 UnskinnedToSKinnedVertex(Vector3 unskinnedVert, Matrix4x4 RendererLocalToWorldMatrix, Matrix4x4[] boneMatrices, BoneWeight boneWeight)
+        public static Vector3 UnskinnedToSKinnedVertex(Vector3 unskinnedVert, Matrix4x4 smrMatrix, Matrix4x4[] boneMatrices, BoneWeight boneWeight)
         {
             if (boneWeight == null) return Vector3.zero;
             if (boneMatrices == null) return Vector3.zero;
             
             Matrix4x4 skinningMatrix = GetSkinningMatrix(boneMatrices, boneWeight);
-            return RendererLocalToWorldMatrix.MultiplyPoint3x4(skinningMatrix.MultiplyPoint3x4(unskinnedVert));
+            // return smrMatrix.inverse.MultiplyPoint3x4(skinningMatrix.MultiplyPoint3x4(unskinnedVert)); 
+            return (skinningMatrix.MultiplyPoint3x4(unskinnedVert));
         }
 
 
         /// <summary>
         /// Compute the original bone BindPose position and rotation (T-Pose)
         /// </summary>  
-        public static void GetBindPoseBoneTransform(Matrix4x4 smrMatrix, Matrix4x4 bindPose, Transform bone, out Vector3 position, out Quaternion rotation)
+        public static void GetBindPoseBoneTransform(SkinnedMeshRenderer smr, Matrix4x4 bindPose, Transform bone, out Vector3 position, out Quaternion rotation)
         {
-            // Get global matrix for bone
-            Matrix4x4 bindPoseMatrixGlobal = smrMatrix * bindPose.inverse;
+            Matrix4x4 bindPoseMatrix = bindPose.inverse;
 
-            // Get local X, Y, Z, and position of matrix
-            Vector3 mX = new Vector3(bindPoseMatrixGlobal.m00, bindPoseMatrixGlobal.m10, bindPoseMatrixGlobal.m20);
-            Vector3 mY = new Vector3(bindPoseMatrixGlobal.m01, bindPoseMatrixGlobal.m11, bindPoseMatrixGlobal.m21);
-            Vector3 mZ = new Vector3(bindPoseMatrixGlobal.m02, bindPoseMatrixGlobal.m12, bindPoseMatrixGlobal.m22);
-            Vector3 mP = new Vector3(bindPoseMatrixGlobal.m03, bindPoseMatrixGlobal.m13, bindPoseMatrixGlobal.m23);
-
-            // Set position
-            // Adjust scale of matrix to compensate for difference in binding scale and model scale
-            float bindScale = mZ.magnitude;
-            position = mP * bindScale;
-
-            // Set rotation
-            // Check if scaling is negative and handle accordingly
-            if (Vector3.Dot(Vector3.Cross(mX, mY), mZ) >= 0)
-                rotation = Quaternion.LookRotation(mZ, mY);
-            else
-                rotation = Quaternion.LookRotation(-mZ, -mY);
+            //The inverse bindpose of 0 gives us the T-pose position of the bone (Except Blender's FBX imported meshes which are not correct)
+            position = bindPoseMatrix.MultiplyPoint3x4(Vector3.zero); 
+            rotation = new Quaternion();
         }
 
 
@@ -137,7 +107,7 @@ namespace KK_PregnancyPlus
 
         
         /// <summary>
-        /// Add debug lines at each bindPose point to see the bindPose in worldspace
+        /// Add vector lines at each bindPose point to see the bindPose in worldspace
         /// </summary> 
         /// <param name="parent">optional: Attach lines to this parent transform</param>   
         public static void ShowBindPose(SkinnedMeshRenderer smr, Transform parent = null)
@@ -147,26 +117,26 @@ namespace KK_PregnancyPlus
             #elif AI || HS2
                 var lineLen = 0.3f;
             #endif
-
-            Matrix4x4 smrMatrix = smr.transform.localToWorldMatrix;
+            
             for (int i = 0; i < smr.bones.Length; i++)
-            {
+            {            
                 //Get a bone's bindPose position/rotation
-                GetBoneBindPose(smrMatrix, smr.sharedMesh.bindposes[i], smr.bones[i], out var position, out var rotation);        
+                GetBindPoseBoneTransform(smr, smr.sharedMesh.bindposes[i], smr.bones[i], out var position, out var rotation);  
 
                 if (parent == null) 
                 {
-                    DebugTools.DrawLine(position, position + rotation * Vector3.right * lineLen, width: 0.005f);
-                    DebugTools.DrawLine(position, position + rotation * Vector3.up * lineLen, width: 0.005f);
-                    DebugTools.DrawLine(position, position + rotation * Vector3.forward * lineLen, width: 0.005f);
+                    DebugTools.DrawLine(position, position + Vector3.right * lineLen, width: 0.005f);
+                    DebugTools.DrawLine(position, position + Vector3.up * lineLen, width: 0.005f);
+                    DebugTools.DrawLine(position, position + Vector3.forward * lineLen, width: 0.005f);
                 } 
                 else
                 {
-                    DebugTools.DrawLineAndAttach(parent, position, position + rotation * Vector3.right * lineLen, width: 0.005f, removeExisting: false);
-                    DebugTools.DrawLineAndAttach(parent, position, position + rotation * Vector3.up * lineLen, width: 0.005f, removeExisting: false);
-                    DebugTools.DrawLineAndAttach(parent, position, position + rotation * Vector3.forward * lineLen, width: 0.005f, removeExisting: false);
+                    DebugTools.DrawLineAndAttach(parent, position, position + Vector3.right * lineLen, width: 0.005f, removeExisting: false);
+                    DebugTools.DrawLineAndAttach(parent, position, position + Vector3.up * lineLen, width: 0.005f, removeExisting: false);
+                    DebugTools.DrawLineAndAttach(parent, position, position + Vector3.forward * lineLen, width: 0.005f, removeExisting: false);
                 }
             }
         }
+
     }
 }

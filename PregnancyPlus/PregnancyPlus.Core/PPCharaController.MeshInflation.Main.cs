@@ -216,7 +216,7 @@ namespace KK_PregnancyPlus
             BoneWeight[] boneWeights = null;
             Vector3[] unskinnedVerts = null; 
 
-            if (PregnancyPlusPlugin.DebugCalcs.Value) MeshSkinning.ShowBindPose(smr);     
+            if (PregnancyPlusPlugin.DebugCalcs.Value) MeshSkinning.ShowBindPose(smr);    
 
             //Matricies used to compute the T-pose mesh
             boneMatrices = MeshSkinning.GetBoneMatrices(smr);

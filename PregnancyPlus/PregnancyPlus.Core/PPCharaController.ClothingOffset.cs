@@ -417,7 +417,7 @@ namespace KK_PregnancyPlus
                 };
 
                 //Compute the bind pose position
-                MeshSkinning.GetBoneBindPose(bodySmr.transform.localToWorldMatrix, bodySmr.sharedMesh.bindposes[j], bodySmr.bones[j], out var position, out var rotation);
+                MeshSkinning.GetBindPoseBoneTransform(bodySmr, bodySmr.sharedMesh.bindposes[j], bodySmr.bones[j], out var position, out var rotation);
 
                 rayCastTargetPositions[i] = position;
                 // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphere(0.1f, position); 
