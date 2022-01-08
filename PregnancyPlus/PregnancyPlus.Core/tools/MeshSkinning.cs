@@ -21,8 +21,8 @@ namespace KK_PregnancyPlus
             Matrix4x4[] boneMatrices = new Matrix4x4[smr.bones.Length];
             Matrix4x4[] bindposes = smr.sharedMesh.bindposes;      
 
-            if (PregnancyPlusPlugin.DebugCalcs.Value && bindPoseOffset != Matrix4x4.identity) 
-                PregnancyPlusPlugin.Logger.LogInfo($" BinsPoseOffset applied {bindPoseOffset.GetColumn(3)}");                      
+            // if (PregnancyPlusPlugin.DebugCalcs.Value && bindPoseOffset != Matrix4x4.identity) 
+            //     PregnancyPlusPlugin.Logger.LogInfo($" BinsPoseOffset applied {Matrix.GetPosition(bindPoseOffset)}");                      
             
             //For each bone, compute its bindpose position, and get the bone matrix
             for (int j = 0; j < boneMatrices.Length; j++)
@@ -89,7 +89,7 @@ namespace KK_PregnancyPlus
 
             //The inverse bindpose of 0,0,0 gives us the T-pose position of the bone (Except Blender's FBX imported meshes that we have to correct first with an offset)
             position = bindPoseMatrix.MultiplyPoint(Vector3.zero); 
-            rotation = Quaternion.LookRotation(bindPoseMatrix.GetColumn(2), bindPoseMatrix.GetColumn(1));
+            rotation = Matrix.GetRotation(bindPoseMatrix);
         }
 
 
@@ -99,17 +99,18 @@ namespace KK_PregnancyPlus
         public static Matrix4x4 OffsetSmrRotation(Matrix4x4 smrMatrix)
         {
             //Remove position from the inverse transform since we only want to apply rotation
-            return Matrix4x4.TRS(smrMatrix.GetColumn(3), Quaternion.identity, Vector3.one).inverse * smrMatrix;
+            return Matrix4x4.TRS(Matrix.GetPosition(smrMatrix), Quaternion.identity, Vector3.one).inverse * smrMatrix;
         }
 
 
-        /// <summary>
-        /// In KK and KKS some bindPoses need to be vertically adjusted since they are not in the correct position (Mostly default clothing and Uncensor need it)
+/// <summary>
+        /// In Koikatsu some bindPoses need to be vertically adjusted sincce they are not correct
         /// </summary>  
         public static Matrix4x4 OffsetBindPosePosition(SkinnedMeshRenderer smr, SkinnedMeshRenderer bodySmr, ChaControl chaControl, bool isClothingMesh, string UncensorCOMName)
         {
+            //  This lines up the body mesh infaltion with clothing mesh inflation
             //** Note: There seem to be unlimited ways to incorrectly import a mesh into Koikatsu (offset too high/low, mesh rotated sideways, offset left/right), 
-            //  so this code is here to correct the most frequently seen mistakes (vertical offsets) and even then it's a best guess correction.  Can't fix people, and I dont want to alter skinned meshes directly.                
+            //  so this code is here to correct the most frequently seen mistakes (vertical offsets) and even then it's a best guess correction.  Can't fix people, and I dont want to alter skinned meshes.                
 
             //The desired final offset of a badly imported mesh
             var yOffset = 0f;
@@ -121,8 +122,9 @@ namespace KK_PregnancyPlus
             //  Bounds are the only way I could come up with to detect an offset mesh...
             var isLikeDefaultBody = smr.localBounds.center.y < 0 && smr.sharedMesh.bounds.center.y < 0;
             //When the mesh is imported too high, we have to offset it down to line up with other clothing before computing belly
-            var needsyOffsetClothHalf = isClothingMesh && smr.localBounds.center.y > 0 && smr.sharedMesh.bounds.center.y < meshYPosLs * 0.33f;
-            var needsyOffsetClothFull = isClothingMesh && smr.localBounds.center.y > 0 && smr.sharedMesh.bounds.center.y < meshYPosLs * 0.75f;
+            //TODO since we had to negate these, we should just change the logic to avoid the negation, too lazy right now
+            var needsyOffsetClothHalf = !(smr.localBounds.center.y < 0 && smr.sharedMesh.bounds.center.y > meshYPosLs * 0.33f);
+            var needsyOffsetClothFull = !(smr.localBounds.center.y < 0 && smr.sharedMesh.bounds.center.y > meshYPosLs * 0.75f);
 
             //When the mesh is imported at 0,0,0, we have to offset it up to line up with other clothing before computing belly
             //  This offset may happen less frequently, but ill leave it in for now
@@ -130,41 +132,40 @@ namespace KK_PregnancyPlus
             var bodyMeshYPosLs = meshYPosLs;
             if (meshYPosLs == 0f && bodySmr != null)
             {
-                //TODO does this still work after BindPose changes?
                 bodyMeshYPosLs = chaControl.transform.InverseTransformPoint(bodySmr.transform.position).y;
-                needsyOffsetClothFullUp = isClothingMesh && smr.localBounds.center.y > 0 && smr.sharedMesh.bounds.center.y > bodyMeshYPosLs * 0.33f;
+                needsyOffsetClothFullUp = !(smr.localBounds.center.y < 0 && smr.sharedMesh.bounds.center.y < bodyMeshYPosLs * 0.33f);
             }
 
-            //If default uncensor body
-            if (!isClothingMesh && (isDefaultBody || isLikeDefaultBody))
+            //If uncensor body
+            if (!isClothingMesh && (isDefaultBody || isLikeDefaultBody)) 
             {
-                //Uncensor mesh is about twice the height in local space than custom body meshs, so save the current offset to be used later
-                yOffset = -meshYPosLs;
+                //Uncensor mesh is about twice the height in local space than default mesh, so save the current offset to be used later
+                yOffset = meshYPosLs;
                 if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] setting yOffset {yOffset} isDefaultBody {isDefaultBody} isLikeDefaultBody {isLikeDefaultBody}");                           
             }                                                                                                                     
-            else if (needsyOffsetClothFull) 
+            else if (isClothingMesh && needsyOffsetClothFull) 
             {
                 //Offset by the full mesh root height down
-                yOffset = -meshYPosLs;
+                yOffset = meshYPosLs;
                 if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] setting yOffset {yOffset} needsyOffsetClothFull");                                                                                       
             }
-            else if (needsyOffsetClothFullUp) 
+            else if (isClothingMesh && needsyOffsetClothFullUp) 
             {
                 //Offset by the full mesh root height up.  Use bodySmr.position since meshYPosLs height will be 0
-                yOffset = bodyMeshYPosLs;
+                yOffset = -bodyMeshYPosLs;
                 if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] setting yOffset {yOffset} needsyOffsetClothFullUp");                                                                                       
             }                                                                                                                       
-            else if (needsyOffsetClothHalf) 
+            else if (isClothingMesh && needsyOffsetClothHalf) 
             {
                 //Offset by half the mesh root height down (What app imported these meshes at +0.5x height?  lol)
-                yOffset = -meshYPosLs/2;
+                yOffset = meshYPosLs/2;
                 if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] setting yOffset {yOffset} needsyOffsetClothHalf");                                                                                       
             }                                                                                                                      
 
-            if (PregnancyPlusPlugin.DebugCalcs.Value && yOffset != 0) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] local bounds {smr.localBounds.center.y} sm.bounds {smr.sharedMesh.bounds.center.y} meshYPosLs {meshYPosLs} smr.position {smr.transform.position}");                           
+            if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] local bounds {smr.localBounds.center.y} sm.bounds {smr.sharedMesh.bounds.center.y} meshYPosLs {meshYPosLs} smr.position {smr.transform.position}");                           
             
             //Add the offset as a matrix
-            return Matrix4x4.TRS(new Vector3(0, yOffset, 0), Quaternion.identity, Vector3.one).inverse;
+            return Matrix4x4.TRS(new Vector3(0, yOffset, 0), Quaternion.identity, Vector3.one);
         }
 
 
@@ -222,15 +223,15 @@ namespace KK_PregnancyPlus
 
                 if (parent == null) 
                 {
-                    DebugTools.DrawLine(position, position + Vector3.right * lineLen, width: 0.005f);
-                    DebugTools.DrawLine(position, position + Vector3.up * lineLen, width: 0.005f);
-                    DebugTools.DrawLine(position, position + Vector3.forward * lineLen, width: 0.005f);
+                    DebugTools.DrawLine(position + Vector3.right * lineLen, position);
+                    DebugTools.DrawLine(position + Vector3.up * lineLen, position);
+                    DebugTools.DrawLine(position + Vector3.forward * lineLen, position);
                 } 
                 else
                 {
-                    DebugTools.DrawLineAndAttach(parent, position, position + Vector3.right * lineLen, width: 0.005f, removeExisting: false);
-                    DebugTools.DrawLineAndAttach(parent, position, position + Vector3.up * lineLen, width: 0.005f, removeExisting: false);
-                    DebugTools.DrawLineAndAttach(parent, position, position + Vector3.forward * lineLen, width: 0.005f, removeExisting: false);
+                    DebugTools.DrawLineAndAttach(parent, position + Vector3.right * lineLen, position, removeExisting: false);
+                    DebugTools.DrawLineAndAttach(parent, position + Vector3.up * lineLen, position, removeExisting: false);
+                    DebugTools.DrawLineAndAttach(parent, position + Vector3.forward * lineLen, position, removeExisting: false);
                 }
             }
         }

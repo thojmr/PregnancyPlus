@@ -72,6 +72,8 @@ namespace KK_PregnancyPlus
             // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DebugMeshVerts(ChaControl.gameObject, md[renderKey].originalVertices, removeExisting: false);
             // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DebugMeshVerts(md[renderKey].originalVertices);
             // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DebugMeshVerts(smr.sharedMesh.vertices);
+            // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DebugMeshVerts(ChaControl.gameObject, md[renderKey].originalVertices, ChaControl.transform.position);
+            // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DebugMeshVerts(ChaControl.gameObject, smr.sharedMesh.vertices, ChaControl.transform.position);
 
             //Create or update the smr blendshape
             ApplyBlendShapeWeight(smr, renderKey, needsOverwrite, blendShapeTempTagName);

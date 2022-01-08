@@ -168,7 +168,7 @@ public static class DebugTools
     /// <summary>
     /// Draw a debug line renderer
     /// </summary>
-    public static GameObject DrawLine(Vector3 fromVector = new Vector3(), Vector3 toVector = new Vector3(), float width = 0.005f, bool useWorldSpace = false)
+    public static GameObject DrawLine(Vector3 fromVector = new Vector3(), Vector3 toVector = new Vector3(), float width = 0f, bool useWorldSpace = false)
     {
         //Draw forward by default
         if (toVector == Vector3.zero) toVector = new Vector3(0, 0, 1);
@@ -176,16 +176,28 @@ public static class DebugTools
         var lineRendGO = new GameObject("DebugLineRenderer");
         var lineRenderer = lineRendGO.AddComponent<LineRenderer>();
 
-        #if HS2 || AI
-            width = width * 10;
-        #endif
+        if (width == 0f)
+        {
+            #if KK
+                var minWidth = 0.005f;
+            #elif HS2 || AI
+                var minWidth = 0.005f * 10;
+            #endif
+
+            //Make the width larger for longer lines, and set a minimumWidth too
+            width = Mathf.Max(Vector3.Distance(fromVector, toVector)/30, minWidth);
+        } else {
+            #if HS2 || AI
+                width = width * 10;
+            #endif
+        }
         
         lineRenderer.useWorldSpace = useWorldSpace;
         lineRenderer.startColor = Color.blue;
         lineRenderer.endColor = Color.red;
         // lineRenderer.material = new Material(CommonLib.LoadAsset<Shader>("chara/goo.unity3d", "goo.shader"));
         lineRenderer.startWidth = width;
-        lineRenderer.endWidth = width;
+        lineRenderer.endWidth = width/5;
         lineRenderer.SetPosition(0, fromVector);
         lineRenderer.SetPosition(1, toVector);
         lineRenderer.enabled = true; // show it

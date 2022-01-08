@@ -158,6 +158,7 @@
     <Compile Include="..\PregnancyPlus.Core\tools\Smoothing\SmoothMesh.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\ErrorCode.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\MeshInflateFlags.cs" />
+    <Compile Include="..\PregnancyPlus.Core\Tools\Matrix.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\MeshData.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\MeshSkinning.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\SpoopyScarySkeleton.cs" />

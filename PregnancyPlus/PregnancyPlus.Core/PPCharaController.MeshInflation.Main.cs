@@ -173,7 +173,7 @@ namespace KK_PregnancyPlus
             if (!hasVerticies) return false; 
 
             if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" ");
-            if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" ComputeMeshVerts for {smr.name}");
+            if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" Compute Mesh Verts for {smr.name}");
 
             //Get the newly created/or existing MeshData obj
             md.TryGetValue(renderKey, out _md);
@@ -181,6 +181,7 @@ namespace KK_PregnancyPlus
             //On first pass we need to skin the mesh to a T-pose before computing the inflated verts (Threaded as well)
             if (_md.isFirstPass)
             {
+                if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" Computing BindPoses for {smr.name}");
                 return ComputeBindPoseMesh(smr, bodyMeshRenderer, isClothingMesh, meshInflateFlags);            
             }
 
@@ -218,7 +219,7 @@ namespace KK_PregnancyPlus
             BoneWeight[] boneWeights = null;
             Vector3[] unskinnedVerts = null; 
         
-            // if (PregnancyPlusPlugin.DebugCalcs.Value) MeshSkinning.ShowBindPose(smr, bindPoseOffset);    
+            if (PregnancyPlusPlugin.DebugCalcs.Value) MeshSkinning.ShowBindPose(smr, bindPoseOffset);    
 
             //Matricies used to compute the T-pose mesh
             boneMatrices = MeshSkinning.GetBoneMatrices(smr, bindPoseOffset);
