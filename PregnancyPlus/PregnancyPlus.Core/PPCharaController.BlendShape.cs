@@ -475,14 +475,14 @@ namespace KK_PregnancyPlus
             if (md[renderKey].VertexCount != meshCopyTarget.vertexCount) 
             {
                 PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(charaFileName, ErrorCode.PregPlus_IncorrectVertCount, 
-                    $"CreateBlendShape > smr.sharedMesh '{renderKey}' has incorrect vert count {md[renderKey].inflatedVertices.Length}|{meshCopyTarget.vertexCount}");  
+                    $"CreateBlendShape > smr.sharedMesh '{renderKey}' has incorrect vert count {md[renderKey].VertexCount}|{meshCopyTarget.vertexCount}");  
 
                 nativeDetour.Undo();
                 return null;
             }
 
             //Calculate the new normals, but don't show them.  We just want it for the blendshape shape target
-            meshCopyTarget.vertices = md[renderKey].inflatedVertices;
+            meshCopyTarget.vertices = md[renderKey].HasSmoothedVerts ? md[renderKey].smoothedVertices : md[renderKey].inflatedVertices;
             meshCopyTarget.RecalculateBounds();
             NormalSolver.RecalculateNormals(meshCopyTarget, 40f, md[renderKey].alteredVerticieIndexes);
             //Since we are hacking this readable state, prevent hard crash when calculating tangents on originally unreadable meshes

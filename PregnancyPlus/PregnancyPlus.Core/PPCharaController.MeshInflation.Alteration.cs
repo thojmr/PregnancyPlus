@@ -125,6 +125,8 @@ namespace KK_PregnancyPlus
         /// <param name="includeClothMesh">Optionally include all cloth meshes as well</param>
         internal IEnumerator ApplySmoothingCoroutine(bool includeClothMesh = false)
         {
+            var anySmoothingStarted = false;
+
             //Check that inflationConfig has a value
             if (!infConfig.HasAnyValue()) yield return null;
             if (infConfig.inflationSize == 0) yield return null;
@@ -132,9 +134,6 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" ApplySmoothing({includeClothMesh})");
 
             PregnancyPlusGui.StartTextCountIncrement();
-
-            //Trigger mesh recalculation to overwrite last smoothing pass changes if any existed
-            MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: true, _freshStart: true), "ApplySmoothingCoroutine");
 
             //Smooth all mesh around the belly area including clothing
             if (includeClothMesh)
@@ -146,7 +145,8 @@ namespace KK_PregnancyPlus
                 foreach(var renderKey in keyList) 
                 {
                     var smr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderKey, searchInactive: false);
-                    SmoothSingleMesh(smr, renderKey);
+                    var _started = SmoothSingleMesh(smr, renderKey);
+                    if (_started) anySmoothingStarted = true;
                 }
             } 
             //Only smooth the body mesh around the belly area
@@ -155,8 +155,12 @@ namespace KK_PregnancyPlus
                 var bodySmr = PregnancyPlusHelper.GetMeshRendererByName(ChaControl, BodyMeshName);
                 var renderKey = GetMeshKey(bodySmr);
 
-                SmoothSingleMesh(bodySmr, renderKey);     
-            }            
+                var started = SmoothSingleMesh(bodySmr, renderKey);     
+                if (started) anySmoothingStarted = true;
+            }       
+
+            //Stop timer if not smoothing is queued
+            if (!anySmoothingStarted) CheckForEndOfSmoothing();  
 
             yield return null;
         }        
@@ -165,15 +169,15 @@ namespace KK_PregnancyPlus
         /// <summary>   
         /// Smooths a single mesh with lapacian smoothing
         /// </summary>   
-        internal void SmoothSingleMesh(SkinnedMeshRenderer smr, string renderKey, Func<bool> callback = null)
+        internal bool SmoothSingleMesh(SkinnedMeshRenderer smr, string renderKey)
         {
-            if (smr == null || renderKey == null) return;
-            
+            if (smr == null || renderKey == null) return false;
+                        
             //Check that this mesh has computed inflated verticies            
             if (!md.ContainsKey(renderKey) || ! md[renderKey].HasInflatedVerts) 
             {
-                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" No inflated verts found for SmoothSingleMesh");
-                return;
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" No inflated verts found for SmoothSingleMesh {smr.name}");
+                return false;
             }
 
             //Make a copy of the mesh. We dont want to affect the existing for this
@@ -189,7 +193,6 @@ namespace KK_PregnancyPlus
 
             nativeDetour.Undo();
 
-
             // Lapacian Smoothing is exetemely costly, and can take multiple seconds to compute with even a small mesh
             //  So we want to put each mesh smoothing pass in its own thread, and apply the result when done
             WaitCallback threadAction = (System.Object stateInfo) => 
@@ -203,9 +206,7 @@ namespace KK_PregnancyPlus
                 {
                     //Re-trigger ApplyInflation to set the new smoothed mesh
                     ApplySmoothResults(newVerts, renderKey, smr);
-
-                    //Stop updating GUI count when done
-                    if (threading.threadCount == 0) PregnancyPlusGui.StopTextCountIncrement();
+                    CheckForEndOfSmoothing();
                 };
 
                 //Append to result queue.  Will execute on next Update()
@@ -215,6 +216,8 @@ namespace KK_PregnancyPlus
 
             //Start this threaded task, and will be watched in Update() for completion
             threading.Start(threadAction);
+
+            return true;
         }
 
 
@@ -224,11 +227,20 @@ namespace KK_PregnancyPlus
         internal void ApplySmoothResults(Vector3[] newMesh, string renderKey, SkinnedMeshRenderer smr = null) 
         {
             //Set the new smoothed mesh verts
-            if (newMesh != null) md[renderKey].inflatedVertices = newMesh;
+            if (newMesh != null) md[renderKey].smoothedVertices = newMesh;
 
             if (smr == null) smr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderKey, searchInactive: false);
+
             //Re-trigger ApplyInflation to set the new smoothed mesh           
             ApplyInflation(smr, renderKey, true, blendShapeTempTagName);            
+        }
+
+
+        //Stop the smoothing timer when done with threads
+        internal void CheckForEndOfSmoothing()
+        {
+            //Stop updating GUI count when done
+            if (threading.threadCount == 0) PregnancyPlusGui.StopTextCountIncrement();
         }
 
     }

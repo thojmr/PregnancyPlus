@@ -6,17 +6,36 @@ namespace KK_PregnancyPlus
     //Contains the mesh vert data for each character mesh.  Used to compute the belly shape
     public class MeshData
     {        
-        public Vector3[] originalVertices;//The original untouched verts from the mesh
-        public Vector3[] inflatedVertices;//The verts from the mesh after being inflated        
+        public Vector3[] originalVertices;//The original untouched verts from the BindPose mesh
+        internal Vector3[] _inflatedVertices;//The verts from the BindPose mesh after being inflated        
+        public Vector3[] smoothedVertices;//The inflated verts with lapacian smoothing applied (Use selected smooth belly mesh button)    
         public float[] clothingOffsets;//The distance we want to offset each vert from the body mesh when inflated
         public bool[] bellyVerticieIndexes;//When an index is True, that vertex is near the belly area
         public bool[] alteredVerticieIndexes;//When an index is True that vertex's position has been altered by GetInflatedVerticies()
-        public Matrix4x4 bindPoseCorrection = Matrix4x4.identity;//The offset that one bindpose is from another, used to align the mesh after skinning (Only happens in KK)
+        public Matrix4x4 bindPoseCorrection = Matrix4x4.identity;//The offset that one bindpose is from it's true position, used to virtually align the smr bone before skinning (Only happens in KK)
         public bool isFirstPass = true;
+
+
+        //Need to clear out smoothed verts when inflated are ever set
+        public Vector3[] inflatedVertices
+        {
+            get { return _inflatedVertices; }
+            set 
+            {
+                smoothedVertices = null; 
+                _inflatedVertices = value;
+            }
+        }
+
 
         public bool HasInflatedVerts
         {
-            get {return inflatedVertices != null && inflatedVertices.Length > 0;}
+            get {return _inflatedVertices != null && _inflatedVertices.Length > 0;}
+        }
+
+        public bool HasSmoothedVerts
+        {
+            get {return smoothedVertices != null && smoothedVertices.Length > 0;}
         }
 
         public bool HasOriginalVerts
