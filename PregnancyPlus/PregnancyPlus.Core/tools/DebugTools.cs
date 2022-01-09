@@ -122,8 +122,7 @@ public static class DebugTools
     /// </summary>
     public static GameObject DrawSphere(float radius = 0.05f, Vector3 position = new Vector3())
     {
-        var sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
-        // sphere.GetComponent<Renderer>().material = new Material(Shader.Find("Transparent/Diffuse")); // assign the selected material to it
+        var sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;        
             
         #if HS2 || AI
             radius = radius * 10;
@@ -132,12 +131,14 @@ public static class DebugTools
         sphere.name = "DebugSphere";
         sphere.position = position;
         sphere.localScale = new Vector3(radius, radius, radius);
-        sphere.GetComponent<Renderer>().material.color = Color.white;
-        sphere.GetComponent<Renderer>().enabled = true; // show it
+        var sphereRenderer = sphere.GetComponent<Renderer>();
+        sphereRenderer.material.color = Color.grey;
+        sphereRenderer.enabled = true; // show it
+        // sphereRenderer.material = new Material(Shader.Find("Transparent/Diffuse")); // this one didnt work
+        sphereRenderer.material = new Material(Shader.Find("Sprites/Default"));
 
         return sphere.gameObject;
     }
-
 
     
     /// <summary>
@@ -150,6 +151,7 @@ public static class DebugTools
         //If parent has debug spheres delete it
         if (removeExisting)
         {
+            //TODO did I do this correctly?  lol. Should it be GetComponentsInChildren?
             GameObject[] children = parent.GetComponents<GameObject>();
             foreach (var child in children )
             {
@@ -166,7 +168,7 @@ public static class DebugTools
 
 
     /// <summary>
-    /// Draw a debug line renderer
+    /// Draw a line renderer between two Vectors
     /// </summary>
     public static GameObject DrawLine(Vector3 fromVector = new Vector3(), Vector3 toVector = new Vector3(), float width = 0f, bool useWorldSpace = false)
     {
@@ -195,7 +197,7 @@ public static class DebugTools
         lineRenderer.useWorldSpace = useWorldSpace;
         lineRenderer.startColor = Color.blue;
         lineRenderer.endColor = Color.red;
-        // lineRenderer.material = new Material(CommonLib.LoadAsset<Shader>("chara/goo.unity3d", "goo.shader"));
+        lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
         lineRenderer.startWidth = width;
         lineRenderer.endWidth = width/5;
         lineRenderer.SetPosition(0, fromVector);
@@ -207,9 +209,9 @@ public static class DebugTools
 
 
     /// <summary>
-    /// Overload for DrawLine when you just want to set a forward line length
+    /// Overload for DrawLine when you just want to set a forward line length from a single Vector
     /// </summary>
-    public static GameObject DrawLine(float length, float width = 0.5f)
+    public static GameObject DrawLine(float length, float width = 0f)
     {        
         return DrawLine(Vector3.zero, new Vector3(0, 0, 1)* length, width);
     }
@@ -225,6 +227,7 @@ public static class DebugTools
 
         //If parent has a debug sphere delete it
         var existingLine = parent.Find("DebugLineRenderer");
+        //TODO need to delete ALL of them, not just one
         if (existingLine != null && removeExisting)
         {
             GameObject.DestroyImmediate(existingLine.gameObject);
@@ -254,17 +257,18 @@ public static class DebugTools
         if (verticies == null || verticies.Length <= 0) return;
 
         //Clear old spheres from previous runs
-        if (removeExisting) DebugTools.DrawSphereAndAttach(go.transform, 0.01f, Vector3.zero, removeExisting: true);
+        if (removeExisting) DrawSphereAndAttach(go.transform, 0.01f, Vector3.zero, removeExisting: true);
 
         for (int i = 0; i < verticies.Length; i++)
         {
             //Place spheres on each vert to debug the mesh calculated position relative to other meshes
-            DebugTools.DrawSphereAndAttach(go.transform, 0.01f, verticies[i] - visualOffset, removeExisting: false, worldPositionStays);  
+            DrawSphereAndAttach(go.transform, 0.01f, verticies[i] - visualOffset, removeExisting: false, worldPositionStays);  
         } 
     }
 
+
     /// <summary>
-    /// Overload for DebugMeshVerts when you just want worldspace positions
+    /// Overload for DebugMeshVerts when you just want worldspace positions (unattached)
     /// </summary>
     public static void DebugMeshVerts(Vector3[] verticies, Vector3 visualOffset = new Vector3()) {
         if (verticies == null || verticies.Length <= 0) return;
@@ -272,7 +276,7 @@ public static class DebugTools
         for (int i = 0; i < verticies.Length; i++)
         {
             //Place spheres on each vert to debug the mesh calculated position relative to other meshes
-            DebugTools.DrawSphere(0.01f, verticies[i] - visualOffset);  
+            DrawSphere(0.01f, verticies[i] - visualOffset);  
         } 
     }
 }
