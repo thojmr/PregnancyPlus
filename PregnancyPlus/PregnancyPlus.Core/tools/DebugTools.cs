@@ -122,8 +122,7 @@ public static class DebugTools
     /// </summary>
     public static GameObject DrawSphere(float radius = 0.05f, Vector3 position = new Vector3())
     {
-        var sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
-        // sphere.GetComponent<Renderer>().material = new Material(Shader.Find("Transparent/Diffuse")); // assign the selected material to it
+        var sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;        
             
         #if HS2 || AI
             radius = radius * 10;
@@ -132,12 +131,14 @@ public static class DebugTools
         sphere.name = "DebugSphere";
         sphere.position = position;
         sphere.localScale = new Vector3(radius, radius, radius);
-        sphere.GetComponent<Renderer>().material.color = Color.white;
-        sphere.GetComponent<Renderer>().enabled = true; // show it
+        var sphereRenderer = sphere.GetComponent<Renderer>();
+        sphereRenderer.material.color = Color.grey;
+        sphereRenderer.enabled = true; // show it
+        // sphereRenderer.material = new Material(Shader.Find("Transparent/Diffuse")); // this one didnt work
+        sphereRenderer.material = new Material(Shader.Find("Sprites/Default"));
 
         return sphere.gameObject;
     }
-
 
     
     /// <summary>
@@ -147,11 +148,16 @@ public static class DebugTools
     {
         var sphere = DrawSphere(radius);
 
-        //If parent has a debug sphere delete it
-        var existingSphere = parent.Find("DebugSphere");
-        if (existingSphere != null && removeExisting)
+        //If parent has debug spheres delete it
+        if (removeExisting)
         {
-            GameObject.DestroyImmediate(existingSphere.gameObject);
+            //TODO did I do this correctly?  lol. Should it be GetComponentsInChildren?
+            GameObject[] children = parent.GetComponents<GameObject>();
+            foreach (var child in children )
+            {
+                if(child.name == "DebugSphere")
+                    GameObject.DestroyImmediate(child); 
+            }
         }
 
         //Attach and move to parent position
@@ -162,9 +168,9 @@ public static class DebugTools
 
 
     /// <summary>
-    /// Draw a debug line renderer
+    /// Draw a line renderer between two Vectors
     /// </summary>
-    public static GameObject DrawLine(Vector3 fromVector = new Vector3(), Vector3 toVector = new Vector3(), float width = 0.002f)
+    public static GameObject DrawLine(Vector3 fromVector = new Vector3(), Vector3 toVector = new Vector3(), float width = 0f, bool useWorldSpace = false)
     {
         //Draw forward by default
         if (toVector == Vector3.zero) toVector = new Vector3(0, 0, 1);
@@ -172,16 +178,28 @@ public static class DebugTools
         var lineRendGO = new GameObject("DebugLineRenderer");
         var lineRenderer = lineRendGO.AddComponent<LineRenderer>();
 
-        #if HS2 || AI
-            width = width * 7;
-        #endif
+        if (width == 0f)
+        {
+            #if KK
+                var minWidth = 0.005f;
+            #elif HS2 || AI
+                var minWidth = 0.005f * 10;
+            #endif
+
+            //Make the width larger for longer lines, and set a minimumWidth too
+            width = Mathf.Max(Vector3.Distance(fromVector, toVector)/30, minWidth);
+        } else {
+            #if HS2 || AI
+                width = width * 10;
+            #endif
+        }
         
-        lineRenderer.useWorldSpace = false;
+        lineRenderer.useWorldSpace = useWorldSpace;
         lineRenderer.startColor = Color.blue;
         lineRenderer.endColor = Color.red;
-        // lineRenderer.material = new Material(CommonLib.LoadAsset<Shader>("chara/goo.unity3d", "goo.shader"));
+        lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
         lineRenderer.startWidth = width;
-        lineRenderer.endWidth = width;
+        lineRenderer.endWidth = width/5;
         lineRenderer.SetPosition(0, fromVector);
         lineRenderer.SetPosition(1, toVector);
         lineRenderer.enabled = true; // show it
@@ -191,9 +209,9 @@ public static class DebugTools
 
 
     /// <summary>
-    /// Overload for DrawLine when you just want to set a forward line length
+    /// Overload for DrawLine when you just want to set a forward line length from a single Vector
     /// </summary>
-    public static GameObject DrawLine(float length, float width = 0.5f)
+    public static GameObject DrawLine(float length, float width = 0f)
     {        
         return DrawLine(Vector3.zero, new Vector3(0, 0, 1)* length, width);
     }
@@ -203,12 +221,13 @@ public static class DebugTools
     /// Draw line and attach to a parent transform (optional offset)
     /// </summary>
     public static void DrawLineAndAttach(Transform parent, Vector3 fromVector = new Vector3(), Vector3 toVector = new Vector3(), Vector3 localPosition = new Vector3(), 
-                                         bool removeExisting = true, bool worldPositionStays = false)
+                                         bool removeExisting = true, bool worldPositionStays = false, float width = 0.001f)
     {
-        var line = DrawLine(fromVector, toVector);
+        var line = DrawLine(fromVector, toVector, width);
 
         //If parent has a debug sphere delete it
         var existingLine = parent.Find("DebugLineRenderer");
+        //TODO need to delete ALL of them, not just one
         if (existingLine != null && removeExisting)
         {
             GameObject.DestroyImmediate(existingLine.gameObject);
@@ -229,22 +248,35 @@ public static class DebugTools
         DrawLineAndAttach(parent, Vector3.zero, new Vector3(0, 0, 1)* length, localPosition, removeExisting, worldPositionStays);
     }
 
-
-
+    
     /// <summary>
     /// This will create a sphere on every vert in the given mesh so you can visually see changes in a computed mesh
     ///     (In Koikatsu this only works in character maker, not studio)
     /// </summary>
-    public static void DebugMeshVerts(SkinnedMeshRenderer smr, Vector3[] verticies, Vector3 visualOffset = new Vector3()) {
+    public static void DebugMeshVerts(GameObject go, Vector3[] verticies, Vector3 visualOffset = new Vector3(), bool removeExisting = true, bool worldPositionStays = false) {
         if (verticies == null || verticies.Length <= 0) return;
 
         //Clear old spheres from previous runs
-        DebugTools.DrawSphereAndAttach(smr.transform, 0.01f, Vector3.zero, removeExisting: true);
+        if (removeExisting) DrawSphereAndAttach(go.transform, 0.01f, Vector3.zero, removeExisting: true);
 
         for (int i = 0; i < verticies.Length; i++)
         {
             //Place spheres on each vert to debug the mesh calculated position relative to other meshes
-            DebugTools.DrawSphereAndAttach(smr.transform, 0.02f, verticies[i] - visualOffset, removeExisting: false);  
+            DrawSphereAndAttach(go.transform, 0.01f, verticies[i] - visualOffset, removeExisting: false, worldPositionStays);  
+        } 
+    }
+
+
+    /// <summary>
+    /// Overload for DebugMeshVerts when you just want worldspace positions (unattached)
+    /// </summary>
+    public static void DebugMeshVerts(Vector3[] verticies, Vector3 visualOffset = new Vector3()) {
+        if (verticies == null || verticies.Length <= 0) return;
+
+        for (int i = 0; i < verticies.Length; i++)
+        {
+            //Place spheres on each vert to debug the mesh calculated position relative to other meshes
+            DrawSphere(0.01f, verticies[i] - visualOffset);  
         } 
     }
 }
