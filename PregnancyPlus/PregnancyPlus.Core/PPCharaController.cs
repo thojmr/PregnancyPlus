@@ -172,6 +172,9 @@ namespace KK_PregnancyPlus
 
         protected override void Update()
         {
+            //Update GUI text
+            PregnancyPlusGui.Update();
+
             //Used to inflate/deflate in main game
             WatchForUserKeyPress();
             //Used to incrementally inflate belly during HScene
@@ -182,9 +185,6 @@ namespace KK_PregnancyPlus
             {
                 if (Time.frameCount % 60 == 0) MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: true, _freshStart: true, _reMeasure: true), "Update");
             }
-
-            //Update GUI text
-            PregnancyPlusGui.Update();
 
             ///** Threading **
 
