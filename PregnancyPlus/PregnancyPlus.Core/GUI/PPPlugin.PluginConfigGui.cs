@@ -42,6 +42,7 @@ namespace KK_PregnancyPlus
         public static ConfigEntry<bool> MakeBalloon { get; private set; }
         public static ConfigEntry<bool> DebugAnimations { get; private set; }
         public static ConfigEntry<bool> DebugLog { get; private set; }
+        public static ConfigEntry<bool> DebugBlendShapeLog { get; private set; }
         public static ConfigEntry<bool> DebugCalcs { get; private set; }
         public static ConfigEntry<bool> DebugVerts { get; private set; }
 
@@ -78,6 +79,11 @@ namespace KK_PregnancyPlus
                 );
             DebugVerts.SettingChanged += DebugVerts_SettingsChanged;
 
+            DebugBlendShapeLog = Config.Bind<bool>("Debug", "Enable BlendShape Debug Logging (Debug mode)", false,
+                new ConfigDescription( "Will log lots of Preg+ BlendShape details to the console, but will condiserably slow down the game.  Don't leave enabled",
+                    null,
+                    new ConfigurationManagerAttributes { Order = 3, IsAdvanced = true })
+                );
 
             DebugLog = Config.Bind<bool>("Debug", "Enable Debug Logging (Debug mode)", false,
                 new ConfigDescription( "Will log lots of Preg+ details to the console, but will condiserably slow down the game.  Don't leave enabled",

@@ -78,7 +78,7 @@ namespace KK_PregnancyPlus
             //Create or update the smr blendshape
             ApplyBlendShapeWeight(smr, renderKey, needsOverwrite, blendShapeTempTagName);
 
-            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" mesh did ApplyInflation to {smr.name}");
+            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" Did ApplyInflation to {smr.name}");
             nativeDetour.Undo();
             return true;
         }    

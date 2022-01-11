@@ -203,7 +203,7 @@ namespace KK_PregnancyPlus
         }
 
 
-        public void logCharMeshInfo(MeshData md, SkinnedMeshRenderer smr, Vector3 sphereCenter) 
+        public void logCharMeshInfo(MeshData md, SkinnedMeshRenderer smr, Vector3 sphereCenter, bool isClothingMesh = false) 
         {
             if (!PregnancyPlusPlugin.DebugCalcs.Value) return;
 
@@ -215,6 +215,7 @@ namespace KK_PregnancyPlus
             PregnancyPlusPlugin.Logger.LogInfo($" bbHeight              {bellyInfo.BellyButtonHeight}");
             PregnancyPlusPlugin.Logger.LogInfo($" sphereCenter          {sphereCenter}");
             PregnancyPlusPlugin.Logger.LogInfo($" bindPoseCorrection    {Matrix.GetPosition(md.bindPoseCorrection)} {Matrix.GetRotation(md.bindPoseCorrection)}");
+            PregnancyPlusPlugin.Logger.LogInfo($" isClothingMesh        {isClothingMesh}");
             PregnancyPlusPlugin.Logger.LogInfo($" ************************");
             PregnancyPlusPlugin.Logger.LogInfo($" ");
 

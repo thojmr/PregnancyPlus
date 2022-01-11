@@ -4,7 +4,8 @@ using UnityEngine;
 
 namespace KK_PregnancyPlus
 {
-    //This will create and manage the mesh NativeDetour, that forces a mesh to be readable at runtime
+    //This will create and manage the mesh NativeDetour, that forces a mesh to be readable at runtime even if the mesh is marked `isReadable = false`
+    //Note: if other plugins ever use this we will need to be careful not to remove the detour while another plugin is using it...  But for now, I can ignore this
     public class NativeDetourMesh
     {
         public NativeDetour nativeDetour;

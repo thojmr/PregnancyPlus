@@ -55,7 +55,7 @@ namespace KK_PregnancyPlus
             }
             
             if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value)  PregnancyPlusPlugin.Logger.LogInfo($" ---------- {callee}() ");
-            if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value)  PregnancyPlusPlugin.Logger.LogInfo($" inflationSize > {infConfig.inflationSize} for {charaFileName} ");            
+            if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value)  PregnancyPlusPlugin.Logger.LogInfo($" inflationSize > {Math.Round(infConfig.inflationSize, 2)} for {charaFileName} ");            
             meshInflateFlags.Log();
             if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value)  PregnancyPlusPlugin.Logger.LogInfo($" ");
 
@@ -76,6 +76,7 @@ namespace KK_PregnancyPlus
             var bodyMeshRenderer = GetBodyMeshRenderer();
             //On first pass (or uncensor changed), compute bind pose lists from the body mesh
             bindPoseList.ComputeBindPose(ChaControl, bodyMeshRenderer, meshInflateFlags.uncensorChanged); 
+            if (bindPoseList.bindPoses.Count <= 0) return;//Stop if none found since this is an issue
 
             //Get all mesh renderers, calculate, and apply inflation changes
             var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, findAll: true);                           
@@ -185,7 +186,7 @@ namespace KK_PregnancyPlus
             //On first pass we need to skin the mesh to a T-pose before computing the inflated verts (Threaded as well)
             if (_md.isFirstPass)
             {
-                if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" Computing BindPoses for {smr.name}");
+                if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" Computing BindPoseMesh for {smr.name}");
                 return ComputeBindPoseMesh(smr, bodyMeshRenderer, isClothingMesh, meshInflateFlags);            
             }
 
@@ -330,7 +331,7 @@ namespace KK_PregnancyPlus
             var bellyTopAC = new ThreadsafeCurve(BellyTopAC);
             var bellyEdgeAC = new ThreadsafeCurve(BellyEdgeAC);
 
-            logCharMeshInfo(md[rendererName], smr, sphereCenter);
+            logCharMeshInfo(md[rendererName], smr, sphereCenter, isClothingMesh);
 
             nativeDetour.Undo();
 

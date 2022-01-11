@@ -14,6 +14,14 @@ namespace KK_PregnancyPlus
         public Dictionary<string, Vector3> bindPoses = new Dictionary<string, Vector3>();
         public const string UncensorCOMName = "com.deathweasel.bepinex.uncensorselector";
 
+        public string charaFileName;
+
+
+        public BindPoseList(string _charaFileName)
+        {
+            charaFileName = _charaFileName;
+        }
+
 
         /// <summary>
         /// Get a bone's bind pose position from cached list
@@ -60,11 +68,6 @@ namespace KK_PregnancyPlus
             #endif
 
             bindPoses = SetBindPosePositions(smr, chaCtrl, optionalOffset);            
-
-            if (bindPoses.Count <= 0)
-            {
-                if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogWarning($" Failed to find valid bind poses for this character"); 
-            }
         }
 
 
@@ -73,17 +76,28 @@ namespace KK_PregnancyPlus
         /// </summary> 
         internal Dictionary<string, Vector3> SetBindPosePositions(SkinnedMeshRenderer smr, ChaControl chaCtrl, Matrix4x4 bindPoseOffset = new Matrix4x4())
         {
-            var bindPoses = new Dictionary<string, Vector3>();
+            var _bindPoses = new Dictionary<string, Vector3>();
+
+            //Make sure bones match bindposes
+            if (smr.bones.Length <= 0 || smr.sharedMesh.bindposes.Length <= 0 || smr.bones.Length < smr.sharedMesh.bindposes.Length)
+            {                        
+                PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(charaFileName, ErrorCode.PregPlus_BoneBindPoseMismatch, 
+                    $"SetBindPosePositions > Bindposes and Bones must have a length, and bones must be >= bindposes.  smr {smr.name} bindposes:{smr.sharedMesh.bindposes.Length} bones:{smr.bones.Length}");         
+                return new Dictionary<string, Vector3>();
+            }
 
             for (int i = 0; i < smr.bones.Length; i++)
             {
+                //Sometimes body has more bones than bindPoses, so skip these extra bones
+                if (i > smr.sharedMesh.bindposes.Length -1) continue;
+
                 MeshSkinning.GetBindPoseBoneTransform(smr, smr.sharedMesh.bindposes[i], smr.bones[i], bindPoseOffset, out var position, out var rotation);
 
                 //subtract chaCtrl position to ignore characters worldspace position/movement
-                bindPoses.Add(smr.bones[i].name, position);
+                _bindPoses.Add(smr.bones[i].name, position);
             }
 
-            return bindPoses;
+            return _bindPoses;
         }
 
 

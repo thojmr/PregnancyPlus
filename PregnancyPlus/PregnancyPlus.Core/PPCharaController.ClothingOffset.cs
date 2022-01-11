@@ -57,10 +57,18 @@ namespace KK_PregnancyPlus
             bodySmr.sharedMesh = bodySmr.sharedMesh;
             shiftedVerts = new Vector3[originalVerts.Length];
 
+            #if KK
+                //When the kk mesh bindpose is offset, we need to correct it for the meshCollider to align
+                var isValidBindPose = bindPoseList.IsValidBindPoseSmr(ChaControl, bodySmr);
+            #endif
+
             for (int i = 0; i < originalVerts.Length; i++)
             {
                 //Align the verts to 0,0,0
                 shiftedVerts[i] = ChaControl.transform.InverseTransformPoint(originalVerts[i]);
+                #if KK                    
+                    if (isValidBindPose) shiftedVerts[i] = shiftedVerts[i] -ChaControl.transform.InverseTransformPoint(bodySmr.transform.position);  
+                #endif
             }        
 
             //Copy the current base body mesh to use as the collider
@@ -200,7 +208,7 @@ namespace KK_PregnancyPlus
                         if (rayCastHits[indexPos].distance < closestHit) 
                         {                            
                             closestHit = rayCastHits[indexPos].distance;
-                            // direction = rayCastHits[indexPos].point - origVertLs;                            
+                            // direction = rayCastHits[indexPos].point - origVertLs; 
                             // hit = rayCastHits[indexPos];
                         }
                     }                    
@@ -208,8 +216,7 @@ namespace KK_PregnancyPlus
                 #endif
 
                 //Show rays and hits
-                // if (PregnancyPlusPlugin.DebugCalcs.Value) DebugTools.DrawLine(origVertLs, origVertLs + direction, width: 0.0005f); 
-                // if (PregnancyPlusPlugin.DebugCalcs.Value && hit.collider) DebugTools.DrawSphere(0.001f, hit.point); 
+                // if (PregnancyPlusPlugin.DebugCalcs.Value) DebugTools.ShowRayCast(origVertLs, direction, hit);
 
                 //Ignore any raycast that didnt hit the mesh collider
                 if (closestHit >= rayCastDist) 

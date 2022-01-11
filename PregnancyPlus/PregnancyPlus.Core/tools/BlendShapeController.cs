@@ -129,19 +129,19 @@ namespace KK_PregnancyPlus
                 || blendShape.verticies.Length != smr.sharedMesh.vertexCount
                 || blendShape.normals.Length != smr.sharedMesh.vertexCount) 
             {
-                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" AddBlendShape > missmatch vertex count on {smr.name}: smr {smr.sharedMesh.vertexCount} -> blendshape {blendShape.vertexCount} skipping"); 
-                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" verticies {blendShape.verticies.Length}, normals {blendShape.normals.Length}, tangents {blendShape.tangents.Length}"); 
+                if (PregnancyPlusPlugin.DebugBlendShapeLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" AddBlendShape > missmatch vertex count on {smr.name}: smr {smr.sharedMesh.vertexCount} -> blendshape {blendShape.vertexCount} skipping"); 
+                if (PregnancyPlusPlugin.DebugBlendShapeLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" verticies {blendShape.verticies.Length}, normals {blendShape.normals.Length}, tangents {blendShape.tangents.Length}"); 
                 return false;
             }
 
-            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" smr.sharedMesh.tangents {smr.sharedMesh.tangents.Length}, blendShape.tangents {blendShape.tangents.Length}"); 
+            if (PregnancyPlusPlugin.DebugBlendShapeLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" smr.sharedMesh.tangents {smr.sharedMesh.tangents.Length}, blendShape.tangents {blendShape.tangents.Length}"); 
 
             //When tangents are empty, pad them to the same length as the vert count to prevent errors
             //  Not sure why they would be empty in the first place?
             if (blendShape.tangents.Length == 0)
             {                
                 blendShape.tangents = new Vector3[smr.sharedMesh.vertexCount ];
-                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" smr.sharedMesh.tangents {smr.sharedMesh.tangents.Length}, blendShape.tangents {blendShape.tangents.Length}"); 
+                if (PregnancyPlusPlugin.DebugBlendShapeLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" smr.sharedMesh.tangents {smr.sharedMesh.tangents.Length}, blendShape.tangents {blendShape.tangents.Length}"); 
             }
 
             //Create mesh instance on character to prevent changes leaking to other characters
@@ -151,7 +151,7 @@ namespace KK_PregnancyPlus
             if (smr.sharedMesh.blendShapeCount > 0) 
             {
                 //Blend shape already exists overwright it the hard way
-                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" AddBlendShape > overwriting {blendShape.name}");                       
+                if (PregnancyPlusPlugin.DebugBlendShapeLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" AddBlendShape > overwriting {blendShape.name}");                       
                 OverwriteBlendShape(smr, blendShape);
 
                 //Fix for some shared mesh properties not updating after AddBlendShapeFrame (Thanks Unity!)
@@ -159,7 +159,7 @@ namespace KK_PregnancyPlus
                 return true;
             }
 
-            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" AddBlendShape > {blendShape.log}");
+            if (PregnancyPlusPlugin.DebugBlendShapeLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" AddBlendShape > {blendShape.log}");
             //Actually attach the blendspape
             smr.sharedMesh.AddBlendShapeFrame(blendShape.name, blendShape.frameWeight, blendShape.verticies, blendShape.normals, blendShape.tangents);    
             //Fix for some shared mesh properties not updating after AddBlendShapeFrame

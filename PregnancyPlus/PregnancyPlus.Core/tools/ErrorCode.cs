@@ -15,6 +15,7 @@ namespace KK_PregnancyPlus
         PregPlus_BodyUncensorChanged,//When a saved blendshape tries to load, but the uncensor body no longer matches, so it can't
         PregPlus_NoMeshRootFound,//For some reason in RX11 KK, the mesh root bone name changed . '_low' was appended in free roam.  Catch these changes if they happen again
         PregPlus_MeshNotSkinnedToBone,//When a bone is expected to be skinned to a smr, but was not
+        PregPlus_BoneBindPoseMismatch,//When a the bone list does not match the bindpose list
     }
 
     /// <summary>

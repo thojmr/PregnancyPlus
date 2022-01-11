@@ -584,7 +584,7 @@ namespace KK_PregnancyPlus
                 if (blendshapeCtrl.blendShape != null) blendshapes.Add(blendshapeCtrl);
             }
 
-            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo(
+            if (PregnancyPlusPlugin.DebugBlendShapeLog.Value)  PregnancyPlusPlugin.Logger.LogInfo(
                      $"ComputeInflationBlendShapes > Found {blendshapes.Count} blendshapes ");
 
             return blendshapes;

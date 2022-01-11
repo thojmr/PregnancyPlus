@@ -44,7 +44,7 @@ namespace KK_PregnancyPlus
         //Keeps track of all belly verticie data for preg+, the dict is indexed by the (meshRenderer.name + the vertex count) to make the mesh indexes unique
         public Dictionary<string, MeshData> md = new Dictionary<string, MeshData>();
         public List<string> ignoreMeshList = new List<string>();//List of mesh names/keys to ignore since they dont have belly verts
-        public BindPoseList bindPoseList = new BindPoseList();
+        public BindPoseList bindPoseList;
 
         //For fetching uncensor body guid data (bugfix for uncensor body vertex positions)
         public const string UncensorCOMName = "com.deathweasel.bepinex.uncensorselector";
@@ -102,7 +102,10 @@ namespace KK_PregnancyPlus
             charaFileName = ChaFileControl.parameter.fullname;        
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" ");
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $Start {charaFileName}");
-            ReadAndSetCardData();      
+            ReadAndSetCardData();     
+
+            //Initialize the list
+            bindPoseList = new BindPoseList(charaFileName); 
 
             #if KK || AI
 
@@ -156,6 +159,9 @@ namespace KK_PregnancyPlus
             //(no longer used) Check for swapping out character Game Object with new character
             IsNewChar(ChaFileControl);
             charaFileName = ChaFileControl.parameter.fullname;
+
+            //Update chara name when it changes for error log
+            bindPoseList.charaFileName = charaFileName;
 
             ReadAndSetCardData();
             //When char was swaped, determine which char's belly shape to use

@@ -183,6 +183,9 @@ namespace KK_PregnancyPlus
             
             for (int i = 0; i < smr.bones.Length; i++)
             {            
+                //Sometimes body has more bones than bindPoses, so skip these extra bones
+                if (i > smr.sharedMesh.bindposes.Length -1) continue;
+                
                 //Get a bone's bindPose position/rotation
                 GetBindPoseBoneTransform(smr, smr.sharedMesh.bindposes[i], smr.bones[i], bindPoseOffset, out var position, out var rotation);  
 
