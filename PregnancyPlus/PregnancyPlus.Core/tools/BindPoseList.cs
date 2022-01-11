@@ -10,12 +10,13 @@ namespace KK_PregnancyPlus
     //Computes and contains the BindPose list of bone positions in T-pose
     public class BindPoseList
     {  
+        //Contains the list of body bones in their bindPose positions (T-pose)
         public Dictionary<string, Vector3> bindPoses = new Dictionary<string, Vector3>();
         public const string UncensorCOMName = "com.deathweasel.bepinex.uncensorselector";
 
 
         /// <summary>
-        /// Get a bone's bind pose position
+        /// Get a bone's bind pose position from cached list
         /// </summary> 
         public Vector3 Get(string boneName)
         {
@@ -38,7 +39,7 @@ namespace KK_PregnancyPlus
         ///     We need to make sure we use a valid SMR as the source, since some are not in the correct bindpose position
         ///     Check each body smr for one with valid bounds and use that as the real bindpose
         /// </summary> 
-        public void ComputeValidBindPose(ChaControl chaCtrl, SkinnedMeshRenderer smr, bool force = false)
+        public void ComputeBindPose(ChaControl chaCtrl, SkinnedMeshRenderer smr, bool force = false)
         {
             //When we alrready have the bind poses, we don't need to recompute them
             if (bindPoses.Count > 0 && !force) return;

@@ -69,10 +69,13 @@ namespace KK_PregnancyPlus
                 blendShape = new BlendShape();
                 blendShape.name = blendShapeName;
 
+                //Whhen SMR has local rotation undo it in the deltas
+                var rotationUndo = Matrix4x4.TRS(Vector3.zero, smr.transform.localRotation, Vector3.one).inverse;
+
                 //Get delta diffs of the two meshes for the blend shape
-                blendShape.verticies = GetV3Deltas(originalVerts, targetSmrMesh.vertices);
-                blendShape.normals = GetV3Deltas(originalSmrMesh.normals, targetSmrMesh.normals);
-                blendShape.tangents = GetV3Deltas(ConvertV4ToV3(originalSmrMesh.tangents), ConvertV4ToV3(targetSmrMesh.tangents));                            
+                blendShape.verticies = GetV3Deltas(originalVerts, targetSmrMesh.vertices, rotationUndo);
+                blendShape.normals = GetV3Deltas(originalSmrMesh.normals, targetSmrMesh.normals, rotationUndo);
+                blendShape.tangents = GetV3Deltas(ConvertV4ToV3(originalSmrMesh.tangents), ConvertV4ToV3(targetSmrMesh.tangents), rotationUndo);                            
             }
 
             AddBlendShapeToMesh(smr);
@@ -420,14 +423,21 @@ namespace KK_PregnancyPlus
         }
 
 
-        //Just subtract the vectors to get deltas
-        internal Vector3[] GetV3Deltas(Vector3[] origins, Vector3[] targets) 
+        /// <summary>
+        /// Subtract the vectors to get deltas
+        ///     rotationUndo: When the SMR has local rotation, we need to make the deltas align to that
+        /// </summary>
+        internal Vector3[] GetV3Deltas(Vector3[] origins, Vector3[] targets, Matrix4x4 rotationUndo = new Matrix4x4()) 
         {
             var deltas = new Vector3[origins.Length];
 
             for (var i = 0; i < origins.Length; i++) 
             {
-                deltas[i] = targets[i] - origins[i];
+                //Dont want the extra overhead of matrix multiplication if we don't need it
+                if (rotationUndo == Matrix4x4.identity)
+                    deltas[i] = targets[i] - origins[i];
+                else
+                    deltas[i] = rotationUndo.MultiplyPoint3x4(targets[i] - origins[i]);
             }
 
             return deltas;
@@ -437,9 +447,7 @@ namespace KK_PregnancyPlus
         internal Mesh CopyMesh(Mesh mesh)
         {
             //Copy mesh the unity way (before I did it one field at a time, and that missed some fields)
-            Mesh newmesh = (Mesh)UnityEngine.Object.Instantiate(mesh);
-
-            return newmesh;
+            return (Mesh)UnityEngine.Object.Instantiate(mesh);
         }
 
 

@@ -70,7 +70,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Compute the original bone BindPose position and rotation (T-Pose)
         /// </summary>  
-        /// <param name="bindPoseOffset">optional: Any offset required to line an incorrect bindPose with the other correct ones (derived from OffsetBindPosePosition())</param> 
+        /// <param name="bindPoseOffset">optional: Any offset required to line up an incorrect bindPose with the other correct ones (derived from OffsetBindPosePosition())</param> 
         public static void GetBindPoseBoneTransform(SkinnedMeshRenderer smr, Matrix4x4 bindPose, Transform bone, Matrix4x4 bindPoseOffset, out Vector3 position, out Quaternion rotation)
         {
             var smrMatrix = Matrix4x4.identity;

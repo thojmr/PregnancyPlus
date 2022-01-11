@@ -237,9 +237,7 @@ namespace KK_PregnancyPlus
 
         internal static Mesh CopyMesh(Mesh mesh)
         {
-            Mesh newmesh = (Mesh)UnityEngine.Object.Instantiate(mesh);
-
-            return newmesh;
+            return (Mesh)UnityEngine.Object.Instantiate(mesh);
         }
 
 

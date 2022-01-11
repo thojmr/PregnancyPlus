@@ -75,7 +75,7 @@ namespace KK_PregnancyPlus
 
             var bodyMeshRenderer = GetBodyMeshRenderer();
             //On first pass (or uncensor changed), compute bind pose lists from the body mesh
-            bindPoseList.ComputeValidBindPose(ChaControl, bodyMeshRenderer, meshInflateFlags.uncensorChanged); 
+            bindPoseList.ComputeBindPose(ChaControl, bodyMeshRenderer, meshInflateFlags.uncensorChanged); 
 
             //Get all mesh renderers, calculate, and apply inflation changes
             var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, findAll: true);                           
