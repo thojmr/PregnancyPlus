@@ -170,7 +170,8 @@ public static class DebugTools
     /// <summary>
     /// Draw a line renderer between two Vectors
     /// </summary>
-    public static GameObject DrawLine(Vector3 fromVector = new Vector3(), Vector3 toVector = new Vector3(), float width = 0f, bool useWorldSpace = false)
+    public static GameObject DrawLine(Vector3 fromVector = new Vector3(), Vector3 toVector = new Vector3(), float width = 0f, 
+                                            bool useWorldSpace = false, Color startColor = default(Color))
     {
         //Draw forward by default
         if (toVector == Vector3.zero) toVector = new Vector3(0, 0, 1);
@@ -194,8 +195,10 @@ public static class DebugTools
             #endif
         }
         
+        if (startColor == null || startColor == default(Color)) startColor = Color.blue;
+
         lineRenderer.useWorldSpace = useWorldSpace;
-        lineRenderer.startColor = Color.blue;
+        lineRenderer.startColor = startColor;
         lineRenderer.endColor = Color.red;
         lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
         lineRenderer.startWidth = width;
@@ -278,5 +281,17 @@ public static class DebugTools
             //Place spheres on each vert to debug the mesh calculated position relative to other meshes
             DrawSphere(0.01f, verticies[i] - visualOffset);  
         } 
+    }
+
+
+    /// <summary>
+    /// Add debug lines and spheres to raycast hits and misses
+    /// </summary>
+    public static void ShowRayCast(Vector3 origin, Vector3 direction, RaycastHit hit) {
+        //Draw the raycast line        
+        if (hit.collider) DrawLine(origin, origin + (hit.point - origin), width: 0.001f); 
+        else DrawLine(origin, origin + direction, width: 0.0005f, startColor: Color.yellow); 
+        //Mark hit point, if it hit
+        if (hit.collider) DrawSphere(0.001f, hit.point); 
     }
 }
