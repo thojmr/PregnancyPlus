@@ -14,6 +14,7 @@ namespace KK_PregnancyPlus
         //Allows calling mesh inflate with 0 inflationSize.  Used to pre compute the current shape now, for faster performance later
         public bool bypassWhen0 = false;        
         public bool reMeasure = false;
+        public bool uncensorChanged = false;
         internal PregnancyPlusData infConfig = null;
         internal PregnancyPlusData infConfigHistory = null;
 
@@ -78,7 +79,7 @@ namespace KK_PregnancyPlus
         ///     Pass infConfig values to constructor to be used later in slider value comparisons (Change detection)
         /// </summary>
         public MeshInflateFlags(PregnancyPlusCharaController ppcc, bool _checkForNewMesh = false, bool _freshStart = false, bool _pluginConfigSliderChanged = false, 
-                                bool _visibilityUpdate = false, bool _bypassWhen0 = false, bool _reMeasure = false) 
+                                bool _visibilityUpdate = false, bool _bypassWhen0 = false, bool _reMeasure = false, bool _uncensorChanged = false) 
         {
             infConfig = ppcc.infConfig;
             infConfigHistory = ppcc.infConfigHistory;
@@ -89,6 +90,7 @@ namespace KK_PregnancyPlus
             visibilityUpdate = _visibilityUpdate;
             bypassWhen0 = _bypassWhen0;
             reMeasure = _reMeasure;
+            uncensorChanged = _uncensorChanged;
         }
 
 

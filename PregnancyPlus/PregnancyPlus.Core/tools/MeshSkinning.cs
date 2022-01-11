@@ -15,7 +15,7 @@ namespace KK_PregnancyPlus
         /// Get the bone matricies of the characters T-pose position
         ///     This extracts the T-pose bone positions from the BindPose, so it doesn't matter what animation the character is currently in
         /// </summary>     
-        public static Matrix4x4[] GetBoneMatrices(SkinnedMeshRenderer smr, Matrix4x4 bindPoseOffset = new Matrix4x4()) 
+        public static Matrix4x4[] GetBoneMatrices(SkinnedMeshRenderer smr, BindPoseList bindPoseList) 
         {
             Transform[] skinnedBones = smr.bones;
             Matrix4x4[] boneMatrices = new Matrix4x4[smr.bones.Length];
@@ -24,6 +24,8 @@ namespace KK_PregnancyPlus
             // if (PregnancyPlusPlugin.DebugCalcs.Value && bindPoseOffset != Matrix4x4.identity) 
             //     PregnancyPlusPlugin.Logger.LogInfo($" BinsPoseOffset applied {Matrix.GetPosition(bindPoseOffset)}");                      
             
+            var bindPoseOffset = GetBindPoseOffset(bindPoseList, smr);
+
             //For each bone, compute its bindpose position, and get the bone matrix
             for (int j = 0; j < boneMatrices.Length; j++)
             {
@@ -80,7 +82,7 @@ namespace KK_PregnancyPlus
             }
 
             //Apply any offset to the bindpose when needed
-            if (bindPoseOffset != Matrix4x4.identity)
+            if (bindPoseOffset != null && bindPoseOffset != Matrix4x4.identity)
             {                
                 smrMatrix = bindPoseOffset * smrMatrix;
             }
@@ -103,69 +105,30 @@ namespace KK_PregnancyPlus
         }
 
 
-/// <summary>
-        /// In Koikatsu some bindPoses need to be vertically adjusted sincce they are not correct
+        /// <summary>
+        /// Get the offset of a real bindpose bone and the currrent questionable bind pose position
         /// </summary>  
-        public static Matrix4x4 OffsetBindPosePosition(SkinnedMeshRenderer smr, SkinnedMeshRenderer bodySmr, ChaControl chaControl, bool isClothingMesh, string UncensorCOMName)
+        public static Matrix4x4 GetBindPoseOffset(BindPoseList bindPoseList, SkinnedMeshRenderer smr)
         {
-            //  This lines up the body mesh infaltion with clothing mesh inflation
-            //** Note: There seem to be unlimited ways to incorrectly import a mesh into Koikatsu (offset too high/low, mesh rotated sideways, offset left/right), 
-            //  so this code is here to correct the most frequently seen mistakes (vertical offsets) and even then it's a best guess correction.  Can't fix people, and I dont want to alter skinned meshes.                
-
-            //The desired final offset of a badly imported mesh
-            var yOffset = 0f;
-            //The height of the mesh's root position (near chest)
-            var meshYPosLs = chaControl.transform.InverseTransformPoint(smr.transform.position).y;                                
-
-            var isDefaultBody = !PregnancyPlusPlugin.Hooks_Uncensor.IsUncensorBody(chaControl, UncensorCOMName);
-            //When the mesh shares similar local vertex positions as the default body use Bounds to determine if the mesh is not aligned
-            //  Bounds are the only way I could come up with to detect an offset mesh...
-            var isLikeDefaultBody = smr.localBounds.center.y < 0 && smr.sharedMesh.bounds.center.y < 0;
-            //When the mesh is imported too high, we have to offset it down to line up with other clothing before computing belly
-            //TODO since we had to negate these, we should just change the logic to avoid the negation, too lazy right now
-            var needsyOffsetClothHalf = !(smr.localBounds.center.y < 0 && smr.sharedMesh.bounds.center.y > meshYPosLs * 0.33f);
-            var needsyOffsetClothFull = !(smr.localBounds.center.y < 0 && smr.sharedMesh.bounds.center.y > meshYPosLs * 0.75f);
-
-            //When the mesh is imported at 0,0,0, we have to offset it up to line up with other clothing before computing belly
-            //  This offset may happen less frequently, but ill leave it in for now
-            var needsyOffsetClothFullUp = false;
-            var bodyMeshYPosLs = meshYPosLs;
-            if (meshYPosLs == 0f && bodySmr != null)
+            //For each smr bone if it exists in the bindPoseList, compute it's offset
+            for (int i = 0; i < smr.bones.Length; i++)
             {
-                bodyMeshYPosLs = chaControl.transform.InverseTransformPoint(bodySmr.transform.position).y;
-                needsyOffsetClothFullUp = !(smr.localBounds.center.y < 0 && smr.sharedMesh.bounds.center.y < bodyMeshYPosLs * 0.33f);
+                var bone = smr.bones[i];
+                //If the bone name is not in the list, try the next bone
+                if (!bindPoseList.bindPoses.ContainsKey(bone.name)) continue;
+
+                //Compare the real bindpose position with this smr.bone's bindpose position
+                var realBonePosePosition = bindPoseList.Get(bone.name);
+                GetBindPoseBoneTransform(smr, smr.sharedMesh.bindposes[i], bone, Matrix4x4.identity, out var questionablePosition, out var rotation);
+                var offset = realBonePosePosition - questionablePosition;
+
+                //Add the offset as a matrix
+                return Matrix4x4.TRS(offset, Quaternion.identity, Vector3.one);
             }
 
-            //If uncensor body
-            if (!isClothingMesh && (isDefaultBody || isLikeDefaultBody)) 
-            {
-                //Uncensor mesh is about twice the height in local space than default mesh, so save the current offset to be used later
-                yOffset = meshYPosLs;
-                if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] setting yOffset {yOffset} isDefaultBody {isDefaultBody} isLikeDefaultBody {isLikeDefaultBody}");                           
-            }                                                                                                                     
-            else if (isClothingMesh && needsyOffsetClothFull) 
-            {
-                //Offset by the full mesh root height down
-                yOffset = meshYPosLs;
-                if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] setting yOffset {yOffset} needsyOffsetClothFull");                                                                                       
-            }
-            else if (isClothingMesh && needsyOffsetClothFullUp) 
-            {
-                //Offset by the full mesh root height up.  Use bodySmr.position since meshYPosLs height will be 0
-                yOffset = -bodyMeshYPosLs;
-                if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] setting yOffset {yOffset} needsyOffsetClothFullUp");                                                                                       
-            }                                                                                                                       
-            else if (isClothingMesh && needsyOffsetClothHalf) 
-            {
-                //Offset by half the mesh root height down (What app imported these meshes at +0.5x height?  lol)
-                yOffset = meshYPosLs/2;
-                if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] setting yOffset {yOffset} needsyOffsetClothHalf");                                                                                       
-            }                                                                                                                      
-
-            if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" [KK only] local bounds {smr.localBounds.center.y} sm.bounds {smr.sharedMesh.bounds.center.y} meshYPosLs {meshYPosLs} smr.position {smr.transform.position}");                           
-            
-            //Add the offset as a matrix
-            return Matrix4x4.TRS(new Vector3(0, yOffset, 0), Quaternion.identity, Vector3.one);
+            //If no matches found (something probably went wront)
+            if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogWarning($" GetBindPoseOffset() no bone names match.  Something probably went wrong"); 
+            return Matrix4x4.identity;
         }
 
 
@@ -208,13 +171,15 @@ namespace KK_PregnancyPlus
         /// Add vector lines at each bindPose point to see the bindPose in localspace
         /// </summary> 
         /// <param name="parent">optional: Attach lines to this parent transform</param>   
-        public static void ShowBindPose(SkinnedMeshRenderer smr, Matrix4x4 bindPoseOffset, Transform parent = null)
+        public static void ShowBindPose(SkinnedMeshRenderer smr, BindPoseList bindPoseList, Transform parent = null)
         {
             #if KK 
                 var lineLen = 0.03f;
             #elif AI || HS2
                 var lineLen = 0.3f;
             #endif
+
+            var bindPoseOffset = GetBindPoseOffset(bindPoseList, smr);
             
             for (int i = 0; i < smr.bones.Length; i++)
             {            

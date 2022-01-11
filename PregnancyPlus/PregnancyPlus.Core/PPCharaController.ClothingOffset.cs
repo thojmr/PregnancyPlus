@@ -84,6 +84,8 @@ namespace KK_PregnancyPlus
             var collider = bodySmr.gameObject.GetComponent<MeshCollider>();
             if (collider == null) return null;
 
+            // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DebugMeshVerts(collider.sharedMesh.vertices);
+
             return collider;
         }
 
@@ -146,7 +148,7 @@ namespace KK_PregnancyPlus
             }
   
             //Get the 4 or 5 points inside the body we want to raycast to
-            GetRayCastTargetPositions(sphereCenter, md[renderKey].bindPoseCorrection);
+            GetRayCastTargetPositions(sphereCenter);
 
             if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" Pre-calculating clothing offset values");
 
@@ -392,11 +394,12 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Get the positions of a few bones that we will raycast to
         /// </summary>
-        public void GetRayCastTargetPositions(Vector3 sphereCenter, Matrix4x4 bindPoseOffset)
+        public void GetRayCastTargetPositions(Vector3 sphereCenter)
         {
             //Get the t-pose positions of these bones that we want to raycast to
             var bodySmr = GetBodyMeshRenderer();
             if (bodySmr == null) return;
+            var bindPoseOffset = md[GetMeshKey(bodySmr)].bindPoseCorrection;
 
             if (PregnancyPlusPlugin.DebugCalcs.Value) DebugTools.DrawSphere(0.05f, sphereCenter);
 
@@ -412,7 +415,7 @@ namespace KK_PregnancyPlus
                     PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(charaFileName, ErrorCode.PregPlus_MeshNotSkinnedToBone, 
                         $" This this bone `{rayCastTargetNames[i]}` is not skinned to the body mesh, so a measurement was skipped."); 
                     return;
-                };
+                };                
 
                 //Compute the bind pose bone position
                 MeshSkinning.GetBindPoseBoneTransform(bodySmr, bodySmr.sharedMesh.bindposes[j], bodySmr.bones[j], bindPoseOffset, out var position, out var rotation);

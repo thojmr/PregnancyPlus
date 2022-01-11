@@ -73,8 +73,12 @@ namespace KK_PregnancyPlus
                 return; 
             }       
 
+            var bodyMeshRenderer = GetBodyMeshRenderer();
+            //On first pass (or uncensor changed), compute bind pose lists from the body mesh
+            bindPoseList.ComputeValidBindPose(ChaControl, bodyMeshRenderer, meshInflateFlags.uncensorChanged); 
+
             //Get all mesh renderers, calculate, and apply inflation changes
-            var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, findAll: true);
+            var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, findAll: true);                           
             LoopAndApplyMeshChanges(bodyRenderers, meshInflateFlags);
             var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);            
             LoopAndApplyMeshChanges(clothRenderers, meshInflateFlags, true, GetBodyMeshRenderer());       
@@ -206,23 +210,17 @@ namespace KK_PregnancyPlus
 
             var rendererName = GetMeshKey(smr);
             //initialize original verts if not already
-            if (md[rendererName].originalVertices == null) md[rendererName].originalVertices = new Vector3[smr.sharedMesh.vertexCount];           
-
-            //Fixes some meshes in KK having incorrectly offset y direction bind poses
-            var bindPoseOffset = Matrix4x4.identity;
-            #if KK
-                bindPoseOffset = MeshSkinning.OffsetBindPosePosition(smr, bodySmr, ChaControl, isClothingMesh, UncensorCOMName);  
-                md[rendererName].bindPoseCorrection = bindPoseOffset; 
-            #endif            
+            if (md[rendererName].originalVertices == null) md[rendererName].originalVertices = new Vector3[smr.sharedMesh.vertexCount];                      
 
             Matrix4x4[] boneMatrices = null;
             BoneWeight[] boneWeights = null;
             Vector3[] unskinnedVerts = null; 
         
-            if (PregnancyPlusPlugin.DebugCalcs.Value) MeshSkinning.ShowBindPose(smr, bindPoseOffset);    
+            if (PregnancyPlusPlugin.DebugCalcs.Value) MeshSkinning.ShowBindPose(smr, bindPoseList);    
 
             //Matricies used to compute the T-pose mesh
-            boneMatrices = MeshSkinning.GetBoneMatrices(smr, bindPoseOffset);
+            // boneMatrices = MeshSkinning.GetBoneMatrices(smr, bindPoseOffset);
+            boneMatrices = MeshSkinning.GetBoneMatrices(smr, bindPoseList);
             boneWeights = smr.sharedMesh.boneWeights;
             unskinnedVerts = smr.sharedMesh.vertices;   
 

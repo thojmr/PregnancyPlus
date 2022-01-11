@@ -66,8 +66,8 @@ namespace KK_PregnancyPlus
             //Load any blendshapes from card.  If the uncensor matches the blendshapes they will load to the character visibly
             LoadBlendShapes(infConfig);
 
-            StartCoroutine(ReloadStoryInflation(0.5f, "OnUncensorChanged-story"));     
-            StartCoroutine(ReloadStudioMakerInflation(1f, reMeasure: false, "OnUncensorChanged"));  //Give time for character to load, and settle 
+            StartCoroutine(ReloadStoryInflation(0.5f, "OnUncensorChanged-story", uncensorChanged: true));     
+            StartCoroutine(ReloadStudioMakerInflation(1f, reMeasure: false, "OnUncensorChanged", uncensorChanged: true));  //Give time for character to load, and settle 
         }
 
 
@@ -86,7 +86,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Triggered by OnReload but only for logic in Story mode
         /// </summary>
-        internal IEnumerator ReloadStoryInflation(float time, string callee, bool checkNewMesh = true)
+        internal IEnumerator ReloadStoryInflation(float time, string callee, bool checkNewMesh = true, bool uncensorChanged = false)
         {
             //Only reload when story mode enabled.
             if (PregnancyPlusPlugin.StoryMode != null && !PregnancyPlusPlugin.StoryMode.Value) 
@@ -108,7 +108,7 @@ namespace KK_PregnancyPlus
 
             #elif HS2
                 //For HS2 AI, we set global belly size from plugin config, or character card                    
-                MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: checkNewMesh), callee);   
+                MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: checkNewMesh, _uncensorChanged: uncensorChanged), callee);   
 
             #endif      
             isReloading = false;                                     
@@ -118,7 +118,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Triggered by OnReload but only for logic in Studio or Maker
         /// </summary>
-        internal IEnumerator ReloadStudioMakerInflation(float time, bool reMeasure, string callee)
+        internal IEnumerator ReloadStudioMakerInflation(float time, bool reMeasure, string callee, bool uncensorChanged = false)
         {                        
             if (!StudioAPI.InsideStudio && !MakerAPI.InsideMaker) 
             {
@@ -132,7 +132,7 @@ namespace KK_PregnancyPlus
             if (StudioAPI.InsideStudio || (MakerAPI.InsideMaker && MakerAPI.InsideAndLoaded))
             {
                 //If either are fully loaded, start mesh inflate
-                MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: true, _freshStart: true, _reMeasure: true), callee);    
+                MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: true, _freshStart: true, _reMeasure: true, _uncensorChanged: uncensorChanged), callee);    
                 isReloading = false;//Allow cloth mesh events to continue triggering MeshInflate
             }
             else if (MakerAPI.InsideMaker && !MakerAPI.InsideAndLoaded)

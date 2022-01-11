@@ -44,6 +44,7 @@ namespace KK_PregnancyPlus
         //Keeps track of all belly verticie data for preg+, the dict is indexed by the (meshRenderer.name + the vertex count) to make the mesh indexes unique
         public Dictionary<string, MeshData> md = new Dictionary<string, MeshData>();
         public List<string> ignoreMeshList = new List<string>();//List of mesh names/keys to ignore since they dont have belly verts
+        public BindPoseList bindPoseList = new BindPoseList();
 
         //For fetching uncensor body guid data (bugfix for uncensor body vertex positions)
         public const string UncensorCOMName = "com.deathweasel.bepinex.uncensorselector";
@@ -124,12 +125,7 @@ namespace KK_PregnancyPlus
          
             #endif
 
-            nativeDetour = new NativeDetourMesh();       
-
-            //Set T-pose bones of the character (Not used yet)
-            // skeleton.SetTPoseBones(ChaControl.transform); 
-            // StartCoroutine(skeleton.ClearAllCharBoneRotations(ChaControl.transform));
-
+            nativeDetour = new NativeDetourMesh();  
             base.Start();
         }        
 
@@ -177,6 +173,9 @@ namespace KK_PregnancyPlus
 
         protected override void Update()
         {
+            //Update GUI text
+            PregnancyPlusGui.Update();
+
             //Used to inflate/deflate in main game
             WatchForUserKeyPress();
             //Used to incrementally inflate belly during HScene
@@ -187,9 +186,6 @@ namespace KK_PregnancyPlus
             {
                 if (Time.frameCount % 60 == 0) MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: true, _freshStart: true, _reMeasure: true), "Update");
             }
-
-            //Update GUI text
-            PregnancyPlusGui.Update();
 
             ///** Threading **
 

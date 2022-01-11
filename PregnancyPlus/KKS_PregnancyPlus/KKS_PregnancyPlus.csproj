@@ -161,6 +161,7 @@
     <Compile Include="..\PregnancyPlus.Core\Tools\Matrix.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\MeshData.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\MeshSkinning.cs" />
+    <Compile Include="..\PregnancyPlus.Core\Tools\BindPoseList.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\SpoopyScarySkeleton.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\Threading.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\ThreadsafeCurve.cs" />
