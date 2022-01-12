@@ -100,7 +100,7 @@ namespace KK_PregnancyPlus
                 shiftedVerts[i] = ChaControl.transform.InverseTransformPoint(originalVerts[i]);
                 #if KK     
                     //Apply KK offset when needed               
-                    if (offsetType == MeshOffsetType.DefaultMesh || offsetType == MeshOffsetType.AlmostDefaultMesh) 
+                    if (offsetType == MeshOffSetType.DefaultMesh || offsetType == MeshOffSetType.AlmostDefaultMesh) 
                         shiftedVerts[i] = shiftedVerts[i] - offset;
                 #endif
             } 

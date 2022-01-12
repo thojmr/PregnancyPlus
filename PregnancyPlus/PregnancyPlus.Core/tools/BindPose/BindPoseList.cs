@@ -10,13 +10,14 @@ namespace KK_PregnancyPlus
     //Computes and contains the BindPose list of bone positions in T-pose
     public class BindPoseList
     {  
-        //Contains the list of body bones in their bindPose positions (T-pose)
+        //Contains the list of body bones' bindPose positions (T-pose)
         public Dictionary<string, Vector3> bindPoses = new Dictionary<string, Vector3>();
         public const string UncensorCOMName = "com.deathweasel.bepinex.uncensorselector";
-
+        //Used as key for ErrorCode
         public string charaFileName;
 
 
+        //constructor
         public BindPoseList(string _charaFileName)
         {
             charaFileName = _charaFileName;
@@ -56,7 +57,7 @@ namespace KK_PregnancyPlus
                 var meshOffsetType = MeshOffSet.GetMeshOffsetType(smr);
 
                 //If not default kk body mesh fix with offset
-                if (meshOffsetType != MeshOffsetType.DefaultMesh) 
+                if (meshOffsetType != MeshOffSetType.DefaultMesh) 
                 {
                     var offset = MeshOffSet.GetBindposeOffsetFix(chaCtrl, smr);
                     optionalOffsetMatrix = Matrix4x4.TRS(offset, Quaternion.identity, Vector3.one);                
@@ -95,6 +96,7 @@ namespace KK_PregnancyPlus
 
             return _bindPoses;
         }
+
 
     }
 

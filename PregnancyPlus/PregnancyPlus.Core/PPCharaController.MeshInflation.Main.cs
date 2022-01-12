@@ -195,8 +195,8 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Compute and cache the bind pose (T-pose) mesh positions, we need this to ignore all character animations when computing the belly shape, 
-        ///     and to align the meshes correctly for cloths offset calculations.true  This is only computed once per mesh
+        /// Compute and cache the bind pose (T-pose) mesh vertex positions, we need this to ignore all character animations when computing the belly shape, 
+        ///     and to align the meshes together. Results get cached for subsiquent passes
         /// </summary>
         internal bool ComputeBindPoseMesh(SkinnedMeshRenderer smr, SkinnedMeshRenderer bodySmr, bool isClothingMesh, MeshInflateFlags meshInflateFlags)
         {
@@ -220,7 +220,7 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.DebugCalcs.Value) MeshSkinning.ShowBindPose(smr, bindPoseList);    
 
             //Matricies used to compute the T-pose mesh
-            boneMatrices = MeshSkinning.GetBoneMatrices(smr, bindPoseList);
+            boneMatrices = MeshSkinning.GetBoneMatrices(smr, bindPoseList);//TODO if this is expensive move it to MeshData
             boneWeights = smr.sharedMesh.boneWeights;
             unskinnedVerts = smr.sharedMesh.vertices;   
 
@@ -237,7 +237,7 @@ namespace KK_PregnancyPlus
                 //Compute and store T-pose skinned mesh verts
                 for (int i = 0; i < vertsLength; i++)
                 {
-                    //Get the skinned vert position from the T-pose bindpose we computed earlier
+                    //Get the skinned vert position from the bindpose matrix we computed earlier
                     origVerts[i] = MeshSkinning.UnskinnedToSkinnedVertex(unskinnedVerts[i], smrTfTransPt, boneMatrices, boneWeights[i]);
                 }
 
@@ -246,7 +246,7 @@ namespace KK_PregnancyPlus
                 {
                     md[rendererName].isFirstPass = false;
 
-                    //Now that the mesh is skinned to T-pose, we can compute the inflation (If not `isFirstPass` ComputeBindPoseMesh() is skipped )
+                    //Now that the mesh is skinned to T-pose, we can compute the inflated state
                     GetInflatedVerticies(smr, bellyInfo.SphereRadius, isClothingMesh, bodySmr, meshInflateFlags);
                 };
 
