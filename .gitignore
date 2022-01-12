@@ -336,5 +336,5 @@ ASALocalRun/
 TODO.txt
 
 release/
-bin*/
+bin/
 ReleaseNotes*

@@ -49,32 +49,15 @@ namespace KK_PregnancyPlus
             //Create the collider component
             var collider = bodySmr.transform.gameObject.AddComponent<MeshCollider>();
 
-            //Shift collider verticies into localspace so they line up with the BindPose verts positions (Basically ignoring charracter animations)
-            Vector3[] shiftedVerts = null;            
+            //Shift collider verticies into localspace so they line up with the BindPose verts positions (Basically ignoring charracter animations)           
             var originalVerts = _md.originalVertices;
 
             //Create mesh instance
             bodySmr.sharedMesh = bodySmr.sharedMesh;
-            shiftedVerts = new Vector3[originalVerts.Length];
-
-            #if KK
-                //When the kk mesh bindpose is offset, we need to correct it for the meshCollider to align
-                var isValidBindPose = bindPoseList.IsValidBindPoseSmr(ChaControl, bodySmr);
-            #endif
-
-            for (int i = 0; i < originalVerts.Length; i++)
-            {
-                //Align the verts to 0,0,0
-                shiftedVerts[i] = ChaControl.transform.InverseTransformPoint(originalVerts[i]);
-                #if KK                    
-                    if (isValidBindPose) shiftedVerts[i] = shiftedVerts[i] -ChaControl.transform.InverseTransformPoint(bodySmr.transform.position);  
-                #endif
-            }        
-
             //Copy the current base body mesh to use as the collider
             var meshCopy = (Mesh)UnityEngine.Object.Instantiate(bodySmr.sharedMesh); 
 
-            meshCopy.vertices = shiftedVerts;
+            meshCopy.vertices = OffSetMeshCollider(bodySmr, originalVerts);
             collider.sharedMesh = meshCopy;            
             return meshCopy;
         }
@@ -95,6 +78,33 @@ namespace KK_PregnancyPlus
             // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DebugMeshVerts(collider.sharedMesh.vertices);
 
             return collider;
+        }
+
+
+        /// <summary>
+        /// In order to line up the mesh collider with the bindpose mesh, we need to offset it
+        /// </summary>
+        public Vector3[] OffSetMeshCollider(SkinnedMeshRenderer bodySmr, Vector3[] originalVerts)
+        {
+            var shiftedVerts = new Vector3[originalVerts.Length];
+
+            #if KK
+                //Some kk body meshes need an offset to align the meshCollider verts 
+                var needsOffset = MeshSkinning.NeedsMeshColliderBindPoseCorrection(bodySmr);
+                var offset = ChaControl.transform.InverseTransformPoint(bodySmr.transform.position);
+            #endif
+
+            for (int i = 0; i < originalVerts.Length; i++)
+            {
+                //Align the verts to 0,0,0
+                shiftedVerts[i] = ChaControl.transform.InverseTransformPoint(originalVerts[i]);
+                #if KK     
+                    //Apply KK offset when needed               
+                    if (needsOffset) shiftedVerts[i] = shiftedVerts[i] - offset;  
+                #endif
+            } 
+
+            return shiftedVerts;
         }
 
 
@@ -425,7 +435,7 @@ namespace KK_PregnancyPlus
                 };                
 
                 //Compute the bind pose bone position
-                MeshSkinning.GetBindPoseBoneTransform(bodySmr, bodySmr.sharedMesh.bindposes[j], bodySmr.bones[j], bindPoseOffset, out var position, out var rotation);
+                MeshSkinning.GetBindPoseBoneTransform(bodySmr, bodySmr.sharedMesh.bindposes[j], bindPoseOffset, out var position, out var rotation);
                 rayCastTargetPositions[i] = position;
 
                 if (PregnancyPlusPlugin.DebugCalcs.Value) DebugTools.DrawSphere(0.05f, position); 
