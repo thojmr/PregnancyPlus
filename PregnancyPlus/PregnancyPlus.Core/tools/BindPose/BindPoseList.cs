@@ -51,13 +51,15 @@ namespace KK_PregnancyPlus
             if (force) bindPoses = new Dictionary<string, Vector3>();
             Matrix4x4 optionalOffsetMatrix = Matrix4x4.identity;
 
-            //Fix bad body bindposes in KK
-            #if KK
-                var offset = MeshOffSet.GetBindposeOffsetFix(chaCtrl, smr);
-                //If default KK body, fix with an offset
-                if (offset != Vector3.zero) 
-                {                
-                    optionalOffsetMatrix = Matrix4x4.TRS(offset, Quaternion.identity, Vector3.one);
+            //Fix bad body bindpose positions in KK
+            #if KK                
+                var meshOffsetType = MeshOffSet.GetMeshOffsetType(smr);
+
+                //If not default kk body mesh fix with offset
+                if (meshOffsetType != MeshOffsetType.DefaultMesh) 
+                {
+                    var offset = MeshOffSet.GetBindposeOffsetFix(chaCtrl, smr);
+                    optionalOffsetMatrix = Matrix4x4.TRS(offset, Quaternion.identity, Vector3.one);                
                 }
             #endif
 

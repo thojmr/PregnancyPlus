@@ -100,13 +100,10 @@ namespace KK_PregnancyPlus
                 shiftedVerts[i] = ChaControl.transform.InverseTransformPoint(originalVerts[i]);
                 #if KK     
                     //Apply KK offset when needed               
-                    if (offsetType == MeshOffsetType.DefaultMesh) shiftedVerts[i] = shiftedVerts[i] - offset;  
-                    // if (offsetType == MeshOffsetType.AlmostDefaultMesh) shiftedVerts[i] = shiftedVerts[i] - offset/2;  //TODO
+                    if (offsetType == MeshOffsetType.DefaultMesh || offsetType == MeshOffsetType.AlmostDefaultMesh) 
+                        shiftedVerts[i] = shiftedVerts[i] - offset;
                 #endif
             } 
-
-            if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DebugMeshVerts(shiftedVerts);
-            if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DebugMeshVerts(bodySmr.sharedMesh.vertices);
 
             return shiftedVerts;
         }
@@ -420,7 +417,7 @@ namespace KK_PregnancyPlus
             //Get the t-pose positions of these bones that we want to raycast to
             var bodySmr = GetBodyMeshRenderer();
             if (bodySmr == null) return;
-            var bindPoseOffset = md[GetMeshKey(bodySmr)].bindPoseCorrection;
+            var bindPoseOffset = MeshSkinning.GetBindPoseOffset(bindPoseList, bodySmr);
 
             if (PregnancyPlusPlugin.DebugCalcs.Value) DebugTools.DrawSphere(0.05f, sphereCenter);
 

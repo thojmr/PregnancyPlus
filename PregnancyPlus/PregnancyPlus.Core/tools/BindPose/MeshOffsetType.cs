@@ -10,7 +10,7 @@ namespace KK_PregnancyPlus
     public enum MeshOffsetType
     {  
         DefaultMesh, //This type of mesh is the default mesh provided by Illusion, and does not need to be offset (Some uncensors match this too, but that's fine)
-        AlmostDefaultMesh, //This type of mesh is an uncensor that almost aligns in localspace with the verts of the DefaultMesh
+        AlmostDefaultMesh, //This type of mesh is an uncensor that almost aligns in localspace with the verts of the DefaultMesh, but still needs an offset
         OtherMesh //This type of mesh is an uncensor which doesnt match either of the above.  Catch all for unknown types.  Ill add more if I find a pattern
     }
 
