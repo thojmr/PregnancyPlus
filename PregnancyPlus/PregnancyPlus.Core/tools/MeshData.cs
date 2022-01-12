@@ -12,7 +12,6 @@ namespace KK_PregnancyPlus
         public float[] clothingOffsets;//The distance we want to offset each vert from the body mesh when inflated
         public bool[] bellyVerticieIndexes;//When an index is True, that vertex is near the belly area
         public bool[] alteredVerticieIndexes;//When an index is True that vertex's position has been altered by GetInflatedVerticies()
-        public Matrix4x4 bindPoseCorrection = Matrix4x4.identity;//The offset that one bindpose is from it's true position, used to virtually align the smr bone before skinning (Only happens in KK)
         public bool isFirstPass = true;
 
 

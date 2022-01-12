@@ -196,7 +196,7 @@ namespace KK_PregnancyPlus
                 if (i > smr.sharedMesh.bindposes.Length -1) continue;
                 
                 //Get a bone's bindPose position/rotation
-                GetBindPoseBoneTransform(smr, smr.sharedMesh.bindposes[i], bindPoseOffset, out var position, out var rotation);  
+                GetBindPoseBoneTransform(smr, smr.sharedMesh.bindposes[i], bindPoseOffset, out var position, out var rotation); 
 
                 if (parent == null) 
                 {
