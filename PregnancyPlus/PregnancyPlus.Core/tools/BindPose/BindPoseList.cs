@@ -53,7 +53,7 @@ namespace KK_PregnancyPlus
 
             //Fix bad body bindposes in KK
             #if KK
-                var offset = MeshSkinning.FixBindposeOffset(chaCtrl, smr);
+                var offset = MeshOffSet.GetBindposeOffsetFix(chaCtrl, smr);
                 //If default KK body, fix with an offset
                 if (offset != Vector3.zero) 
                 {                

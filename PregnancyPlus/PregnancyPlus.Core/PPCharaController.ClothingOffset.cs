@@ -90,7 +90,7 @@ namespace KK_PregnancyPlus
 
             #if KK
                 //Some kk body meshes need an offset to align the meshCollider verts 
-                var needsOffset = MeshSkinning.NeedsMeshColliderBindPoseCorrection(bodySmr);
+                var offsetType = MeshOffSet.GetMeshOffsetType(bodySmr);
                 var offset = ChaControl.transform.InverseTransformPoint(bodySmr.transform.position);
             #endif
 
@@ -100,9 +100,13 @@ namespace KK_PregnancyPlus
                 shiftedVerts[i] = ChaControl.transform.InverseTransformPoint(originalVerts[i]);
                 #if KK     
                     //Apply KK offset when needed               
-                    if (needsOffset) shiftedVerts[i] = shiftedVerts[i] - offset;  
+                    if (offsetType == MeshOffsetType.DefaultMesh) shiftedVerts[i] = shiftedVerts[i] - offset;  
+                    // if (offsetType == MeshOffsetType.AlmostDefaultMesh) shiftedVerts[i] = shiftedVerts[i] - offset/2;  //TODO
                 #endif
             } 
+
+            if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DebugMeshVerts(shiftedVerts);
+            if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DebugMeshVerts(bodySmr.sharedMesh.vertices);
 
             return shiftedVerts;
         }

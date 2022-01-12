@@ -136,41 +136,6 @@ namespace KK_PregnancyPlus
             }
 
 
-            // /// <summary>   
-            // /// TODO I don't think there is an easy way to get vertex count of meshes we havent loaded yet in uncensor
-            // /// Get key value list of uncensor GUID's and uncensor mesh Vert counts
-            // /// </summary>  
-            // public static Dictionary<string, string> GetUncensorBodyDict() 
-            // {
-            //     var uncensorSelector = Type.GetType($"KK_Plugins.UncensorSelector, {pluginName}", false);
-            //     if (uncensorSelector == null)
-            //     {
-            //         PregnancyPlusPlugin.Logger.LogInfo(
-            //             $"Could not find {pluginName}.UncensorSelector - Not an issue");
-            //             return new Dictionary<string, string>();
-            //     }
-
-            //     var BodyDictionary = uncensorSelector.GetField("BodyDictionary");
-            //     if (BodyDictionary == null)
-            //     {
-            //         PregnancyPlusPlugin.Logger.LogWarning(
-            //             $"Could not find {pluginName}.UncensorSelector.BodyDictionary - something isn't right, please report this");
-            //         return new Dictionary<string, string>();                      
-            //     }
-
-            //     // var fullBodyList = (Dictionary<string, string>) BodyConfigListFull;
-
-            //     var bodyDict = new Dictionary<string, string>();
-            //     foreach(var key in BodyDictionary.Keys)
-            //     {
-            //         bodyDict[key] = BodyDictionary[key].VertexCont;
-            //     }
-            //     // var bodyList = fullBodyList.Values;
-            //     // return bodyList;
-            //     return (string[]) bodyDict;
-            // }
-
-
             /// <summary>   
             /// Change to a specific uncensor
             /// </summary>  

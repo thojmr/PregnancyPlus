@@ -102,9 +102,6 @@ namespace KK_PregnancyPlus
         }
 
 
-
-#region KK bindpose offset fix
-
         /// <summary>
         /// Get the True offset that a bindpose bone needs in order to correct the bad ones, and align all the meshes.  
         ///     The bindPoseList contains the True bindPose bone positions that we computed earlier.
@@ -132,49 +129,6 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogWarning($" GetBindPoseOffset() no bone names match.  Something probably went wrong"); 
             return Matrix4x4.identity;
         }
-
-
-        /// <summary>
-        /// Whether an SMR has valid (correctly positioned) bind poses.  Based on the local bounds of the verts (Usullly only happens in KK/KKS)
-        /// </summary> 
-        public static Vector3 FixBindposeOffset(ChaControl chaCtrl, SkinnedMeshRenderer smr)
-        {
-            var smrLocalPosition = chaCtrl.transform.InverseTransformPoint(smr.transform.position);
-            //When the mesh shares similar local vertex positions as the default body use Bounds to determine if the mesh is not aligned
-            //  Bounds are the only way I could come up with to detect an offset mesh...
-            var isLikeDefaultBody = smr.localBounds.center.y < 0 && smr.sharedMesh.bounds.center.y < 0;
-
-            //Does not need offset
-            if (!isLikeDefaultBody) return Vector3.zero;
-
-            //Figure out how much to offset, luckily its always smrLocalPosition.y or half of it
-            var needsFullOffset = smr.sharedMesh.bounds.center.y <= -0.5f;
-            //Some meshes seem like default, but are not
-            // var needsNoOffset = smr.sharedMesh.bounds.center.y > -0.5f;
-
-            // if (needsNoOffset) return Vector3.zero;
-
-            var offset = smrLocalPosition;
-            if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogWarning($" {smr.name} offset {offset}");    
-
-            return offset;
-        }
-
-
-        /// <summary>
-        /// Whether an SMR has valid (correctly positioned) bind poses.  Based on the local bounds of the verts (Usullly only happens in KK/KKS)
-        /// </summary> 
-        public static bool NeedsMeshColliderBindPoseCorrection(SkinnedMeshRenderer smr)
-        {
-            var isLikeDefaultBody = smr.localBounds.center.y < 0 && smr.sharedMesh.bounds.center.y < 0;
-
-            //Does not need offset
-            return (!isLikeDefaultBody || smr.sharedMesh.bounds.center.y <= -0.5f);
-            //TODO second type needs another custom offset for mesh coliderr...
-
-        }
-
-#endregion KK bindpose offset fix
 
 
 #region Skinning

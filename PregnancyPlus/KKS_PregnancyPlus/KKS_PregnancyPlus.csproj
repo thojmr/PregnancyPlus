@@ -162,6 +162,7 @@
     <Compile Include="..\PregnancyPlus.Core\Tools\MeshData.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\BindPose\MeshSkinning.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\BindPose\BindPoseList.cs" />
+    <Compile Include="..\PregnancyPlus.Core\Tools\BindPose\MeshOffsetType.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\Threading\Threading.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\Threading\ThreadsafeCurve.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\UnityUiTools.cs" />

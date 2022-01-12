@@ -76,7 +76,7 @@ namespace KK_PregnancyPlus
             var bodyMeshRenderer = GetBodyMeshRenderer();
             //On first pass (or uncensor changed), compute bind pose lists from the body mesh
             bindPoseList.ComputeBindPose(ChaControl, bodyMeshRenderer, meshInflateFlags.uncensorChanged); 
-            if (bindPoseList.bindPoses.Count <= 0) return;//Stop if none found since this is an issue
+            if (bindPoseList.bindPoses.Count <= 0) return;//Stop if none found since something went wrong
 
             //Get all mesh renderers, calculate, and apply inflation changes
             var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, findAll: true);                           
@@ -220,7 +220,6 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.DebugCalcs.Value) MeshSkinning.ShowBindPose(smr, bindPoseList);    
 
             //Matricies used to compute the T-pose mesh
-            // boneMatrices = MeshSkinning.GetBoneMatrices(smr, bindPoseOffset);
             boneMatrices = MeshSkinning.GetBoneMatrices(smr, bindPoseList);
             boneWeights = smr.sharedMesh.boneWeights;
             unskinnedVerts = smr.sharedMesh.vertices;   

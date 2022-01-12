@@ -218,6 +218,7 @@ namespace KK_PregnancyPlus
             PregnancyPlusPlugin.Logger.LogInfo($" sphereCenter          {sphereCenter}");
             PregnancyPlusPlugin.Logger.LogInfo($" bindPoseCorrection    {Matrix.GetPosition(md.bindPoseCorrection)} {Matrix.GetRotation(md.bindPoseCorrection)}");
             PregnancyPlusPlugin.Logger.LogInfo($" isClothingMesh        {isClothingMesh}");
+            PregnancyPlusPlugin.Logger.LogInfo($" MeshOffsetType        {MeshOffSet.GetMeshOffsetType(smr).ToString()}");
             PregnancyPlusPlugin.Logger.LogInfo($" ************************");
             PregnancyPlusPlugin.Logger.LogInfo($" ");
 
