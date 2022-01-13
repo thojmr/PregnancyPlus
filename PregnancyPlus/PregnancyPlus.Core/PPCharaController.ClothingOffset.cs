@@ -82,27 +82,17 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// In order to line up the mesh collider with the bindpose mesh, we need to offset it
+        /// In order to line up the mesh collider with the bindpose mesh, we need to move the mesh to smr localspace
         /// </summary>
         public Vector3[] OffSetMeshCollider(SkinnedMeshRenderer bodySmr, Vector3[] originalVerts)
         {
             var shiftedVerts = new Vector3[originalVerts.Length];
 
-            #if KK
-                //Some kk body meshes need an offset to align the meshCollider verts 
-                var offsetType = MeshOffSet.GetMeshOffsetType(bodySmr);
-                var offset = ChaControl.transform.InverseTransformPoint(bodySmr.transform.position);
-            #endif
-
+            //Convert the verts back into locaalspace, so when skinned by mesh collider they line up with our md[].originalverticies at 0,0,0
+            //  Otherwise the raycast wont pass through the collider mesh
             for (int i = 0; i < originalVerts.Length; i++)
-            {
-                //Align the verts to 0,0,0
-                shiftedVerts[i] = ChaControl.transform.InverseTransformPoint(originalVerts[i]);
-                #if KK     
-                    //Apply KK offset when needed               
-                    if (offsetType == MeshOffSetType.DefaultMesh || offsetType == MeshOffSetType.AlmostDefaultMesh) 
-                        shiftedVerts[i] = shiftedVerts[i] - offset;
-                #endif
+            {                
+                shiftedVerts[i] = bodySmr.transform.InverseTransformPoint(originalVerts[i]);
             } 
 
             return shiftedVerts;
