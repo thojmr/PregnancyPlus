@@ -111,7 +111,7 @@ namespace KK_PregnancyPlus
 
                 //When HScene starts, pre compute inflated size blendshape
                 
-                //TODO this fires for all chaaracters, even those not in Hscene...
+                //TODO this fires for all characters, even those not in Hscene...
                 GameAPI.StartH += (object sender, EventArgs e) => 
                 { 
                     if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $StartH {charaFileName}");

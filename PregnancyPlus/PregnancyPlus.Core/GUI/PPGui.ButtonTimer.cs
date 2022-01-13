@@ -16,7 +16,7 @@ namespace KK_PregnancyPlus
         internal static float timePassed = 0f;
 
 
-        //For updating UI text over time
+        //For updating UI text over time (place in MonoBehavior Update())
         public static void Update()
         {
             //When incrementing text count, add 1 every second

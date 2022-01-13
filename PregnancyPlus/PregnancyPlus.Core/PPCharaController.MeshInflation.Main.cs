@@ -83,7 +83,6 @@ namespace KK_PregnancyPlus
             LoopAndApplyMeshChanges(bodyRenderers, meshInflateFlags);
             var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);            
             LoopAndApplyMeshChanges(clothRenderers, meshInflateFlags, true, GetBodyMeshRenderer());       
-            //TODO I guess we're including accessories now?                    
             var accessoryRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objAccessory);            
             LoopAndApplyMeshChanges(accessoryRenderers, meshInflateFlags, true, GetBodyMeshRenderer());                           
         }
@@ -217,7 +216,7 @@ namespace KK_PregnancyPlus
             BoneWeight[] boneWeights = null;
             Vector3[] unskinnedVerts = null; 
         
-            if (PregnancyPlusPlugin.DebugCalcs.Value) MeshSkinning.ShowBindPose(smr, bindPoseList);    
+            // if (PregnancyPlusPlugin.DebugCalcs.Value) MeshSkinning.ShowBindPose(smr, bindPoseList);    
 
             //Matricies used to compute the T-pose mesh
             boneMatrices = MeshSkinning.GetBoneMatrices(smr, bindPoseList);//TODO if this is expensive move it to MeshData
@@ -443,7 +442,6 @@ namespace KK_PregnancyPlus
         internal Vector3 GetSphereCenter() 
         {             
             //Measure from feet to belly 
-            //TODO now that everything is in localspace with BindPose, we can probaby just use the bone position as the height
             var bbHeight = GetBellyButtonLocalHeight();
             bellyInfo.BellyButtonHeight = bbHeight;           
             Vector3 bellyButtonPos = Vector3.up * bbHeight; 

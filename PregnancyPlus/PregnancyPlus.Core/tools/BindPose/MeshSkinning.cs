@@ -51,7 +51,7 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Compute the bone BindPose position and rotation (T-Pose)
+        /// Compute the bone BindPoses position and rotation
         /// </summary>  
         public static void GetBindPoseBoneTransform(SkinnedMeshRenderer smr, Matrix4x4 bindPose, Matrix4x4 bindPoseOffset, out Vector3 position, out Quaternion rotation)
         {
@@ -59,7 +59,7 @@ namespace KK_PregnancyPlus
 
             //The inverse bindpose of 0,0,0 gives us the T-pose position of the bone (Except Blender's FBX imported meshes that we have to correct first with an offset)
             position = invBindPoseMatrix.MultiplyPoint(Vector3.zero); 
-            rotation = Matrix.GetRotation(invBindPoseMatrix);//This should be Quaternion.identity in the end
+            rotation = Matrix.GetRotation(invBindPoseMatrix);//This should always be Quaternion.identity
         }
 
 
@@ -98,11 +98,11 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Get the offset that a bindpose bone needs in order to correct the ones with incorrect positions 
+        /// Get the offset that a bindpose bone needs in order to correct incorrect positions (for some KK meshes)
         /// </summary>  
         public static Matrix4x4 GetBindPoseOffset(BindPoseList bindPoseList, SkinnedMeshRenderer smr)
         {
-            //For each smr bone if it exists in the bindPoseList, compute it's offset            
+            //For each smr bone in our bindPoseList, compute it's offset            
             for (int i = 0; i < smr.bones.Length; i++)
             {
                 var bone = smr.bones[i];
@@ -114,7 +114,7 @@ namespace KK_PregnancyPlus
                 GetBindPoseBoneTransform(smr, smr.sharedMesh.bindposes[i], Matrix4x4.identity, out var questionablePosition, out var rotation);
                 var offset = realBonePosePosition - questionablePosition;
 
-                //Once we have a name match we can just return the first offset found, since all subsiquent bones will have same offset
+                //Return the first offset found, all bones will have the same vertical offset
                 return Matrix4x4.TRS(offset, Quaternion.identity, Vector3.one);
             }
 
@@ -182,6 +182,8 @@ namespace KK_PregnancyPlus
         /// <param name="parent">optional: Attach lines to this parent transform</param>   
         public static void ShowBindPose(SkinnedMeshRenderer smr, BindPoseList bindPoseList, Transform parent = null)
         {
+            if (!PregnancyPlusPlugin.DebugLog.Value && !PregnancyPlusPlugin.DebugCalcs.Value) return;
+
             #if KK 
                 var lineLen = 0.03f;
             #elif AI || HS2

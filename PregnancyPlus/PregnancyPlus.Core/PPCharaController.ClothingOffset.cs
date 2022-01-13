@@ -95,6 +95,8 @@ namespace KK_PregnancyPlus
                 shiftedVerts[i] = bodySmr.transform.InverseTransformPoint(originalVerts[i]);
             } 
 
+            // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DebugMeshVerts(shiftedVerts);
+
             return shiftedVerts;
         }
 
@@ -429,7 +431,7 @@ namespace KK_PregnancyPlus
                 MeshSkinning.GetBindPoseBoneTransform(bodySmr, bodySmr.sharedMesh.bindposes[j], bindPoseOffset, out var position, out var rotation);
                 rayCastTargetPositions[i] = position;
 
-                if (PregnancyPlusPlugin.DebugCalcs.Value) DebugTools.DrawSphere(0.05f, position); 
+                // if (PregnancyPlusPlugin.DebugCalcs.Value) DebugTools.DrawSphere(0.05f, position); 
             }            
         }
 

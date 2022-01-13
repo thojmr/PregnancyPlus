@@ -259,7 +259,6 @@ namespace KK_PregnancyPlus
         {         
             //The distance from topExtent that we want to start lerping movement more slowly
             var topExtentOffset = topExtentPosLs.y/10;
-            //TODO this is not quite back to where it was
 
             //When above the breast bone, dont allow changes
             if (originalVerticeLs.y > topExtentPosLs.y)
