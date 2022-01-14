@@ -447,18 +447,16 @@ namespace KK_PregnancyPlus
 
         
         /// <summary>
-        /// This will create a blendshape frame for a mesh, there must be a matching inflatedVertices[renderKey] for the target mesh shape
+        /// This will create a blendshape frame for a mesh from earlier computed deltas
         /// </summary>
         /// <param name="smr">Target mesh renderer to update (original shape)</param>
         /// <param name="renderKey">The Shared Mesh render name, used in dictionary keys to get the current verticie values</param>
         /// <param name="blendShapeTag">Optional blend shape tag to append to the blend shape name, used for identification if needed</param>
         /// <returns>Returns the MeshBlendShape that is created. Can be null</returns>
         internal BlendShapeController CreateBlendShape(SkinnedMeshRenderer smr, string renderKey, string blendShapeTag = null) 
-        {     
-            //Make a copy of the mesh. We dont want to affect the existing for this
-            var meshCopyTarget = PregnancyPlusHelper.CopyMesh(smr.sharedMesh);   
+        {        
             //When the mesh is not readable, temporarily make it readble
-            if (!meshCopyTarget.isReadable) nativeDetour.Apply();
+            if (!smr.sharedMesh.isReadable) nativeDetour.Apply();
 
             //Make sure we have an existing belly shape to work with (can be null if user hasnt used sliders yet)
             var exists = md.TryGetValue(renderKey, out MeshData _md);
@@ -471,11 +469,51 @@ namespace KK_PregnancyPlus
                 return null;
             }
 
+            if (!_md.HasDeltas) 
+            {
+                if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogWarning($" CreateBlendShape must have deltas present in MeshData, no shape applied");
+                return null;
+            }
+
+            var blendShapeName = MakeBlendShapeName(renderKey, blendShapeTag);
+
+            //Create a blend shape object on the mesh, and return the controller object
+            var bsc = new BlendShapeController(_md, blendShapeName, smr);            
+
+            nativeDetour.Undo();
+            return bsc;
+        }  
+
+
+        /// <summary>
+        /// This will prepare a copied mesh to become a template for a blendshape (recalculating normals, boujhds, and tangents)
+        /// </summary>
+        /// <param name="smr">Target mesh renderer to update (original shape)</param>
+        /// <param name="renderKey">The Shared Mesh render name, used in dictionary keys to get the current verticie values</param>
+        /// <returns>Returns the copied mesh with new recalculated values</returns>
+        internal Mesh PrepForBlendShape(SkinnedMeshRenderer smr, string renderKey) 
+        {     
+            //Make a copy of the mesh. We dont want to affect the existing for this
+            var meshCopyTarget = PregnancyPlusHelper.CopyMesh(smr.sharedMesh);   
+            //When the mesh is not readable, temporarily make it readble
+            if (!meshCopyTarget.isReadable) nativeDetour.Apply();
+
+            //Make sure we have an existing belly shape to work with (can be null if user hasnt used sliders yet)
+            var exists = md.TryGetValue(renderKey, out MeshData _md);
+            if (!exists || !_md.HasInflatedVerts) 
+            {
+                if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo(
+                     $"PrepForBlendShape > smr '{renderKey}' meshData do not exists, skipping");
+
+                nativeDetour.Undo();
+                return null;
+            }
+
             //Make sure the vertex count matches what the blendshape has (differs when swapping meshes)
             if (md[renderKey].VertexCount != meshCopyTarget.vertexCount) 
             {
                 PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(charaFileName, ErrorCode.PregPlus_IncorrectVertCount, 
-                    $"CreateBlendShape > smr.sharedMesh '{renderKey}' has incorrect vert count {md[renderKey].VertexCount}|{meshCopyTarget.vertexCount}");  
+                    $"PrepForBlendShape > smr.sharedMesh '{renderKey}' has incorrect vert count {md[renderKey].VertexCount}|{meshCopyTarget.vertexCount}");  
 
                 nativeDetour.Undo();
                 return null;
@@ -486,15 +524,10 @@ namespace KK_PregnancyPlus
             meshCopyTarget.RecalculateBounds();
             NormalSolver.RecalculateNormals(meshCopyTarget, 40f, md[renderKey].alteredVerticieIndexes);
             //Since we are hacking this readable state, prevent hard crash when calculating tangents on originally unreadable meshes
-            if (meshCopyTarget.isReadable) meshCopyTarget.RecalculateTangents();
-
-            var blendShapeName = MakeBlendShapeName(renderKey, blendShapeTag);
-
-            //Create a blend shape object on the mesh, and return the controller object
-            var bsc = new BlendShapeController(smr.sharedMesh, md[renderKey].originalVertices, meshCopyTarget, blendShapeName, smr);            
+            if (meshCopyTarget.isReadable) meshCopyTarget.RecalculateTangents();           
 
             nativeDetour.Undo();
-            return bsc;
+            return meshCopyTarget;
         }  
 
 

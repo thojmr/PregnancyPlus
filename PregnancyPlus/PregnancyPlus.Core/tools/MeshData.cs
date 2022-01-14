@@ -14,6 +14,12 @@ namespace KK_PregnancyPlus
         public bool[] alteredVerticieIndexes;//When an index is True that vertex's position has been altered by GetInflatedVerticies()
         public bool isFirstPass = true;
 
+        //The verticie deltas we want to apply to a blendshape
+        public Vector3[] deltaVerticies;
+        public Vector3[] deltaNormals;
+        public Vector3[] deltaTangents;
+
+
 
         //Need to clear out smoothed verts when inflated are ever set
         public Vector3[] inflatedVertices
@@ -45,6 +51,11 @@ namespace KK_PregnancyPlus
         public bool HasClothingOffsets
         {
             get {return clothingOffsets != null && clothingOffsets.Length > 0;}
+        }
+        
+        public bool HasDeltas
+        {
+            get {return deltaVerticies != null && deltaVerticies.Length > 0;}
         }
 
         public int VertexCount

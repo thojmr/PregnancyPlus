@@ -157,7 +157,7 @@ namespace KK_PregnancyPlus
         /// </summary>
         internal bool ComputeMeshVerts(SkinnedMeshRenderer smr, bool isClothingMesh, SkinnedMeshRenderer bodyMeshRenderer, MeshInflateFlags meshInflateFlags, string renderKey) 
         {
-            //The list of bones to get verticies for (Belly area verts)
+            //The list of bones to get verticies for (Belly area verts).  If a mesh does not contain one of these bones in smr.bones, it is skipped
             #if KK            
                 var boneFilters = new string[] { "cf_s_spine02", "cf_s_waist01", "cf_s_waist02" };//"cs_s_spine01" optionally for wider affected area
             #elif HS2 || AI
@@ -175,8 +175,6 @@ namespace KK_PregnancyPlus
 
             //If no belly verts found, or verts already cached, then we can skip this mesh
             if (!hasVerticies) return false; 
-
-            if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" ");
             if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" Compute Mesh Verts for {smr.name}");
 
             //Get the newly created/or existing MeshData obj
@@ -416,12 +414,10 @@ namespace KK_PregnancyPlus
                         // if (PregnancyPlusPlugin.DebugLog.Value && isClothingMesh) DebugTools.DrawLineAndAttach(smr.transform, 1, smr.sharedMesh.bounds.center - yOffsetDir);
                     }                                                   
 
-                    //Apply computed mesh back to body
-                    var appliedMeshChanges = ApplyInflation(smr, rendererName, meshInflateFlags.OverWriteMesh, blendShapeTempTagName, meshInflateFlags.bypassWhen0);
+                    var threaded = ComputeDeltas(smr, rendererName, meshInflateFlags);
 
-                    //When inflation is actively happening as clothing changes, make sure the new clothing grows too
-                    if (isDuringInflationScene) AppendToQuickInflateList(smr);
-                    if (appliedMeshChanges) infConfigHistory = infConfigClone;   
+                    if (!threaded)
+                        DonePreComputingInflation(smr, meshInflateFlags, blendShapeTempTagName);
                 };
 
                 //Append to result queue.  Will execute on next Update()
@@ -433,6 +429,23 @@ namespace KK_PregnancyPlus
             threading.Start(threadAction);
 
             return true;                 
+        }
+
+
+        /// <summary>
+        /// Apply the inflation once done computing inflated verts and deltas
+        /// </summary>
+        internal void DonePreComputingInflation(SkinnedMeshRenderer smr, MeshInflateFlags meshInflateFlags, string blendShapeTag = null)
+        {
+            var rendererName = GetMeshKey(smr);   
+            var infConfigClone = (PregnancyPlusData)infConfig.Clone();
+
+            //Apply computed mesh back to body
+            var appliedMeshChanges = ApplyInflation(smr, rendererName, meshInflateFlags.OverWriteMesh, blendShapeTempTagName, meshInflateFlags.bypassWhen0);
+
+            //When inflation is actively happening as clothing changes, make sure the new clothing grows too
+            if (isDuringInflationScene) AppendToQuickInflateList(smr);
+            if (appliedMeshChanges) infConfigHistory = infConfigClone;  
         }
 
 
@@ -589,6 +602,69 @@ namespace KK_PregnancyPlus
             }
 
             return smoothedVectorLs;             
+        }
+
+
+        /// <summary>
+        /// Compute the deltas between the original mesh and the inflated one. (This is threaded now)  We use these deltas to build the blendshape
+        /// </summary>
+        /// <returns>returns bool whether the action needs to be threaded or not</returns>
+        internal bool ComputeDeltas(SkinnedMeshRenderer smr, string rendererName, MeshInflateFlags meshInflateFlags) 
+        {
+            //Check for mesh data object
+            var isMeshInitialized = md.TryGetValue(rendererName, out MeshData _md);
+            if (!isMeshInitialized) return false;
+
+            //If we already have the deltas then just return
+            if (_md.HasDeltas && !meshInflateFlags.OverWriteMesh) return false;
+
+            //Get the virtual inflated mesh with normal, and tangent recalculation applied
+            var inflatedMesh = PrepForBlendShape(smr, rendererName);
+            if (!inflatedMesh) return false;
+
+            if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" Compute Mesh Deltas for {smr.name}");
+
+            //Whhen SMR has local rotation undo it in the deltas
+            var rotationUndo = Matrix4x4.TRS(Vector3.zero, smr.transform.localRotation, Vector3.one).inverse;
+
+            if (!smr.sharedMesh.isReadable) nativeDetour.Apply();
+
+            var sourceNormals = smr.sharedMesh.normals;
+            var targetNormals = inflatedMesh.normals;
+            var sourceTangents = smr.sharedMesh.tangents;
+            var targetTangents = inflatedMesh.tangents;
+
+            nativeDetour.Undo();
+
+            //Heavy compute task below, run in separate thread
+            WaitCallback threadAction = (System.Object stateInfo) => 
+            {
+
+                //Get delta diffs of the two meshes for the blend shape
+                var deltaVerticies = BlendShapeTools.GetV3Deltas(_md.originalVertices, _md.HasSmoothedVerts ? _md.smoothedVertices : _md.inflatedVertices, rotationUndo);
+                var deltaNormals = BlendShapeTools.GetV3Deltas(sourceNormals, targetNormals, rotationUndo);
+                var deltaTangents = BlendShapeTools.GetV3Deltas(BlendShapeTools.ConvertV4ToV3(sourceTangents), BlendShapeTools.ConvertV4ToV3(targetTangents), rotationUndo);                            
+
+                //When this thread task is complete, execute the below in main thread
+                Action threadActionResult = () => 
+                {
+                    _md.deltaVerticies = deltaVerticies;
+                    _md.deltaNormals = deltaNormals;
+                    _md.deltaTangents = deltaTangents;
+
+                    //Now we can create and apply the blendshape
+                    DonePreComputingInflation(smr, meshInflateFlags, blendShapeTempTagName);
+                
+                };
+
+                //Append to result queue.  Will execute on next Update()
+                threading.AddResultToThreadQueue(threadActionResult);
+            };
+
+            //Start this threaded task, and will be watched in Update() for completion
+            threading.Start(threadAction);
+
+            return true;
         }
                 
     }

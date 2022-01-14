@@ -39,6 +39,7 @@ namespace KK_PregnancyPlus
         //Used to hold the last non zero belly shape slider values that were applied to any character for Restore button
         public static PregnancyPlusData copiedBelly = null;       
         public static ErrorCodeController errorCodeCtrl;
+        internal Harmony hi;
 
 
         internal void Start()
@@ -55,7 +56,7 @@ namespace KK_PregnancyPlus
                 GameAPI.RegisterExtraBehaviour<PregnancyPlusGameController>(GUID);
             #endif
 
-            var hi = new Harmony(GUID);
+            hi = new Harmony(GUID);
             Hooks.InitHooks(hi);
             Hooks_Uncensor.InitHooks(hi);
             #if KK || AI
@@ -67,6 +68,14 @@ namespace KK_PregnancyPlus
             //Set up studio/malker GUI sliders
             PregnancyPlusGui.InitStudio(hi, this);
             PregnancyPlusGui.InitMaker(hi, this);       
+        }
+
+
+        private void OnDestroy()
+        {
+            //For ScriptEngine reloads
+            hi?.UnpatchAll(GUID);
+            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" PregnancyPlus.UnpatchAll "); 
         }
 
     
