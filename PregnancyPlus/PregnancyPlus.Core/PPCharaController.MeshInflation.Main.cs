@@ -406,8 +406,8 @@ namespace KK_PregnancyPlus
 
                         //Some other internally measured points/boundaries
                         // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(smr.transform, 0.2f, sphereCenter);
-                        // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLine(topExtentPos, topExtentPos + Vector3.back * 4);                        
-                        // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLine(topExtentPos + Vector3.down * topExtentPos.y/10, topExtentPos + Vector3.down * topExtentPos.y/10 + Vector3.back * 4);                        
+                        // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLine(topExtentPos + Vector3.back * 0.5f, topExtentPos);                        
+                        // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLine(topExtentPos + Vector3.down * bellyInfo.YLimitOffset + Vector3.back * 0.5f, topExtentPos + Vector3.down * bellyInfo.YLimitOffset);                        
                         // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLine(backExtentPos, backExtentPos + Vector3.left * 4);                        
                         // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLine(sphereCenter, sphereCenter + Vector3.forward * 1);  
                         // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphere(0.1f, preMorphSphereCenter);
@@ -452,7 +452,7 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// This will take the sphere-ified verticies and apply smoothing to them via Lerps to remove sharp edges.  Make the belly more round
+        /// This will take the sphere-ified verticies and apply smoothing to them to round out sharp edges, and limit the bellys' position
         /// </summary>
         /// <param name="originalVertice">The original verticie position</param>
         /// <param name="inflatedVerticie">The target verticie position, after sphere-ifying</param>
@@ -538,17 +538,6 @@ namespace KK_PregnancyPlus
                 smoothedVectorLs = ReduceRibStretchingZ(originalVerticeLs, smoothedVectorLs, topExtentPos, bellyTopAC);
             }
 
-            // //Experimental, move more polygons to the front of the belly at max, Measured by trying to keep belly button size the same at 0 and max inflation size
-            // var bellyTipZ = (center.z + maxSphereRadius);
-            // if (smoothedVector.z >= center.z)
-            // {
-            //     var invertLerpScale = smoothedVector.z/bellyTipZ - 0.75f;
-            //     var bellyTipVector = new Vector3(0, center.y, bellyTipZ);
-            //     //lerp towards belly point
-            //     smoothedVector = Vector3.Slerp(smoothedVector, bellyTipVector, invertLerpScale);
-            // }
-
-
             //At this point if the smoothed vector is still the originalVector just return it
             if (smoothedVectorLs.Equals(originalVerticeLs)) return smoothedVectorLs;
 
@@ -563,11 +552,8 @@ namespace KK_PregnancyPlus
             var coreLineSmoothedVertLs = Vector3.up * smoothedVectorLs.y;       
             var currentCoreDist = Math.Abs(Vector3.Distance(smoothedVectorLs, coreLineSmoothedVertLs)); 
 
-            //Compute the new distances from vert to sphereCenters
-            var currentVectorDistance = Math.Abs(Vector3.Distance(sphereCenterLs, smoothedVectorLs));
-            var pmCurrentVectorDistance = Math.Abs(Vector3.Distance(preMorphSphereCenter, smoothedVectorLs)); 
 
-            //** Order matters below **
+            //** Order matters below **  <I even wrote this comment and still managed to ignore it....  :/>
 
 
             //Don't allow any morphs to shrink towards the characters core line any more than the original distance
@@ -576,6 +562,10 @@ namespace KK_PregnancyPlus
                 //Since this is just an XZ distance check, don't modify the new y value
                 smoothedVectorLs = new Vector3(originalVerticeLs.x, smoothedVectorLs.y, originalVerticeLs.z);
             }
+
+            //Compute the new distances from vert to sphereCenters
+            var currentVectorDistance = Math.Abs(Vector3.Distance(sphereCenterLs, smoothedVectorLs));
+            var pmCurrentVectorDistance = Math.Abs(Vector3.Distance(preMorphSphereCenter, smoothedVectorLs)); 
 
             //Don't allow any morphs to shrink towards the sphere center more than its original distance, only outward morphs allowed
             if (skinToCenterDist > currentVectorDistance || pmSkinToCenterDist > pmCurrentVectorDistance) 

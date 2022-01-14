@@ -44,9 +44,6 @@ namespace KK_PregnancyPlus
             //Only inflate if the value is above 0  
             if (!bypassWhen0 && (infSize.Equals(null) || infSize == 0)) return false;      
 
-            //Some meshes are not readable and cant be touched...  Nothing I can do about this right now
-            if (!smr.sharedMesh.isReadable) nativeDetour.Apply();
-
             //Check key exists in dict, remove it if it does not
             var exists = md.TryGetValue(renderKey, out MeshData _md);
             if (!exists || !_md.HasOriginalVerts) 
@@ -54,10 +51,11 @@ namespace KK_PregnancyPlus
                 // if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo(
                 //      $"ApplyInflation > smr '{renderKey}' does not exists, skipping");
                 RemoveRenderKey(renderKey);
-
-                nativeDetour.Undo();
                 return false;
             }
+
+            //Some meshes are not readable and cant be touched, make them readable
+            if (!smr.sharedMesh.isReadable) nativeDetour.Apply();
 
             //Check that the mesh did not change behind the scenes.  It will have a different vert count if it did (possible to be the same though...)
             if (md[renderKey].VertexCount != smr.sharedMesh.vertexCount) 
@@ -71,15 +69,17 @@ namespace KK_PregnancyPlus
             
             // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DebugMeshVerts(ChaControl.gameObject, md[renderKey].originalVertices, removeExisting: false);
             // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DebugMeshVerts(md[renderKey].originalVertices);
+            // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DebugMeshVerts(md[renderKey].inflatedVertices);
             // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DebugMeshVerts(smr.sharedMesh.vertices);
             // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DebugMeshVerts(ChaControl.gameObject, md[renderKey].originalVertices, ChaControl.transform.position);
             // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DebugMeshVerts(ChaControl.gameObject, smr.sharedMesh.vertices, ChaControl.transform.position);
 
+            nativeDetour.Undo();
+
             //Create or update the smr blendshape
             ApplyBlendShapeWeight(smr, renderKey, needsOverwrite, blendShapeTempTagName);
 
-            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" Did ApplyInflation to {smr.name}");
-            nativeDetour.Undo();
+            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" Did ApplyInflation to {smr.name}");            
             return true;
         }    
 

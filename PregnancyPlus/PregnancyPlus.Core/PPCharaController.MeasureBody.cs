@@ -53,8 +53,14 @@ namespace KK_PregnancyPlus
             //From char belly button to breast distance
             public float YLimit
             {
-                //Get the distance from center -> ribs, with scale applied
-                get { return BellyToBreastDist * 0.8f; }
+                //Get the distance from center -> ribs
+                get { return BellyToBreastDist * 1.3f; }
+            }
+
+            public float YLimitOffset
+            {
+                //Get the offset below the YLimit where we want to start lerping the mesh
+                get { return YLimit/2; }
             }
 
             public float BellyButtonHeight;//Foot to belly button height
@@ -112,10 +118,11 @@ namespace KK_PregnancyPlus
 
             public string Log()
             {
-                return $@" WaistWidth {WaistWidth} WaistHeight {WaistHeight} WaistThick {WaistThick} BellyToBreastDist {BellyToBreastDist}
-                           BodyTopScale {BodyTopScale} NHeightScale {NHeightScale} CharacterScale {CharacterScale} TotalCharScale {TotalCharScale}
-                           SphereRadius {SphereRadius} OriginalSphereRadius {OriginalSphereRadius}
-                           ";
+                return $@" BellyInfo:
+    WaistWidth {WaistWidth} WaistHeight {WaistHeight} WaistThick {WaistThick} BellyToBreastDist {BellyToBreastDist}
+    BodyTopScale {BodyTopScale} NHeightScale {NHeightScale} CharacterScale {CharacterScale} TotalCharScale {TotalCharScale}
+    SphereRadius {SphereRadius} OriginalSphereRadius {OriginalSphereRadius} YLimit {YLimit}
+                ";
             }
 
         }

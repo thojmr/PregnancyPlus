@@ -207,20 +207,20 @@ namespace KK_PregnancyPlus
         {
             if (!PregnancyPlusPlugin.DebugCalcs.Value) return;
 
-            PregnancyPlusPlugin.Logger.LogInfo($" ******CharMeshInfo****** {smr.name}");        
-            PregnancyPlusPlugin.Logger.LogInfo($" ChaControl.position   {ChaControl.transform.position}");
-            PregnancyPlusPlugin.Logger.LogInfo($" smr.position          {Round(smr.transform.position)}");
-            PregnancyPlusPlugin.Logger.LogInfo($" smr.lRotation         {smr.transform.localRotation}");
-            PregnancyPlusPlugin.Logger.LogInfo($" smr.rootBone.name     {smr.rootBone?.name}");            
-            PregnancyPlusPlugin.Logger.LogInfo($" smr.localBounds       {Round(smr.localBounds.center)}");            
-            PregnancyPlusPlugin.Logger.LogInfo($" smr.bounds            {Round(smr.sharedMesh.bounds.center)}");            
-            PregnancyPlusPlugin.Logger.LogInfo($" bbHeight              {bellyInfo.BellyButtonHeight}");
-            PregnancyPlusPlugin.Logger.LogInfo($" sphereCenter          {sphereCenter}");
-            PregnancyPlusPlugin.Logger.LogInfo($" isClothingMesh        {isClothingMesh}");
-            PregnancyPlusPlugin.Logger.LogInfo($" MeshOffsetType        {MeshOffSet.GetMeshOffsetType(smr).ToString()}");
-            PregnancyPlusPlugin.Logger.LogInfo($" ************************");
-            PregnancyPlusPlugin.Logger.LogInfo($" ");
-
+            PregnancyPlusPlugin.Logger.LogInfo($@" 
+    ******CharMeshInfo****** {smr.name}       
+    ChaControl.position   {ChaControl.transform.position}
+    smr.position          {Round(smr.transform.position)}
+    smr.lRotation         {smr.transform.localRotation}
+    smr.rootBone.name     {smr.rootBone?.name}
+    smr.localBounds       {Round(smr.localBounds.center)}   
+    smr.bounds            {Round(smr.sharedMesh.bounds.center)}
+    bbHeight              {bellyInfo.BellyButtonHeight}
+    sphereCenter          {sphereCenter}
+    isClothingMesh        {isClothingMesh}
+    MeshOffsetType        {MeshOffSet.GetMeshOffsetType(smr).ToString()}
+    ************************
+             ");
         }         
 
         public string Round(Vector3 vector, int digits = 4) 

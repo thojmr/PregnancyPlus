@@ -258,7 +258,7 @@ namespace KK_PregnancyPlus
         internal Vector3 ReduceRibStretchingZ(Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 topExtentPosLs, ThreadsafeCurve bellyTopAC)
         {         
             //The distance from topExtent that we want to start lerping movement more slowly
-            var topExtentOffset = topExtentPosLs.y/10;
+            var topExtentOffset = bellyInfo.YLimitOffset;
 
             //When above the breast bone, dont allow changes
             if (originalVerticeLs.y > topExtentPosLs.y)

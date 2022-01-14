@@ -517,8 +517,11 @@ namespace KK_PregnancyPlus
         internal bool ApplyBlendShapeWeight(SkinnedMeshRenderer smr, string renderKey, bool needsOverwrite, string blendShapeTag = null) 
         {
             var blendShapeName = MakeBlendShapeName(renderKey, blendShapeTag);
+
+            if (!smr.sharedMesh.isReadable) nativeDetour.Apply();
             //Try to find an existing blendshape by name
             BlendShapeController bsc = new BlendShapeController(smr, blendShapeName);
+            nativeDetour.Undo();
             
             //If not found then create it
             if (bsc.blendShape == null || needsOverwrite) bsc = CreateBlendShape(smr, renderKey, blendShapeTag);
