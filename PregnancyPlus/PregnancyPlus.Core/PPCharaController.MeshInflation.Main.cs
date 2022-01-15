@@ -83,9 +83,13 @@ namespace KK_PregnancyPlus
             var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, findAll: true);                           
             LoopAndApplyMeshChanges(bodyRenderers, meshInflateFlags);
             var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);            
-            LoopAndApplyMeshChanges(clothRenderers, meshInflateFlags, true, GetBodyMeshRenderer());       
+            LoopAndApplyMeshChanges(clothRenderers, meshInflateFlags, true, GetBodyMeshRenderer());    
+
+            //Only affect accessories, when the user wills it
+            if (PregnancyPlusPlugin.IgnoreAccessories.Value) return;
             var accessoryRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objAccessory);            
             LoopAndApplyMeshChanges(accessoryRenderers, meshInflateFlags, true, GetBodyMeshRenderer());                           
+            
         }
 
 

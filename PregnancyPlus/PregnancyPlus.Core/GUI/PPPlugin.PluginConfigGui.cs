@@ -12,6 +12,7 @@ namespace KK_PregnancyPlus
     {
         public static ConfigEntry<bool> StoryMode { get; private set; }
         public static ConfigEntry<bool> OverrideBelly { get; private set; }
+        public static ConfigEntry<bool> IgnoreAccessories { get; private set; }
         public static ConfigEntry<bool> AllowMale { get; private set; }
         public static ConfigEntry<bool> PerferTargetBelly { get; private set; }
         public static ConfigEntry<float> MaxStoryModeBelly { get; private set; }
@@ -102,6 +103,13 @@ namespace KK_PregnancyPlus
 
             //**** General Config *******/
             //***************************/
+
+            IgnoreAccessories = Config.Bind<bool>("General", "Ignore Accessories", false,
+                new ConfigDescription("When enabled, Preg+ will ignore all accessories including AcessoryClothing, and SkinnedAccessories.",
+                    null,
+                    new ConfigurationManagerAttributes { Order = 3 })
+                );
+            IgnoreAccessories.SettingChanged += IgnoreAccessories_SettingsChanged;
 
             AllowMale = Config.Bind<bool>("General", "Allow male", false,
                 new ConfigDescription("When enabled, the sliders will work on male characters as well.",
@@ -418,6 +426,20 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" DebugLog_SettingsChanged ");
             errorCodeCtrl.SetDebugLogState(PregnancyPlusPlugin.DebugLog.Value);
         }
+
+
+        //Ignores accessories from being affected by Preg+ sliders
+        internal void IgnoreAccessories_SettingsChanged(object sender, System.EventArgs e) 
+        {
+            var handlers = CharacterApi.GetRegisteredBehaviour(GUID);
+        
+            foreach (PregnancyPlusCharaController charCustFunCtrl in handlers.Instances)
+            {                 
+                //Force recalculate all characters belly shapes
+                charCustFunCtrl.MeshInflate(new MeshInflateFlags(charCustFunCtrl, _freshStart: true), "IgnoreAccessories_SettingsChanged");                                       
+            } 
+        }
+        
 
     }
 }
