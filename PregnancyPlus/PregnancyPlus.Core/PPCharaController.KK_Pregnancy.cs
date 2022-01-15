@@ -43,14 +43,14 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Fetch KK_Pregnancy Data.Week value for story mode (Main Game) integration
         /// </summary>
-        internal void GetWeeksAndSetBellySize(bool checkNewMesh = false, bool slidersChanged = false) 
+        internal void GetWeeksAndSetBellySize(bool checkNewMesh = false, bool slidersChanged = false, string callee = "GetWeeksAndSetBellySize") 
         {            
 
             //If a card value is set for inflation size, use that first, otherwise check KK_Pregnancy for Weeks value
             var cardData = GetCardData();
             if (cardData.inflationSize > 0 && cardData.GameplayEnabled) 
             {                
-                MeshInflate(cardData, "GetWeeksAndSetBellySize", new MeshInflateFlags(this, _checkForNewMesh: checkNewMesh, _pluginConfigSliderChanged: slidersChanged));
+                MeshInflate(cardData, callee, new MeshInflateFlags(this, _checkForNewMesh: checkNewMesh, _pluginConfigSliderChanged: slidersChanged));
                 return;
             }
 
@@ -66,7 +66,7 @@ namespace KK_PregnancyPlus
                 if (weeks <= 0) 
                 {
                     //Fix for when character gives birth, we need to reset belly
-                    MeshInflate(0, "GetWeeksAndSetBellySize");
+                    MeshInflate(0, callee);
                     return;
                 }
 
@@ -76,7 +76,7 @@ namespace KK_PregnancyPlus
                 //Compute the additonal belly size added based on user configured value from 0-40
                 var additionalPregPlusSize = Mathf.Lerp(0, weeks, PregnancyPlusPlugin.MaxStoryModeBelly.Value/40);
                 
-                MeshInflate(additionalPregPlusSize, "GetWeeksAndSetBellySize", new MeshInflateFlags(this, _checkForNewMesh: checkNewMesh, _pluginConfigSliderChanged: slidersChanged));
+                MeshInflate(additionalPregPlusSize, callee, new MeshInflateFlags(this, _checkForNewMesh: checkNewMesh, _pluginConfigSliderChanged: slidersChanged));
 
             #endif
         }
