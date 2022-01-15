@@ -466,13 +466,13 @@ namespace KK_PregnancyPlus
                      $"CreateBlendShape > smr '{renderKey}' meshData do not exists, skipping");
 
                 nativeDetour.Undo();
-                return null;
+                return new BlendShapeController();
             }
 
             if (!_md.HasDeltas) 
             {
                 if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogWarning($" CreateBlendShape must have deltas present in MeshData, no shape applied");
-                return null;
+                return new BlendShapeController();
             }
 
             var blendShapeName = MakeBlendShapeName(renderKey, blendShapeTag);
@@ -559,7 +559,7 @@ namespace KK_PregnancyPlus
             //If not found then create it
             if (bsc.blendShape == null || needsOverwrite) bsc = CreateBlendShape(smr, renderKey, blendShapeTag);
 
-            if (bsc.blendShape == null) 
+            if (bsc == null || bsc.blendShape == null) 
             {
                 if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogWarning(
                      $"ApplyBlendShapeWeight > There was a problem creating the blendshape ${blendShapeName}");
