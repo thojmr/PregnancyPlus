@@ -102,10 +102,17 @@ namespace KK_PregnancyPlus
         /// </summary>  
         public static Matrix4x4 GetBindPoseOffset(BindPoseList bindPoseList, SkinnedMeshRenderer smr)
         {
+            if (smr == null) return Matrix4x4.identity;
+
             //For each smr bone in our bindPoseList, compute it's offset            
             for (int i = 0; i < smr.bones.Length; i++)
             {
+                if (smr == null) continue;
+
                 var bone = smr.bones[i];
+                //Some other plugins addd/remove bones at runtime
+                if (bone == null) continue;
+
                 //If the bone name is not in the list, try the next bone
                 if (!bindPoseList.bindPoses.ContainsKey(bone.name)) continue;
 

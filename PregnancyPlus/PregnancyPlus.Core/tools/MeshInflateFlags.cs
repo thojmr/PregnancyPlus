@@ -27,7 +27,7 @@ namespace KK_PregnancyPlus
             {
                 if (pluginConfigSliderChanged) return true;            
                 //See if any slider value differences 
-                return infConfig.Equals(infConfigHistory);
+                return !infConfig.Equals(infConfigHistory);
             }
         }
 

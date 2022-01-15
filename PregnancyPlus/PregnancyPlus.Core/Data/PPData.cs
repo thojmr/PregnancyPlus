@@ -47,6 +47,7 @@ namespace KK_PregnancyPlus
         //Allow comparison between all public properties of two PregnancyPlusData objects (excluding clothingOffsetVersion)
         public override bool Equals(Object obj)
         {
+            if (obj == null) return false;
             var otherData = obj as PregnancyPlusData;
             if (otherData == null) return false;
             var hasChanges = false;
@@ -68,13 +69,14 @@ namespace KK_PregnancyPlus
             if (inflationRoundness != otherData.inflationRoundness) hasChanges = true;                      
             if (inflationDrop != otherData.inflationDrop) hasChanges = true;                      
 
-            return hasChanges;
+            return !hasChanges;
         }
 
 
         //Allow comparison between all public properties of two PregnancyPlusData objects (excluding clothingOffsetVersion)
         public bool InflationSizeOnlyChange(Object obj)
         {
+            if (obj == null) return false;
             var otherData = obj as PregnancyPlusData;
             if (otherData == null) return false;
             var inflationSizeOnlyChanges = false;

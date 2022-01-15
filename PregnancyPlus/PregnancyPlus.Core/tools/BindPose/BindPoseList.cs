@@ -46,11 +46,13 @@ namespace KK_PregnancyPlus
         /// </summary> 
         public void ComputeBindPose(ChaControl chaCtrl, SkinnedMeshRenderer smr, bool force = false)
         {
+            if (smr == null) return;
+
             //When we alrready have the bind poses, we don't need to recompute them
             if (bindPoses.Count > 0 && !force) return;
             //Clear bindposelist
             if (force) bindPoses = new Dictionary<string, Vector3>();
-            Matrix4x4 optionalOffsetMatrix = Matrix4x4.identity;
+            Matrix4x4 optionalOffsetMatrix = Matrix4x4.identity;            
 
             //Fix bad body bindpose positions in KK
             #if KK                
@@ -72,8 +74,9 @@ namespace KK_PregnancyPlus
         /// If a valid bind pose mesh is found get its bone positions, and add them to the bindPoses Dictionary
         /// </summary> 
         internal Dictionary<string, Vector3> SetBindPosePositions(SkinnedMeshRenderer smr, ChaControl chaCtrl, Matrix4x4 bindPoseOffset = new Matrix4x4())
-        {
+        {        
             var _bindPoses = new Dictionary<string, Vector3>();
+            if (smr == null) return _bindPoses;
 
             //Make sure bones match bindposes
             if (smr.bones.Length <= 0 || smr.sharedMesh.bindposes.Length <= 0 || smr.bones.Length < smr.sharedMesh.bindposes.Length)
@@ -85,6 +88,9 @@ namespace KK_PregnancyPlus
 
             for (int i = 0; i < smr.bones.Length; i++)
             {
+                if (smr == null) break;
+                if (smr.bones[i] == null) continue;
+
                 //Sometimes body has more bones than bindPoses, so skip these extra bones
                 if (i > smr.sharedMesh.bindposes.Length -1) continue;
 
