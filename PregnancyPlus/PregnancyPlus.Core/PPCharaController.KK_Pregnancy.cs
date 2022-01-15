@@ -181,10 +181,11 @@ namespace KK_PregnancyPlus
         {
             if (!smr.sharedMesh.isReadable) nativeDetour.Apply();
             var blendShapeName = MakeBlendShapeName(GetMeshKey(smr), blendShapeTempTagName);
+            //Find blendshape by name
             var blendshapeCtrl = new BlendShapeController(smr, blendShapeName);
             nativeDetour.Undo();
 
-            if (blendshapeCtrl.blendShape == null) return;
+            if (blendshapeCtrl?.blendShape == null) return;
 
             blendShapeCtrlList.Add(blendshapeCtrl);
         }

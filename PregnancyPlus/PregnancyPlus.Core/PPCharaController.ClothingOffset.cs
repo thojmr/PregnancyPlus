@@ -161,7 +161,7 @@ namespace KK_PregnancyPlus
             //Get the 4 or 5 points inside the body we want to raycast to
             GetRayCastTargetPositions(sphereCenter);
 
-            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" Pre-calculating clothing offset values");
+            if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" Pre-calculating clothing offset {clothSmr.name}");
 
             //In newer versions of Unity we can use RaycastCommand to run a list of raycast in parallel for speed!
             #if HS2 || AI || KKS

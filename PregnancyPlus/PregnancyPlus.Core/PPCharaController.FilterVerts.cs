@@ -23,7 +23,7 @@ namespace KK_PregnancyPlus
         /// </summary>
         /// <param name="skinnedMeshRenderer">The target mesh renderer</param>
         /// <param name="boneFilters">The bones that must have weights, if none are passed it will get all bone indexes</param>
-        /// <returns>Returns True if any verticies are found with matching boneFilter</returns>
+        /// <returns>Returns True if any verticies are found with matching boneFilter that needs processing</returns>
         internal bool GetFilteredVerticieIndexes(SkinnedMeshRenderer skinnedMeshRenderer, string[] boneFilters) 
         {
             var sharedMesh = skinnedMeshRenderer.sharedMesh;
@@ -52,7 +52,7 @@ namespace KK_PregnancyPlus
                 return false;             
             }
             
-            //Create new mesh dictionary key for bone indexes
+            //Create new mesh dictionary key from scratch (Will overwrite existing ones)
             md[renderKey] = new MeshData(sharedMesh.vertexCount);           
             var bellyVertIndex = md[renderKey].bellyVerticieIndexes;
             var verticies = sharedMesh.vertices;
@@ -87,7 +87,9 @@ namespace KK_PregnancyPlus
                 c++;//lol                                          
             }
 
-            //Dont need to remember this mesh if there are no belly verts in it
+            nativeDetour.Undo();
+
+            //Dont need to keep this meshData if there are no belly verts in it
             if (!hasBellyVerticies) 
             {
                 if (!ignoreMeshList.Contains(renderKey)) ignoreMeshList.Add(renderKey);
@@ -98,12 +100,9 @@ namespace KK_PregnancyPlus
             {
                 //just in case a new mesh is added that is valid but also on ignore list, remove it from the list
                 if (ignoreMeshList.Contains(renderKey))
-                {
-                    ignoreMeshList.Remove(renderKey);
-                }
+                    ignoreMeshList.Remove(renderKey);                
             }
-
-            nativeDetour.Undo();
+            
             return hasBellyVerticies;
         }
 
