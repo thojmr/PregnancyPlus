@@ -21,7 +21,7 @@ using UnityEngine;
 public static class NormalSolver
 {
 
-    public static bool showBellyVertsOnly = false;//fun bug-turned-feature to see only the verts affected by belly bones
+    public static bool debugShowBellyVertsOnly = false;//fun bug-turned-feature to see only the verts affected by belly bones
 
     /// <summary>
     ///     Recalculate the normals of a mesh based on an angle threshold. This takes
@@ -32,24 +32,21 @@ public static class NormalSolver
     ///     The smoothing angle. Note that triangles that already share
     ///     the same vertex will be smooth regardless of the angle! 
     /// </param>
-    /// <param name="indexedVerts">optional list of indexes that are true when we want to include their corresponding vertex index (faster compute)</param>
+    /// <param name="indexedVerts">optional list of indexes to include.  False indexes will be skipped</param>
     public static void RecalculateNormals(this Mesh mesh, float angle, bool[] indexedVerts = null) 
     {
         var cosineThreshold = Mathf.Cos(angle * Mathf.Deg2Rad);
 
         var vertices = mesh.vertices;
-        var normals = showBellyVertsOnly ? new Vector3[vertices.Length] : mesh.normals;
+        var normals = debugShowBellyVertsOnly ? new Vector3[vertices.Length] : mesh.normals;
 
         // Holds the normal of each triangle in each sub mesh.
         var triNormals = new Vector3[mesh.subMeshCount][];
-
-        var dictionary = new Dictionary<VertexKey, List<VertexEntry>>(vertices.Length);
+        var dictionary = new Dictionary<VertexKey, List<VertexEntry>>();
 
         for (var subMeshIndex = 0; subMeshIndex < mesh.subMeshCount; ++subMeshIndex) 
-        {
-            
+        {            
             var triangles = mesh.GetTriangles(subMeshIndex);
-
             triNormals[subMeshIndex] = new Vector3[triangles.Length / 3];
 
             for (var i = 0; i < triangles.Length; i += 3) 
@@ -59,10 +56,9 @@ public static class NormalSolver
                 int i3 = triangles[i + 2];
 
                 //Break early if this all of these verts are not belly verts
-                if (indexedVerts != null) 
-                {
-                    if (!indexedVerts[i1] && !indexedVerts[i2] && !indexedVerts[i3]) continue;
-                }
+                if (indexedVerts != null)                 
+                    if (!indexedVerts[i1] && !indexedVerts[i2] && !indexedVerts[i3]) 
+                        continue;            
 
                 // Calculate the normal of the triangle
                 Vector3 p1 = (vertices[i2] - vertices[i1]).normalized;
@@ -79,42 +75,35 @@ public static class NormalSolver
                     entry = new List<VertexEntry>(4);
                     dictionary.Add(key, entry);
                 }
-                entry.Add(new VertexEntry(subMeshIndex, triIndex, i1, indexedVerts != null ? !indexedVerts[i1] : false));
+                entry.Add(new VertexEntry(subMeshIndex, triIndex, i1));
 
                 if (!dictionary.TryGetValue(key = new VertexKey(vertices[i2]), out entry)) 
                 {
                     entry = new List<VertexEntry>();
                     dictionary.Add(key, entry);
                 }
-                entry.Add(new VertexEntry(subMeshIndex, triIndex, i2, indexedVerts != null ? !indexedVerts[i2] : false));
+                entry.Add(new VertexEntry(subMeshIndex, triIndex, i2));
 
                 if (!dictionary.TryGetValue(key = new VertexKey(vertices[i3]), out entry)) 
                 {
                     entry = new List<VertexEntry>();
                     dictionary.Add(key, entry);
                 }
-                entry.Add(new VertexEntry(subMeshIndex, triIndex, i3, indexedVerts != null ? !indexedVerts[i3] : false));
+                entry.Add(new VertexEntry(subMeshIndex, triIndex, i3));
             }
         }
 
         // Each entry in the dictionary represents a unique vertex position.
-
         foreach (var vertList in dictionary.Values) 
         {
             for (var i = 0; i < vertList.Count; ++i) 
-            {                
-                
+            {                                
                 var lhsEntry = vertList[i];
-                if (lhsEntry.ExcludeVertex) continue;//Skip to save on compute
-
-                var sum = new Vector3();
+                var sum = new Vector3();         
 
                 for (var j = 0; j < vertList.Count; ++j) 
                 {
                     var rhsEntry = vertList[j];
-
-                    if (rhsEntry.ExcludeVertex) continue;//Skip to save on compute
-
                     if (lhsEntry.VertexIndex == rhsEntry.VertexIndex) 
                     {
                         sum += triNormals[rhsEntry.MeshIndex][rhsEntry.TriangleIndex];
@@ -133,7 +122,7 @@ public static class NormalSolver
                         }
                     }
                 }
-
+                
                 normals[lhsEntry.VertexIndex] = sum.normalized;
             }
         }
@@ -186,14 +175,12 @@ public static class NormalSolver
         public int MeshIndex;
         public int TriangleIndex;
         public int VertexIndex;
-        public bool ExcludeVertex;
 
-        public VertexEntry(int meshIndex, int triIndex, int vertIndex, bool excludeVertex) 
+        public VertexEntry(int meshIndex, int triIndex, int vertIndex) 
         {
             MeshIndex = meshIndex;
             TriangleIndex = triIndex;
             VertexIndex = vertIndex;
-            ExcludeVertex = excludeVertex;
         }
     }
 }

@@ -375,7 +375,7 @@ namespace KK_PregnancyPlus
                     {
                         if (bellyVertIndex[i]) bellyVertsCount++;
                     }
-                    if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" Mesh affected vert count {bellyVertsCount}");
+                    if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" Mesh affected vert count {bellyVertsCount} {smr.name}");
                 #endif               
 
                 //For each vert, compute it's new inflated position if it is a belly vert

@@ -486,7 +486,7 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// This will prepare a copied mesh to become a template for a blendshape (recalculating normals, boujhds, and tangents)
+        /// This will prepare a copied mesh to become a template for a blendshape (recalculating normals, bounds, and tangents)
         /// </summary>
         /// <param name="smr">Target mesh renderer to update (original shape)</param>
         /// <param name="renderKey">The Shared Mesh render name, used in dictionary keys to get the current verticie values</param>
@@ -524,6 +524,8 @@ namespace KK_PregnancyPlus
             meshCopyTarget.RecalculateBounds();
             NormalSolver.RecalculateNormals(meshCopyTarget, 40f, md[renderKey].alteredVerticieIndexes);
             //Since we are hacking this readable state, prevent hard crash when calculating tangents on originally unreadable meshes
+            //Note: if we recalculate tangents after chaning normals, it causes problems with nipples, and probably other body parts
+            //TODO implement https://answers.unity.com/questions/7789/calculating-tangents-vector4.html ?
             if (meshCopyTarget.isReadable) meshCopyTarget.RecalculateTangents();           
 
             nativeDetour.Undo();

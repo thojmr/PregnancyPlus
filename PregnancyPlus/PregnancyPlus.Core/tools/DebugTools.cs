@@ -256,7 +256,7 @@ public static class DebugTools
     /// This will create a sphere on every vert in the given mesh so you can visually see changes in a computed mesh
     ///     (In Koikatsu this only works in character maker, not studio)
     /// </summary>
-    public static void DebugMeshVerts(GameObject go, Vector3[] verticies, Vector3 visualOffset = new Vector3(), bool removeExisting = true, bool worldPositionStays = false) {
+    public static void DebugMeshVerts(GameObject go, Vector3[] verticies, Vector3 visualOffset = new Vector3(), bool removeExisting = true, bool worldPositionStays = false, bool[] filterVerts = null) {
         if (verticies == null || verticies.Length <= 0) return;
 
         //Clear old spheres from previous runs
@@ -264,8 +264,10 @@ public static class DebugTools
 
         for (int i = 0; i < verticies.Length; i++)
         {
-            //Place spheres on each vert to debug the mesh calculated position relative to other meshes
-            DrawSphereAndAttach(go.transform, 0.01f, verticies[i] - visualOffset, removeExisting: false, worldPositionStays);  
+            //Filterr out certain verts
+            if (filterVerts == null || filterVerts[i])
+                //Place spheres on each vert to debug the mesh calculated position relative to other meshes
+                DrawSphereAndAttach(go.transform, 0.01f, verticies[i] - visualOffset, removeExisting: false, worldPositionStays);  
         } 
     }
 
@@ -273,13 +275,15 @@ public static class DebugTools
     /// <summary>
     /// Overload for DebugMeshVerts when you just want worldspace positions (unattached)
     /// </summary>
-    public static void DebugMeshVerts(Vector3[] verticies, Vector3 visualOffset = new Vector3()) {
+    public static void DebugMeshVerts(Vector3[] verticies, Vector3 visualOffset = new Vector3(), bool[] filterVerts = null) {
         if (verticies == null || verticies.Length <= 0) return;
 
         for (int i = 0; i < verticies.Length; i++)
         {
-            //Place spheres on each vert to debug the mesh calculated position relative to other meshes
-            DrawSphere(0.01f, verticies[i] - visualOffset);  
+            //Filter out certain verts
+            if (filterVerts == null || filterVerts[i])
+                //Place spheres on each vert to debug the mesh calculated position relative to other meshes
+                DrawSphere(0.01f, verticies[i] - visualOffset);  
         } 
     }
 
