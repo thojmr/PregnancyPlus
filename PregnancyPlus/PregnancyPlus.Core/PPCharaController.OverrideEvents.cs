@@ -256,14 +256,14 @@ namespace KK_PregnancyPlus
             if (!initialized) return;
 
             //When clothing changes, reload inflation state
-            StartCoroutine(WaitForClothMeshToSettle(0.05f, checkNewMesh: true));
+            StartCoroutine(WaitForClothMeshToSettle(0.05f, checkNewClothMesh: true));
         } 
 
         
         /// <summary>
         /// After clothes change you have to wait a second if you want mesh shadows to calculate correctly (longer in HS2, AI)
         /// </summary>
-        internal IEnumerator WaitForClothMeshToSettle(float waitTime = 0.05f, bool checkNewMesh = false, bool forceRecalcVerts = false)
+        internal IEnumerator WaitForClothMeshToSettle(float waitTime = 0.05f, bool checkNewClothMesh = false, bool forceRecalcVerts = false, bool checkNewAccessoryMesh = false, int identifier = -1)
         {   
             //Allows us to debounce when there are multiple back to back request
             var guid = Guid.NewGuid();
@@ -279,7 +279,12 @@ namespace KK_PregnancyPlus
                 // if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" WaitForMeshToSettle checkNewMesh:{checkNewMesh} forceRecalcVerts:{forceRecalcVerts}");        
                 CheckMeshVisibility(); 
                 if (!infConfig.UseOldCalcLogic()) yield return new WaitForEndOfFrame();
-                MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: checkNewMesh, _freshStart: forceRecalcVerts), "WaitForClothMeshToSettle");                
+
+                //Make deug string to let us know what accessory slot, or cloth kind changed to trigger this update
+                var clothItemChanged = identifier >= 0 ? $": {identifier}" : "N/A";
+                var callee = $"WaitForMeshToSettle({(checkNewClothMesh ? "kind" : "slot") + clothItemChanged})";
+
+                MeshInflate(new MeshInflateFlags(this, _checkForNewClothMesh: checkNewClothMesh, _checkForNewAccMesh: checkNewAccessoryMesh, _freshStart: forceRecalcVerts), callee);                
             }
         }
 

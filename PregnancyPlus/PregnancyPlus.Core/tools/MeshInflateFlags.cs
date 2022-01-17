@@ -3,8 +3,12 @@ namespace KK_PregnancyPlus
     //These are the flags needed to determine whether we need to compute a mesh shape, and how to do it
     public class MeshInflateFlags 
     {
-        //Check for any newly added meshes
+        //Check for ANY newly added meshes
         public bool checkForNewMesh = false;
+        //Check only for new clothing meshes
+        public bool checkForNewClothMesh = false;
+        //Check only for new Accessory meshes
+        public bool checkForNewAcchMesh = false;
         //Start from scratch, recalculating all meshes
         public bool freshStart = false;
         //When plugin sliders change, need to recalculate shape
@@ -55,7 +59,7 @@ namespace KK_PregnancyPlus
                 if (!SliderHaveChanged && !visibilityUpdate && !bypassWhen0) 
                 {
                     //Only stop here, if no recalculation needed
-                    if (!freshStart && !checkForNewMesh)  return false; 
+                    if (!freshStart && !checkForNewMesh && !checkForNewAcchMesh && !checkForNewClothMesh)  return false; 
                 }
                 return true;
             }
@@ -66,7 +70,7 @@ namespace KK_PregnancyPlus
         {
             get 
             {   
-                if (bypassWhen0 || freshStart || checkForNewMesh) return true;
+                if (bypassWhen0 || freshStart || checkForNewMesh || checkForNewAcchMesh || checkForNewClothMesh) return true;
                 return false;
             }
         }
@@ -79,12 +83,15 @@ namespace KK_PregnancyPlus
         ///     Pass infConfig values to constructor to be used later in slider value comparisons (Change detection)
         /// </summary>
         public MeshInflateFlags(PregnancyPlusCharaController ppcc, bool _checkForNewMesh = false, bool _freshStart = false, bool _pluginConfigSliderChanged = false, 
-                                bool _visibilityUpdate = false, bool _bypassWhen0 = false, bool _reMeasure = false, bool _uncensorChanged = false) 
+                                bool _visibilityUpdate = false, bool _bypassWhen0 = false, bool _reMeasure = false, bool _uncensorChanged = false, 
+                                bool _checkForNewClothMesh = false, bool _checkForNewAccMesh = false) 
         {
             infConfig = ppcc.infConfig;
             infConfigHistory = ppcc.infConfigHistory;
 
             checkForNewMesh = _checkForNewMesh;
+            checkForNewClothMesh = _checkForNewClothMesh;
+            checkForNewAcchMesh = _checkForNewAccMesh;
             freshStart = _freshStart;
             pluginConfigSliderChanged = _pluginConfigSliderChanged;
             visibilityUpdate = _visibilityUpdate;
@@ -99,6 +106,8 @@ namespace KK_PregnancyPlus
             //When a flag is true, log it
             var fieldsLogString = "";
             if (checkForNewMesh) fieldsLogString += $" checkForNewMesh T,";
+            if (checkForNewClothMesh) fieldsLogString += $" checkForNewClothMesh T,";
+            if (checkForNewAcchMesh) fieldsLogString += $" checkForNewAcchMesh T,";
             if (freshStart) fieldsLogString += $" freshStart T,";
             if (pluginConfigSliderChanged) fieldsLogString += $" pluginConfigSliderChanged T,";
             if (visibilityUpdate) fieldsLogString += $" visibilityUpdate T,";

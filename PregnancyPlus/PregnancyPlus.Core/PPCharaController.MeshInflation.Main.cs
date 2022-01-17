@@ -96,15 +96,24 @@ namespace KK_PregnancyPlus
             //Get all body mesh renderers, calculate, and apply inflation changes
             var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, findAll: true);                           
             LoopAndApplyMeshChanges(bodyRenderers, meshInflateFlags);
+            
 
-            //Get all clothing mesh renderers, calculate, and apply inflation changes
-            var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);            
-            LoopAndApplyMeshChanges(clothRenderers, meshInflateFlags, isClothingMesh: true, bodyMeshRenderer);    
+            //Dont check cloth mesh on accessory change
+            if (!meshInflateFlags.checkForNewAcchMesh)
+            {
+                //Get all clothing mesh renderers, calculate, and apply inflation changes
+                var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);            
+                LoopAndApplyMeshChanges(clothRenderers, meshInflateFlags, isClothingMesh: true, bodyMeshRenderer);    
+            }
 
-            //Only affect accessories, when the user wills it
-            if (PregnancyPlusPlugin.IgnoreAccessories.Value) return;
-            var accessoryRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objAccessory);            
-            LoopAndApplyMeshChanges(accessoryRenderers, meshInflateFlags, isClothingMesh: true, bodyMeshRenderer); 
+            //Dont check Accessory mesh on cloth change
+            if (!meshInflateFlags.checkForNewClothMesh)
+            {
+                //Only affect accessories, when the user wills it
+                if (PregnancyPlusPlugin.IgnoreAccessories.Value) return;
+                var accessoryRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objAccessory);            
+                LoopAndApplyMeshChanges(accessoryRenderers, meshInflateFlags, isClothingMesh: true, bodyMeshRenderer); 
+            }
         }
 
 

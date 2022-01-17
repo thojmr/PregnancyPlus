@@ -58,6 +58,8 @@ namespace KK_PregnancyPlus
 
             hi = new Harmony(GUID);
             Hooks.InitHooks(hi);
+            HooksClothing.InitHooks(hi);
+            HooksAccessory.InitHooks(hi);
             Hooks_Uncensor.InitHooks(hi);
             #if KK || AI
                 Hooks_KK_Pregnancy.InitHooks(hi);

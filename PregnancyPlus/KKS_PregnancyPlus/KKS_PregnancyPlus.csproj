@@ -146,6 +146,8 @@
     <Compile Include="..\PregnancyPlus.Core\PPPlugin.cs" />
     <Compile Include="..\PregnancyPlus.Core\GUI\PPPlugin.PluginConfigGui.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPPlugin.Hooks.cs" />
+    <Compile Include="..\PregnancyPlus.Core\PPPlugin.Hooks.Accessory.cs" />
+    <Compile Include="..\PregnancyPlus.Core\PPPlugin.Hooks.Clothing.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPPlugin.Hooks.KK_Pregnancy.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPPlugin.Hooks.Uncensor.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPHelper.cs" />

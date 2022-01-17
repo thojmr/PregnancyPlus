@@ -55,7 +55,26 @@ namespace KK_PregnancyPlus
             #endif
 
             //Force recalc because of some cloth items in HS2 Maker that don't seem to want to follow the rules
-            StartCoroutine(WaitForClothMeshToSettle(debounceTime, checkNewMesh: true));
+            StartCoroutine(WaitForClothMeshToSettle(debounceTime, checkNewClothMesh: true, identifier: clothesKind));
+        }
+
+
+        /// <summary>
+        /// Triggered when clothing state is changed, i.e. pulled aside or taken off.
+        /// </summary>
+        internal void AccessoryStateChangeEvent(int chaID, int slotNum)
+        {
+            //Wait for card data to load, and make sure this is the same character the clothes event triggered for
+            if (!initialized || chaID != ChaControl.chaID) return;
+
+            #if KK
+                var debounceTime = 0.1f;
+            #elif HS2 || AI
+                var debounceTime = 0.15f;
+            #endif
+
+            //Force recalc because of some cloth items in HS2 Maker that don't seem to want to follow the rules
+            StartCoroutine(WaitForClothMeshToSettle(debounceTime, checkNewAccessoryMesh: true, identifier: slotNum));
         }
 
 
