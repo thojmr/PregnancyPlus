@@ -637,6 +637,8 @@ namespace KK_PregnancyPlus
         /// <returns>returns bool whether the action needs to be threaded or not</returns>
         internal bool ComputeDeltas(SkinnedMeshRenderer smr, string rendererName, MeshInflateFlags meshInflateFlags) 
         {
+            if (smr == null) return false;
+            
             //Check for mesh data object
             var isMeshInitialized = md.TryGetValue(rendererName, out MeshData _md);
             if (!isMeshInitialized) return false;

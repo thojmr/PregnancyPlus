@@ -204,10 +204,10 @@ namespace KK_PregnancyPlus
 
                 //When this thread task is complete, execute the below in main thread
                 Action threadActionResult = () => 
-                {
-                    //Re-trigger ApplyInflation to set the new smoothed mesh
-                    ApplySmoothResults(newVerts, renderKey, smr);
+                {                    
                     CheckForEndOfSmoothing();
+                    //Re-trigger ApplyInflation to set the new smoothed mesh
+                    ApplySmoothResults(newVerts, renderKey, smr);                                        
                 };
 
                 //Append to result queue.  Will execute on next Update()
@@ -231,9 +231,11 @@ namespace KK_PregnancyPlus
             if (newMesh != null) md[renderKey].smoothedVertices = newMesh;
 
             if (smr == null) smr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderKey, searchInactive: false);
+            if (smr == null) return;
 
-            //Re-trigger ApplyInflation to set the new smoothed mesh           
-            ApplyInflation(smr, renderKey, true, blendShapeTempTagName);            
+            var meshInflateFlags = new MeshInflateFlags(this, _freshStart: true);
+            //Compute the deltas and apply the smoothed mesh
+            ComputeDeltas(smr, renderKey, meshInflateFlags);         
         }
 
 
