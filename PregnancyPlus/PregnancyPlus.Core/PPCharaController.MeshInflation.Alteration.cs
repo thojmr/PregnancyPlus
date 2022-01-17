@@ -217,7 +217,6 @@ namespace KK_PregnancyPlus
 
             //Start this threaded task, and will be watched in Update() for completion
             threading.Start(threadAction);
-
             return true;
         }
 
@@ -245,6 +244,7 @@ namespace KK_PregnancyPlus
             //Stop updating GUI count when done
             if (threading.threadCount == 0) PregnancyPlusGui.StopTextCountIncrement();
         }
+
 
     }
 }

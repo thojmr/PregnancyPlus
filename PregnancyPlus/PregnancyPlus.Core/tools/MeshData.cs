@@ -31,8 +31,9 @@ namespace KK_PregnancyPlus
                 _inflatedVertices = value;
             }
         }
+        
 
-
+        
         public bool HasInflatedVerts
         {
             get {return _inflatedVertices != null && _inflatedVertices.Length > 0;}
@@ -60,7 +61,7 @@ namespace KK_PregnancyPlus
 
         public int VertexCount
         {
-            get {return inflatedVertices == null ? 0 : inflatedVertices.Length;}
+            get {return _inflatedVertices == null ? 0 : _inflatedVertices.Length;}
         }
 
 
