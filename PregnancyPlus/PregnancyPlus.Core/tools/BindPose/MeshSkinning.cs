@@ -15,12 +15,11 @@ namespace KK_PregnancyPlus
         /// Get the bone matricies of the characters T-pose position used in skinning the mesh
         ///     This extracts the T-pose bone positions from the BindPoseList, so it doesn't matter what animation the character is currently in
         /// </summary>     
-        public static Matrix4x4[] GetBoneMatrices(SkinnedMeshRenderer smr, BindPoseList bindPoseList) 
+        public static Matrix4x4[] GetBoneMatrices(ChaControl chaControl, SkinnedMeshRenderer smr, BindPoseList bindPoseList) 
         {
             Transform[] skinnedBones = smr.bones;
             Matrix4x4[] boneMatrices = new Matrix4x4[smr.bones.Length];
-            Matrix4x4[] bindposes = smr.sharedMesh.bindposes;                                   
-            var bindPoseOffset = GetBindPoseOffset(bindPoseList, smr);
+            Matrix4x4[] bindposes = smr.sharedMesh.bindposes;                                               
 
             //For each bone, compute its bindpose position, and get the bone matrix
             for (int j = 0; j < boneMatrices.Length; j++)
@@ -29,6 +28,7 @@ namespace KK_PregnancyPlus
                 {                                                            
                     //Create dummy transform to store this bone's BindPose position
                     var synthTransform = new GameObject().transform;
+                    var bindPoseOffset = GetBindPoseOffset(chaControl, bindPoseList, smr, smr.sharedMesh.bindposes[j], skinnedBones[j]);
 
                     //Get the bind pose position (and correct any bad offsets/rotations)
                     GetBindPoseBoneTransform(smr, smr.sharedMesh.bindposes[j], bindPoseOffset, out var position, out var rotation);
@@ -98,36 +98,25 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Get the offset that a bindpose bone needs in order to correct incorrect positions (for some KK meshes)
+        /// Get the offset that a smr bindpose bone needs in order to line up with the body's bindpose
         /// </summary>  
-        public static Matrix4x4 GetBindPoseOffset(BindPoseList bindPoseList, SkinnedMeshRenderer smr)
+        public static Matrix4x4 GetBindPoseOffset(ChaControl chaControl, BindPoseList bindPoseList, SkinnedMeshRenderer smr, Matrix4x4 bindPose, Transform bone)
         {
             if (smr == null) return Matrix4x4.identity;
 
-            //For each smr bone in our bindPoseList, compute it's offset            
-            for (int i = 0; i < smr.bones.Length; i++)
-            {
-                if (smr == null) continue;
+            //Some other plugins addd/remove bones at runtime
+            if (bone == null) return Matrix4x4.identity;
 
-                var bone = smr.bones[i];
-                //Some other plugins addd/remove bones at runtime
-                if (bone == null) continue;
+            //If the bone name is not in the list, try the next bone
+            if (!bindPoseList.bindPoses.ContainsKey(bone.name)) return Matrix4x4.identity;
 
-                //If the bone name is not in the list, try the next bone
-                if (!bindPoseList.bindPoses.ContainsKey(bone.name)) continue;
-
-                //Compare the real bindpose position with this smr.bone's bindpose position
-                var realBonePosePosition = bindPoseList.Get(bone.name);
-                GetBindPoseBoneTransform(smr, smr.sharedMesh.bindposes[i], Matrix4x4.identity, out var questionablePosition, out var rotation);
-                var offset = realBonePosePosition - questionablePosition;
-
-                //Return the first offset found, all bones will have the same vertical offset
-                return Matrix4x4.TRS(offset, Quaternion.identity, Vector3.one);
-            }
-
-            //If no matches found (something probably went wront)
-            if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogWarning($" GetBindPoseOffset() no bone names match.  Something probably went wrong"); 
-            return Matrix4x4.identity;
+            //Compare the real body bindpose position with this smr.bone's bindpose position
+            var realBonePosePosition = bindPoseList.Get(bone.name);
+            GetBindPoseBoneTransform(smr, bindPose, Matrix4x4.identity, out var questionablePosition, out var rotation);
+            var offset = realBonePosePosition - questionablePosition;
+            
+            //Return the offset found, so all bones will have the same position
+            return Matrix4x4.TRS(offset, Quaternion.identity, Vector3.one);
         }
 
 
@@ -187,7 +176,7 @@ namespace KK_PregnancyPlus
         /// Show the computed bindpose locations with debug lines
         /// </summary> 
         /// <param name="parent">optional: Attach lines to this parent transform</param>   
-        public static void ShowBindPose(SkinnedMeshRenderer smr, BindPoseList bindPoseList, Transform parent = null)
+        public static void ShowBindPose(ChaControl chaControl, SkinnedMeshRenderer smr, BindPoseList bindPoseList, Transform parent = null)
         {
             if (!PregnancyPlusPlugin.DebugLog.Value && !PregnancyPlusPlugin.DebugCalcs.Value) return;
 
@@ -195,17 +184,16 @@ namespace KK_PregnancyPlus
                 var lineLen = 0.03f;
             #elif AI || HS2
                 var lineLen = 0.3f;
-            #endif
-
-            var bindPoseOffset = GetBindPoseOffset(bindPoseList, smr);
+            #endif            
             
             for (int i = 0; i < smr.bones.Length; i++)
             {            
                 //Sometimes body has more bones than bindPoses, so skip these extra bones
                 if (i > smr.sharedMesh.bindposes.Length -1) continue;
                 
+                var bindPoseOffset = GetBindPoseOffset(chaControl, bindPoseList, smr, smr.sharedMesh.bindposes[i], smr.bones[i]);
                 //Get a bone's bindPose position/rotation
-                GetBindPoseBoneTransform(smr, smr.sharedMesh.bindposes[i], bindPoseOffset, out var position, out var rotation); 
+                GetBindPoseBoneTransform(smr, smr.sharedMesh.bindposes[i], bindPoseOffset, out var position, out var rotation);
 
                 if (parent == null) 
                 {

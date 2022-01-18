@@ -408,8 +408,7 @@ namespace KK_PregnancyPlus
         {
             //Get the t-pose positions of these bones that we want to raycast to
             var bodySmr = GetBodyMeshRenderer();
-            if (bodySmr == null) return;
-            var bindPoseOffset = MeshSkinning.GetBindPoseOffset(bindPoseList, bodySmr);
+            if (bodySmr == null) return;            
 
             if (PregnancyPlusPlugin.DebugCalcs.Value) DebugTools.DrawSphere(0.05f, sphereCenter);
 
@@ -426,6 +425,8 @@ namespace KK_PregnancyPlus
                         $" This this bone `{rayCastTargetNames[i]}` is not skinned to the body mesh, so a measurement was skipped."); 
                     return;
                 };                
+
+                var bindPoseOffset = MeshSkinning.GetBindPoseOffset(ChaControl, bindPoseList, bodySmr, bodySmr.sharedMesh.bindposes[j], bodySmr.bones[j]);
 
                 //Compute the bind pose bone position
                 MeshSkinning.GetBindPoseBoneTransform(bodySmr, bodySmr.sharedMesh.bindposes[j], bindPoseOffset, out var position, out var rotation);
