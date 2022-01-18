@@ -59,7 +59,7 @@ namespace KK_PregnancyPlus
 
             //The inverse bindpose of 0,0,0 gives us the T-pose position of the bone (Except Blender's FBX imported meshes that we have to correct first with an offset)
             position = invBindPoseMatrix.MultiplyPoint(Vector3.zero); 
-            rotation = Matrix.GetRotation(invBindPoseMatrix);//This should always be Quaternion.identity
+            rotation = Quaternion.identity;
         }
 
 
