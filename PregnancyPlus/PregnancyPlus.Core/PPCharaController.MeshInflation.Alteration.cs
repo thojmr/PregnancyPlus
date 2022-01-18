@@ -187,11 +187,6 @@ namespace KK_PregnancyPlus
 
             //Calculate the original normals, but don't show them.  We just want it for the blendshape target
             meshCopyTarget.vertices = md[renderKey]._inflatedVertices;//Always use interla _inflatedVerts directly, not the smoothedVerts by accident
-            meshCopyTarget.RecalculateBounds();
-            NormalSolver.RecalculateNormals(meshCopyTarget, 40f, md[renderKey].alteredVerticieIndexes);
-            //Since we are hacking this readable state, prevent hard crash when calculating tangents on originally unreadable meshes        
-            if (meshCopyTarget.isReadable) meshCopyTarget.RecalculateTangents();
-
             nativeDetour.Undo();
 
             // Lapacian Smoothing is exetemely costly, and can take multiple seconds to compute with even a small mesh
