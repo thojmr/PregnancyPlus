@@ -520,7 +520,7 @@ namespace KK_PregnancyPlus
             }
 
             //Calculate the new normals, but don't show them.  We just want it for the blendshape shape target
-            meshCopyTarget.vertices = md[renderKey].HasSmoothedVerts ? md[renderKey].smoothedVertices : md[renderKey].inflatedVertices;
+            meshCopyTarget.vertices = md[renderKey].inflatedVertices;
             meshCopyTarget.RecalculateBounds();
             NormalSolver.RecalculateNormals(meshCopyTarget, 40f, md[renderKey].alteredVerticieIndexes);
             //Since we are hacking this readable state, prevent hard crash when calculating tangents on originally unreadable meshes

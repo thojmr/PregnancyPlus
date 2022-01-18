@@ -20,13 +20,14 @@ namespace KK_PregnancyPlus
         public Vector3[] deltaTangents;
 
 
-
-        //Need to clear out smoothed verts when inflated are ever set
+        
         public Vector3[] inflatedVertices
         {
-            get { return _inflatedVertices; }
+            //When we do have smoothed verts use those.
+            get { return HasSmoothedVerts ? smoothedVertices : _inflatedVertices; }            
             set 
             {
+                //Need to clear out smoothed verts when inflated are ever set
                 smoothedVertices = null; 
                 _inflatedVertices = value;
             }

@@ -669,7 +669,7 @@ namespace KK_PregnancyPlus
             {
 
                 //Get delta diffs of the two meshes for the blend shape
-                var deltaVerticies = BlendShapeTools.GetV3Deltas(_md.originalVertices, _md.HasSmoothedVerts ? _md.smoothedVertices : _md.inflatedVertices, rotationUndo);
+                var deltaVerticies = BlendShapeTools.GetV3Deltas(_md.originalVertices, _md.inflatedVertices, rotationUndo);
                 var deltaNormals = BlendShapeTools.GetV3Deltas(sourceNormals, targetNormals, rotationUndo);
                 var deltaTangents = BlendShapeTools.GetV3Deltas(BlendShapeTools.ConvertV4ToV3(sourceTangents), BlendShapeTools.ConvertV4ToV3(targetTangents), rotationUndo);                            
 
