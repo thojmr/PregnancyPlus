@@ -31,7 +31,30 @@ namespace KK_PregnancyPlus
         public string pluginVersion = null;
 
 #endregion
-
+        
+        /// <summary>   
+        /// Reset slider values back to default, and sets GamePlayEnabled flag for this character (in case it was disabled from Maker)
+        /// </summary>
+        public void Reset()
+        {
+            inflationSize = 0;
+            inflationMoveY = 0;
+            inflationMoveZ = 0;
+            inflationStretchX = 0;
+            inflationStretchY = 0;
+            inflationShiftY = 0;
+            inflationShiftZ = 0;
+            inflationTaperY = 0;
+            inflationTaperZ = 0;
+            inflationMultiplier = 0;
+            inflationClothOffset = 0;
+            inflationFatFold = 0;
+            inflationFatFoldHeight = 0;
+            inflationRoundness = 0;
+            inflationDrop = 0;
+            //Also allows you to enable a gameplay disabled character
+            GameplayEnabled = true;
+        }
 
         //Allows cloning, to avoid pass by ref issues when keeping history
         public object Clone()

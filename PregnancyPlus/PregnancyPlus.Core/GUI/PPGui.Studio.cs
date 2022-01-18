@@ -79,7 +79,11 @@ namespace KK_PregnancyPlus
                 }))
                 .Value.Subscribe(f => {
                     if (f == false) return;//This will trigger on studio first load
-                    UnityUiTools.ResetAllSliders(cat);                   
+                    UnityUiTools.ResetAllSliders(cat);       
+                    foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) 
+                    {      
+                        ctrl.infConfig.Reset();                           
+                    }            
                 });
 
             cat.AddControl(new CurrentStateCategorySwitch(blendshapeText, c =>
