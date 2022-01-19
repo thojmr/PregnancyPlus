@@ -19,7 +19,10 @@ namespace KK_PregnancyPlus
         {
             Transform[] skinnedBones = smr.bones;
             Matrix4x4[] boneMatrices = new Matrix4x4[smr.bones.Length];
-            Matrix4x4[] bindposes = smr.sharedMesh.bindposes;                                               
+            Matrix4x4[] bindposes = smr.sharedMesh.bindposes;               
+
+            var hasLocalRotation = MeshHasLocalRotation(smr);                                
+            if (PregnancyPlusPlugin.DebugLog.Value && hasLocalRotation) PregnancyPlusPlugin.Logger.LogWarning($" hasLocalRotation {smr.name} ");
 
             //For each bone, compute its bindpose position, and get the bone matrix
             for (int j = 0; j < boneMatrices.Length; j++)
@@ -69,7 +72,7 @@ namespace KK_PregnancyPlus
 
             //Use Quaternion.identity as rotation when mesh has local rotation (like squeeze socks)
             //TODO this doesn't completely fix squeeze socks like meshes, but its very close
-            rotation = (smr.transform.localRotation != Quaternion.identity) ? Quaternion.identity : Matrix.GetRotation(invBindPoseMatrix);
+            rotation = MeshHasLocalRotation(smr) ? Quaternion.identity : Matrix.GetRotation(invBindPoseMatrix);
         }
 
 
@@ -82,7 +85,7 @@ namespace KK_PregnancyPlus
             var smrMatrix = Matrix4x4.identity;
 
             //When an smr has rotated local position (incorrectly imported?) correct it with rotation matrix (Squeeze socks as example)
-            if (smr.transform.localRotation != Quaternion.identity)
+            if (MeshHasLocalRotation(smr))
             {
                 smrMatrix = OffsetSmrRotation(smr.transform.localToWorldMatrix);                
             }
@@ -127,6 +130,12 @@ namespace KK_PregnancyPlus
             
             //Return the offset found, so all bones will have the same position
             return Matrix4x4.TRS(offset, Quaternion.identity, Vector3.one);
+        }
+
+
+        public static bool MeshHasLocalRotation(SkinnedMeshRenderer smr)
+        {
+            return smr.transform.localRotation != Quaternion.identity;
         }
 
 
