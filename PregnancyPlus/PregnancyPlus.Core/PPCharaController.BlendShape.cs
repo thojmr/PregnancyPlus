@@ -471,7 +471,7 @@ namespace KK_PregnancyPlus
 
             if (!_md.HasDeltas) 
             {
-                if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogWarning($" CreateBlendShape must have deltas present in MeshData, no shape applied");
+                if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogWarning($" CreateBlendShape must have deltas present in MeshData, no shape applied for {smr.name}");
                 return new BlendShapeController();
             }
 

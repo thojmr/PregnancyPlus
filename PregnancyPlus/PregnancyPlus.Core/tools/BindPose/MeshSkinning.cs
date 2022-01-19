@@ -24,6 +24,13 @@ namespace KK_PregnancyPlus
             //For each bone, compute its bindpose position, and get the bone matrix
             for (int j = 0; j < boneMatrices.Length; j++)
             {
+                //Prevent out of index errors for weird meshes
+                if (j > skinnedBones.Length -1 || j > bindposes.Length -1) {
+                    boneMatrices[j] = Matrix4x4.identity;
+                    if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" boneMatrix {j} does not match bone {skinnedBones.Length -1}, or bindpose {bindposes.Length -1}");
+                    continue;
+                }
+
                 if (skinnedBones[j] != null && bindposes[j] != null)
                 {                                                            
                     //Create dummy transform to store this bone's BindPose position
@@ -59,7 +66,10 @@ namespace KK_PregnancyPlus
 
             //The inverse bindpose of 0,0,0 gives us the T-pose position of the bone (Except Blender's FBX imported meshes that we have to correct first with an offset)
             position = invBindPoseMatrix.MultiplyPoint(Vector3.zero); 
-            rotation = Quaternion.identity;
+
+            //Use Quaternion.identity as rotation when mesh has local rotation (like squeeze socks)
+            //TODO this doesn't completely fix squeeze socks like meshes, but its very close
+            rotation = (smr.transform.localRotation != Quaternion.identity) ? Quaternion.identity : Matrix.GetRotation(invBindPoseMatrix);
         }
 
 
