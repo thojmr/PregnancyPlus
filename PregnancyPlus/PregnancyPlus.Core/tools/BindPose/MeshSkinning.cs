@@ -7,13 +7,20 @@ using UnityEngine;
 
 namespace KK_PregnancyPlus
 {
-    //Contains the BindPose skinning logic, used to align all meshes to a T-pose
+    //Well this got complicated fast...
+    /// <summary>
+    /// Contains the BindPose skinning logic, used to align all meshes to a T-pose
+    ///     Some additonal Notes: Bad Bindpose positions mostly happen in KK/KKS, but might rarely occur in others
+    ///                           SMR local rotations can happen on any mesh,  they seem to be incorrcetly imported meshes
+    ///     Both of the above issues are something that Unity just magically knows how to undo, resulting in a correctly alighed and skinned mesh.  
+    ///         I on the other hand, struggle to find the missing transform that automatically corrects these problems.  And that's why most of this code exists.
+    /// </summary>    
     public static class MeshSkinning
     {  
 
         /// <summary>
         /// Get the bone matricies of the characters T-pose position used in skinning the mesh
-        ///     This extracts the T-pose bone positions from the BindPoseList, so it doesn't matter what animation the character is currently in
+        ///     This extracts the T-pose bone positions from the BindPoseList, so it doesn't matter what animation the character is currently in we always get an aligned mesh
         /// </summary>     
         public static Matrix4x4[] GetBoneMatrices(ChaControl chaControl, SkinnedMeshRenderer smr, BindPoseList bindPoseList) 
         {
@@ -24,7 +31,7 @@ namespace KK_PregnancyPlus
             var hasLocalRotation = MeshHasLocalRotation(smr);                                
             if (PregnancyPlusPlugin.DebugLog.Value && hasLocalRotation) PregnancyPlusPlugin.Logger.LogWarning($" hasLocalRotation {smr.name} ");
 
-            //Get a default offset to use when a mesh has extra bones not in the skeleton
+            //Get a default offset to use when a mesh has extra bones not in the skeleton (and is a bad bindpose mesh to begin with)
             var firstNon0Offset = GetFirstBindPoseOffset(chaControl, bindPoseList, smr, smr.sharedMesh.bindposes, smr.bones);
 
             //For each bone, compute its bindpose position, and get the bone matrix
@@ -41,10 +48,11 @@ namespace KK_PregnancyPlus
                 {                                                            
                     //Create dummy transform to store this bone's BindPose position
                     var synthTransform = new GameObject().transform;
+                    //Any single bone can be incorrectly offset, so compute it's offset.  If bone not found, use the firstNon0Offset instead
                     var bindPoseOffset = GetBindPoseOffset(chaControl, bindPoseList, smr, smr.sharedMesh.bindposes[j], skinnedBones[j]) ?? firstNon0Offset;
 
-                    //Get the bind pose position (and correct any bad offsets/rotations)
-                    GetBindPoseBoneTransform(smr, smr.sharedMesh.bindposes[j], bindPoseOffset, out var position, out var rotation);
+                    //Get the bind pose position (and correct any bad bindpose offsets/rotations)
+                    GetBindPoseBoneTransform(smr, smr.sharedMesh.bindposes[j], bindPoseOffset, out var position, out var rotation, bindPoseList, skinnedBones[j]);
                     synthTransform.position = position;
                     synthTransform.rotation = rotation;
 
@@ -66,15 +74,29 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Compute the bone BindPoses position and rotation
         /// </summary>  
-        public static void GetBindPoseBoneTransform(SkinnedMeshRenderer smr, Matrix4x4 bindPose, Matrix4x4 bindPoseOffset, out Vector3 position, out Quaternion rotation)
+        public static void GetBindPoseBoneTransform(SkinnedMeshRenderer smr, Matrix4x4 bindPose, Matrix4x4 bindPoseOffset, 
+                                                    out Vector3 position, out Quaternion rotation, BindPoseList bindPoseList = null, Transform bone = null)
         {
+            //If the bindPose list is already populated, try and search it for a bindpose bone
+            //  If not match found, then it's probably an extra bone added by that SMR so we will need to compute its' offset
+            if (bindPoseList != null && bone != null)
+            {
+                if (bindPoseList.bindPoses.ContainsKey(bone.name))
+                {
+                    var tf = bindPoseList.Get(bone.name);
+                    position = tf.position;
+                    rotation = tf.rotation;
+                    return;
+                }
+            }
+
+            //Compute the bindpose position from scratch (including any offset)
             var invBindPoseMatrix = GetInverseBindPoseBoneMatrix(smr, bindPose, bindPoseOffset);
 
             //The inverse bindpose of 0,0,0 gives us the T-pose position of the bone (Except Blender's FBX imported meshes that we have to correct first with an offset)
             position = invBindPoseMatrix.MultiplyPoint(Vector3.zero); 
 
-            //Use Quaternion.identity as rotation when mesh has local rotation (like squeeze socks)
-            //TODO this doesn't completely fix squeeze socks like meshes, but its very close
+            //TODO Use Quaternion.identity as rotation when mesh has local rotation, since computing its actual rotation is more complicated
             rotation = MeshHasLocalRotation(smr) ? Quaternion.identity : Matrix.GetRotation(invBindPoseMatrix);
         }
 
@@ -108,13 +130,14 @@ namespace KK_PregnancyPlus
         /// </summary>  
         public static Matrix4x4 OffsetSmrRotation(Matrix4x4 smrMatrix)
         {
-            //Remove position from the smr transform leaving only rotation
+            //Remove position from the TRS matrix, so when we multuply the inverse by the smr it removes the rotation
             return Matrix4x4.TRS(Matrix.GetPosition(smrMatrix), Quaternion.identity, Vector3.one).inverse * smrMatrix;
         }
 
 
         /// <summary>
         /// Get the offset that a smr bindpose bone needs in order to line up with the body's bindpose
+        ///     Null when none found
         /// </summary>  
         public static Matrix4x4? GetBindPoseOffset(ChaControl chaControl, BindPoseList bindPoseList, SkinnedMeshRenderer smr, Matrix4x4 bindPose, Transform bone)
         {
@@ -126,18 +149,18 @@ namespace KK_PregnancyPlus
             //If the bone name is not in the list, try the next bone
             if (!bindPoseList.bindPoses.ContainsKey(bone.name)) return null;
 
-            //Compare the real body bindpose position with this smr.bone's bindpose position
-            var realBonePosePosition = bindPoseList.Get(bone.name);
+            //Compare the `real` body bindpose position with this smr.bone's bindpose position
+            var tf = bindPoseList.Get(bone.name);
             GetBindPoseBoneTransform(smr, bindPose, Matrix4x4.identity, out var questionablePosition, out var rotation);
-            var offset = realBonePosePosition - questionablePosition;
+            var offset = tf.position - questionablePosition;
             
-            //Return the offset found, so all bones will have the same position
+            //Return the offset found, so all bindpose bones will have the same position
             return Matrix4x4.TRS(offset, Quaternion.identity, Vector3.one);
         }
 
 
         /// <summary>
-        /// Get first non 0 offset from a bindpose.  Used when a mesh has added extra bones.  We have to use an existing bone to get the new bone's offset
+        /// Get first non 0 offset from a SMR bindpose.  Used when a mesh has added extra bones.  We have to use an existing bone to get the new bone's offset
         /// </summary>  
         public static Matrix4x4 GetFirstBindPoseOffset(ChaControl chaControl, BindPoseList bindPoseList, SkinnedMeshRenderer smr, Matrix4x4[] bindPoses, Transform[] bones)
         {
@@ -150,10 +173,14 @@ namespace KK_PregnancyPlus
                 //Check for more bones than bindposes
                 if (i > bindPoses.Length -1) continue;
 
-                var offset = GetBindPoseOffset(chaControl, bindPoseList, smr, bindPoses[i], bones[i]);
-                if (offset != Matrix4x4.identity) return offset ?? Matrix4x4.identity;
-                
-                if (limit < i) break;                
+                var offset = GetBindPoseOffset(chaControl, bindPoseList, smr, bindPoses[i], bones[i]) ?? Matrix4x4.identity;
+                if (i > limit) break; 
+
+                //Make sure the offset is sufficiently large enough to not be a floating point error
+                if (offset == Matrix4x4.identity || Vector3.Distance(Vector3.zero, Matrix.GetPosition(offset)) <= 0.0001f) continue;
+
+                //Use the valid offset we found
+                return offset;                                           
             }
 
             return Matrix4x4.identity;
@@ -242,7 +269,7 @@ namespace KK_PregnancyPlus
                 
                 var bindPoseOffset = GetBindPoseOffset(chaControl, bindPoseList, smr, smr.sharedMesh.bindposes[i], smr.bones[i]) ?? firstNon0Offset;
                 //Get a bone's bindPose position/rotation
-                GetBindPoseBoneTransform(smr, smr.sharedMesh.bindposes[i], bindPoseOffset, out var position, out var rotation);
+                GetBindPoseBoneTransform(smr, smr.sharedMesh.bindposes[i], bindPoseOffset, out var position, out var rotation, bindPoseList, smr.bones[i]);
 
                 if (parent == null) 
                 {

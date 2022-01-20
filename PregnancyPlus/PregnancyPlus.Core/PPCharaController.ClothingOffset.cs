@@ -429,7 +429,7 @@ namespace KK_PregnancyPlus
                 var bindPoseOffset = MeshSkinning.GetBindPoseOffset(ChaControl, bindPoseList, bodySmr, bodySmr.sharedMesh.bindposes[j], bodySmr.bones[j]) ?? Matrix4x4.identity;
 
                 //Compute the bind pose bone position
-                MeshSkinning.GetBindPoseBoneTransform(bodySmr, bodySmr.sharedMesh.bindposes[j], bindPoseOffset, out var position, out var rotation);
+                MeshSkinning.GetBindPoseBoneTransform(bodySmr, bodySmr.sharedMesh.bindposes[j], bindPoseOffset, out var position, out var rotation, bindPoseList, bodySmr.bones[j]);
                 rayCastTargetPositions[i] = position;
 
                 // if (PregnancyPlusPlugin.DebugCalcs.Value) DebugTools.DrawSphere(0.05f, position); 
