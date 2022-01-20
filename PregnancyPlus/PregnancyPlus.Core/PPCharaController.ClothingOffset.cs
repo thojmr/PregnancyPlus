@@ -426,7 +426,7 @@ namespace KK_PregnancyPlus
                     return;
                 };                
 
-                var bindPoseOffset = MeshSkinning.GetBindPoseOffset(ChaControl, bindPoseList, bodySmr, bodySmr.sharedMesh.bindposes[j], bodySmr.bones[j]);
+                var bindPoseOffset = MeshSkinning.GetBindPoseOffset(ChaControl, bindPoseList, bodySmr, bodySmr.sharedMesh.bindposes[j], bodySmr.bones[j]) ?? Matrix4x4.identity;
 
                 //Compute the bind pose bone position
                 MeshSkinning.GetBindPoseBoneTransform(bodySmr, bodySmr.sharedMesh.bindposes[j], bindPoseOffset, out var position, out var rotation);

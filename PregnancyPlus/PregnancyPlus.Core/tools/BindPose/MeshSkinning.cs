@@ -24,12 +24,15 @@ namespace KK_PregnancyPlus
             var hasLocalRotation = MeshHasLocalRotation(smr);                                
             if (PregnancyPlusPlugin.DebugLog.Value && hasLocalRotation) PregnancyPlusPlugin.Logger.LogWarning($" hasLocalRotation {smr.name} ");
 
+            //Get a default offset to use when a mesh has extra bones not in the skeleton
+            var firstNon0Offset = GetFirstBindPoseOffset(chaControl, bindPoseList, smr, smr.sharedMesh.bindposes, smr.bones);
+
             //For each bone, compute its bindpose position, and get the bone matrix
             for (int j = 0; j < boneMatrices.Length; j++)
             {
-                //Prevent out of index errors for weird meshes
+                //Prevent out of index errors when clothing has bones outside characters body bones
                 if (j > skinnedBones.Length -1 || j > bindposes.Length -1) {
-                    boneMatrices[j] = Matrix4x4.identity;
+                    boneMatrices[j] = firstNon0Offset;
                     if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" boneMatrix {j} does not match bone {skinnedBones.Length -1}, or bindpose {bindposes.Length -1}");
                     continue;
                 }
@@ -38,7 +41,7 @@ namespace KK_PregnancyPlus
                 {                                                            
                     //Create dummy transform to store this bone's BindPose position
                     var synthTransform = new GameObject().transform;
-                    var bindPoseOffset = GetBindPoseOffset(chaControl, bindPoseList, smr, smr.sharedMesh.bindposes[j], skinnedBones[j]);
+                    var bindPoseOffset = GetBindPoseOffset(chaControl, bindPoseList, smr, smr.sharedMesh.bindposes[j], skinnedBones[j]) ?? firstNon0Offset;
 
                     //Get the bind pose position (and correct any bad offsets/rotations)
                     GetBindPoseBoneTransform(smr, smr.sharedMesh.bindposes[j], bindPoseOffset, out var position, out var rotation);
@@ -52,7 +55,7 @@ namespace KK_PregnancyPlus
                 }
                 else
                 {
-                    boneMatrices[j] = Matrix4x4.identity;
+                    boneMatrices[j] = firstNon0Offset;
                 }
             }
 
@@ -113,15 +116,15 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Get the offset that a smr bindpose bone needs in order to line up with the body's bindpose
         /// </summary>  
-        public static Matrix4x4 GetBindPoseOffset(ChaControl chaControl, BindPoseList bindPoseList, SkinnedMeshRenderer smr, Matrix4x4 bindPose, Transform bone)
+        public static Matrix4x4? GetBindPoseOffset(ChaControl chaControl, BindPoseList bindPoseList, SkinnedMeshRenderer smr, Matrix4x4 bindPose, Transform bone)
         {
-            if (smr == null) return Matrix4x4.identity;
+            if (smr == null) return null;
 
             //Some other plugins addd/remove bones at runtime
-            if (bone == null) return Matrix4x4.identity;
+            if (bone == null) return null;
 
             //If the bone name is not in the list, try the next bone
-            if (!bindPoseList.bindPoses.ContainsKey(bone.name)) return Matrix4x4.identity;
+            if (!bindPoseList.bindPoses.ContainsKey(bone.name)) return null;
 
             //Compare the real body bindpose position with this smr.bone's bindpose position
             var realBonePosePosition = bindPoseList.Get(bone.name);
@@ -130,6 +133,30 @@ namespace KK_PregnancyPlus
             
             //Return the offset found, so all bones will have the same position
             return Matrix4x4.TRS(offset, Quaternion.identity, Vector3.one);
+        }
+
+
+        /// <summary>
+        /// Get first non 0 offset from a bindpose.  Used when a mesh has added extra bones.  We have to use an existing bone to get the new bone's offset
+        /// </summary>  
+        public static Matrix4x4 GetFirstBindPoseOffset(ChaControl chaControl, BindPoseList bindPoseList, SkinnedMeshRenderer smr, Matrix4x4[] bindPoses, Transform[] bones)
+        {
+            //We don't need to check the whole skeleton.  If we go through a few bones and there is no offset, then its probably safe to say there is none
+            var limit = 10;
+
+            //For each smr bone in our bindPoseList, compute it's offset            
+            for (int i = 0; i < bones.Length; i++)
+            {
+                //Check for more bones than bindposes
+                if (i > bindPoses.Length -1) continue;
+
+                var offset = GetBindPoseOffset(chaControl, bindPoseList, smr, bindPoses[i], bones[i]);
+                if (offset != Matrix4x4.identity) return offset ?? Matrix4x4.identity;
+                
+                if (limit < i) break;                
+            }
+
+            return Matrix4x4.identity;
         }
 
 
@@ -205,12 +232,15 @@ namespace KK_PregnancyPlus
                 var lineLen = 0.3f;
             #endif            
             
+            //Get a default offset to use when a mesh has extra bones not in the skeleton
+            var firstNon0Offset = GetFirstBindPoseOffset(chaControl, bindPoseList, smr, smr.sharedMesh.bindposes, smr.bones);
+
             for (int i = 0; i < smr.bones.Length; i++)
             {            
                 //Sometimes body has more bones than bindPoses, so skip these extra bones
                 if (i > smr.sharedMesh.bindposes.Length -1) continue;
                 
-                var bindPoseOffset = GetBindPoseOffset(chaControl, bindPoseList, smr, smr.sharedMesh.bindposes[i], smr.bones[i]);
+                var bindPoseOffset = GetBindPoseOffset(chaControl, bindPoseList, smr, smr.sharedMesh.bindposes[i], smr.bones[i]) ?? firstNon0Offset;
                 //Get a bone's bindPose position/rotation
                 GetBindPoseBoneTransform(smr, smr.sharedMesh.bindposes[i], bindPoseOffset, out var position, out var rotation);
 
