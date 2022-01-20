@@ -180,13 +180,19 @@ namespace KK_PregnancyPlus
         /// </summary>
         internal void ScrubTempBlendShapes()
         {
-            var renderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);            
-            var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, findAll: true);
-            renderers.AddRange(bodyRenderers);
+            var renderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, findAll: true);
+            var renderersCloth = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);                        
+
+            if (renderersCloth != null && renderersCloth.Count > 0)
+            {
+                renderers.AddRange(renderersCloth);
+            }
 
             //Remove any Preg+ [temp] blendshapes
             foreach (var smr in renderers)
             {
+                if (!smr.sharedMesh) continue;
+
                 for (var i = 0; i < smr.sharedMesh.blendShapeCount; i++)
                 {
                     //Search for all blendshapes on a mesh
