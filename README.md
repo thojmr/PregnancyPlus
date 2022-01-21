@@ -9,27 +9,41 @@ See `Features` for all plugin features
 <img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/P+ All Menus.png"></img>
 
 ## Latest Features (I will update this occasionally)
-- Preg+ works with all clothing now
-- "Smooth Belly Mesh" button timer when clicked
-- Ported to KKS
-- Copy Paste Belly buttons
-- Override KK_Pregnancy belly shape
-- Multithreaded computation
+6.0+:
+    - Core code rewrite to fix many old issues, and pave way for new features
+    - SkinnedAccessories now work with Preg+
+    - AccessoryClothes now work with Preg+
+    - More Multithreaded computation
+5.0+:
+    - Preg+ works with all normal clothing types now
+    - Override KK_Pregnancy belly shape
+
+
+</br>
+
+
+## How to install
+1. Requires BetterRepack or HF Patch (Preg+ is included with these, but probably not the latest version)
+3. Download the latest release of Preg+ [here](https://github.com/thojmr/KK_PregnancyPlus/releases).
+4. Right click the zip > "Extract Here" and copy that `BepInEx/` folder to your root game directory. The plugin .dll will end up inside your `BepInEx/plugins/` directory like:
+    -> `{root game}/BepInEx/plugins/XX_PregnancyPlus.dll`
+5. Check for warnings on game startup, if the plugin loaded it should appear in Plugin Config.
+    - If you see warnings in game about KKAPI or BepInEx versions, you need to download the latest BetterRepack or HFPatch
 
 </br>
 
 ## Features
 - Adds a number of sliders that will allow you to change the size and shape of a characters belly in Studio, Maker, and Main Gameplay.
     - In Main Game you can further tweak all character's belly shapes with the F1 plugin config sliders.
-- Adds Timeline (KK) and VNGE (HS2/AI) integration for belly animations.
+- Adds Timeline (KK) and VNGE (HS2/AI) integration for belly animations. Short guides below.
 - Adds 3 configurable keybinds in plugin config that can be used to increase or decrease the belly size in Main Game, on the fly.   
 - Adds a Fat Fold slider that explains itself, just make sure the Preg+ slider is above 0 as well.
 - Adds an "Override KK_Pregnancy belly shape" toggle, that lets you replace the KK/AI_Pregnancy belly with the Preg+ one in Main Gameplay (Instead of combining the two).
 - Adds a "Mesh Smoothing" button in Studio and Maker, that allows you to smooth the belly mesh and reduce any edge shadows.
     - The smoothing will reset on slider change or character load, so it's mostly for screenshots, animations, and blendshapes.
     - The smoothed mesh can be saved as a blendshape!    
-    - It's a slow prcess so watch the timer on the button to see when its done. (extremely so when using a high poly mesh)
-- Hover over any Plugin Config options in game for a more detailed description
+    - It's a slow prcess so watch the timer on the button to see when its done. (extremely slow when using a high poly mesh)
+- **Hover over any Plugin Config options in game for more detailed descriptions**
 
 </br>
 
@@ -39,7 +53,7 @@ See `Features` for all plugin features
 </br>
 
 ## Koikatsu and AI Only Features
-- This was way too confusing, so I added the option to disable the KK_Pregnancy belly shape in favor of the Pregnancy+ belly in HScenes and Main Gameplay.  Both plugins will still work together, and pregnancy will progress.  You just have less to think about now!  Look for "Override KK_Pregnancy belly shape" in plugin config.
+- This was way too confusing, so I added the option to disable the KK_Pregnancy belly shape in favor of the Pregnancy+ belly in HScenes and Main Gameplay.  Both plugins will still work together, and pregnancy will progress.  Look for "Override KK_Pregnancy belly shape" in plugin config.  It's just less to think about now!
 
 <del>
 - When using the KK/AI_Pregnancy `inflation` or `pregnancy` features, any saved Pregnancy+ belly sliders will be added in addition to KK/AI_Pregnancy's shape, but only both pregnancy plugins are installed.  You can control the amount of Pregnancy+ belly shape applied on top of the KK/AI_Pregnancy belly with the "Max Additional Belly Size" slider in plugin config. 0 being no additional Preg+ slider effect, and max being the full Preg+ slider effect.  You can use the plugin config sliders to further adjust the results for all pregnant characters at once.
@@ -71,16 +85,6 @@ See `Features` for all plugin features
 
 </br>
 
-## How to install
-1. Requires BetterRepack or HF Patch (Preg+ is included with these, but probably not the latest version)
-3. Download the latest release of Preg+ [here](https://github.com/thojmr/KK_PregnancyPlus/releases).
-4. Right click the zip > "Extract Here" and copy that folder to your root game directory. The plugin .dll will end up inside your BepInEx\plugins\ directory.
-    -> {root game}/BepInEx/plugins/XX_PregnancyPlus.dll
-5. Check for warnings on game startup, if the plugin loaded it should appear in Plugin Config.
-    - If you see warnings in game about KKAPI or BepInEx versions, you need to download the latest BetterRepack or HFPatch
-
-</br>
-
 ## Bigger!
 - For additonal effect in HS2 you can mimic what KK_Pregnancy does to belly bones to make the final shape larger/rounder
 - Here's how 
@@ -100,10 +104,8 @@ See `Features` for all plugin features
     - A: Most likley the unskinned mesh was imported in an unusual way, and would have to be re-imported by the creator.  Feel free to send me a character card with the clothing to debug it.
 - Q: There are no slider effects when the character has no legs.
     - A: The character must have a leg scale > 0 for the belly sliders to work correctly.
-- Q: The heck is a BlendShape?
-    - A: Put simply a blendshape is a copy of the mesh that has some deformation that you want to be able to slide into.  Like visually morphing from originalMesh -> targetMesh (Preggo).
-- Q: The belly size/shape is different in Maker than in Studio?
-    - A: This was fixed in v3.5 and some cards with belly shapes before that version need to be re-saved again.  Only old characters with ABMX adjustments to the torso will have this issue.
+- Q: What the heck is a BlendShape?
+    - A: Put simply a blendshape is a "copy" of the mesh that has some deformation that you want to be able to ease into.  Like visually morphing from originalMesh -> morphedMesh.
 
 </br>
 
@@ -114,17 +116,16 @@ See `Features` for all plugin features
 </br>
 
 ### Some KK_PregnancyPlus technical details
-- Instead of manipulating the bones like KK_Pregnancy does, this mod alters the mesh itself via computed blendshapes which has benefits and drawbacks
-    - A blendshape is generated at runtime for every mesh near the belly.  The sliders alter the shape of the pre calculated blendshape before re-applying it. 
+- Instead of manipulating the bones like KK_Pregnancy does, this mod alters the mesh itself with blendshapes computed at runtime, which has benefits and drawbacks.
+    - The sliders alter the blendshape weight and or create a new blendshape if one does not already exist. 
 - Integrates with KK/AI_Pregnancy in Story Mode so that both plugins can work together.  This can be configured in plugin config
 
 ### Some of the drawbacks of generating blendshapes instead of manipulating bones directly
-- Right now clothing can be hit or miss, because of the way the belly grows the mesh loses its local positional data causing clipping.  With bone scaling, clothes shift automagically via bone weights which usually results in less clipping.
-    - Fixed! ~~There are some clothing items in HS2 and AI that simply wont work at all with blendshapes because they are marked as not readable in Unity~~
-- Acessories won't automatically move with the mesh as they do when you manipulate bones
+- Right now clothing can be hit or miss, because of the way the belly grows the mesh loses its local positional data causing clipping. On the other hand, with bone scaling, clothes shift automagically via bone weights which usually results in less clipping.
+- Acessories won't automatically move with the mesh as they do when you manipulate bones unless they are "Skinned Accessories".  And Preg+ works with skinned accessorries with v6.0+
 - It has bigger impact on performance (only when changing a slider) because of the computation it has to perform. However once the shape is calculated the performance is equally as fast as bone manipulation.
-- Unity doesn't have great blendshape support in older versions like KK is running on.
-- Since blendshapes are tied to a single mesh, if the mesh is changed (like uncensors), any saved blendshape will become invalid, and a new blendshape will need to be made.
+- Unity doesn't have great blendshape support in older versions like KK is running on, se we have to hack it a bit.
+- Since blendshapes are tied to a single mesh, if the mesh is changed (like uncensors), any saved blendshape will become invalid, and a new blendshape will need to be made. Bone manipulation on the other hand doesn't care about the specific mesh.
 
 </br>
 </br>
@@ -151,7 +152,7 @@ See `Features` for all plugin features
 - Install the C# extension for VSCode. 
 - Make sure the following directory exists `C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/MSBuild/Current/Bin/msbuild.exe`
   - If not you will need to install the VS2019 MS build tools (There may be other ways to build, but this is the one that eventually worked for me)
-- Install nuget.exe and add it to your enviroment variables PATH. 
+- Install nuget.exe and add it to your enviroment variables PATH.  (You can probably use the VS Code Nuget extension too, I just prefer command line)
 - Run `nuget install -OutputDirectory ../../packages` to install the dependancies from the `./PregnancyPlus/KK_PregnancyPlus.csproj` directory.  
 - Finally create a build script with tasks.json in VSCode, to automate builds and releases.
 
