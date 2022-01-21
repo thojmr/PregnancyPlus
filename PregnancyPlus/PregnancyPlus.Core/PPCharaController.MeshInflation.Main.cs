@@ -71,7 +71,7 @@ namespace KK_PregnancyPlus
                 return;
             } else if (!hasMeasuerments && !lastVisibleState) 
             {
-                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" Character not visible, can't take belly measurements yet {charaFileName}");  
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" Character not visible, can't measure yet {charaFileName}");  
                 return; 
             }       
 
@@ -92,7 +92,6 @@ namespace KK_PregnancyPlus
             //Stop if none found, since something went wrong
             if (bindPoseList.bindPoses.Count <= 0) return;
 
-
             //Get all body mesh renderers, calculate, and apply inflation changes
             var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, findAll: true);                           
             LoopAndApplyMeshChanges(bodyRenderers, meshInflateFlags);
@@ -106,14 +105,10 @@ namespace KK_PregnancyPlus
                 LoopAndApplyMeshChanges(clothRenderers, meshInflateFlags, isClothingMesh: true, bodyMeshRenderer);    
             }
 
-            //Dont check Accessory mesh on cloth change
-            if (!meshInflateFlags.checkForNewClothMesh)
-            {
-                //Only affect accessories, when the user wills it
-                if (PregnancyPlusPlugin.IgnoreAccessories.Value) return;
-                var accessoryRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objAccessory);            
-                LoopAndApplyMeshChanges(accessoryRenderers, meshInflateFlags, isClothingMesh: true, bodyMeshRenderer); 
-            }
+            //Only affect accessories, when the user wills it
+            if (PregnancyPlusPlugin.IgnoreAccessories.Value) return;
+            var accessoryRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objAccessory);            
+            LoopAndApplyMeshChanges(accessoryRenderers, meshInflateFlags, isClothingMesh: true, bodyMeshRenderer);             
         }
 
 
@@ -161,17 +156,17 @@ namespace KK_PregnancyPlus
             //Do a quick check to see if we need to fetch the bone indexes again.  ex: on second call we should allready have them
             //This saves a lot on compute apparently!            
             var isMeshInitialized = md.TryGetValue(renderKey, out MeshData _md);
-            if (isMeshInitialized)
+            //When no mesh found key, we need to recompute
+            if (!isMeshInitialized) return true;
+            
+            //If the vertex count has not changed then we can skip this if no critical sliders changed
+            if (_md.bellyVerticieIndexes.Length == smr.sharedMesh.vertexCount) 
             {
-                //If the vertex count has not changed then we can skip this if no critical sliders changed
-                if (_md.bellyVerticieIndexes.Length == smr.sharedMesh.vertexCount) 
-                {
-                    if (meshInflateFlags.OnlyInflationSizeChanged) return false;
-                    return meshInflateFlags.SliderHaveChanged;
-                }
-            }
+                if (meshInflateFlags.OnlyInflationSizeChanged) return false;
+                return meshInflateFlags.SliderHaveChanged;
+            }            
 
-            //When no mesh found key, or incorrect vert count, the mesh changed so we need to recompute
+            //When incorrect vert count, the mesh changed so we need to recompute
             return true;
         } 
 
@@ -217,7 +212,7 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Apply the inflation once done computing inflated verts and deltas
+        /// Apply the inflation to a blendshape once done computing inflated verts and deltas
         /// </summary>
         internal void FinalizeInflation(SkinnedMeshRenderer smr, MeshInflateFlags meshInflateFlags, string blendShapeTag = null)
         {
@@ -251,13 +246,16 @@ namespace KK_PregnancyPlus
 
             var rendererName = GetMeshKey(smr);
             //initialize original verts if not already
-            if (md[rendererName].originalVertices == null) md[rendererName].originalVertices = new Vector3[smr.sharedMesh.vertexCount];                      
+            if (md[rendererName].originalVertices == null) 
+                md[rendererName].originalVertices = new Vector3[smr.sharedMesh.vertexCount];                      
 
             Matrix4x4[] boneMatrices = null;
             BoneWeight[] boneWeights = null;
             Vector3[] unskinnedVerts = null; 
         
-            if (PregnancyPlusPlugin.ShowBindPose.Value) MeshSkinning.ShowBindPose(ChaControl, smr, bindPoseList);  
+            //Plugin config option lets us visalize bindpose positions 
+            if (PregnancyPlusPlugin.ShowBindPose.Value) 
+                MeshSkinning.ShowBindPose(ChaControl, smr, bindPoseList);  
 
             //Matricies used to compute the T-pose mesh
             boneMatrices = MeshSkinning.GetBoneMatrices(ChaControl, smr, bindPoseList);//TODO if this is expensive move it to MeshData
@@ -346,6 +344,7 @@ namespace KK_PregnancyPlus
             float[] clothOffsets = DoClothMeasurement(smr, bodySmr, sphereCenter);
             if (clothOffsets == null) clothOffsets = new float[md[rendererName].originalVertices.Length];
 
+            //Store verts in thread safe variables, just in case
             var origVerts = md[rendererName].originalVertices;
             var inflatedVerts = md[rendererName].inflatedVertices;
             var bellyVertIndex = md[rendererName].bellyVerticieIndexes;
@@ -397,7 +396,7 @@ namespace KK_PregnancyPlus
                         continue;                
                     }
 
-                    //Get the original skinned vertex position (T-pose) shifted to 0,0,0
+                    //Get the bindpose skinned vertex position
                     var origVertLs = origVerts[i];                
                     var vertDistance = Vector3.Distance(origVertLs, sphereCenter);                    
 
@@ -464,8 +463,10 @@ namespace KK_PregnancyPlus
                     if (PregnancyPlusPlugin.ShowSkinnedVerts.Value)  
                         DebugTools.DebugMeshVerts(md[rendererName].originalVertices, color: Color.cyan, size: (isClothingMesh ? 0.01f : 0.005f));                                          
 
+                    //Now that we have the before and after inflated verts we can get the delta of each
                     var threaded = ComputeDeltas(smr, rendererName, meshInflateFlags);
 
+                    //When we have already pre-computed the deltas we can go ahead and finalize now
                     if (!threaded)
                         FinalizeInflation(smr, meshInflateFlags, blendShapeTempTagName);
                 };
@@ -483,13 +484,14 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Calculates the center position of the inflation sphere.  Including the user slider value
+        /// Calculates the center position of the belly sphere.  Including the user slider value
         /// </summary>
         internal Vector3 GetSphereCenter() 
         {             
-            //Measure from feet to belly 
+            //Measure from feet to belly             
             var bbHeight = GetBellyButtonLocalHeight();
             bellyInfo.BellyButtonHeight = bbHeight;           
+            //TODO was this measured from bone position before?  does this way move its z axis forward or backward from the old way?
             Vector3 bellyButtonPos = Vector3.up * bbHeight; 
 
             //Include user slider values "Move Y" and "Move Z"
@@ -520,7 +522,6 @@ namespace KK_PregnancyPlus
             var skinToCenterDist = Math.Abs(Vector3.Distance(sphereCenterLs, originalVerticeLs));
             var inflatedToCenterDist = Math.Abs(Vector3.Distance(sphereCenterLs, inflatedVerticieLs));
             
-            // PregnancyPlusPlugin.Logger.LogInfo($" preMorphSphereCenter {preMorphSphereCenter} sphereCenterWs {sphereCenterWs} meshRootTf.pos {meshRootTf.position}");
 
             //Only apply morphs if the imaginary sphere is outside of the skins boundary (Don't want to shrink anything inwards, only out)
             if (skinToCenterDist >= inflatedToCenterDist || pmSkinToCenterDist > pmInflatedToCenterDist) return originalVerticeLs; 
@@ -614,16 +615,12 @@ namespace KK_PregnancyPlus
             var pmCurrentVectorDistance = Math.Abs(Vector3.Distance(preMorphSphereCenter, smoothedVectorLs)); 
 
             //Don't allow any morphs to shrink towards the sphere center more than its original distance, only outward morphs allowed
-            if (skinToCenterDist > currentVectorDistance || pmSkinToCenterDist > pmCurrentVectorDistance) 
-            {
-                return originalVerticeLs;
-            }
+            if (skinToCenterDist > currentVectorDistance || pmSkinToCenterDist > pmCurrentVectorDistance)             
+                return originalVerticeLs;            
 
             //Don't allow any morphs to move behind the character's.z = 0 + extentOffset position, otherwise skin sometimes pokes out the back side :/
-            if (backExtentPos.z > smoothedVectorLs.z) 
-            {
-                return originalVerticeLs;
-            }
+            if (backExtentPos.z > smoothedVectorLs.z)             
+                return originalVerticeLs;            
 
             //Don't allow any morphs to move behind the original verticie z position, only forward expansion (ignoring ones already behind sphere center)
             if (originalVerticeLs.z > smoothedVectorLs.z && originalVerticeLs.z > sphereCenterLs.z) 
@@ -644,13 +641,17 @@ namespace KK_PregnancyPlus
         /// <returns>returns bool whether the action needs to be threaded or not</returns>
         internal bool ComputeDeltas(SkinnedMeshRenderer smr, string rendererName, MeshInflateFlags meshInflateFlags) 
         {
-            if (smr == null) return false;
+            if (smr == null) 
+            {
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" ComputeDeltas smr was null"); 
+                return false;
+            }
             
             //Check for mesh data object
             var isMeshInitialized = md.TryGetValue(rendererName, out MeshData _md);
             if (!isMeshInitialized) return false;
 
-            //If we already have the deltas then just return
+            //If we already have the deltas then skip
             if (_md.HasDeltas && !meshInflateFlags.OverWriteMesh) return false;
 
             //Get the virtual inflated mesh with normal, and tangent recalculation applied
@@ -659,11 +660,12 @@ namespace KK_PregnancyPlus
 
             if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" Compute BlendShape Deltas for {smr.name}");
 
-            //Whhen SMR has local rotation undo it in the deltas
+            //When SMR has local rotation undo it in the deltas
             var rotationUndo = Matrix4x4.TRS(Vector3.zero, smr.transform.localRotation, Vector3.one).inverse;
 
             if (!smr.sharedMesh.isReadable) nativeDetour.Apply();
 
+            //Store normals and tangents in thread safe variable
             var sourceNormals = smr.sharedMesh.normals;
             var targetNormals = inflatedMesh.normals;
             var sourceTangents = smr.sharedMesh.tangents;
@@ -675,7 +677,7 @@ namespace KK_PregnancyPlus
             WaitCallback threadAction = (System.Object stateInfo) => 
             {
 
-                //Get delta diffs of the two meshes for the blend shape
+                //Get delta diffs of the two meshes used to make the blendshape
                 var deltaVerticies = BlendShapeTools.GetV3Deltas(_md.originalVertices, _md.inflatedVertices, rotationUndo);
                 var deltaNormals = BlendShapeTools.GetV3Deltas(sourceNormals, targetNormals, rotationUndo);
                 var deltaTangents = BlendShapeTools.GetV3Deltas(BlendShapeTools.ConvertV4ToV3(sourceTangents), BlendShapeTools.ConvertV4ToV3(targetTangents), rotationUndo);                            
@@ -683,13 +685,13 @@ namespace KK_PregnancyPlus
                 //When this thread task is complete, execute the below in main thread
                 Action threadActionResult = () => 
                 {
+                    //Cache the computed deltas in MeshData
                     _md.deltaVerticies = deltaVerticies;
                     _md.deltaNormals = deltaNormals;
                     _md.deltaTangents = deltaTangents;
 
                     //Now we can create and apply the blendshape
-                    FinalizeInflation(smr, meshInflateFlags, blendShapeTempTagName);
-                
+                    FinalizeInflation(smr, meshInflateFlags, blendShapeTempTagName);                
                 };
 
                 //Append to result queue.  Will execute on next Update()

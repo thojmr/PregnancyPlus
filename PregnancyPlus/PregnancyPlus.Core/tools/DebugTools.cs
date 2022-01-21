@@ -9,8 +9,11 @@ public static class DebugTools
         internal static bool debugLog = false;
     #endif
 
+    //Set the logger on init to use it
     public static ManualLogSource logger = null;
-    public static string debugGameObjectName = "PregPlusDebugObject";
+
+    public static string lineRendererGOName = "Preg+DebugLineRenderer";
+    public static string sphereGOName = "Preg+DebugSphere";
 
 
     /// <summary>
@@ -130,14 +133,15 @@ public static class DebugTools
 
         if (color == null || color == default(Color)) color = Color.grey;
 
-        sphere.name = "DebugSphere";
+        sphere.name = sphereGOName;
         sphere.position = position;
         sphere.localScale = new Vector3(radius, radius, radius);
         var sphereRenderer = sphere.GetComponent<Renderer>();
-        sphereRenderer.material.color = color;//I dont think color works with this sprite
-        sphereRenderer.enabled = true; // show it
+        sphereRenderer.material.color = color;
+        sphereRenderer.enabled = true;
         #if KK
             //Makes sphere more visible in KK Maker instead of black
+            //I dont think color works with this sprite
             sphereRenderer.material = new Material(Shader.Find("Sprites/Default"));
         #endif
 
@@ -172,7 +176,7 @@ public static class DebugTools
         //Draw forward by default
         if (toVector == Vector3.zero) toVector = new Vector3(0, 0, 1);
 
-        var lineRendGO = new GameObject("DebugLineRenderer");
+        var lineRendGO = new GameObject(lineRendererGOName);
         var lineRenderer = lineRendGO.AddComponent<LineRenderer>();
 
         if (width == 0f)
@@ -225,7 +229,8 @@ public static class DebugTools
         var line = DrawLine(fromVector, toVector, width);
 
         //If parent has a debug sphere delete it
-        ClearLinesRenderers(parent.gameObject);
+        if (removeExisting)
+            ClearLinesRenderers(parent.gameObject);
 
         //Attach and move to parent position
         line.transform.SetParent(parent, worldPositionStays);
@@ -251,7 +256,8 @@ public static class DebugTools
         if (verticies == null || verticies.Length <= 0) return;
 
         //Clear old spheres from previous runs
-        if (removeExisting) DrawSphereAndAttach(go.transform, size, Vector3.zero, removeExisting: true, color: color);
+        if (removeExisting) 
+            DrawSphereAndAttach(go.transform, size, Vector3.zero, removeExisting: true, color: color);
 
         for (int i = 0; i < verticies.Length; i++)
         {
@@ -301,7 +307,7 @@ public static class DebugTools
         var children = (parent == null) ? GameObject.FindObjectsOfType<LineRenderer>() : parent.GetComponents<LineRenderer>();
         foreach (var child in children )
         {
-            if (child.name == "DebugLineRenderer")
+            if (child.name == lineRendererGOName)
                 GameObject.Destroy(child.gameObject); 
         }
     }
@@ -314,7 +320,7 @@ public static class DebugTools
         var children = (parent == null) ? GameObject.FindObjectsOfType<MeshFilter>() : parent.GetComponents<MeshFilter>();
         foreach (var child in children )
         {
-            if (child.name == "DebugSphere")
+            if (child.name == sphereGOName)
                 GameObject.Destroy(child.gameObject); 
         }
     }
