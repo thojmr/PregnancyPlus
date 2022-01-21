@@ -463,6 +463,9 @@ namespace KK_PregnancyPlus
                     if (PregnancyPlusPlugin.ShowSkinnedVerts.Value)  
                         DebugTools.DebugMeshVerts(md[rendererName].originalVertices, color: Color.cyan, size: (isClothingMesh ? 0.01f : 0.005f));                                          
 
+                    if (PregnancyPlusPlugin.ShowInflatedVerts.Value)  
+                        DebugTools.DebugMeshVerts(md[rendererName].inflatedVertices, color: Color.green, size: (isClothingMesh ? 0.01f : 0.005f));                                          
+
                     //Now that we have the before and after inflated verts we can get the delta of each
                     var threaded = ComputeDeltas(smr, rendererName, meshInflateFlags);
 
@@ -689,6 +692,16 @@ namespace KK_PregnancyPlus
                     _md.deltaVerticies = deltaVerticies;
                     _md.deltaNormals = deltaNormals;
                     _md.deltaTangents = deltaTangents;
+
+                    //If you need to debug the deltas visually, do it here
+                    if (PregnancyPlusPlugin.ShowDeltaVerts.Value) 
+                    {
+                        for (int i = 0; i < deltaVerticies.Length; i++)
+                        {
+                            //Undo delta rotation visually so we can make sure it aligns with the other meshes deltas
+                            DebugTools.DrawLine(_md.originalVertices[i], _md.originalVertices[i] + rotationUndo.inverse.MultiplyPoint3x4(deltaVerticies[i]));     
+                        }                          
+                    }
 
                     //Now we can create and apply the blendshape
                     FinalizeInflation(smr, meshInflateFlags, blendShapeTempTagName);                

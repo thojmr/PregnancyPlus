@@ -16,6 +16,7 @@ namespace KK_PregnancyPlus
         PregPlus_NoMeshRootFound,//For some reason in RX11 KK, the mesh root bone name changed . '_low' was appended in free roam.  Catch these changes if they happen again
         PregPlus_MeshNotSkinnedToBone,//When a bone is expected to be skinned to a smr, but was not
         PregPlus_BoneBindPoseMismatch,//When a the bone list does not match the bindpose list
+        PregPlus_NoBodyMesh,//When we can't find a valid body mesh
     }
 
     /// <summary>

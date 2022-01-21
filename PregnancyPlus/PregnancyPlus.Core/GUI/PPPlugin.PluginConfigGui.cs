@@ -42,6 +42,8 @@ namespace KK_PregnancyPlus
         //Debug config options
         public static ConfigEntry<bool> ShowUnskinnedVerts { get; private set; }
         public static ConfigEntry<bool> ShowSkinnedVerts { get; private set; }
+        public static ConfigEntry<bool> ShowInflatedVerts { get; private set; }
+        public static ConfigEntry<bool> ShowDeltaVerts { get; private set; }
         public static ConfigEntry<bool> ShowBindPose { get; private set; }
         public static ConfigEntry<bool> MakeBalloon { get; private set; }
         public static ConfigEntry<bool> DebugAnimations { get; private set; }
@@ -63,9 +65,9 @@ namespace KK_PregnancyPlus
             //*************************/            
 
             ShowUnskinnedVerts = Config.Bind<bool>("Debug", "Show Unskinned Verts", false,
-                new ConfigDescription("This shows the unskinned vert positions (grey dots) as they are imported from the mesh asset. Don't leave enabled.",
+                new ConfigDescription("This shows the unskinned vert positions (grey dots) as they are imported from the mesh asset. \r\nDon't leave enabled, and dont enable with a ton of characters active.",
                     null,
-                    new ConfigurationManagerAttributes { Order = 13, IsAdvanced = true })
+                    new ConfigurationManagerAttributes { Order = 15, IsAdvanced = true })
                 );            
             #if !DEBUG
                 ShowUnskinnedVerts.Value = false;//save users from themselves
@@ -73,17 +75,37 @@ namespace KK_PregnancyPlus
             ShowUnskinnedVerts.SettingChanged += ShowUnskinnedVerts_SettingsChanged;            
 
             ShowSkinnedVerts = Config.Bind<bool>("Debug", "Show P+ Skinned Verts", false,
-                new ConfigDescription("This shows the initial skinned vert positions (cyan dots) that Preg+ has computed. Not the inflated ones. Don't leave enabled.",
+                new ConfigDescription("This shows the initial skinned vert positions (cyan dots) that Preg+ has computed. Not the inflated ones. \r\nDon't leave enabled, and dont enable with a ton of characters active.",
                     null,
-                    new ConfigurationManagerAttributes { Order = 12, IsAdvanced = true })
+                    new ConfigurationManagerAttributes { Order = 14, IsAdvanced = true })
                 );
             #if !DEBUG
                 ShowSkinnedVerts.Value = false;//save users from themselves
             #endif            
-            ShowSkinnedVerts.SettingChanged += ShowSkinnedVerts_SettingsChanged;            
+            ShowSkinnedVerts.SettingChanged += ShowSkinnedVerts_SettingsChanged; 
+
+            ShowInflatedVerts = Config.Bind<bool>("Debug", "Show P+ Inflated Verts", false,
+                new ConfigDescription("This shows the inflated vert positions (green dots) that Preg+ has computed. \r\nDon't leave enabled, and dont enable with a ton of characters active.",
+                    null,
+                    new ConfigurationManagerAttributes { Order = 13, IsAdvanced = true })
+                );
+            #if !DEBUG
+                ShowInflatedVerts.Value = false;//save users from themselves
+            #endif            
+            ShowInflatedVerts.SettingChanged += ShowInflatedVerts_SettingsChanged;            
+
+            ShowDeltaVerts = Config.Bind<bool>("Debug", "Show P+ vertex deltas", false,
+                new ConfigDescription("This shows the deltas computed from the base mesh that we use to build the blendshape. \r\nDon't leave enabled, and dont enable with a ton of characters active.",
+                    null,
+                    new ConfigurationManagerAttributes { Order = 12, IsAdvanced = true })
+                );
+            #if !DEBUG
+                ShowDeltaVerts.Value = false;//save users from themselves
+            #endif            
+            ShowDeltaVerts.SettingChanged += ShowDeltaVerts_SettingsChanged;            
 
             ShowBindPose = Config.Bind<bool>("Debug", "Show Bind Pose", false,
-                new ConfigDescription("This shows the characters bones bind poses. Don't leave enabled.",
+                new ConfigDescription("This shows the characters bones bind poses. \r\nDon't leave enabled.",
                     null,
                     new ConfigurationManagerAttributes { Order = 11, IsAdvanced = true })
                 );
@@ -93,7 +115,7 @@ namespace KK_PregnancyPlus
             ShowBindPose.SettingChanged += ShowBindPose_SettingsChanged;
 
             MakeBalloon = Config.Bind<bool>("Debug", "Balloon mode (Debug mode)", false,
-                new ConfigDescription("This will allow me to debug where the mesh is, or is not, affected by the main Preg+ slider.  This will disable some Preg+ sliders temporarily. Don't leave enabled.",
+                new ConfigDescription("This will allow me to debug where the mesh is, or is not, affected by the main Preg+ slider.  This will disable some Preg+ sliders temporarily. \r\nDon't leave enabled.",
                     null,
                     new ConfigurationManagerAttributes { Order = 10, IsAdvanced = true })
                 );
@@ -104,7 +126,7 @@ namespace KK_PregnancyPlus
 
 
             DebugAnimations = Config.Bind<bool>("Debug", "Refresh X Ticks (Debug mode)", false,
-                new ConfigDescription( "Will force update the belly shape every x ticks to help debug belly shape changes during animations.  Don't leave enabled.",
+                new ConfigDescription( "Will force update the belly shape every x ticks to help debug belly shape changes during animations.  \r\nDon't leave enabled.",
                     null,
                     new ConfigurationManagerAttributes { Order = 9, IsAdvanced = true })
                 );  
@@ -113,7 +135,7 @@ namespace KK_PregnancyPlus
             #endif      
 
             DebugVerts = Config.Bind<bool>("Debug", "Entire Mesh Debugging (Debug mode)", false,
-                new ConfigDescription( "Will cause all mesh verticies to be affected by sliders so I can narrow down which meshes are behaving, and which are not.  Don't leave enabled",
+                new ConfigDescription( "Will cause all mesh verticies to be affected by sliders so I can narrow down which meshes are behaving, and which are not.  \r\nDon't leave enabled",
                     null,
                     new ConfigurationManagerAttributes { Order = 8, IsAdvanced = true })
                 );
@@ -123,13 +145,13 @@ namespace KK_PregnancyPlus
             DebugVerts.SettingChanged += DebugVerts_SettingsChanged;
 
             DebugBlendShapeLog = Config.Bind<bool>("Debug", "Enable BlendShape Debug Logging (Debug mode)", false,
-                new ConfigDescription( "Will log lots of Preg+ BlendShape details to the console, but will condiserably slow down the game.  Don't leave enabled",
+                new ConfigDescription( "Will log lots of Preg+ BlendShape details to the console, but will condiserably slow down the game.  \r\nDon't leave enabled",
                     null,
                     new ConfigurationManagerAttributes { Order = 3, IsAdvanced = true })
                 );
 
             DebugLog = Config.Bind<bool>("Debug", "Enable Debug Logging (Debug mode)", false,
-                new ConfigDescription( "Will log lots of Preg+ details to the console, but will condiserably slow down the game.  Don't leave enabled",
+                new ConfigDescription( "Will log lots of Preg+ details to the console, but will condiserably slow down the game.  \r\nDon't leave enabled",
                     null,
                     new ConfigurationManagerAttributes { Order = 2, IsAdvanced = true })
                 );
@@ -137,7 +159,7 @@ namespace KK_PregnancyPlus
 
 
             DebugCalcs = Config.Bind<bool>("Debug", "Enable Debug Logging of calculations (Debug mode)", false,
-                new ConfigDescription( "Will log lots of Preg+ belly calculations to the console, but will condiserably slow down the game.  Don't leave enabled",
+                new ConfigDescription( "Will log lots of Preg+ belly calculations to the console, but will condiserably slow down the game.  \r\nDon't leave enabled",
                     null,
                     new ConfigurationManagerAttributes { Order = 1, IsAdvanced = true })
                 );
@@ -459,26 +481,14 @@ namespace KK_PregnancyPlus
         internal void MakeBalloon_SettingsChanged(object sender, System.EventArgs e) 
         {
             if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" MakeBalloon_SettingsChanged ");
-            var handlers = CharacterApi.GetRegisteredBehaviour(GUID);
-        
-            foreach (PregnancyPlusCharaController charCustFunCtrl in handlers.Instances)
-            {                 
-                //Force recalculate all verts.  With balloon active it will automatically calaulcate the correct new boundaries
-                charCustFunCtrl.MeshInflate(new MeshInflateFlags(charCustFunCtrl, _checkForNewMesh: true, _freshStart: true), "MakeBalloon_SettingsChanged");                                       
-            }    
+            TriggerFreshStartForAll("MakeBalloon_SettingsChanged");   
         }
 
 
         internal void DebugVerts_SettingsChanged(object sender, System.EventArgs e) 
         {
             if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" DebugVerts_SettingsChanged ");
-            var handlers = CharacterApi.GetRegisteredBehaviour(GUID);
-        
-            foreach (PregnancyPlusCharaController charCustFunCtrl in handlers.Instances)
-            {                 
-                //Force recalculate all verts.  With MeshDebug active it will automatically calaulcate the correct new debug shape
-                charCustFunCtrl.MeshInflate(new MeshInflateFlags(charCustFunCtrl, _checkForNewMesh: true, _freshStart: true), "DebugVerts_SettingsChanged");                                       
-            }    
+            TriggerFreshStartForAll("DebugVerts_SettingsChanged");      
         }
 
 
@@ -503,11 +513,7 @@ namespace KK_PregnancyPlus
             }
 
             //Trigger inflation to add debug line renderers at bind poses
-            var handlers = CharacterApi.GetRegisteredBehaviour(GUID);
-            foreach (PregnancyPlusCharaController charCustFunCtrl in handlers.Instances)
-            {  
-                charCustFunCtrl.MeshInflate(new MeshInflateFlags(charCustFunCtrl, _checkForNewMesh: true, _freshStart: true), "ShowBindPose_SettingsChanged"); 
-            }   
+            TriggerFreshStartForAll("ShowBindPose_SettingsChanged");   
         }
 
 
@@ -524,11 +530,7 @@ namespace KK_PregnancyPlus
             }
 
             //Trigger inflation to add debug vert spheres
-            var handlers = CharacterApi.GetRegisteredBehaviour(GUID);
-            foreach (PregnancyPlusCharaController charCustFunCtrl in handlers.Instances)
-            {  
-                charCustFunCtrl.MeshInflate(new MeshInflateFlags(charCustFunCtrl, _checkForNewMesh: true, _freshStart: true), "ShowUnskinnedVerts_SettingsChanged");             
-            }   
+            TriggerFreshStartForAll("ShowUnskinnedVerts_SettingsChanged");  
         }
 
 
@@ -545,13 +547,56 @@ namespace KK_PregnancyPlus
             }
 
             //Trigger inflation to add debug vert spheres
+            TriggerFreshStartForAll("ShowSkinnedVerts_SettingsChanged");
+        }
+
+
+        //Show characters mesh verts that have been skinned to bind pose by Preg+
+        internal void ShowInflatedVerts_SettingsChanged(object sender, System.EventArgs e) 
+        {
+            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" ShowInflatedVerts_SettingsChanged ");
+            
+            //When disabled, remove any vert spheres
+            if (!PregnancyPlusPlugin.ShowInflatedVerts.Value)
+            {                
+                DebugTools.ClearSpheres();                          
+                return;
+            }
+
+            //Trigger inflation to add debug vert spheres
+            TriggerFreshStartForAll("ShowInflatedVerts_SettingsChanged");
+        }
+
+
+        //Show characters mesh vert deltas between the orriginal mesh and the inflated mesh.  We build the blendshape from these
+        internal void ShowDeltaVerts_SettingsChanged(object sender, System.EventArgs e) 
+        {
+            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" ShowDeltaVerts_SettingsChanged ");
+            
+            //When disabled, remove any vert spheres
+            if (!PregnancyPlusPlugin.ShowDeltaVerts.Value)
+            {                
+                DebugTools.ClearLinesRenderers();                          
+                return;
+            }
+
+            //Trigger inflation to add debug vert spheres
+            TriggerFreshStartForAll("ShowDeltaVerts_SettingsChanged");
+        }
+        
+
+
+
+
+        //Trigger fresh start inflation for every active character
+        internal void TriggerFreshStartForAll(string callee)
+        {
             var handlers = CharacterApi.GetRegisteredBehaviour(GUID);
             foreach (PregnancyPlusCharaController charCustFunCtrl in handlers.Instances)
             {  
-                charCustFunCtrl.MeshInflate(new MeshInflateFlags(charCustFunCtrl, _checkForNewMesh: true, _freshStart: true), "ShowSkinnedVerts_SettingsChanged");             
+                charCustFunCtrl.MeshInflate(new MeshInflateFlags(charCustFunCtrl, _checkForNewMesh: true, _freshStart: true), callee);             
             }   
         }
-        
 
     }
 }

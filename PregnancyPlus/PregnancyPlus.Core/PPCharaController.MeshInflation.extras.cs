@@ -178,7 +178,13 @@ namespace KK_PregnancyPlus
         public SkinnedMeshRenderer GetBodyMeshRenderer()
         {
             var bodyMeshRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, findAll: true);
-            return bodyMeshRenderers.Find(x => x.name == BodyMeshName);
+            var body = bodyMeshRenderers.Find(x => x.name == BodyMeshName);
+            if (body == null)
+            {
+                PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(charaFileName, ErrorCode.PregPlus_NoBodyMesh, 
+                    $" The body skin could not be found for this character: {charaFileName}.  That can't be healthy..."); 
+            }
+            return body;
         }
 
 
@@ -217,6 +223,7 @@ namespace KK_PregnancyPlus
     ChaControl.position   {ChaControl.transform.position}
     smr.position          {Round(smr.transform.position)}
     smr.lRotation         {smr.transform.localRotation}
+    smr.lScale            {smr.transform.localScale}
     smr.rootBone.name     {smr.rootBone?.name}
     smr.localBounds       {Round(smr.localBounds.center)}   
     smr.bounds            {Round(smr.sharedMesh.bounds.center)}
@@ -224,6 +231,7 @@ namespace KK_PregnancyPlus
     sphereCenter          {sphereCenter}
     isClothingMesh        {isClothingMesh}
     MeshOffsetType        {MeshOffSet.GetMeshOffsetType(smr).ToString()}
+    VertexCount           {smr.sharedMesh.vertexCount}
     ************************
              ");
         }         
