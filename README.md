@@ -9,12 +9,12 @@ See `Features` for all plugin features
 <img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/P+ All Menus.png"></img>
 
 ## Latest Features (I will update this occasionally)
-6.0+:
+- 6.0+:
     - Core code rewrite to fix many old issues, and pave way for new features
     - SkinnedAccessories now work with Preg+
     - AccessoryClothes now work with Preg+
     - More Multithreaded computation
-5.0+:
+- 5.0+:
     - Preg+ works with all normal clothing types now
     - Override KK_Pregnancy belly shape
 
