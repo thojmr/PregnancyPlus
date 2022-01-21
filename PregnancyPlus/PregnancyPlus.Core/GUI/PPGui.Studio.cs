@@ -82,6 +82,9 @@ namespace KK_PregnancyPlus
                     UnityUiTools.ResetAllSliders(cat);       
                     foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) 
                     {      
+                        #if DEBUG
+                            DebugTools.ClearAllThingsFromCharacter();
+                        #endif
                         ctrl.infConfig.Reset();                           
                     }            
                 });

@@ -32,7 +32,6 @@ namespace KK_PregnancyPlus
         private static string inflationClothOffsetMaker = "Cloth Offset";
         private static string inflationFatFoldMaker = "Fat Fold";
         private static string inflationFatFoldHeightMaker = "Fat Fold Height";
-        private static string inflationClothingOffsetVersionMaker = "Clothing Offset Version";
         private static string inflationRoundnessMaker = "Roundness";
         private static string inflationDropMaker = "Drop";
 
@@ -225,15 +224,6 @@ namespace KK_PregnancyPlus
             sliders.Add(fatFoldHeight);
 
 
-            var clothOffsetVersion = e.AddControl(new MakerDropdown(inflationClothingOffsetVersionMaker, new string[2] {"V1", "V2 (improved)"}, cat, 1, _pluginInstance));
-            clothOffsetVersion.BindToFunctionController<PregnancyPlusCharaController, int>(controller => controller.infConfig.clothingOffsetVersion, (controller, value) => {
-                var oldVal = controller.infConfig.clothingOffsetVersion;
-                controller.infConfig.clothingOffsetVersion = value;
-                if (oldVal != value) OnClothingOffsetVersionChanged(controller);
-            });
-            e.AddControl(new MakerText("The Clothing Offset version will determine how clothing sits on the belly.  V2 retains the cloth thickness.  V1 (pre v1.28) is very flat with more clipping.", cat, _pluginInstance) { TextColor = hintColor });
-
-
 
 
             //Maker state buttons
@@ -291,13 +281,6 @@ namespace KK_PregnancyPlus
         }
 
 
-        internal static void OnClothingOffsetVersionChanged(PregnancyPlusCharaController controller) 
-        {
-            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" OnClothingOffsetVersionChanged {controller.infConfig.clothingOffsetVersion}");            
-            controller.MeshInflate(new MeshInflateFlags(controller, _checkForNewMesh: true, _freshStart: true), "OnClothingOffsetVersionChanged");                                                                     
-        }
-
-
         internal static void OnSmoothClicked()
         {
             if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" OnSmoothClicked");
@@ -318,6 +301,9 @@ namespace KK_PregnancyPlus
         public static void OnResetAll(List<MakerSlider> _sliders)
         {
             if (!MakerAPI.InsideAndLoaded) return;
+            #if DEBUG
+                DebugTools.ClearAllThingsFromCharacter();
+            #endif
             if (_sliders == null || _sliders.Count <= 0 || !_sliders[0].Exists) return;
             if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" Resetting sliders ");
 

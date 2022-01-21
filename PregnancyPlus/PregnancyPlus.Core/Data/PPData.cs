@@ -26,7 +26,8 @@ namespace KK_PregnancyPlus
         public bool GameplayEnabled = true;
         public float inflationRoundness = 0;
         public float inflationDrop = 0;
-        public int clothingOffsetVersion = 1;//Tracks which clothing offset vserion this character was made with  v1 == 0, v2 == 1
+        //Tracks which clothing offset vserion this character was made with  v1 == 0, v2 == 1
+        public int clothingOffsetVersion = 1;//We no longer use this, but keeping for legacy reasons (Everyone is V2 now)
         public byte[] meshBlendShape = null;//Type: List<MeshBlendShape> once Deserialized
         public string pluginVersion = null;
 
@@ -64,7 +65,7 @@ namespace KK_PregnancyPlus
 
         public string ValuesToString() 
         {
-            return $"v{GetPluginVersion()} inflationSize {inflationSize} GameplayEnabled {GameplayEnabled} clothingOffsetVersion {clothingOffsetVersion} BS {HasBlendShape()}";
+            return $"v{GetPluginVersion()} inflationSize {inflationSize} GameplayEnabled {GameplayEnabled} BS {HasBlendShape()}";
         }
 
         //Allow comparison between all public properties of two PregnancyPlusData objects (excluding clothingOffsetVersion)
@@ -210,7 +211,6 @@ namespace KK_PregnancyPlus
         {
             //On new card return null
             if (data?.data == null) return null;
-            var hasClothingVersion = false;
 
             var result = new PregnancyPlusData();
             foreach (var fieldInfo in _serializedFields)
@@ -219,11 +219,6 @@ namespace KK_PregnancyPlus
                 {
                     try
                     {
-                        if (fieldInfo.Name == "clothingOffsetVersion" && (int)val > -1)
-                        {
-                            hasClothingVersion = true;
-                        }
-
                         if (fieldInfo.FieldType.IsEnum) val = (int)val;
                         fieldInfo.SetValue(result, val);
                     }
@@ -232,12 +227,6 @@ namespace KK_PregnancyPlus
                         Console.WriteLine(ex);
                     }
                 }
-            }
-
-            //Set clothing offset version to V1 == 0 when slider values exists, but no version was found
-            if (!hasClothingVersion && result.HasAnyValue())
-            {
-                result.clothingOffsetVersion = 0;
             }
 
             return result;
@@ -251,7 +240,6 @@ namespace KK_PregnancyPlus
         public PluginData Save(bool hotSwap = false)
         {
             var result = new PluginData { version = 1 };
-            var anyValuesChanged = false;
             
             foreach (var fieldInfo in _serializedFields)
             {
@@ -265,18 +253,11 @@ namespace KK_PregnancyPlus
 
                     //Skip the below fields always, we don't care if they changed in here
                     if (fieldInfo.Name == "pluginVersion") continue;
-                    anyValuesChanged = true;
                 }
             }
 
             //When we don't want to change any of the below values (just replace a single val or two)
             if (hotSwap) return result.data.Count > 0 ? result : null;
-
-            //Save clolthing offset version if any values above set
-            if (anyValuesChanged && !result.data.ContainsKey("clothingOffsetVersion")) 
-            {
-                result.data.Add("clothingOffsetVersion", clothingOffsetVersion);                             
-            }
 
             //Always update plugin version on saving card, helps with debugging
             if (!result.data.ContainsKey("pluginVersion")) 
