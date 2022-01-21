@@ -37,7 +37,8 @@ namespace KK_PregnancyPlus
    
 
         //Used to hold the last non zero belly shape slider values that were applied to any character for Restore button
-        public static PregnancyPlusData copiedBelly = null;       
+        public static PregnancyPlusData copiedBelly = null;    
+        //Logs important error messages to console   
         public static ErrorCodeController errorCodeCtrl;
         internal Harmony hi;
 
@@ -78,11 +79,12 @@ namespace KK_PregnancyPlus
             //For ScriptEngine reloads
             hi?.UnpatchAll(GUID);
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" PregnancyPlus.UnpatchAll "); 
+            DebugTools.ClearAllThingsFromCharacter();
         }
 
     
         /// <summary>
-        /// Triggers any charCustFunCtrl GUI components when blendshape GUI is opened in studio
+        /// Updates any GUI components when blendshape GUI is opened in studio
         /// </summary>
         internal void OnGUI()
         {                

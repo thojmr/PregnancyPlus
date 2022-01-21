@@ -12,22 +12,6 @@ using HarmonyLib;
 
 namespace KK_PregnancyPlus
 {
-    //Stores the values to uniqoely identify a skinned mesh renderer.  Much better than passing around the blendshapes themselves since they tend to be big
-    public class MeshIdentifier {            
-        public string name;
-        public int vertexCount;
-
-        public string RenderKey {
-            get { return $"{name}_{vertexCount}"; }
-        }
-
-        public MeshIdentifier(string _name, int _vertexCount) 
-        {
-            name = _name;
-            vertexCount = _vertexCount;
-        }
-    }
-
     internal static class PregnancyPlusHelper
     {        
 
@@ -208,7 +192,7 @@ namespace KK_PregnancyPlus
         
 
         /// <summary>
-        /// Just get the BodyTop bone local scale
+        /// Get the BodyTop bone local scale
         /// </summary>
         internal static Vector3 GetBodyTopScale(ChaControl chaControl)  
         {
@@ -219,7 +203,7 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Just get the N_geight bone local scale (Needed in some local to world scale translations)
+        /// Get the N_geight bone local scale (I dont think we use this anywhere anymore)
         /// </summary>
         internal static Vector3 GetN_HeightScale(ChaControl chaControl)  
         {

@@ -135,7 +135,7 @@
     <Compile Include="..\PregnancyPlus.Core\PPCharaController.ClothingOffset.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPCharaController.FilterVerts.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPCharaController.BlendShape.cs" />
-    <Compile Include="..\PregnancyPlus.Core\PPCharaController.AnimationCurve.cs" />
+    <Compile Include="..\PregnancyPlus.Core\tools\AnimationCurve.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPCharaController.Legacy.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPCharaController.KK_Pregnancy.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPCharaController.HookEvents.cs" />
@@ -149,11 +149,11 @@
     <Compile Include="..\PregnancyPlus.Core\GUI\PPGui.ButtonTimer.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPPlugin.cs" />
     <Compile Include="..\PregnancyPlus.Core\GUI\PPPlugin.PluginConfigGui.cs" />
-    <Compile Include="..\PregnancyPlus.Core\PPPlugin.Hooks.cs" />
-    <Compile Include="..\PregnancyPlus.Core\PPPlugin.Hooks.Accessory.cs" />
-    <Compile Include="..\PregnancyPlus.Core\PPPlugin.Hooks.Clothing.cs" />    
-    <Compile Include="..\PregnancyPlus.Core\PPPlugin.Hooks.KK_Pregnancy.cs" />
-    <Compile Include="..\PregnancyPlus.Core\PPPlugin.Hooks.Uncensor.cs" />
+    <Compile Include="..\PregnancyPlus.Core\Hooks\PPPlugin.Hooks.cs" />
+    <Compile Include="..\PregnancyPlus.Core\Hooks\PPPlugin.Hooks.Accessory.cs" />
+    <Compile Include="..\PregnancyPlus.Core\Hooks\PPPlugin.Hooks.Clothing.cs" />    
+    <Compile Include="..\PregnancyPlus.Core\Hooks\PPPlugin.Hooks.KK_Pregnancy.cs" />
+    <Compile Include="..\PregnancyPlus.Core\Hooks\PPPlugin.Hooks.Uncensor.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPHelper.cs" />
     <Compile Include="..\PregnancyPlus.Core\Data\PPData.cs" />
     <Compile Include="..\PregnancyPlus.Core\tools\NormalsSolver.cs" />
@@ -175,6 +175,8 @@
     <Compile Include="..\PregnancyPlus.Core\Tools\UnityUiTools.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\NativeDetourMesh.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\DebugTools.cs" />
+    <Compile Include="..\PregnancyPlus.Core\Tools\MeshIdentifier.cs" />
+    <Compile Include="..\PregnancyPlus.Core\Tools\BellyInfo.cs" />
   </ItemGroup>
 
   <ItemGroup>

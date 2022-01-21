@@ -1,4 +1,4 @@
-﻿using KKAPI.Chara;
+using KKAPI.Chara;
 using UnityEngine;
 using System;
 
@@ -6,17 +6,8 @@ namespace KK_PregnancyPlus
 {
 
     //This partial class contains the animation curves used in mesh transformations, much better curvature than a simple linear mathf.lerp
-    public partial class PregnancyPlusCharaController: CharaCustomFunctionController
+    public static class AnimCurve
     {           
-
-        //Careful that none of these are threadsafe for mesh calculations, need to make copies first        
-        public AnimationCurve FastLerpAC = FastLerpAnimCurve();
-        public AnimationCurve SlowLerpAC = SlowLerpAnimCurve();
-        public AnimationCurve BellyTopAC = BellyTopAnimCurve();
-        public AnimationCurve BellyEdgeAC = BellyEdgeAnimCurve();
-        public AnimationCurve BellySidesAC = BellySidesAnimCurve();
-        public AnimationCurve MediumLerpAC = MediumLerpAnimCurve();
-
 
         //Curves quickly towards top
         public static AnimationCurve FastLerpAnimCurve()

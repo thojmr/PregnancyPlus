@@ -77,8 +77,14 @@ namespace KK_PregnancyPlus
         //This detour override the mesh canAccess state to make it readable/accessable
         public NativeDetourMesh nativeDetour;
 
-        //Stores localspace T-pose skeleton info  (Not used yet, need to get it working)
-        // public Skeleton skeleton = new Skeleton();
+        //Careful that none of these are threadsafe for mesh calculations, need to make ThreadsafeCurve copy first        
+        public AnimationCurve FastLerpAC = AnimCurve.FastLerpAnimCurve();
+        public AnimationCurve SlowLerpAC = AnimCurve.SlowLerpAnimCurve();
+        public AnimationCurve BellyTopAC = AnimCurve.BellyTopAnimCurve();
+        public AnimationCurve BellyEdgeAC = AnimCurve.BellyEdgeAnimCurve();
+        public AnimationCurve BellySidesAC = AnimCurve.BellySidesAnimCurve();
+        public AnimationCurve MediumLerpAC = AnimCurve.MediumLerpAnimCurve();
+
 
 
 #region overrides
