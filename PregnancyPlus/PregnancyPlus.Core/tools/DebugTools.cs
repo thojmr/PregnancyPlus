@@ -10,6 +10,7 @@ public static class DebugTools
     #endif
 
     public static ManualLogSource logger = null;
+    public static string debugGameObjectName = "PregPlusDebugObject";
 
 
     /// <summary>
@@ -116,11 +117,10 @@ public static class DebugTools
         
     }
 
-    
     /// <summary>
-    /// Draw a debug shpere
+    /// Draw a debug shpere  (Cant see these in KK studio...)
     /// </summary>
-    public static GameObject DrawSphere(float radius = 0.05f, Vector3 position = new Vector3())
+    public static GameObject DrawSphere(float radius = 0.05f, Vector3 position = new Vector3(), Color color = default(Color))
     {
         var sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;        
             
@@ -128,14 +128,18 @@ public static class DebugTools
             radius = radius * 10;
         #endif
 
+        if (color == null || color == default(Color)) color = Color.grey;
+
         sphere.name = "DebugSphere";
         sphere.position = position;
         sphere.localScale = new Vector3(radius, radius, radius);
         var sphereRenderer = sphere.GetComponent<Renderer>();
-        sphereRenderer.material.color = Color.grey;
+        sphereRenderer.material.color = color;//I dont think color works with this sprite
         sphereRenderer.enabled = true; // show it
-        // sphereRenderer.material = new Material(Shader.Find("Transparent/Diffuse")); // this one didnt work
-        sphereRenderer.material = new Material(Shader.Find("Sprites/Default"));
+        #if KK
+            //Makes sphere more visible in KK Maker instead of black
+            sphereRenderer.material = new Material(Shader.Find("Sprites/Default"));
+        #endif
 
         return sphere.gameObject;
     }
@@ -144,25 +148,17 @@ public static class DebugTools
     /// <summary>
     /// Draw shphere and attach to a parent transform (optional offset)
     /// </summary>
-    public static void DrawSphereAndAttach(Transform parent, float radius = 1, Vector3 localPosition = new Vector3(), bool removeExisting = true, bool worldPositionStays = false)
+    public static void DrawSphereAndAttach(Transform parent, float radius = 1, Vector3 localPosition = new Vector3(), bool removeExisting = true, 
+                                           bool worldPositionStays = false, Color color = default(Color))
     {
-        var sphere = DrawSphere(radius);
+        var sphere = DrawSphere(radius, color: color);
 
         //If parent has debug spheres delete it
-        if (removeExisting)
-        {
-            //TODO did I do this correctly?  lol. Should it be GetComponentsInChildren?
-            GameObject[] children = parent.GetComponents<GameObject>();
-            foreach (var child in children )
-            {
-                if(child.name == "DebugSphere")
-                    GameObject.DestroyImmediate(child); 
-            }
-        }
+        if (removeExisting)        
+            ClearSpheres(parent.gameObject);        
 
         //Attach and move to parent position
         sphere.transform.SetParent(parent, worldPositionStays);
-
         sphere.transform.localPosition = localPosition;
     }
 
@@ -229,16 +225,10 @@ public static class DebugTools
         var line = DrawLine(fromVector, toVector, width);
 
         //If parent has a debug sphere delete it
-        var existingLine = parent.Find("DebugLineRenderer");
-        //TODO need to delete ALL of them, not just one
-        if (existingLine != null && removeExisting)
-        {
-            GameObject.DestroyImmediate(existingLine.gameObject);
-        }
+        ClearLinesRenderers(parent.gameObject);
 
         //Attach and move to parent position
         line.transform.SetParent(parent, worldPositionStays);
-
         line.transform.localPosition = localPosition;
     }
 
@@ -256,18 +246,19 @@ public static class DebugTools
     /// This will create a sphere on every vert in the given mesh so you can visually see changes in a computed mesh
     ///     (In Koikatsu this only works in character maker, not studio)
     /// </summary>
-    public static void DebugMeshVerts(GameObject go, Vector3[] verticies, Vector3 visualOffset = new Vector3(), bool removeExisting = true, bool worldPositionStays = false, bool[] filterVerts = null) {
+    public static void DebugMeshVerts(GameObject go, Vector3[] verticies, Vector3 visualOffset = new Vector3(), bool removeExisting = true, 
+                                      bool worldPositionStays = false, bool[] filterVerts = null, Color color = default(Color), float size = 0.01f) {
         if (verticies == null || verticies.Length <= 0) return;
 
         //Clear old spheres from previous runs
-        if (removeExisting) DrawSphereAndAttach(go.transform, 0.01f, Vector3.zero, removeExisting: true);
+        if (removeExisting) DrawSphereAndAttach(go.transform, size, Vector3.zero, removeExisting: true, color: color);
 
         for (int i = 0; i < verticies.Length; i++)
         {
             //Filterr out certain verts
             if (filterVerts == null || filterVerts[i])
                 //Place spheres on each vert to debug the mesh calculated position relative to other meshes
-                DrawSphereAndAttach(go.transform, 0.01f, verticies[i] - visualOffset, removeExisting: false, worldPositionStays);  
+                DrawSphereAndAttach(go.transform, size, verticies[i] - visualOffset, removeExisting: false, worldPositionStays, color: color);  
         } 
     }
 
@@ -275,15 +266,17 @@ public static class DebugTools
     /// <summary>
     /// Overload for DebugMeshVerts when you just want worldspace positions (unattached)
     /// </summary>
-    public static void DebugMeshVerts(Vector3[] verticies, Vector3 visualOffset = new Vector3(), bool[] filterVerts = null) {
+    public static void DebugMeshVerts(Vector3[] verticies, Vector3 visualOffset = new Vector3(), bool[] filterVerts = null, Color color = default(Color), float size = 0.01f) {
         if (verticies == null || verticies.Length <= 0) return;
 
         for (int i = 0; i < verticies.Length; i++)
         {
             //Filter out certain verts
             if (filterVerts == null || filterVerts[i])
+            {
                 //Place spheres on each vert to debug the mesh calculated position relative to other meshes
-                DrawSphere(0.01f, verticies[i] - visualOffset);  
+                DrawSphere(size, verticies[i] - visualOffset, color: color);  
+            }                
         } 
     }
 
@@ -297,5 +290,42 @@ public static class DebugTools
         else DrawLine(origin, origin + direction, width: 0.0005f, startColor: Color.yellow); 
         //Mark hit point, if it hit
         if (hit.collider) DrawSphere(0.001f, hit.point); 
+    }
+
+
+    /// <summary>
+    /// Remove all debug line renderers
+    /// </summary>
+    public static void ClearLinesRenderers(GameObject parent = null)
+    {
+        var children = (parent == null) ? GameObject.FindObjectsOfType<LineRenderer>() : parent.GetComponents<LineRenderer>();
+        foreach (var child in children )
+        {
+            if (child.name == "DebugLineRenderer")
+                GameObject.Destroy(child.gameObject); 
+        }
+    }
+
+    /// <summary>
+    /// Remove all debug spheres
+    /// </summary>
+    public static void ClearSpheres(GameObject parent = null)
+    {
+        var children = (parent == null) ? GameObject.FindObjectsOfType<MeshFilter>() : parent.GetComponents<MeshFilter>();
+        foreach (var child in children )
+        {
+            if (child.name == "DebugSphere")
+                GameObject.Destroy(child.gameObject); 
+        }
+    }
+
+
+    /// <summary>
+    /// Remove all debug spheres and lines from a character
+    /// </summary>
+    public static void ClearAllThingsFromCharacter(GameObject chaControlGo = null)
+    {
+        ClearLinesRenderers(chaControlGo);
+        ClearSpheres(chaControlGo);
     }
 }

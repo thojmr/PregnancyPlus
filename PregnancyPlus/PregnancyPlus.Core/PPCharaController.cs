@@ -208,6 +208,14 @@ namespace KK_PregnancyPlus
 
             //Remove the detour we made
             nativeDetour?.Dispose();         
+
+            //Always clear debug objects from character in debug mode
+            #if DEBUG
+                DebugTools.ClearAllThingsFromCharacter();
+            #else
+                if (PregnancyPlusPlugin.ShowBindPose.Value || PregnancyPlusPlugin.ShowUnskinnedVerts.Value || PregnancyPlusPlugin.ShowBindPose.Value)
+                    DebugTools.ClearAllThingsFromCharacter();
+            #endif
         }
         
 

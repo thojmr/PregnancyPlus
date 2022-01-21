@@ -138,6 +138,11 @@ namespace KK_PregnancyPlus
             ResetInflation();
             var keyList = new List<string>(md.Keys);
             RemoveRenderKeys(keyList);
+
+            //Always clear debug objects from character in debug mode
+            #if DEBUG
+                DebugTools.ClearAllThingsFromCharacter(ChaControl.gameObject);
+            #endif
         }
         
 

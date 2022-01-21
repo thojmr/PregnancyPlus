@@ -257,7 +257,7 @@ namespace KK_PregnancyPlus
             BoneWeight[] boneWeights = null;
             Vector3[] unskinnedVerts = null; 
         
-            // if (PregnancyPlusPlugin.DebugCalcs.Value) MeshSkinning.ShowBindPose(ChaControl, smr, bindPoseList);    
+            if (PregnancyPlusPlugin.ShowBindPose.Value) MeshSkinning.ShowBindPose(ChaControl, smr, bindPoseList);  
 
             //Matricies used to compute the T-pose mesh
             boneMatrices = MeshSkinning.GetBoneMatrices(ChaControl, smr, bindPoseList);//TODO if this is expensive move it to MeshData
@@ -455,7 +455,14 @@ namespace KK_PregnancyPlus
                         // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLine(Vector3.zero, Vector3.zero + Vector3.forward * 1);  
                        
                         // if (PregnancyPlusPlugin.DebugLog.Value && isClothingMesh) DebugTools.DrawLineAndAttach(smr.transform, 1, smr.sharedMesh.bounds.center - yOffsetDir);
-                    }                                                   
+                    }        
+
+                    //Show verts on screen when this debug option is enabled (smaller spheres for body meshes)
+                    if (PregnancyPlusPlugin.ShowUnskinnedVerts.Value)  
+                        DebugTools.DebugMeshVerts(smr.sharedMesh.vertices, size: (isClothingMesh ? 0.01f : 0.005f));                                          
+
+                    if (PregnancyPlusPlugin.ShowSkinnedVerts.Value)  
+                        DebugTools.DebugMeshVerts(md[rendererName].originalVertices, color: Color.cyan, size: (isClothingMesh ? 0.01f : 0.005f));                                          
 
                     var threaded = ComputeDeltas(smr, rendererName, meshInflateFlags);
 

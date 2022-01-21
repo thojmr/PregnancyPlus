@@ -96,7 +96,7 @@ namespace KK_PregnancyPlus
             //The inverse bindpose of 0,0,0 gives us the T-pose position of the bone (Except Blender's FBX imported meshes that we have to correct first with an offset)
             position = invBindPoseMatrix.MultiplyPoint(Vector3.zero); 
 
-            //TODO Use Quaternion.identity as rotation when mesh has local rotation, since computing its actual rotation is more complicated
+            //TODO Compute rotated meshes bindpose rotation correctly
             rotation = MeshHasLocalRotation(smr) ? Quaternion.identity : Matrix.GetRotation(invBindPoseMatrix);
         }
 
