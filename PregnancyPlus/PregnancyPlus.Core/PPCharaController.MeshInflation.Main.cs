@@ -494,11 +494,24 @@ namespace KK_PregnancyPlus
         /// Calculates the center position of the belly sphere.  Including the user slider value
         /// </summary>
         internal Vector3 GetSphereCenter() 
-        {             
-            //Measure from feet to belly             
-            var bbHeight = GetBellyButtonLocalHeight();
+        {          
+            float bbHeight;
+
+            //in 6.0+ we can use a static sphere center height
+            if (infConfig.IsPluginVersionBelow(6.0))
+            {
+                //Measure from feet to belly 
+                bbHeight = GetBellyButtonLocalHeight();
+            }
+            else 
+            {
+                #if KK
+                    bbHeight = 1f;           
+                #else
+                    bbHeight = 10f;
+                #endif
+            }
             bellyInfo.BellyButtonHeight = bbHeight;           
-            //TODO was this measured from bone position before?  does this way move its z axis forward or backward from the old way?
             Vector3 bellyButtonPos = Vector3.up * bbHeight; 
 
             //Include user slider values "Move Y" and "Move Z"
@@ -683,6 +696,8 @@ namespace KK_PregnancyPlus
             var targetNormals = inflatedMesh.normals;
             var sourceTangents = smr.sharedMesh.tangents;
             var targetTangents = inflatedMesh.tangents;
+            var originalVerts = _md.originalVertices;
+            var inflatedVerts = _md.inflatedVertices;
 
             nativeDetour.Undo();
 
@@ -691,7 +706,7 @@ namespace KK_PregnancyPlus
             {
 
                 //Get delta diffs of the two meshes used to make the blendshape
-                var deltaVerticies = BlendShapeTools.GetV3Deltas(_md.originalVertices, _md.inflatedVertices, undoMatrix);
+                var deltaVerticies = BlendShapeTools.GetV3Deltas(originalVerts, inflatedVerts, undoMatrix);
                 var deltaNormals = BlendShapeTools.GetV3Deltas(sourceNormals, targetNormals, undoMatrix);
                 var deltaTangents = BlendShapeTools.GetV3Deltas(BlendShapeTools.ConvertV4ToV3(sourceTangents), BlendShapeTools.ConvertV4ToV3(targetTangents), undoMatrix);                            
 

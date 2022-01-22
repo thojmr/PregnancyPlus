@@ -85,6 +85,15 @@ namespace KK_PregnancyPlus
         /// </summary>
         internal float GetSphereRadius(float wasitToRibDist, float wasitWidth) 
         {
+            //In 6.0+ we have a static radius size
+            if (infConfig.IsPluginVersionBelow(6.0))
+            {
+                #if KK
+                    return 0.15f;
+                #else
+                    return 1.5f;
+                #endif
+            }
             //The float numbers are just arbitrary numbers that ended up looking porportional
             var radius = Math.Min(wasitToRibDist/1.25f, wasitWidth/1.3f);
 

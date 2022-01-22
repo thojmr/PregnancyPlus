@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using System.Globalization;
 using System.Collections.Generic;
 using ExtensibleSaveFormat;
 
@@ -154,6 +155,22 @@ namespace KK_PregnancyPlus
         {
             //Anything before v3.6 will be null
             return pluginVersion != null ? pluginVersion : "0";
+        }
+
+        /// <summary>   
+        /// Returns true when the plugin version is below the input
+        /// </summary>
+        public bool IsPluginVersionBelow(double version) 
+        {
+            var existingVersion = GetPluginVersion();
+            if (existingVersion == null || existingVersion == "0") 
+                return true;
+
+            double.TryParse(existingVersion, out double dubExistingVersion);
+            //If we cant parse version, assume latest version
+            if (dubExistingVersion == double.NaN || dubExistingVersion == 0) return false;
+
+            return dubExistingVersion < version;
         }
         
         /// <summary>   
