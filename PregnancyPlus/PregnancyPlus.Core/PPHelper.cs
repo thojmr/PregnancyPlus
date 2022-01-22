@@ -51,6 +51,7 @@ namespace KK_PregnancyPlus
         /// </summary>
         internal static string KeyFromNameAndVerts(SkinnedMeshRenderer smr) 
         {        
+            if (smr == null || smr.sharedMesh == null) return null;
             var meshIdentifier = new MeshIdentifier(smr.name, smr.sharedMesh.vertexCount);
             return meshIdentifier.RenderKey;
         }

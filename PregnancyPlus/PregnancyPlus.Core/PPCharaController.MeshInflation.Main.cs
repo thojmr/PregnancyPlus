@@ -458,7 +458,11 @@ namespace KK_PregnancyPlus
 
                     //Show verts on screen when this debug option is enabled (smaller spheres for body meshes)
                     if (PregnancyPlusPlugin.ShowUnskinnedVerts.Value)  
+                    {
+                        if (!smr.sharedMesh.isReadable) nativeDetour.Apply();  
                         DebugTools.DebugMeshVerts(smr.sharedMesh.vertices, size: (isClothingMesh ? 0.01f : 0.005f));                                          
+                        nativeDetour.Undo();
+                    }
 
                     if (PregnancyPlusPlugin.ShowSkinnedVerts.Value)  
                         DebugTools.DebugMeshVerts(md[rendererName].originalVertices, color: Color.cyan, size: (isClothingMesh ? 0.01f : 0.005f));                                          
@@ -665,6 +669,12 @@ namespace KK_PregnancyPlus
 
             //When SMR has local rotation undo it in the deltas
             var rotationUndo = Matrix4x4.TRS(Vector3.zero, smr.transform.localRotation, Vector3.one).inverse;
+            //When a smr bindpose has scale, we need to undo it in the delta similar to rotation
+            var scaleUndo = MeshSkinning.GetBindPoseScale(smr).inverse;
+            var undoMatrix = rotationUndo * scaleUndo;
+
+            if (PregnancyPlusPlugin.DebugLog.Value && scaleUndo != Matrix4x4.identity) 
+                PregnancyPlusPlugin.Logger.LogWarning($" smr {smr.name} has bindpose scale {Matrix.GetScale(scaleUndo)}");
 
             if (!smr.sharedMesh.isReadable) nativeDetour.Apply();
 
@@ -681,9 +691,9 @@ namespace KK_PregnancyPlus
             {
 
                 //Get delta diffs of the two meshes used to make the blendshape
-                var deltaVerticies = BlendShapeTools.GetV3Deltas(_md.originalVertices, _md.inflatedVertices, rotationUndo);
-                var deltaNormals = BlendShapeTools.GetV3Deltas(sourceNormals, targetNormals, rotationUndo);
-                var deltaTangents = BlendShapeTools.GetV3Deltas(BlendShapeTools.ConvertV4ToV3(sourceTangents), BlendShapeTools.ConvertV4ToV3(targetTangents), rotationUndo);                            
+                var deltaVerticies = BlendShapeTools.GetV3Deltas(_md.originalVertices, _md.inflatedVertices, undoMatrix);
+                var deltaNormals = BlendShapeTools.GetV3Deltas(sourceNormals, targetNormals, undoMatrix);
+                var deltaTangents = BlendShapeTools.GetV3Deltas(BlendShapeTools.ConvertV4ToV3(sourceTangents), BlendShapeTools.ConvertV4ToV3(targetTangents), undoMatrix);                            
 
                 //When this thread task is complete, execute the below in main thread
                 Action threadActionResult = () => 

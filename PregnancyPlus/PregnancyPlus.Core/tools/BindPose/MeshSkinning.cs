@@ -136,6 +136,33 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
+        /// When an SMR bindpose has any scale return it.  We need it to apply to vert deltas before making blendshape, 
+        ///     because the original mesh has unique scale that needs to be reversed
+        /// </summary>  
+        public static Matrix4x4 GetBindPoseScale(SkinnedMeshRenderer smr)
+        {            
+            var scale = Matrix4x4.identity;
+
+            //For a bindpose check for scale (just grab the first if any exists)
+            var bindposes = smr.sharedMesh.bindposes;
+            for (int i = 0; i < bindposes.Length; i++)
+            {        
+                //Note: This assumes the scale is the same for all bindposes. Would not be suprised if that's not the case
+
+                var currentScale = Matrix.GetScaleMatrix(bindposes[i]);
+                //If at least 2 bones had the same scale, use that scale
+                if (currentScale != scale)   
+                    scale = currentScale;
+
+                //Otherwise there is no scale
+                break;
+            }            
+
+            return scale;
+        }
+
+
+        /// <summary>
         /// Get the offset that a smr bindpose bone needs in order to line up with the body's bindpose
         ///     Null when none found
         /// </summary>  

@@ -232,6 +232,7 @@ namespace KK_PregnancyPlus
     isClothingMesh        {isClothingMesh}
     MeshOffsetType        {MeshOffSet.GetMeshOffsetType(smr).ToString()}
     VertexCount           {smr.sharedMesh.vertexCount}
+    mesh.isReadable       {smr.sharedMesh.isReadable}
     ************************
              ");
         }         

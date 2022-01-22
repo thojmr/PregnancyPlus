@@ -8,7 +8,7 @@ namespace KK_PregnancyPlus
     {   
 
         /// <summary>
-        /// Returns the position Vector of a Matrix4x4
+        /// Returns the position Vector3 of a Matrix4x4
         /// </summary> 
         public static Vector3 GetPosition(Matrix4x4 matrix)
         {
@@ -24,11 +24,30 @@ namespace KK_PregnancyPlus
             return Quaternion.LookRotation(matrix.GetColumn(2), matrix.GetColumn(1));
         }
 
+
+        /// <summary>
+        /// Returns the scale Vector3 of a Matrix4x4
+        /// </summary> 
+        public static Vector3 GetScale(Matrix4x4 matrix)
+        {
+            var scaleMatrix = GetScaleMatrix(matrix);
+            return new Vector3(scaleMatrix.m00, scaleMatrix.m11, scaleMatrix.m22);
+        }
+
+
+        /// <summary>
+        /// Returns the scale of a Matrix4x4, excluding position and rotation
+        /// </summary> 
+        public static Matrix4x4 GetScaleMatrix(Matrix4x4 matrix)
+        {
+            return GetPositionAndRotationMatrrix(matrix).inverse * matrix;
+        }
+
         
         /// <summary>
-        /// Only get position and rotation, excluding scale of a Matrix4x4
+        /// Get position and rotation, excluding scale of a Matrix4x4
         /// </summary> 
-        public static Matrix4x4 GetPositionAndRotation(Matrix4x4 matrix)
+        public static Matrix4x4 GetPositionAndRotationMatrrix(Matrix4x4 matrix)
         {
             return Matrix4x4.TRS(GetPosition(matrix), GetRotation(matrix), Vector3.one);
         }

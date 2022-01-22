@@ -12,19 +12,19 @@ namespace KK_PregnancyPlus
         
         /// <summary>
         /// Subtract the vectors to get deltas
-        ///     rotationUndo: When the SMR has local rotation, we need to make the deltas align to that
+        ///     undoMatrix: When the SMR has local rotation or bindpose scale, we need to add it to the deltas for the blendshape to look/align correcty
         /// </summary>
-        public static Vector3[] GetV3Deltas(Vector3[] origins, Vector3[] targets, Matrix4x4 rotationUndo) 
+        public static Vector3[] GetV3Deltas(Vector3[] origins, Vector3[] targets, Matrix4x4 undoMatrix) 
         {
             var deltas = new Vector3[origins.Length];
 
             for (var i = 0; i < origins.Length; i++) 
             {
                 //Dont want the extra overhead of matrix multiplication if we don't need it
-                if (rotationUndo.Equals(Matrix4x4.identity))
+                if (undoMatrix.Equals(Matrix4x4.identity))
                     deltas[i] = targets[i] - origins[i];
                 else
-                    deltas[i] = rotationUndo.MultiplyPoint3x4(targets[i] - origins[i]);
+                    deltas[i] = undoMatrix.MultiplyPoint3x4(targets[i] - origins[i]);
             }
 
             return deltas;
