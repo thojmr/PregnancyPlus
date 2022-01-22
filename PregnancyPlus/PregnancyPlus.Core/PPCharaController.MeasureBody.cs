@@ -121,37 +121,35 @@ namespace KK_PregnancyPlus
             waistWidth = 0;
             bellyToBreastDist = 0;
 
-            //Get the characters Y bones to measure from
-            var ribBone = PregnancyPlusHelper.GetBone(ChaControl, ribName);
-            var waistBone = PregnancyPlusHelper.GetBone(ChaControl, waistName);
-            if (ribBone == null || waistBone == null) return (waistWidth > 0 && waistToBackThickness > 0 && waistToRibDist > 0);
-
             //Measures from the wasist to the bottom of the ribs
             waistToRibDist = BoneChainYDistance(waistName, hipName) + BoneChainYDistance(ribName, hipName, includeNegative: true);
 
-            //Get the characters z waist thickness
-            var backBone = PregnancyPlusHelper.GetBone(ChaControl, backName);
-            var breastBone = PregnancyPlusHelper.GetBone(ChaControl, breastRoot);  
-            if (ribBone == null || breastBone == null) return (waistWidth > 0 && waistToBackThickness > 0 && waistToRibDist > 0);
-
-            //Measures from breast root to the back spine distance
-            waistToBackThickness = Math.Abs(breastBone.transform.InverseTransformPoint(backBone.position).z);
-
+            //In 6.0+ we use a static distance, since we have a static virtual mesh to work with
+            #if KK
+                waistToBackThickness = 0.09f;
+            #else
+                waistToBackThickness = 1f;
+            #endif                
+            
             //Get the characters X bones to measure from, in localspace to ignore n_height scale
             var thighLBone = PregnancyPlusHelper.GetBone(ChaControl, thighLName);
             var thighRBone = PregnancyPlusHelper.GetBone(ChaControl, thighRName);
-            if (thighLBone == null || thighRBone == null) return (waistWidth > 0 && waistToBackThickness > 0 && waistToRibDist > 0);
+            if (thighLBone == null || thighRBone == null) return (waistWidth > 0 && waistToRibDist > 0);
             
             //Measures Left to right hip bone distance
             waistWidth = Vector3.Distance(thighLBone.transform.InverseTransformPoint(thighLBone.position), thighLBone.transform.InverseTransformPoint(thighRBone.position)); 
-
-            //Verts above this position are not allowed to move
-            var bellyButtonBone = PregnancyPlusHelper.GetBone(ChaControl, bellyButton);      
-            //Distance from waist to breast root              
-            bellyToBreastDist = BoneChainYDistance(bellyButton, hipName) + BoneChainYDistance(breastRoot, hipName, includeNegative: true);
+            
+            var bellyButtonBone = PregnancyPlusHelper.GetBone(ChaControl, bellyButton);    
+            //In 6.0+ we use a static distance
+            #if KK
+                bellyToBreastDist = 0.14f;
+            #else
+                bellyToBreastDist = 1.3f;
+            #endif                
+        
 
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" MeasureWaist Recalc ");            
-            return (waistWidth > 0 && waistToBackThickness > 0 && waistToRibDist > 0); 
+            return (waistWidth > 0 && waistToRibDist > 0); 
         }
 
 
