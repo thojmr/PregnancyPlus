@@ -36,7 +36,7 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Create a new mesh collider on a skinned mesh renderer
+        /// Create a new mesh collider on a skinned mesh renderer, if one already exists, skip this step
         /// </summary>
         public Mesh CreateMeshCollider(SkinnedMeshRenderer bodySmr = null)
         {        
@@ -45,6 +45,12 @@ namespace KK_PregnancyPlus
 
             //Check for body mesh data dict
             md.TryGetValue(GetMeshKey(bodySmr), out MeshData _md);
+
+            if (!_md.HasOriginalVerts)
+            {
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" CreateMeshCollider bodySmr original verts have not computed yet");
+                return null;
+            }
 
             //Create the collider component
             var collider = bodySmr.transform.gameObject.AddComponent<MeshCollider>();
@@ -115,28 +121,22 @@ namespace KK_PregnancyPlus
         /// Compute the clothVert offset for each clothing vert from the distance it is away from the skin mesh
         ///  BodySmr must have mesh collider attached at this point with CreateMeshCollider()
         /// </summary>
-        internal float[] DoClothMeasurement(SkinnedMeshRenderer clothSmr, SkinnedMeshRenderer bodySmr, 
-                                            Vector3 sphereCenter, bool needsRecomputeOffsets = false)
+        internal float[] DoClothMeasurement(SkinnedMeshRenderer clothSmr, SkinnedMeshRenderer bodySmr, Vector3 sphereCenter, bool needsRecomputeOffsets = false)
         {     
             if (!bodySmr) return null;   
-
             //skip body meshes  (but this can be incorrect when a clothing mesh contains o_body_a or _cf in rare cases (Bad mesh makers! bad!))
             if (clothSmr.name.Contains(BodyMeshName)) return null;    
 
             //Get the pre calculated preg verts for this mesh
             var renderKey = GetMeshKey(clothSmr);        
             md.TryGetValue(renderKey, out MeshData _md);            
-            if (!_md.HasOriginalVerts) return null;//Hopefully this never happens
-            var origVerts = md[renderKey].originalVertices;
-
-            var bellyVerticieIndexes = md[renderKey].bellyVerticieIndexes;
 
             //Check for existing offset values, init if none found
             var clothingOffsetsHasValue = md[renderKey].HasClothingOffsets;
             var clothOffsets = new float[0];
             if (!clothingOffsetsHasValue) 
             {
-                md[renderKey].clothingOffsets = new float[origVerts.Length];
+                md[renderKey].clothingOffsets = new float[clothSmr.sharedMesh.vertexCount];
                 clothOffsets = md[renderKey].clothingOffsets;
             }
             //If we have already computed these for this mesh, just return the existing values
@@ -144,6 +144,9 @@ namespace KK_PregnancyPlus
             {
                 return md[renderKey].clothingOffsets;
             }
+
+            var origVerts = md[renderKey].originalVertices;
+            var bellyVerticieIndexes = md[renderKey].bellyVerticieIndexes;
 
             //Lerp the final offset based on the inflation size.  Since clothes will be most flatteded at the largest size (40), and no change needed at default belly size
             var rayCastDist = bellyInfo.OriginalSphereRadius/2;            
@@ -154,7 +157,7 @@ namespace KK_PregnancyPlus
             if (meshCollider == null) 
             {
                 if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" MeshCollider is null when it shouldn't be");
-                return null;
+                return md[renderKey].clothingOffsets;
             }
   
             //Get the 4 or 5 points inside the body we want to raycast to
@@ -344,20 +347,24 @@ namespace KK_PregnancyPlus
         /// Compute the clothVert offset for each clothing vert from the distance it is away from the skin mesh
         ///  BodySmr must have mesh collider attached at this point
         /// </summary>
-        internal bool NeedsClothMeasurement(SkinnedMeshRenderer clothSmr, SkinnedMeshRenderer bodySmr, Vector3 sphereCenter)
+        internal bool NeedsClothMeasurement(SkinnedMeshRenderer clothSmr, SkinnedMeshRenderer bodySmr, Vector3 sphereCenter, bool isClothingMesh)
         {  
-            if (!bodySmr) return false;   
+            if (!isClothingMesh) return false;
+            if (!bodySmr)
+            {
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" NeedsClothMeasurement No bodySmr, skipping for {clothSmr.name}");
+                return false;
+            }            
 
             //skip body meshes  (but this can be incorrect when a clothing mesh contains o_body_a or _cf in rare cases (Bad mesh makers! bad!))
-            if (clothSmr.name.Contains(BodyMeshName)) return false;    
+            if (clothSmr.name.Contains(BodyMeshName)) 
+            {
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" NeedsClothMeasurement smr {clothSmr.name} contains {BodyMeshName} skpping");
+                return false;    
+            }   
 
             var renderKey = GetMeshKey(clothSmr); 
-            var clothingOffsetsHasValue = md[renderKey].HasClothingOffsets;
-
-            //Does the offset list already exists for this mesh?
-            if (clothingOffsetsHasValue) return false;
-
-            return true;
+            return !md[renderKey].HasClothingOffsets;
         }
 
 

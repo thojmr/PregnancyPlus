@@ -48,8 +48,6 @@ namespace KK_PregnancyPlus
             var exists = md.TryGetValue(renderKey, out MeshData _md);
             if (!exists || !_md.HasOriginalVerts) 
             {
-                // if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo(
-                //      $"ApplyInflation > smr '{renderKey}' does not exists, skipping");
                 RemoveRenderKey(renderKey);
                 return false;
             }
@@ -65,15 +63,7 @@ namespace KK_PregnancyPlus
 
                 nativeDetour.Undo();
                 return false;
-            }
-            
-            // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DebugMeshVerts(ChaControl.gameObject, md[renderKey].originalVertices, removeExisting: false);
-            // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DebugMeshVerts(md[renderKey].originalVertices);
-            // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DebugMeshVerts(md[renderKey].inflatedVertices);
-            // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DebugMeshVerts(smr.sharedMesh.vertices);
-            // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DebugMeshVerts(smr.sharedMesh.vertices, filterVerts: md[renderKey].alteredVerticieIndexes);     
-            // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DebugMeshVerts(ChaControl.gameObject, md[renderKey].originalVertices, ChaControl.transform.position);
-            // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DebugMeshVerts(ChaControl.gameObject, smr.sharedMesh.vertices, ChaControl.transform.position);
+            }        
 
             nativeDetour.Undo();
 

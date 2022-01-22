@@ -52,8 +52,10 @@ namespace KK_PregnancyPlus
                 return false;             
             }
             
-            //Create new mesh dictionary key from scratch (Will overwrite existing ones)
-            md[renderKey] = new MeshData(sharedMesh.vertexCount);           
+            md.TryGetValue(renderKey, out MeshData existingMeshData);
+
+            //Create new mesh dictionary key from scratch (Will overwrite existing ones except any originalVerticies)
+            md[renderKey] = new MeshData(sharedMesh.vertexCount, existingMeshData);           
             var bellyVertIndex = md[renderKey].bellyVerticieIndexes;
             var verticies = sharedMesh.vertices;
 

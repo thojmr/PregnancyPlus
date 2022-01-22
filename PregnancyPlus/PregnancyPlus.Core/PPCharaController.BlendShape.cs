@@ -499,6 +499,12 @@ namespace KK_PregnancyPlus
         /// <returns>Returns the copied mesh with new recalculated values</returns>
         internal Mesh PrepForBlendShape(SkinnedMeshRenderer smr, string renderKey) 
         {     
+            if (smr == null) 
+            {
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" PrepForBlendShape smr was null"); 
+                return null;
+            }
+
             //Make a copy of the mesh. We dont want to affect the existing for this
             var meshCopyTarget = PregnancyPlusHelper.CopyMesh(smr.sharedMesh);   
             //When the mesh is not readable, temporarily make it readble

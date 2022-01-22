@@ -37,7 +37,7 @@ namespace KK_PregnancyPlus
         
         public bool HasInflatedVerts
         {
-            get {return _inflatedVertices != null && _inflatedVertices.Length > 0;}
+            get { return HasNonZeroVerts(_inflatedVertices); }
         }
 
         public bool HasSmoothedVerts
@@ -47,7 +47,8 @@ namespace KK_PregnancyPlus
 
         public bool HasOriginalVerts
         {
-            get {return originalVertices != null && originalVertices.Length > 0;}
+            //At least a single vert must have non 0 value
+            get { return HasNonZeroVerts(originalVertices); }
         }
 
         public bool HasClothingOffsets
@@ -67,11 +68,41 @@ namespace KK_PregnancyPlus
 
 
         //Initialize some fields, we will popupate others as needed
-        public MeshData(int vertCount)
+        public MeshData(int vertCount, MeshData md = null)
         {           
             bellyVerticieIndexes = new bool[vertCount];
             alteredVerticieIndexes = new bool[vertCount];
             isFirstPass = true;
+
+            //If a mesh is detected that already has original verts, use them
+            if (md != null)
+            {
+                originalVertices = md.originalVertices;
+            }
+        }
+
+
+        /// <summary>
+        /// Check whether a vertex list has at least one non 0 value, which means its been populated
+        /// </summary>
+        internal bool HasNonZeroVerts(Vector3[] verts)
+        {
+            //If empty list
+            if (verts == null || verts.Length <= 0) return false;
+
+            var numVertsToCheck = verts.Length > 20 ? 20 : verts.Length;
+
+            //Otherwise check the first few values
+            for (int i = 0; i < verts.Length; i++)
+            {
+                //If the vert has a non zero value
+                if (verts[i] != Vector3.zero) return true;
+
+                //Assume by this point all are vector3.zero
+                if (i > numVertsToCheck) break;
+            }
+
+            return false;
         }
     }
 }

@@ -187,13 +187,18 @@ namespace KK_PregnancyPlus
         public SkinnedMeshRenderer GetBodyMeshRenderer()
         {
             var bodyMeshRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, findAll: true);
-            var body = bodyMeshRenderers.Find(x => x.name == BodyMeshName);
-            if (body == null)
+            var body = bodyMeshRenderers.FindAll(x => x?.name == BodyMeshName);
+            if (body == null || body.Count <= 0)
             {
                 PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(charaFileName, ErrorCode.PregPlus_NoBodyMesh, 
                     $" The body skin could not be found for this character: {charaFileName}.  That can't be healthy..."); 
+                return null;
             }
-            return body;
+
+            if (body.Count > 1 && PregnancyPlusPlugin.DebugLog.Value) 
+                PregnancyPlusPlugin.Logger.LogWarning($" More than one body mesh was found under .objBody, returning the first for {charaFileName}");
+
+            return body[0];
         }
 
 
@@ -203,6 +208,8 @@ namespace KK_PregnancyPlus
         public bool IsBodySmrActive()
         {
             var bodySmr = GetBodyMeshRenderer();
+            if (!bodySmr) return false;
+            
             return bodySmr.enabled;
         }
 
