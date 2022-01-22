@@ -51,8 +51,11 @@ namespace KK_PregnancyPlus
                 nativeDetour.Undo();
                 return false;             
             }
-            
-            md.TryGetValue(renderKey, out MeshData existingMeshData);
+                        
+            //We dont want to delete main body mesh originalVerticies, since other meshes depend on it, and might use it between now and it being set later
+            MeshData existingMeshData = null;
+            if (renderKey.Contains(BodyMeshName))
+                md.TryGetValue(renderKey, out existingMeshData);
 
             //Create new mesh dictionary key from scratch (Will overwrite existing ones except any originalVerticies)
             md[renderKey] = new MeshData(sharedMesh.vertexCount, existingMeshData);           

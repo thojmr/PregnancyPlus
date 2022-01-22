@@ -561,7 +561,7 @@ namespace KK_PregnancyPlus
             else 
             {
                 #if KK
-                    bbHeight = 1f;           
+                    bbHeight = 0.965f;           
                 #else
                     bbHeight = 10f;
                 #endif
