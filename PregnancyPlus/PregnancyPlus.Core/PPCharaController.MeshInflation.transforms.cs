@@ -205,7 +205,7 @@ namespace KK_PregnancyPlus
             var zDistFromCenter = smoothedVectorLs.z - sphereCenterLs.z;
 
             //As the distance forward gets further from sphere center make the shape more round (shifted outward slightly from center)
-            var xyLerp = Mathf.Lerp(0, GetInflationRoundness(infConfigClone), (zDistFromCenter - (bellyInfo.WaistThick/4f))/bellyInfo.SphereRadius);
+            var xyLerp = Mathf.Lerp(0, GetInflationRoundness(infConfigClone), (zDistFromCenter - (bellyInfo.WaistThick/2f))/bellyInfo.SphereRadius);
 
             //As the original vert gets closer to the sphere radius, apply less change since we want smooth transitions at belly's edge
             var moveDistanceLerp = Mathf.Lerp(xyLerp, 0, bellyEdgeAC.Evaluate(skinToCenterDist/bellyInfo.SphereRadius));

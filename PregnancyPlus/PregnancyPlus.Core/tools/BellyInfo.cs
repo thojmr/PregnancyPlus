@@ -14,8 +14,13 @@ namespace KK_PregnancyPlus
     {
         public float WaistWidth;
         public float WaistHeight;
-        public float WaistThick;
 
+        //In 6.0+ we use a static distance, since we have a static virtual mesh to work with
+        #if KK
+            public float WaistThick = 0.045f;
+        #else
+            public float WaistThick = 0.5f;
+        #endif 
 
         //Well, with the BindPose changes, I've almost completely removed the need for these scalers. yey
         public Vector3 CharacterScale;//ChaControl.transform scale (set by the Axis scale control)
@@ -34,17 +39,22 @@ namespace KK_PregnancyPlus
         //From char z=0 position
         public float ZLimit
         {
-            //Get the distance from center -> spine, where the belly is allowed to wrap around to (total distance from 0 to back bone /some scale that looks good)
-            get { return WaistThick/2f; }
+            //Get the distance from center -> spine, where the belly is allowed to wrap around to
+            get { return WaistThick; }
         }
 
-        public float BellyToBreastDist;//Belly button to breast distance
+        //In 6.0+ we use a static distance
+        #if KK
+            public float BellyToBreastDist = 0.182f;
+        #else
+            public float BellyToBreastDist = 1.69f;
+        #endif          
 
         //From char belly button to breast distance
         public float YLimit
         {
             //Get the distance from center -> ribs
-            get { return BellyToBreastDist * 1.3f; }
+            get { return BellyToBreastDist; }
         }
 
         public float YLimitOffset
@@ -54,7 +64,6 @@ namespace KK_PregnancyPlus
         }
 
         public float BellyButtonHeight;//Foot to belly button height
-        public bool MeshRootDidMove = false;//Keep track when we move the meshroot position for certain clothing positional calculations
 
         
         public bool IsInitialized 
@@ -63,8 +72,8 @@ namespace KK_PregnancyPlus
         }
 
         internal BellyInfo(float waistWidth, float waistHeight, float sphereRadius, float originalSphereRadius, 
-                            Vector3 bodyTopScale, float currentMultiplier, float waistThick, Vector3 nHeightScale,
-                            float bellyToBreastDist, Vector3 characterScale, bool meshRootDidMove = false) 
+                            Vector3 bodyTopScale, float currentMultiplier, Vector3 nHeightScale,
+                            Vector3 characterScale) 
         {
             WaistWidth = waistWidth;
             WaistHeight = waistHeight;
@@ -72,11 +81,8 @@ namespace KK_PregnancyPlus
             OriginalSphereRadius = originalSphereRadius;
             BodyTopScale = bodyTopScale;
             CurrentMultiplier = currentMultiplier;
-            WaistThick = waistThick;
             NHeightScale = nHeightScale;
-            BellyToBreastDist = bellyToBreastDist;
             CharacterScale = characterScale;
-            MeshRootDidMove = meshRootDidMove;
         }
 
         //Determine if we need to recalculate the sphere radius (hopefully to avoid change in hip bones causing belly size to sudenly change)
@@ -108,10 +114,10 @@ namespace KK_PregnancyPlus
 
         public string Log()
         {
-            return $@" BellyInfo:
-    WaistWidth {WaistWidth} WaistHeight {WaistHeight} WaistThick {WaistThick} BellyToBreastDist {BellyToBreastDist}
+            return $@" BellyInfo:    
     BodyTopScale {BodyTopScale} NHeightScale {NHeightScale} CharacterScale {CharacterScale} TotalCharScale {TotalCharScale}
-    SphereRadius {SphereRadius} OriginalSphereRadius {OriginalSphereRadius} YLimit {YLimit}
+    WaistWidth   {WaistWidth  } WaistHeight  {WaistHeight}
+    SphereRadius {SphereRadius} OriginalSphereRadius {OriginalSphereRadius}
             ";
         }
 
