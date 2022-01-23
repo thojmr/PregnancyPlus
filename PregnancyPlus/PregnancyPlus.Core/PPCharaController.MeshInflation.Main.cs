@@ -324,12 +324,12 @@ namespace KK_PregnancyPlus
 
                 //When this thread task is complete, execute the below in main thread
                 Action threadActionResult = () => 
-                {
-                    md[rendererName].isFirstPass = false;
-
+                {                    
                     //This one here is critical.  Once the originalVertices have been computed for the body mesh, the other meshes can now also be computed too
-                    if (isMainBody)
-                        FindAndAffectAllMeshes(meshInflateFlags);
+                    if (isMainBody && md[rendererName].isFirstPass)
+                        FindAndAffectAllMeshes(meshInflateFlags, rendererName);
+
+                    md[rendererName].isFirstPass = false;
 
                     //Now that the mesh is skinned to T-pose, we can compute the inflated state
                     GetInflatedVerticies(smr, bellyInfo.SphereRadius, isClothingMesh, bodySmr, meshInflateFlags);

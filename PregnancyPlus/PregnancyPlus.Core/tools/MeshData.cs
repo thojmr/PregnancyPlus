@@ -68,17 +68,11 @@ namespace KK_PregnancyPlus
 
 
         //Initialize some fields, we will popupate others as needed
-        public MeshData(int vertCount, MeshData md = null)
+        public MeshData(int vertCount)
         {           
             bellyVerticieIndexes = new bool[vertCount];
             alteredVerticieIndexes = new bool[vertCount];
             isFirstPass = true;
-
-            //If a mesh is detected that already has original verts, use them
-            if (md != null)
-            {
-                originalVertices = md.originalVertices;
-            }
         }
 
 
