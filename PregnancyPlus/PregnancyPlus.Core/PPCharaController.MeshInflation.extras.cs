@@ -88,19 +88,26 @@ namespace KK_PregnancyPlus
             //In 6.0+ we have a static radius size
             if (infConfig.IsPluginVersionBelow(6.0))
             {
+                //The float numbers are just arbitrary numbers that ended up looking porportional
+                var radius = Math.Min(wasitToRibDist/1.25f, wasitWidth/1.3f);
+
+                //Scale older card radiuses to make them about the same size they used to be
+                var legacyScale = infConfig.UseOldCalcLogic() ? 0.9f : 1f;
+
+                //Older cards had slightly smaller radiuses because of less accuraate belly bone measurements, adjust these old cards to look similar in size with new bone logic
+                radius = radius * legacyScale;
+
+                return radius;
+            }
+            else
+            {
                 #if KK
-                    return 0.15f;
+                    return 0.13f;
                 #else
                     return 1.5f;
                 #endif
             }
-            //The float numbers are just arbitrary numbers that ended up looking porportional
-            var radius = Math.Min(wasitToRibDist/1.25f, wasitWidth/1.3f);
 
-            //Older cards had slightly smaller radiuses because of less accuraate belly bone measurements, adjust these old cards to look similar in size with new bone logic
-            radius = infConfig.UseOldCalcLogic() ? radius * 0.9f : radius;
-
-            return radius;
         }
 
 
