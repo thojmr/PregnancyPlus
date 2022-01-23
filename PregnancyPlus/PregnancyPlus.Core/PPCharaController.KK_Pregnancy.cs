@@ -109,7 +109,7 @@ namespace KK_PregnancyPlus
             #endif          
 
             //Init and compile the list of blendshapes to target
-            blendShapeCtrlList = ComputeInflationBlendShapes();
+            blendShapeCtrlList = ComputeHSceneBlendShapes();
 
             //Compute the target belly size up to 40
             //When TargetPregPlusSize changes, it will trigger ComputeInflationChange()

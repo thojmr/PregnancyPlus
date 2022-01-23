@@ -61,6 +61,9 @@ namespace KK_PregnancyPlus
             var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);
             meshBlendShapes = LoopAndCreateBlendShape(clothRenderers, meshBlendShapes, uncensorGUID);
 
+            var accessoryRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objAccessory);
+            meshBlendShapes = LoopAndCreateBlendShape(accessoryRenderers, meshBlendShapes, uncensorGUID);
+
             //do the same for body mesh
             var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody);
             meshBlendShapes = LoopAndCreateBlendShape(bodyRenderers, meshBlendShapes, uncensorGUID);
@@ -182,10 +185,16 @@ namespace KK_PregnancyPlus
         {
             var renderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, findAll: true);
             var renderersCloth = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);                        
+            var renderersAccessory = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objAccessory);                        
 
             if (renderersCloth != null && renderersCloth.Count > 0)
             {
                 renderers.AddRange(renderersCloth);
+            }
+
+            if (renderersAccessory != null && renderersAccessory.Count > 0)
+            {
+                renderers.AddRange(renderersAccessory);
             }
 
             //Remove any Preg+ [temp] blendshapes
@@ -301,6 +310,9 @@ namespace KK_PregnancyPlus
                 //Loop through all meshes and append any that need to be
                 var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes, findAll: true);
                 LoopMeshAndAddSavedBlendShape(clothRenderers, meshBlendShape, uncensorGUID, isClothingMesh: true);
+                
+                var accessoryRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objAccessory, findAll: true);
+                LoopMeshAndAddSavedBlendShape(accessoryRenderers, meshBlendShape, uncensorGUID, isClothingMesh: true);
 
                 var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, findAll: true);
                 LoopMeshAndAddSavedBlendShape(bodyRenderers, meshBlendShape, uncensorGUID);
@@ -609,17 +621,24 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Compute the blendshapes for a character to be used during inflation HScene (Does not apply the shape)
         /// </summary>
-        /// <param name="smr">Target mesh renderer to update (original shape)</param>
-        internal List<BlendShapeController> ComputeInflationBlendShapes() 
+        internal List<BlendShapeController> ComputeHSceneBlendShapes() 
         {
             var blendshapes = new List<BlendShapeController>();
 
             //Trigger inflation at 0 size to create the blendshapes            
-            MeshInflate(0, "ComputeInflationBlendShapes", new MeshInflateFlags(this, _bypassWhen0: true));
+            MeshInflate(0, "ComputeHSceneBlendShapes", new MeshInflateFlags(this, _bypassWhen0: true));
 
             var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);            
             //For each mesh, grab any existing Preg+ blendshapes and add to list
             foreach(var smr in clothRenderers)
+            {
+                var blendShapeName = MakeBlendShapeName(GetMeshKey(smr), blendShapeTempTagName);
+                var blendshapeCtrl = new BlendShapeController(smr, blendShapeName);
+                if (blendshapeCtrl.blendShape != null) blendshapes.Add(blendshapeCtrl);
+            }
+
+            var accessoryRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objAccessory);
+            foreach(var smr in accessoryRenderers)
             {
                 var blendShapeName = MakeBlendShapeName(GetMeshKey(smr), blendShapeTempTagName);
                 var blendshapeCtrl = new BlendShapeController(smr, blendShapeName);
@@ -635,7 +654,7 @@ namespace KK_PregnancyPlus
             }
 
             if (PregnancyPlusPlugin.DebugBlendShapeLog.Value)  PregnancyPlusPlugin.Logger.LogInfo(
-                     $"ComputeInflationBlendShapes > Found {blendshapes.Count} blendshapes ");
+                     $"ComputeHSceneBlendShapes > Found {blendshapes.Count} blendshapes ");
 
             return blendshapes;
         }
