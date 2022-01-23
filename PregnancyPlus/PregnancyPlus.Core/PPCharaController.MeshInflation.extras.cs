@@ -104,7 +104,7 @@ namespace KK_PregnancyPlus
                 #if KK
                     return 0.13f;
                 #else
-                    return 1.5f;
+                    return 1.3f;
                 #endif
             }
 

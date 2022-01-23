@@ -19,7 +19,7 @@ namespace KK_PregnancyPlus
         #if KK
             public float WaistThick = 0.045f;
         #else
-            public float WaistThick = 0.5f;
+            public float WaistThick = 0.45f;
         #endif 
 
         //Well, with the BindPose changes, I've almost completely removed the need for these scalers. yey
@@ -47,7 +47,7 @@ namespace KK_PregnancyPlus
         #if KK
             public float BellyToBreastDist = 0.182f;
         #else
-            public float BellyToBreastDist = 1.69f;
+            public float BellyToBreastDist = 1.82f;
         #endif          
 
         //From char belly button to breast distance
