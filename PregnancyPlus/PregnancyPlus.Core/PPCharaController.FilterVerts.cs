@@ -21,14 +21,14 @@ namespace KK_PregnancyPlus
         /// This will get all of the indexes of verticies that have a weight attached to a belly bone (bone filter).
         /// This lets us filter out all other verticies since we only care about the belly anyway. Saves on compute time.
         /// </summary>
-        /// <param name="skinnedMeshRenderer">The target mesh renderer</param>
+        /// <param name="smr">The target mesh renderer</param>
         /// <param name="boneFilters">The bones that must have weights, if none are passed it will get all bone indexes</param>
         /// <returns>Returns True if any verticies are found with matching boneFilter that needs processing</returns>
-        internal bool GetFilteredVerticieIndexes(SkinnedMeshRenderer skinnedMeshRenderer, string[] boneFilters) 
+        internal bool GetFilteredVerticieIndexes(SkinnedMeshRenderer smr, string[] boneFilters) 
         {
-            var sharedMesh = skinnedMeshRenderer.sharedMesh;
-            var renderKey = GetMeshKey(skinnedMeshRenderer);
-            var bones = skinnedMeshRenderer.bones;
+            var sharedMesh = smr.sharedMesh;
+            var renderKey = GetMeshKey(smr);
+            var bones = smr.bones;
             var bellyBoneIndexes = new List<int>();
             var hasBellyVerticies = false;            
 
@@ -57,8 +57,11 @@ namespace KK_PregnancyPlus
             var bellyVertIndex = md[renderKey].bellyVerticieIndexes;
             var verticies = sharedMesh.vertices;
 
+            //Since the z limit check is done on the unskinned verts, we need to apply any bindpose scale to the limit to make it match the real unskinned vert positions
+            //  Note: I bet rotated meshes are similarily affected, but that's a lot of math to correct
+            var bindPoseScaleZ = Matrix.GetScale(MeshSkinning.GetBindPoseScale(smr).inverse).z;
             //The distance backwards from characters center that verts are allowed to be modified
-            var backExtent = -bellyInfo.ZLimit;
+            var backExtent = bindPoseScaleZ * -bellyInfo.ZLimit;
             
             var c = 0;
             var meshBoneWeights = sharedMesh.boneWeights;
