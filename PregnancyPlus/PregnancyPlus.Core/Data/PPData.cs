@@ -162,11 +162,6 @@ namespace KK_PregnancyPlus
         /// </summary>
         public bool IsPluginVersionBelow(double version) 
         {
-            //TODO remove me 
-            #if DEBUG
-                return false;
-            #endif
-
             var existingVersion = GetPluginVersion();
             if (existingVersion == null || existingVersion == "0") 
                 return true;
