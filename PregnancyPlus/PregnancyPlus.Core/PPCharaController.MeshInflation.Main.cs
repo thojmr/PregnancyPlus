@@ -288,6 +288,13 @@ namespace KK_PregnancyPlus
             if (!smr.sharedMesh.isReadable) nativeDetour.Apply();
 
             var rendererName = GetMeshKey(smr);
+            var exists = md.TryGetValue(rendererName, out MeshData _md);     
+            if (!exists) 
+            {
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" ComputeBindPoseMesh cant find MeshData for {rendererName}"); 
+                return false;
+            }
+
             //initialize original verts if not already
             if (md[rendererName].originalVertices == null || !md[rendererName].HasOriginalVerts) 
                 md[rendererName].originalVertices = new Vector3[smr.sharedMesh.vertexCount];                      
@@ -301,7 +308,7 @@ namespace KK_PregnancyPlus
                 MeshSkinning.ShowBindPose(ChaControl, smr, bindPoseList);  
 
             //Matricies used to compute the T-pose mesh
-            boneMatrices = MeshSkinning.GetBoneMatrices(ChaControl, smr, bindPoseList);//TODO if this is expensive move it to MeshData
+            boneMatrices = MeshSkinning.GetBoneMatrices(ChaControl, smr, bindPoseList);
             boneWeights = smr.sharedMesh.boneWeights;
             unskinnedVerts = smr.sharedMesh.vertices;   
 
@@ -374,7 +381,13 @@ namespace KK_PregnancyPlus
             // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" SMR pos {smr.transform.position} rot {smr.transform.rotation} parent {smr.transform.parent}");                     
             if (!smr.sharedMesh.isReadable) nativeDetour.Apply();          
 
-            var rendererName = GetMeshKey(smr);        
+            var rendererName = GetMeshKey(smr);   
+            var exists = md.TryGetValue(rendererName, out MeshData _md);     
+            if (!exists) 
+            {
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" GetInflatedVerticies cant find MeshData for {rendererName}"); 
+                return false;
+            }
             md[rendererName].inflatedVertices = new Vector3[smr.sharedMesh.vertexCount];
             md[rendererName].alteredVerticieIndexes = new bool[smr.sharedMesh.vertexCount];
 

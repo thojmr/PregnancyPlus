@@ -85,7 +85,7 @@ namespace KK_PregnancyPlus
 
 
 		/// <summary>
-        /// Calculate the interactable GUI height by the number of inputs and text lines (TODO Is there an auto height?)
+        /// Calculate the interactable GUI height by the number of inputs and text lines (Is there an auto height?)
         /// </summary>
 		public float GetGuiHeight(bool hasBlendShapes)
 		{			

@@ -43,8 +43,15 @@ namespace KK_PregnancyPlus
             var colliderExists = GetMeshCollider(bodySmr);
             if (colliderExists != null) return null;
 
+
             //Check for body mesh data dict
-            md.TryGetValue(GetMeshKey(bodySmr), out MeshData _md);
+            var rendererName = GetMeshKey(bodySmr);
+            var exists = md.TryGetValue(rendererName, out MeshData _md);
+            if (!exists) 
+            {
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" CreateMeshCollider cant find MeshData for {rendererName}"); 
+                return null;
+            }
 
             if (!_md.HasOriginalVerts)
             {

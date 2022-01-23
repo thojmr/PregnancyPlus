@@ -150,19 +150,18 @@ namespace KK_PregnancyPlus
                     new ConfigurationManagerAttributes { Order = 3, IsAdvanced = true })
                 );
 
-            DebugLog = Config.Bind<bool>("Debug", "Enable Debug Logging (Debug mode)", false,
-                new ConfigDescription( "Will log lots of Preg+ details to the console, but will condiserably slow down the game.  \r\nDon't leave enabled",
+            DebugCalcs = Config.Bind<bool>("Debug", "Enable Debug of calculations (Debug mode)", false,
+                new ConfigDescription( "Will log lots of Preg+ belly calculations to the console, but will condiserably slow down the game.  \r\nDon't leave enabled",
                     null,
                     new ConfigurationManagerAttributes { Order = 2, IsAdvanced = true })
                 );
-            DebugLog.SettingChanged += DebugLog_SettingsChanged;
 
-
-            DebugCalcs = Config.Bind<bool>("Debug", "Enable Debug Logging of calculations (Debug mode)", false,
-                new ConfigDescription( "Will log lots of Preg+ belly calculations to the console, but will condiserably slow down the game.  \r\nDon't leave enabled",
+            DebugLog = Config.Bind<bool>("Debug", "Enable Debug Logging (Debug mode)", false,
+                new ConfigDescription( "Will log lots of Preg+ details to the console, but will condiserably slow down the game.  \r\nDon't leave enabled",
                     null,
                     new ConfigurationManagerAttributes { Order = 1, IsAdvanced = true })
                 );
+            DebugLog.SettingChanged += DebugLog_SettingsChanged;
 
 
             //**** General Config *******/

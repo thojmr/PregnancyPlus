@@ -11,7 +11,12 @@ namespace KK_PregnancyPlus
         //List of active thread result functions, that we will execute on thread completion
         public List<Action> ThreadedFunctionQueue = new List<Action>();
         //Total active threads
-        public int threadCount = 0;
+        public int _threadCount = 0;
+        public int ThreadCount 
+        {
+            get { return _threadCount; }
+            set { _threadCount = Math.Max(value, 0); }
+        }
         //Whether the last frame had running threads
         public bool lastFrameHadThread = false;
 
@@ -19,7 +24,7 @@ namespace KK_PregnancyPlus
         //  This is only reliable because we start all mesh compute threads in the same frame
         public bool AllDone 
         {
-            get { return lastFrameHadThread && threadCount == 0; }
+            get { return lastFrameHadThread && ThreadCount == 0; }
         }
 
 
@@ -33,7 +38,7 @@ namespace KK_PregnancyPlus
         /// </param>        
         public void Start(WaitCallback ThreadedFunction) 
         {
-            threadCount += 1;
+            ThreadCount += 1;
             lastFrameHadThread = true;
             ThreadPool.QueueUserWorkItem(ThreadedFunction);
         }
@@ -58,15 +63,15 @@ namespace KK_PregnancyPlus
         public void WatchAndExecuteThreadResults() 
         {
             //Reset last frame tracker when already at 0 this frame
-            if (threadCount == 0 && lastFrameHadThread) lastFrameHadThread = false;
+            if (ThreadCount == 0 && lastFrameHadThread) lastFrameHadThread = false;
 
             //Watch for completed thread tasks
             while (ThreadedFunctionQueue.Count > 0) 
             {
                 //Get the latest finished thread task
                 var resultFunction = ThreadedFunctionQueue[0];
-                ThreadedFunctionQueue.RemoveAt(0);
-                threadCount -= 1;                
+                ThreadedFunctionQueue?.RemoveAt(0);
+                ThreadCount -= 1;                
 
                 //Execute the "result function" in this main thread to complete its tasks
                 resultFunction();

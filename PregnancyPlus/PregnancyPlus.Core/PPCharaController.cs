@@ -117,7 +117,7 @@ namespace KK_PregnancyPlus
 
                 //When HScene starts, pre compute inflated size blendshape
                 
-                //TODO this fires for all characters, even those not in Hscene...
+                //This fires for all characters, even those not in Hscene...
                 GameAPI.StartH += (object sender, EventArgs e) => 
                 { 
                     if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $StartH {charaFileName}");
@@ -196,7 +196,7 @@ namespace KK_PregnancyPlus
             //just for debugging belly during animations, very compute heavy for Update()
             if (PregnancyPlusPlugin.DebugAnimations.Value)
             {
-                if (Time.frameCount % 60 == 0) MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: true, _freshStart: true, _reMeasure: true), "Update");
+                if (Time.frameCount % 90 == 0) MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: true, _freshStart: true, _reMeasure: true), "Update");
             }
 
             ///** Threading **

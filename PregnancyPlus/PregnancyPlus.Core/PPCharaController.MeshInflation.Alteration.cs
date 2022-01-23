@@ -227,7 +227,7 @@ namespace KK_PregnancyPlus
         internal void CheckForEndOfSmoothing()
         {
             //Stop updating GUI count when done
-            if (threading.threadCount == 0) PregnancyPlusGui.StopTextCountIncrement();
+            if (threading.ThreadCount == 0) PregnancyPlusGui.StopTextCountIncrement();
         }
 
 
