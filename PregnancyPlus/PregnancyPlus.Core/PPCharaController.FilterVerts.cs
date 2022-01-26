@@ -52,6 +52,8 @@ namespace KK_PregnancyPlus
                 return false;             
             }
 
+            if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" GetFilteredVerticieIndexes for {smr.name}");
+
             //Create new mesh dictionary key from scratch (Note: This will overwrite existing)
             md[renderKey] = new MeshData(sharedMesh.vertexCount);           
             var bellyVertIndex = md[renderKey].bellyVerticieIndexes;

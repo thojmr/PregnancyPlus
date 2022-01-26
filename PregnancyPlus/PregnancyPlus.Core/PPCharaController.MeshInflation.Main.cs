@@ -236,16 +236,14 @@ namespace KK_PregnancyPlus
             if (ignoreMeshList.Contains(renderKey)) return false; 
 
             //If no belly verts found, or verts already cached, then we can skip this mesh
-            if (!hasVertsToProcess) return false; 
-            if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" Computing Mesh Verts for {smr.name}");
+            if (!hasVertsToProcess) return false;             
 
             //Get the newly created/or existing MeshData obj
             md.TryGetValue(renderKey, out _md);
 
             //On first pass we need to skin the mesh to a T-pose before computing the inflated verts (Threaded as well)
             if (_md.isFirstPass)
-            {
-                if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" Computing BindPoseMesh for {smr.name}");
+            {                
                 return ComputeBindPoseMesh(smr, bodyMeshRenderer, isClothingMesh, meshInflateFlags, isMainBody);            
             }
 
@@ -283,6 +281,8 @@ namespace KK_PregnancyPlus
                 if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" ComputeBindPoseMesh smr was null"); 
                 return false;
             }
+
+            if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" Computing BindPoseMesh for {smr.name}");
 
             //If mesh is not readable, make it so
             if (!smr.sharedMesh.isReadable) nativeDetour.Apply();
@@ -370,6 +370,8 @@ namespace KK_PregnancyPlus
                 return false;
             }
 
+            if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" GetInflatedVerticies for {smr.name}");
+
             //Found out body mesh can be nested under cloth game objects...   Make sure to flag it as non-clothing
             if (isClothingMesh && BodyNestedUnderCloth(smr, bodySmr)) 
             {
@@ -436,12 +438,12 @@ namespace KK_PregnancyPlus
                 var reduceClothFlattenOffset = 0f;
 
                 #if DEBUG
-                    var bellyVertsCount = 0;
-                    for (int i = 0; i < bellyVertIndex.Length; i++)
-                    {
-                        if (bellyVertIndex[i]) bellyVertsCount++;
-                    }
-                    if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" Mesh affected vert count {bellyVertsCount} {smr.name}");
+                    // var bellyVertsCount = 0;
+                    // for (int i = 0; i < bellyVertIndex.Length; i++)
+                    // {
+                    //     if (bellyVertIndex[i]) bellyVertsCount++;
+                    // }
+                    // if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" Mesh affected vert count {bellyVertsCount} {smr.name}");
                 #endif               
 
                 //For each vert, compute it's new inflated position if it is a belly vert
@@ -746,7 +748,7 @@ namespace KK_PregnancyPlus
             var rotationUndo = Matrix4x4.TRS(Vector3.zero, smr.transform.localRotation, Vector3.one).inverse;
             //When a smr bindpose has scale, we need to undo it in the delta similar to rotation
             var scaleUndo = MeshSkinning.GetBindPoseScale(smr).inverse;
-            var undoMatrix = rotationUndo * scaleUndo;
+            var undoTfMatrix = rotationUndo * scaleUndo;
 
             if (PregnancyPlusPlugin.DebugLog.Value && scaleUndo != Matrix4x4.identity) 
                 PregnancyPlusPlugin.Logger.LogWarning($" smr {smr.name} has bindpose scale {Matrix.GetScale(scaleUndo)}");
@@ -769,9 +771,9 @@ namespace KK_PregnancyPlus
             {
 
                 //Get delta diffs of the two meshes used to make the blendshape
-                var deltaVerticies = BlendShapeTools.GetV3Deltas(originalVerts, inflatedVerts, undoMatrix, alteredVerts);
-                var deltaNormals = BlendShapeTools.GetV3Deltas(sourceNormals, targetNormals, undoMatrix, alteredVerts);
-                var deltaTangents = BlendShapeTools.GetV3Deltas(BlendShapeTools.ConvertV4ToV3(sourceTangents), BlendShapeTools.ConvertV4ToV3(targetTangents), undoMatrix, alteredVerts);                            
+                var deltaVerticies = BlendShapeTools.GetV3Deltas(originalVerts, inflatedVerts, undoTfMatrix, alteredVerts);
+                var deltaNormals = BlendShapeTools.GetV3Deltas(sourceNormals, targetNormals, undoTfMatrix, alteredVerts);
+                var deltaTangents = BlendShapeTools.GetV3Deltas(sourceTangents, targetTangents, undoTfMatrix, alteredVerts);                            
 
                 //When this thread task is complete, execute the below in main thread
                 Action threadActionResult = () => 
