@@ -545,7 +545,7 @@ namespace KK_PregnancyPlus
 
             //Calculate the new normals, but don't show them.  We just want it for the blendshape shape target
             meshCopyTarget.vertices = md[renderKey].inflatedVertices;
-            meshCopyTarget.RecalculateBounds();
+            // meshCopyTarget.RecalculateBounds();
             NormalSolver.RecalculateNormals(meshCopyTarget, 40f, md[renderKey].alteredVerticieIndexes);
             //Since we are hacking this readable state, prevent hard crash when calculating tangents on originally unreadable meshes
             //Note: if we recalculate tangents after chaning normals, it causes problems with nipples, and probably other body parts

@@ -760,6 +760,7 @@ namespace KK_PregnancyPlus
             var targetTangents = inflatedMesh.tangents;
             var originalVerts = _md.originalVertices;
             var inflatedVerts = _md.inflatedVertices;
+            var alteredVerts = _md.alteredVerticieIndexes;
 
             nativeDetour.Undo();
 
@@ -768,9 +769,9 @@ namespace KK_PregnancyPlus
             {
 
                 //Get delta diffs of the two meshes used to make the blendshape
-                var deltaVerticies = BlendShapeTools.GetV3Deltas(originalVerts, inflatedVerts, undoMatrix);
-                var deltaNormals = BlendShapeTools.GetV3Deltas(sourceNormals, targetNormals, undoMatrix);
-                var deltaTangents = BlendShapeTools.GetV3Deltas(BlendShapeTools.ConvertV4ToV3(sourceTangents), BlendShapeTools.ConvertV4ToV3(targetTangents), undoMatrix);                            
+                var deltaVerticies = BlendShapeTools.GetV3Deltas(originalVerts, inflatedVerts, undoMatrix, alteredVerts);
+                var deltaNormals = BlendShapeTools.GetV3Deltas(sourceNormals, targetNormals, undoMatrix, alteredVerts);
+                var deltaTangents = BlendShapeTools.GetV3Deltas(BlendShapeTools.ConvertV4ToV3(sourceTangents), BlendShapeTools.ConvertV4ToV3(targetTangents), undoMatrix, alteredVerts);                            
 
                 //When this thread task is complete, execute the below in main thread
                 Action threadActionResult = () => 
