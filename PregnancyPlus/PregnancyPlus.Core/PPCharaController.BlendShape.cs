@@ -61,8 +61,11 @@ namespace KK_PregnancyPlus
             var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);
             meshBlendShapes = LoopAndCreateBlendShape(clothRenderers, meshBlendShapes, uncensorGUID);
 
-            var accessoryRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objAccessory);
-            meshBlendShapes = LoopAndCreateBlendShape(accessoryRenderers, meshBlendShapes, uncensorGUID);
+            if (!PregnancyPlusPlugin.IgnoreAccessories.Value)
+            {
+                var accessoryRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objAccessory);
+                meshBlendShapes = LoopAndCreateBlendShape(accessoryRenderers, meshBlendShapes, uncensorGUID);
+            }
 
             //do the same for body mesh
             var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody);
@@ -192,7 +195,7 @@ namespace KK_PregnancyPlus
                 renderers.AddRange(renderersCloth);
             }
 
-            if (renderersAccessory != null && renderersAccessory.Count > 0)
+            if (renderersAccessory != null && renderersAccessory.Count > 0 && !PregnancyPlusPlugin.IgnoreAccessories.Value)
             {
                 renderers.AddRange(renderersAccessory);
             }
@@ -311,8 +314,11 @@ namespace KK_PregnancyPlus
                 var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes, findAll: true);
                 LoopMeshAndAddSavedBlendShape(clothRenderers, meshBlendShape, uncensorGUID, isClothingMesh: true);
                 
-                var accessoryRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objAccessory, findAll: true);
-                LoopMeshAndAddSavedBlendShape(accessoryRenderers, meshBlendShape, uncensorGUID, isClothingMesh: true);
+                if (!PregnancyPlusPlugin.IgnoreAccessories.Value)
+                {
+                    var accessoryRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objAccessory, findAll: true);
+                    LoopMeshAndAddSavedBlendShape(accessoryRenderers, meshBlendShape, uncensorGUID, isClothingMesh: true);
+                }
 
                 var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, findAll: true);
                 LoopMeshAndAddSavedBlendShape(bodyRenderers, meshBlendShape, uncensorGUID);
@@ -637,12 +643,15 @@ namespace KK_PregnancyPlus
                 if (blendshapeCtrl.blendShape != null) blendshapes.Add(blendshapeCtrl);
             }
 
-            var accessoryRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objAccessory);
-            foreach(var smr in accessoryRenderers)
+            if (!PregnancyPlusPlugin.IgnoreAccessories.Value) 
             {
-                var blendShapeName = MakeBlendShapeName(GetMeshKey(smr), blendShapeTempTagName);
-                var blendshapeCtrl = new BlendShapeController(smr, blendShapeName);
-                if (blendshapeCtrl.blendShape != null) blendshapes.Add(blendshapeCtrl);
+                var accessoryRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objAccessory);
+                foreach(var smr in accessoryRenderers)
+                {
+                    var blendShapeName = MakeBlendShapeName(GetMeshKey(smr), blendShapeTempTagName);
+                    var blendshapeCtrl = new BlendShapeController(smr, blendShapeName);
+                    if (blendshapeCtrl.blendShape != null) blendshapes.Add(blendshapeCtrl);
+                }
             }
 
             var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, findAll: true);

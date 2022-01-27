@@ -18,22 +18,27 @@ namespace KK_PregnancyPlus
 
         /// <summary>
         /// Triggers belly mesh inflation for the current ChaControl for any active meshs (not hidden clothes)
-        /// It will check the inflationSize dictionary for a valid value (last set via config slider or MeshInflate(value))
-        /// If size 0 is used it will clear all active mesh inflations
+        /// It will check the infConfig for any slider values to apply
         /// This will not run twice for the same input parameters, a change of config value is required
+        /// First time this Method is called will be CPU intensive, but values get cached and subsiquent calls are cheaper
+        /// Performance Note: Changing the infConfig.inflationSize is basically free, it only updates the blendshape weight
+        ///     Changing any other slider requires Preg+ re-compute the belly shape which is very costly (But not as costly as a freshStart)
         /// </summary>
         /// <param name="meshInflateFlags">Contains any flags needed for mesh computation decisions</param>
         /// <param name="callee">Lets you see what method called this one (Just for logging purposes)</param>
         /// <returns>Will return True if the mesh was altered and False if not</returns>
         public void MeshInflate(MeshInflateFlags meshInflateFlags, string callee)
         {
-            if (ChaControl.objBodyBone == null) return;//Make sure chatacter objs exists first  
-            if (!PregnancyPlusPlugin.AllowMale.Value && ChaControl.sex == 0) return;// Only female characters, unless plugin config says otherwise          
+            //Make sure chatacter objs exists first 
+            if (ChaControl.objBodyBone == null) return; 
+            // Only female characters, unless plugin config says otherwise 
+            if (!PregnancyPlusPlugin.AllowMale.Value && ChaControl.sex == 0) return;         
 
             //Only continue if one of the config values changed, or we need to recompute a mesh
             if (!meshInflateFlags.NeedsToRun) return;
 
-            if (!AllowedToInflate()) return;//if outside studio/maker, make sure StoryMode is enabled first
+            //if outside studio/maker, make sure StoryMode is enabled first
+            if (!AllowedToInflate()) return;
             if (!infConfig.GameplayEnabled) 
             {
                 //Remove belly if gameplay disabled, and char has a belly
@@ -44,7 +49,7 @@ namespace KK_PregnancyPlus
                 return;
             }
 
-            //Resets all stored vert values, so the script will have to recalculate all from base body
+            //Resets all stored vert values, so the script will have to recalculate all from base body (Expensive, avoid if possible)
             if (meshInflateFlags.freshStart) CleanSlate();
 
             //Only continue when size above 0
@@ -55,6 +60,7 @@ namespace KK_PregnancyPlus
                 return;                                
             }
             
+            //Lets us see what method called this one, and the meshInflateFlags it includes
             if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value)  PregnancyPlusPlugin.Logger.LogInfo($" ");
             if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value)  PregnancyPlusPlugin.Logger.LogInfo($" ---------- {callee}() ");
             if (PregnancyPlusPlugin.DebugLog.Value || PregnancyPlusPlugin.DebugCalcs.Value)  PregnancyPlusPlugin.Logger.LogInfo($" inflationSize > {Math.Round(infConfig.inflationSize, 2)} for {charaFileName} ");            
@@ -69,7 +75,8 @@ namespace KK_PregnancyPlus
                 PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode(charaFileName, ErrorCode.PregPlus_BadMeasurement, 
                     $"Could not get one or more belly measurements from character (This is normal when a character is loaded but inactive)");
                 return;
-            } else if (!hasMeasuerments && !lastVisibleState) 
+            } 
+            else if (!hasMeasuerments && !lastVisibleState) 
             {
                 if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" Character not visible, can't measure yet {charaFileName}");  
                 return; 
@@ -88,7 +95,7 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// First find the body mesh and compute inflation.  Other meshes depend on the body's computed verts so we do this first
+        /// First find the body mesh and compute its inflation.  Other meshes depend on the body's computed verts so we do this first
         /// </summary>
         internal string FindAndAffectBodyMesh(MeshInflateFlags meshInflateFlags)
         {
@@ -110,7 +117,7 @@ namespace KK_PregnancyPlus
 
         /// <summary>
         /// Find every objBody, objClothes, objAccessory mesh and decide whether it needs to be modified by Preg+
-        ///     Depends on the Body Mesh originalVerticies already being computed
+        ///     Depends on the Body Mesh originalVerticies already existing
         /// </summary>
         /// <param name="ignoreKey">Any smr matching key will be ignored (Prevent computing main body mesh twice)</param>
         internal void FindAndAffectAllMeshes(MeshInflateFlags meshInflateFlags, string ignoreKey = null)

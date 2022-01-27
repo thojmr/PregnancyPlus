@@ -79,8 +79,7 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Constructor
-        ///     Pass infConfig values to constructor to be used later in slider value comparisons (Change detection)
+        /// Constructor: Pass infConfig values to constructor to be used later in slider value comparisons (Change detection)
         /// </summary>
         public MeshInflateFlags(PregnancyPlusCharaController ppcc, bool _checkForNewMesh = false, bool _freshStart = false, bool _pluginConfigSliderChanged = false, 
                                 bool _visibilityUpdate = false, bool _bypassWhen0 = false, bool _reMeasure = false, bool _uncensorChanged = false, 
