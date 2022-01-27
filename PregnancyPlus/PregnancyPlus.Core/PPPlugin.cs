@@ -90,6 +90,9 @@ namespace KK_PregnancyPlus
         {                
             if (!StudioAPI.InsideStudio) return;
 
+            //Update GUI text
+            PregnancyPlusGui.Update();
+
             //Need to trigger all children GUI that should be active. 
             var handlers = CharacterApi.GetRegisteredBehaviour(GUID);
             if (handlers == null || handlers.Instances == null) return;

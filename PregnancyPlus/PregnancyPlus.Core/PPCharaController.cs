@@ -185,9 +185,6 @@ namespace KK_PregnancyPlus
 
         protected override void Update()
         {
-            //Update GUI text
-            PregnancyPlusGui.Update();
-
             //Used to inflate/deflate in main game
             WatchForUserKeyPress();
             //Used to incrementally inflate belly during HScene

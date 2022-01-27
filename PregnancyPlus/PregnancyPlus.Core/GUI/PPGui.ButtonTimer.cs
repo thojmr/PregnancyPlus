@@ -14,6 +14,8 @@ namespace KK_PregnancyPlus
         //Appends seonds count to blendshape smoothing text operation button.  Starts incrementing timer when >= 0
         internal static int secondsCount = -1;
         internal static float timePassed = 0f;
+        //OnGui can be called multiple times per frame, make sure the count is higher before triggering again
+        internal static float lastFrameCount = 0;
 
 
         //For updating UI text over time (place in MonoBehavior Update())
@@ -22,6 +24,8 @@ namespace KK_PregnancyPlus
             //When incrementing text count, add 1 every second
             if (secondsCount >= 0)
             {
+                if (Time.frameCount <= lastFrameCount) return;
+                lastFrameCount = Time.frameCount;
                 //Keep track of the seconds passed
                 timePassed += Time.deltaTime;
 
@@ -63,6 +67,7 @@ namespace KK_PregnancyPlus
 
             secondsCount = -1;
             timePassed = 0f;
+            lastFrameCount = 0;
 
             UpdateTextComponentText();            
         }
