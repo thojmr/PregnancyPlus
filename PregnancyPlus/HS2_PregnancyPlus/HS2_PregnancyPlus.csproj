@@ -178,6 +178,7 @@
     <Compile Include="..\PregnancyPlus.Core\Tools\MeshIdentifier.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\BellyInfo.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\Timer.cs" />
+    <Compile Include="..\PregnancyPlus.Core\Tools\TangentSolver.cs" />
   </ItemGroup>
 
   <ItemGroup>

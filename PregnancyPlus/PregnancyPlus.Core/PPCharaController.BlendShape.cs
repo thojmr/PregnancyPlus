@@ -551,12 +551,17 @@ namespace KK_PregnancyPlus
 
             //Calculate the new normals, but don't show them.  We just want it for the blendshape shape target
             meshCopyTarget.vertices = md[renderKey].inflatedVertices;
-            // meshCopyTarget.RecalculateBounds();
+            meshCopyTarget.RecalculateBounds();
             NormalSolver.RecalculateNormals(meshCopyTarget, 40f, md[renderKey].alteredVerticieIndexes);
-            //Since we are hacking this readable state, prevent hard crash when calculating tangents on originally unreadable meshes
-            //Note: if we recalculate tangents after chaning normals, it causes problems with nipples, and probably other body parts
-            //TODO implement https://answers.unity.com/questions/7789/calculating-tangents-vector4.html ?
-            if (meshCopyTarget.isReadable) meshCopyTarget.RecalculateTangents();           
+            //Since we are hacking this readable state, prevent hard crash when calculating tangents on originally unreadable meshes            
+            if (meshCopyTarget.isReadable) 
+            {
+                //I think I fixed this accidently at some point during the bindpose refactor, but ill leave this here in case it comes up again
+                //Note: if we recalculate tangents after chaning normals, it causes problems with nipples, and probably other body parts, so we undo the calculation for non belly verts
+                // var originalTangents = meshCopyTarget.tangents;
+                meshCopyTarget.RecalculateTangents();
+                // meshCopyTarget.tangents = TangentSolver.UnRecalculateTangents(meshCopyTarget.tangents, originalTangents, md[renderKey].alteredVerticieIndexes);         
+            }
 
             nativeDetour.Undo();
             return meshCopyTarget;
