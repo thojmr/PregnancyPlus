@@ -166,10 +166,12 @@ namespace KK_PregnancyPlus
         /// <summary>   
         /// This will add a fat fold across the middle of the belly
         /// </summary>        
-        internal Vector3 GetUserFatFoldTransform(PregnancyPlusData infConfigClone, Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 sphereCenterLs, float sphereRadius) 
+        internal Vector3 GetUserFatFoldTransform(PregnancyPlusData infConfigClone, Vector3 originalVerticeLs, Vector3 smoothedVectorLs, Vector3 sphereCenterLs, 
+                                                 float sphereRadius, ThreadsafeCurve bellyGapLerpAC) 
         {
             var origSmoothVectorLs = smoothedVectorLs;
-            var inflationFatFold = GetInflationFatFold(infConfigClone);            
+            var inflationFatFold = GetInflationFatFold(infConfigClone);   
+            var inflationFatFoldGap = GetInflationFatFoldGap(infConfigClone);         
             var scaledSphereRadius = bellyInfo.SphereRadius;
             var inflationFatFoldHeightOffset = GetInflationFatFoldHeight(infConfigClone) * scaledSphereRadius;
 
@@ -182,6 +184,28 @@ namespace KK_PregnancyPlus
             {        
                 //The closer to Y = 0 the more inwards the pull            
                 smoothedVectorLs = Vector3.Slerp(originalVerticeLs, smoothedVectorLs, svDistFromCenter/scaledSphereRadius + (inflationFatFold -1));
+
+                //If gap slider changes, stretch or shrink the gap               
+                if (inflationFatFoldGap != 0)
+                {                    
+                    //Distance from center + any slider height offset
+                    var distYFromCenter = smoothedVectorLs.y - (sphereCenterLs.y + inflationFatFoldHeightOffset);
+                    var distXFromCenter = Math.Abs(smoothedVectorLs.x - sphereCenterLs.x);
+                    //The further the original vert distance from sphere center Y the less we alter it
+                    var distanceYRelativeToRadius = bellyGapLerpAC.Evaluate(Math.Abs(distYFromCenter)/bellyInfo.OriginalSphereRadius);
+                    //We want to limit the verts on the far sides from moving as much
+                    var distanceXRelativeToRadius = Mathf.LerpAngle(0, 1, (Math.Abs(distXFromCenter) - bellyInfo.OriginalSphereRadius/2)/bellyInfo.OriginalSphereRadius);
+                    //The max move distance is greater for verts closer to center (Compute the average of distances with Y distance more healily weighted)
+                    var maxMoveDist = Mathf.Lerp(distYFromCenter, 0f, distanceYRelativeToRadius);
+                    //Reduce movement further when vert is near the sides of the character
+                    maxMoveDist = Mathf.Lerp(maxMoveDist, 0f, distanceXRelativeToRadius);
+
+                    //The higher the slider value, the more we pull the vert towards center (0.66 reduces the slider range effect slightly since past 66% there was almost no effect at all)
+                    var newYDistance = Mathf.Lerp(0f, maxMoveDist, Math.Abs(inflationFatFoldGap * 0.66f)/distanceYRelativeToRadius);   
+
+                    //When slider is positive move apart, when negative move together
+                    smoothedVectorLs.y += (newYDistance * (inflationFatFoldGap > 0 ? 1 : -1));
+                }
             }
 
             //Shrink skin above center line.  Want it bigger down below the line to look more realistic
@@ -411,6 +435,16 @@ namespace KK_PregnancyPlus
             if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return fatFoldHeight;
             var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationFatFoldHeight != null ? PregnancyPlusPlugin.StoryModeInflationFatFoldHeight.Value : 0;
             return (fatFoldHeight + globalOverrideVal);
+        }
+
+        internal float GetInflationFatFoldGap(PregnancyPlusData infConfigInstance = null) 
+        {
+            //If an instance of preg+ data is passed in, use it
+            var fatFoldGap = infConfigInstance != null ? infConfigInstance.inflationFatFoldGap : infConfig.inflationFatFoldGap;
+
+            if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return fatFoldGap;
+            var globalOverrideVal = PregnancyPlusPlugin.StoryModeInflationFatFoldGap != null ? PregnancyPlusPlugin.StoryModeInflationFatFoldGap.Value : 0;
+            return (fatFoldGap + globalOverrideVal);
         }
 
 

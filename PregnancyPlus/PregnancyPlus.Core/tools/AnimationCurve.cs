@@ -95,6 +95,22 @@ namespace KK_PregnancyPlus
 
             return curve;
         }
+
+        //Controls the belly gap collapse distance lerp
+        public static AnimationCurve BellyGapAnimCurve()
+        {            
+            var curve = new AnimationCurve();
+
+            //At 0 it moves at max, at 1 it doesn't move
+            curve.AddKey(0f, 0f);
+            curve.AddKey(0.1f, 0.15f);
+            curve.AddKey(0.25f, 0.25f);
+            curve.AddKey(0.5f, 0.7f);
+            curve.AddKey(0.75f, 0.95f);
+            curve.AddKey(1f, 1f);
+
+            return curve;
+        }
                       
     }
 }

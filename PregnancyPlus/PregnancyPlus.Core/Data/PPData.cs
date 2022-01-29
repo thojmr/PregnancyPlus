@@ -24,6 +24,7 @@ namespace KK_PregnancyPlus
         public float inflationClothOffset = 0;
         public float inflationFatFold = 0;
         public float inflationFatFoldHeight = 0;
+        public float inflationFatFoldGap = 0;
         public bool GameplayEnabled = true;
         public float inflationRoundness = 0;
         public float inflationDrop = 0;
@@ -52,6 +53,7 @@ namespace KK_PregnancyPlus
             inflationClothOffset = 0;
             inflationFatFold = 0;
             inflationFatFoldHeight = 0;
+            inflationFatFoldGap = 0;
             inflationRoundness = 0;
             inflationDrop = 0;
             //Also allows you to enable a gameplay disabled character
@@ -91,6 +93,7 @@ namespace KK_PregnancyPlus
             if (inflationClothOffset != otherData.inflationClothOffset) hasChanges = true;
             if (inflationFatFold != otherData.inflationFatFold) hasChanges = true;           
             if (inflationFatFoldHeight != otherData.inflationFatFoldHeight) hasChanges = true;           
+            if (inflationFatFoldGap != otherData.inflationFatFoldGap) hasChanges = true;           
             if (inflationRoundness != otherData.inflationRoundness) hasChanges = true;                      
             if (inflationDrop != otherData.inflationDrop) hasChanges = true;                      
 
@@ -120,6 +123,7 @@ namespace KK_PregnancyPlus
             if (inflationClothOffset != otherData.inflationClothOffset) inflationSizeOnlyChanges = false;
             if (inflationFatFold != otherData.inflationFatFold) inflationSizeOnlyChanges = false;           
             if (inflationFatFoldHeight != otherData.inflationFatFoldHeight) inflationSizeOnlyChanges = false;           
+            if (inflationFatFoldGap != otherData.inflationFatFoldGap) inflationSizeOnlyChanges = false;           
             if (inflationRoundness != otherData.inflationRoundness) inflationSizeOnlyChanges = false;                      
             if (inflationDrop != otherData.inflationDrop) inflationSizeOnlyChanges = false;                      
 
@@ -143,7 +147,8 @@ namespace KK_PregnancyPlus
                 inflationDrop.GetHashCode() +
                 clothingOffsetVersion.GetHashCode() +
                 inflationFatFold.GetHashCode() +
-                inflationFatFoldHeight.GetHashCode();
+                inflationFatFoldHeight.GetHashCode() +
+                inflationFatFoldGap.GetHashCode();
 
             return hashCode;            
         }

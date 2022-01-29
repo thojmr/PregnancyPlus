@@ -32,6 +32,7 @@ namespace KK_PregnancyPlus
         private static string inflationClothOffsetMaker = "Cloth Offset";
         private static string inflationFatFoldMaker = "Fat Fold";
         private static string inflationFatFoldHeightMaker = "Fat Fold Height";
+        private static string inflationFatFoldGapMaker = "Fat Fold Gap";
         private static string inflationRoundnessMaker = "Roundness";
         private static string inflationDropMaker = "Drop";
 
@@ -224,6 +225,16 @@ namespace KK_PregnancyPlus
             sliders.Add(fatFoldHeight);
 
 
+            var fatFoldGap = e.AddControl(new MakerSlider(cat, inflationFatFoldGapMaker, SliderRange.InflationFatFoldGap[0], SliderRange.InflationFatFoldGap[1], ppDataDefaults.inflationFatFoldGap, _pluginInstance));
+            fatFoldGap.BindToFunctionController<PregnancyPlusCharaController, float>(controller => controller.infConfig.inflationFatFoldGap, (controller, value) => {
+                var oldVal = controller.infConfig.inflationFatFoldGap;
+                controller.infConfig.inflationFatFoldGap = value;
+                if (oldVal != value) OnMakerSettingsChanged(controller);
+            });
+            e.AddControl(new MakerText("Control the width of the fat fold gap, allowing you to shrink or widen it.  0 for default.", cat, _pluginInstance) { TextColor = hintColor });
+            sliders.Add(fatFoldGap);
+
+
 
 
             //Maker state buttons
@@ -411,6 +422,10 @@ namespace KK_PregnancyPlus
 
                     case var _ when settingName == inflationFatFoldHeightMaker:
                         slider.SetValue(_infConfig.inflationFatFoldHeight);
+                        continue;
+
+                    case var _ when settingName == inflationFatFoldGapMaker:
+                        slider.SetValue(_infConfig.inflationFatFoldGap);
                         continue;
 
                     case var _ when settingName == inflationRoundnessMaker:

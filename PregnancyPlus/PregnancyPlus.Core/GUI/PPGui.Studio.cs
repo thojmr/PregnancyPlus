@@ -29,6 +29,7 @@ namespace KK_PregnancyPlus
         internal const string inflationClothOffset = "        Cloth Offset";
         internal const string inflationFatFold = "        Fat Fold";
         internal const string inflationFatFoldHeight = "        Fat Fold Height";
+        internal const string inflationFatFoldGap = "        Fat Fold Gap";
         internal const string inflationRoundness = "        Roundness";
         internal const string inflationDrop = "        Drop";
         private const string blendshapeText = "Open BlendShapes";
@@ -372,6 +373,24 @@ namespace KK_PregnancyPlus
                         }
                     });
 
+            cat.AddControl(new CurrentStateCategorySlider(inflationFatFoldGap, c =>
+                {                                       
+                    var ctrl = GetCharCtrl(c);                                                   
+                    return ctrl != null ? ctrl.infConfig.inflationFatFoldGap: 0;
+                    
+                }, 
+                    SliderRange.InflationFatFoldGap[0], 
+                    SliderRange.InflationFatFoldGap[1]
+                ))
+                    .Value.Subscribe(f => { 
+                        foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) 
+                        {  
+                            if (ctrl.infConfig.inflationFatFoldGap == f) continue;                    
+                            ctrl.infConfig.inflationFatFoldGap = f;
+                            ctrl.MeshInflate(new MeshInflateFlags(ctrl), "StudioSlider");                             
+                        }
+                    });
+
             cat.AddControl(new CurrentStateCategorySwitch(smoothBellyMeshText, c =>
                 {                                         
                     return false;
@@ -479,6 +498,10 @@ namespace KK_PregnancyPlus
 
                         case "Slider " + inflationFatFoldHeight:
                             slider.value = _infConfig.inflationFatFoldHeight;
+                            continue;
+
+                        case "Slider " + inflationFatFoldGap:
+                            slider.value = _infConfig.inflationFatFoldGap;
                             continue;
 
                         case "Slider " + inflationRoundness:

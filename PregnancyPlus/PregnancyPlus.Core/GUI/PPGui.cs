@@ -56,7 +56,8 @@ namespace KK_PregnancyPlus
             private static float[] inflationMultiplier = {-2f, 2f}; 
             private static float[] inflationDrop = { 0, 1f };  
             private static float[] inflationFatFold = {0, 2f};
-            private static float[] inflationFatFoldHeight = {-1, 1f};
+            private static float[] inflationFatFoldHeight = {-1f, 1f};
+            private static float[] inflationFatFoldGap = {-1f, 1f};
 
 
 
@@ -104,6 +105,9 @@ namespace KK_PregnancyPlus
             }  
             public static float[] InflationFatFoldHeight {
                 get { return inflationFatFoldHeight; }
+            }                                                                                  
+            public static float[] InflationFatFoldGap {
+                get { return inflationFatFoldGap; }
             }                                                                                  
             
         }

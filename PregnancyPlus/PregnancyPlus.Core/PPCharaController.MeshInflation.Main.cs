@@ -434,6 +434,7 @@ namespace KK_PregnancyPlus
             var bellySidesAC = new ThreadsafeCurve(BellySidesAC);
             var bellyTopAC = new ThreadsafeCurve(BellyTopAC);
             var bellyEdgeAC = new ThreadsafeCurve(BellyEdgeAC);
+            var bellyGapLerpAC = new ThreadsafeCurve(BellyGapLerpAC);
 
             logCharMeshInfo(md[rendererName], smr, sphereCenter, isClothingMesh);
 
@@ -495,7 +496,7 @@ namespace KK_PregnancyPlus
                     //Make adjustments to the shape to make it smooth, and feed in user slider input
                     inflatedVertLs =  SculptInflatedVerticie(infConfigClone, origVertLs, verticieToSpherePos, sphereCenter, waistWidth, 
                                                              preMorphSphereCenter, sphereRadius, backExtentPos, topExtentPos, 
-                                                             bellySidesAC, bellyTopAC, bellyEdgeAC);   
+                                                             bellySidesAC, bellyTopAC, bellyEdgeAC, bellyGapLerpAC);   
 
                     //store the new inflated vert, unshifted from 0,0,0                                                           
                     inflatedVerts[i] = inflatedVertLs;                                                  
@@ -608,7 +609,7 @@ namespace KK_PregnancyPlus
         /// <param name="topExtentPos">The point above which no mesh changes allowed</param>
         internal Vector3 SculptInflatedVerticie(PregnancyPlusData infConfigClone, Vector3 originalVerticeLs, Vector3 inflatedVerticieLs, Vector3 sphereCenterLs, float waistWidth, 
                                                 Vector3 preMorphSphereCenter, float sphereRadius, Vector3 backExtentPos, Vector3 topExtentPos, 
-                                                ThreadsafeCurve bellySidesAC, ThreadsafeCurve bellyTopAC, ThreadsafeCurve bellyEdgeAC) 
+                                                ThreadsafeCurve bellySidesAC, ThreadsafeCurve bellyTopAC, ThreadsafeCurve bellyEdgeAC, ThreadsafeCurve bellyGapLerpAC) 
         {
             //No smoothing modification in debug mode
             if (PregnancyPlusPlugin.MakeBalloon.Value || PregnancyPlusPlugin.DebugVerts.Value) return inflatedVerticieLs;                       
@@ -664,7 +665,7 @@ namespace KK_PregnancyPlus
             //Allow user adjustment of the fat fold line through the middle of the belly
             if (GetInflationFatFold(infConfigClone) > 0) 
             {
-                smoothedVectorLs = GetUserFatFoldTransform(infConfigClone, originalVerticeLs, smoothedVectorLs, sphereCenterLs, sphereRadius);
+                smoothedVectorLs = GetUserFatFoldTransform(infConfigClone, originalVerticeLs, smoothedVectorLs, sphereCenterLs, sphereRadius, bellyGapLerpAC);
             }            
 
             //If the user has selected a drop slider value

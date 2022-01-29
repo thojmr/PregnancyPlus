@@ -84,6 +84,7 @@ namespace KK_PregnancyPlus
         public AnimationCurve BellyEdgeAC = AnimCurve.BellyEdgeAnimCurve();
         public AnimationCurve BellySidesAC = AnimCurve.BellySidesAnimCurve();
         public AnimationCurve MediumLerpAC = AnimCurve.MediumLerpAnimCurve();
+        public AnimationCurve BellyGapLerpAC = AnimCurve.BellyGapAnimCurve();
 
 
 
