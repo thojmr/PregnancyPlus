@@ -139,7 +139,7 @@ public static class DebugTools
         var sphereRenderer = sphere.GetComponent<Renderer>();
         sphereRenderer.material.color = color;
         sphereRenderer.enabled = true;
-        #if KK
+        #if KKS
             //Makes sphere more visible in KK Maker instead of black
             //I dont think color works with this sprite
             sphereRenderer.material = new Material(Shader.Find("Sprites/Default"));
@@ -181,7 +181,7 @@ public static class DebugTools
 
         if (width == 0f)
         {
-            #if KK
+            #if KKS
                 var minWidth = 0.005f;
             #elif HS2 || AI
                 var minWidth = 0.005f * 10;

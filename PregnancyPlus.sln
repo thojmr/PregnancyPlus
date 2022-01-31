@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29806.167
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBD}") = "KK_PregnancyPlus", "PregnancyPlus\KK_PregnancyPlus\KK_PregnancyPlus.csproj", "{930A00A6-2935-4EA0-81F0-B16D3E71B74D}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFED}") = "KKS_PregnancyPlus", "PregnancyPlus\KKS_PregnancyPlus\KKS_PregnancyPlus.csproj", "{930A00A6-2935-4EA0-81F0-B16D3E71B77D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFCD}") = "HS2_PregnancyPlus", "PregnancyPlus\HS2_PregnancyPlus\HS2_PregnancyPlus.csproj", "{930A00A6-2935-4EA0-81F0-B16D3E71B75D}"
@@ -17,10 +15,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{930A00A6-2935-4EA0-81F0-B16D3E71B74D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{930A00A6-2935-4EA0-81F0-B16D3E71B74D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{930A00A6-2935-4EA0-81F0-B16D3E71B74D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{930A00A6-2935-4EA0-81F0-B16D3E71B74D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{930A00A6-2935-4EA0-81F0-B16D3E71B75D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{930A00A6-2935-4EA0-81F0-B16D3E71B75D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{930A00A6-2935-4EA0-81F0-B16D3E71B75D}.Release|Any CPU.ActiveCfg = Release|Any CPU

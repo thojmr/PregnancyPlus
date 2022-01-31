@@ -188,7 +188,7 @@ namespace KK_PregnancyPlus
                 );
 
 
-            #if KK
+            #if KKS
                 var storyConfigTitle = "Story/Main-Game Mode";     
                 var additionalSliderText = " for all pregnant characters";
 
@@ -357,7 +357,7 @@ namespace KK_PregnancyPlus
             StoryModeInflationFatFoldGap.SettingChanged += InflationConfig_SettingsChanged;  
                     
 
-            #if KK || AI
+            #if KKS || AI
                 //This config is for KK/AI_Pregnancy integration to set the additional size this plugin will add to KK/AI_Pregnancy
                 MaxStoryModeBelly = Config.Bind<float>(maxBellySizeTitle, "Max additional belly size", 10f, 
                     new ConfigDescription(maxBellySizeDescription,
@@ -410,7 +410,7 @@ namespace KK_PregnancyPlus
                 //Re trigger inflation and recalculate vert positions
                 foreach (PregnancyPlusCharaController charCustFunCtrl in handlers.Instances)
                 { 
-                    #if KK || AI //In kk we want to use KK_pregnancy weeks to determine the belly size
+                    #if KKS || AI //In kk we want to use KK_pregnancy weeks to determine the belly size
                         charCustFunCtrl.GetWeeksAndSetBellySize(checkNewMesh: true, callee: "StoryMode_SettingsChanged");                     
 
                     #elif HS2 //In HS2 we set the belly size based on the plugin config slider
@@ -454,7 +454,7 @@ namespace KK_PregnancyPlus
             {  
                 if (PregnancyPlusPlugin.StoryMode != null && PregnancyPlusPlugin.StoryMode.Value) 
                 {            
-                    #if KK || AI //custom integration with KK_Pregnancy    
+                    #if KKS || AI //custom integration with KK_Pregnancy    
                         charCustFunCtrl.GetWeeksAndSetBellySize(checkNewMesh: true, slidersChanged: true, callee: "InflationConfig_SettingsChanged");    
 
                     #elif HS2

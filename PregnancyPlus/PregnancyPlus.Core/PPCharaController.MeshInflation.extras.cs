@@ -70,7 +70,7 @@ namespace KK_PregnancyPlus
         internal float GetBellyButtonLocalHeight() 
         {            
             //Calculate the belly button height by getting each bone distance from foot to belly button (even during animation the height is correct!)
-            #if KK
+            #if KKS
                 var bbHeight = BoneChainYDistance("cf_j_foot_L", "cf_j_waist01");
             #elif HS2 || AI            
                 var bbHeight = BoneChainYDistance("cf_J_Toes01_L", "cf_J_Kosi01");                       
@@ -101,7 +101,7 @@ namespace KK_PregnancyPlus
             }
             else
             {
-                #if KK
+                #if KKS
                     return 0.13f;
                 #else
                     return 1.3f;

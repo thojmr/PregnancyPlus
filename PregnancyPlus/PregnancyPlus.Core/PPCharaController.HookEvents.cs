@@ -48,7 +48,7 @@ namespace KK_PregnancyPlus
 
             // if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= ClothesStateChangeEvent {clothesKind}");
 
-            #if KK
+            #if KKS
                 var debounceTime = 0.1f;
             #elif HS2 || AI
                 var debounceTime = 0.15f;
@@ -67,7 +67,7 @@ namespace KK_PregnancyPlus
             //Wait for card data to load, and make sure this is the same character the clothes event triggered for
             if (!initialized || chaID != ChaControl.chaID) return;
 
-            #if KK
+            #if KKS
                 var debounceTime = 0.1f;
             #elif HS2 || AI
                 var debounceTime = 0.15f;

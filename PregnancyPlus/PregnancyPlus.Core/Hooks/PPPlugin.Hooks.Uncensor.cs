@@ -16,7 +16,7 @@ namespace KK_PregnancyPlus
         {
 
             //Used to identifiy the assembly class methods during reflection
-            #if KK
+            #if KKS
                 internal static string pluginName = "KK_UncensorSelector";
             #elif AI
                 internal static string pluginName = "AI_UncensorSelector";

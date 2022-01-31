@@ -208,7 +208,7 @@ namespace KK_PregnancyPlus
         /// </summary>
         internal static Vector3 GetN_HeightScale(ChaControl chaControl)  
         {
-            #if KK
+            #if KKS
                 var boneName = "cf_n_height";
             #elif HS2 || AI
                 var boneName = "cf_N_height";

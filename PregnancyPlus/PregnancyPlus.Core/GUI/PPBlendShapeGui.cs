@@ -23,7 +23,7 @@ namespace KK_PregnancyPlus
 		internal bool anyMeshEmpty {get; set;} = false;
 		internal bool lastAnyMeshEmpty {get; set;} = false;
 
-		#if KK
+		#if KKS
 			internal const string HspeNotFoundMessage = "KKPE was not found";
 		#elif HS2
 			internal const string HspeNotFoundMessage = "HS2PE was not found";

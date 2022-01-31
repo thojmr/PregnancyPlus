@@ -15,14 +15,14 @@ namespace KK_PregnancyPlus
 #region Don't change these, they would change users cards default scales
 
         //HS2 and AI world scales are bigger than KK, so slider min/max needs to be bigger too
-        #if KK
+        #if KKS
             private readonly static int scaleLimits = 1;
         #elif HS2 || AI            
             private readonly static int scaleLimits = 5;
         #endif
 
 
-        #if KK  //Range multiplier for the min max values allowed (This is partly to correct me setting the HS2 scale to 5x initially when it should have been 10x)
+        #if KKS  //Range multiplier for the min max values allowed (This is partly to correct me setting the HS2 scale to 5x initially when it should have been 10x)
             internal readonly static float rmAltHS2x2 = 1;
             internal readonly static float rmKKx2 = 2f;//Some small adjustments for sliders that felt too large or small in range
             internal readonly static float rmKKxFract = 0.75f;

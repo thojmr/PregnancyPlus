@@ -29,7 +29,7 @@ namespace KK_PregnancyPlus
             }
 
 
-            #if KK
+            #if KKS
                 /// <summary>
                 /// When a character becomes visible let preg+ controller know, in main game mode only
                 /// </summary>

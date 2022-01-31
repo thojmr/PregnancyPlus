@@ -82,7 +82,7 @@ namespace KK_PregnancyPlus
             /// </summary>
             internal static bool IsIgnoredClothing(int clothesKind) 
             {
-                #if KK
+                #if KKS
                     return (clothesKind == (int)ChaFileDefine.ClothesKind.gloves || clothesKind == (int)ChaFileDefine.ClothesKind.socks || clothesKind == (int)ChaFileDefine.ClothesKind.shoes_inner || clothesKind == (int)ChaFileDefine.ClothesKind.shoes_outer);
                 #elif HS2 || AI
                     return (clothesKind == (int)ChaFileDefine.ClothesKind.gloves || clothesKind == (int)ChaFileDefine.ClothesKind.socks || clothesKind == (int)ChaFileDefine.ClothesKind.shoes);

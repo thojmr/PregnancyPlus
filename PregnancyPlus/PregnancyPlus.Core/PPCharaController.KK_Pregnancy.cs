@@ -226,7 +226,7 @@ namespace KK_PregnancyPlus
             {
                 if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" GetDefaultInflationShape > OverrideBelly is set, Loading custom belly shape");
 
-                #if KK
+                #if KKS
                     //These values looked decent on most default characters, but they can always be changed.
                     customInfConfig.inflationMultiplier = 0.4f;
                     customInfConfig.inflationStretchX = -0.2f;
@@ -248,7 +248,7 @@ namespace KK_PregnancyPlus
                 return customInfConfig;
             }
             
-            #if KK
+            #if KKS
                 //These values looked decent on most default characters, but they can always be changed.
                 customInfConfig.inflationMultiplier = 0.3f;
                 customInfConfig.inflationStretchX = -0.15f;

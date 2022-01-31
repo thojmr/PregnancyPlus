@@ -7,11 +7,8 @@ using System.Linq;
 #if HS2 || AI
     using AIChara;
 #endif
-
-#if HS2 || AI || KKS
-    using Unity.Jobs;
-    using Unity.Collections;
-#endif
+using Unity.Jobs;
+using Unity.Collections;
 
 namespace KK_PregnancyPlus
 {
@@ -22,7 +19,7 @@ namespace KK_PregnancyPlus
 
         internal Vector3[] rayCastTargetPositions = new Vector3[4];
         
-        #if KK      
+        #if KKS      
             //The bones we want to make raycast targets.  They must be skinned by the body mesh as well
             internal string[] rayCastTargetNames = new string[4] { "cf_s_spine02", "cf_s_waist01", "cf_s_thigh01_L", "cf_s_thigh01_R" };        
             //Clothing layers, based on clothing name
@@ -172,14 +169,9 @@ namespace KK_PregnancyPlus
 
             if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" Pre-calculating clothing offset {clothSmr.name}");
 
-            //In newer versions of Unity we can use RaycastCommand to run a list of raycast in parallel for speed!
-            #if HS2 || AI || KKS
-
-                // the last index (+1) is the sphere center position.  The rest of the indexes are a list of bone positions
-                var raycastTargetCount = rayCastTargetPositions.Length + 1;
-                var rayCastHits = ProcessRayCastCommands(clothSmr, origVerts, bellyVerticieIndexes, sphereCenter, rayCastDist);                
-
-            #endif
+            // the last index (+1) is the sphere center position.  The rest of the indexes are a list of bone positions
+            var raycastTargetCount = rayCastTargetPositions.Length + 1;
+            var rayCastHits = ProcessRayCastCommands(clothSmr, origVerts, bellyVerticieIndexes, sphereCenter, rayCastDist);                
 
             // Clear existing lines on this mesh
             // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLineAndAttach(clothSmr.transform, Vector3.zero, Vector3.zero, Vector3.zero, true); 
@@ -196,36 +188,27 @@ namespace KK_PregnancyPlus
                 //Convert to worldspace since thats where the mesh collider lives, apply any offset needed to align meshes to same y height
                 var origVertLs = origVerts[i];                
                 
-                #if KK && !KKS
+                //Raycast were done in parallel earlier, compare the hit disances for each target
+                var closestHit = rayCastDist;
+                //Just for visualizing the hits
+                // var direction = sphereCenter - origVertLs;
+                // var hit = new RaycastHit();
 
-                    //For each of the 4 or 5 raycasts, get the closest hit vlaue
-                    GetClosestRayCast(meshCollider, origVertLs, sphereCenter, rayCastDist, out float closestHit, out Vector3 direction, out var hit);
+                //For each ray cast target group, unroll and compute closest hit
+                for (int t = 0; t < raycastTargetCount; t++)
+                {
+                    //Compute true index of this raycaast command
+                    var indexPos = (i * raycastTargetCount) + t;          
+                    if (rayCastHits[indexPos].collider == null) continue;
+                    if (rayCastHits[indexPos].collider.GetType() != typeof(MeshCollider)) continue;
 
-                #elif HS2 || AI || KKS
-
-                    //Raycast were done in parallel earlier, compare the hit disances for each target
-                    var closestHit = rayCastDist;
-                    //Just for visualizing the hits
-                    // var direction = sphereCenter - origVertLs;
-                    // var hit = new RaycastHit();
-
-                    //For each ray cast target group, unroll and compute closest hit
-                    for (int t = 0; t < raycastTargetCount; t++)
-                    {
-                        //Compute true index of this raycaast command
-                        var indexPos = (i * raycastTargetCount) + t;          
-                        if (rayCastHits[indexPos].collider == null) continue;
-                        if (rayCastHits[indexPos].collider.GetType() != typeof(MeshCollider)) continue;
-
-                        if (rayCastHits[indexPos].distance < closestHit) 
-                        {                            
-                            closestHit = rayCastHits[indexPos].distance;
-                            // direction = rayCastHits[indexPos].point - origVertLs; 
-                            // hit = rayCastHits[indexPos];
-                        }
-                    }                    
-
-                #endif
+                    if (rayCastHits[indexPos].distance < closestHit) 
+                    {                            
+                        closestHit = rayCastHits[indexPos].distance;
+                        // direction = rayCastHits[indexPos].point - origVertLs; 
+                        // hit = rayCastHits[indexPos];
+                    }
+                }                    
 
                 //Show rays and hits
                 // if (PregnancyPlusPlugin.DebugCalcs.Value) DebugTools.ShowRayCast(origVertLs, direction, hit);
@@ -245,94 +228,90 @@ namespace KK_PregnancyPlus
         }
 
 
-        #if HS2 || AI || KKS
+        /// <summary>
+        /// Compute a list of origins, and distances to be used in RaycastCommands (computed in parallel)
+        /// </summary>
+        internal RaycastHit[] ProcessRayCastCommands(SkinnedMeshRenderer clothSmr, Vector3[] origVerts, bool[] bellyVerticieIndexes,
+                                                        Vector3 sphereCenter, float maxDistance)
+        {
+            // +1 is where we will insert the, sphere center position.  The rest of the targets are a list of bones
+            var raycastTargetCount = rayCastTargetPositions.Length + 1;
 
-            /// <summary>
-            /// Compute a list of origins, and distances to be used in RaycastCommands (computed in parallel)
-            /// </summary>
-            internal RaycastHit[] ProcessRayCastCommands(SkinnedMeshRenderer clothSmr, Vector3[] origVerts, bool[] bellyVerticieIndexes,
-                                                         Vector3 sphereCenter, float maxDistance)
+            //Every x item in the list belongs to a single vert cast against multuple targets
+            var rayCastOrigins = new Vector3[origVerts.Length * raycastTargetCount];
+            var rayCastDirections = new Vector3[origVerts.Length * raycastTargetCount];
+
+            //Build list of raycast origins and directions
+            for (var i = 0; i < origVerts.Length; i++)
             {
-                // +1 is where we will insert the, sphere center position.  The rest of the targets are a list of bones
-                var raycastTargetCount = rayCastTargetPositions.Length + 1;
-
-                //Every x item in the list belongs to a single vert cast against multuple targets
-                var rayCastOrigins = new Vector3[origVerts.Length * raycastTargetCount];
-                var rayCastDirections = new Vector3[origVerts.Length * raycastTargetCount];
-
-                //Build list of raycast origins and directions
-                for (var i = 0; i < origVerts.Length; i++)
+                //Skip untouched verts
+                if (!bellyVerticieIndexes[i]) 
                 {
-                    //Skip untouched verts
-                    if (!bellyVerticieIndexes[i]) 
+                    continue;
+                }
+
+                //Convert to worldspace since thats where the mesh collider lives, apply any offset needed to align meshes to same y height
+                var origVertLs = origVerts[i];
+                var dir = Vector3.zero;
+
+                //For each ray cast target
+                for (int t = 0; t < raycastTargetCount; t++)
+                {
+                    //Compute true index of this raycast command
+                    var indexPos = (i * raycastTargetCount) + t;                   
+                    
+                    //Include raycast to sphere center as the last target
+                    if (t == (raycastTargetCount - 1)) 
                     {
-                        continue;
+                        dir = sphereCenter - origVertLs;
                     }
-
-                    //Convert to worldspace since thats where the mesh collider lives, apply any offset needed to align meshes to same y height
-                    var origVertLs = origVerts[i];
-                    var dir = Vector3.zero;
-
-                    //For each ray cast target
-                    for (int t = 0; t < raycastTargetCount; t++)
+                    else
                     {
-                        //Compute true index of this raycast command
-                        var indexPos = (i * raycastTargetCount) + t;                   
-                        
-                        //Include raycast to sphere center as the last target
-                        if (t == (raycastTargetCount - 1)) 
-                        {
-                            dir = sphereCenter - origVertLs;
-                        }
-                        else
-                        {
-                            //Otherwise just get the current bone target
-                            dir = rayCastTargetPositions[t] - origVertLs;                            
-                        }                        
+                        //Otherwise just get the current bone target
+                        dir = rayCastTargetPositions[t] - origVertLs;                            
+                    }                        
 
-                        rayCastOrigins[indexPos] = origVertLs;
-                        rayCastDirections[indexPos] = dir;   
-                    }
-                }                
+                    rayCastOrigins[indexPos] = origVertLs;
+                    rayCastDirections[indexPos] = dir;   
+                }
+            }                
 
-                //Create and execute raycast commands that run in parallel
-                return ExecuteRayCastCommands(rayCastOrigins, rayCastDirections, maxDistance);
-            }
+            //Create and execute raycast commands that run in parallel
+            return ExecuteRayCastCommands(rayCastOrigins, rayCastDirections, maxDistance);
+        }
 
 
-            /// <summary>
-            /// Compute a list of raycast in parallel for faster processing
-            ///     We could optimze this by only raycasing belly verts, instead of all verts.  But since RaycastCommand is parallel does it really help that much?  Its still way faster now
-            /// </summary>
-            internal RaycastHit[] ExecuteRayCastCommands(Vector3[] origins, Vector3[] directions, float maxDistance)
+        /// <summary>
+        /// Compute a list of raycast in parallel for faster processing
+        ///     We could optimze this by only raycasing belly verts, instead of all verts.  But since RaycastCommand is parallel does it really help that much?  Its still way faster now
+        /// </summary>
+        internal RaycastHit[] ExecuteRayCastCommands(Vector3[] origins, Vector3[] directions, float maxDistance)
+        {
+            // Perform a single raycast using RaycastCommand and wait for it to complete
+            // Setup the command and result buffers
+            var results = new NativeArray<RaycastHit>(origins.Length, Allocator.Temp);
+            var commands = new NativeArray<RaycastCommand>(directions.Length, Allocator.Temp);
+
+            for (int i = 0; i < origins.Length; i++)
             {
-                // Perform a single raycast using RaycastCommand and wait for it to complete
-                // Setup the command and result buffers
-                var results = new NativeArray<RaycastHit>(origins.Length, Allocator.Temp);
-                var commands = new NativeArray<RaycastCommand>(directions.Length, Allocator.Temp);
+                commands[i] = new RaycastCommand(origins[i], directions[i], distance: maxDistance, maxHits: 1);   
+            }                
 
-                for (int i = 0; i < origins.Length; i++)
-                {
-                    commands[i] = new RaycastCommand(origins[i], directions[i], distance: maxDistance, maxHits: 1);   
-                }                
+            // Schedule the batch of raycasts
+            JobHandle handle = RaycastCommand.ScheduleBatch(commands, results, 1, default(JobHandle));
 
-                // Schedule the batch of raycasts
-                JobHandle handle = RaycastCommand.ScheduleBatch(commands, results, 1, default(JobHandle));
+            // Wait for the batch processing job to complete
+            handle.Complete();
 
-                // Wait for the batch processing job to complete
-                handle.Complete();
+            // Copy the result. If batchedHit.collider is null there was no hit
+            RaycastHit[] batchedHit = results.ToArray();
 
-                // Copy the result. If batchedHit.collider is null there was no hit
-                RaycastHit[] batchedHit = results.ToArray();
+            // Dispose the buffers
+            results.Dispose();
+            commands.Dispose();
 
-                // Dispose the buffers
-                results.Dispose();
-                commands.Dispose();
-
-                return batchedHit;
-            }
-            
-        #endif
+            return batchedHit;
+        }            
 
 
         /// <summary>
@@ -372,44 +351,6 @@ namespace KK_PregnancyPlus
 
             var renderKey = GetMeshKey(clothSmr); 
             return !md[renderKey].HasClothingOffsets;
-        }
-
-
-        /// <summary>
-        /// Get the lowest distance of the cloth mesh to skin mesh based on a number of different raycast
-        /// </summary>
-        public void GetClosestRayCast(MeshCollider meshCollider, Vector3 clothVertLs, Vector3 sphereCenter, float maxDistance, out float dist, out Vector3 direction, out RaycastHit hit)
-        {
-            var lowestDist = maxDistance;    
-            direction = Vector3.zero;        
-            dist = maxDistance;
-            hit = new RaycastHit();
-
-            //For each bone we want to raycast to
-            foreach(var bonePosition in rayCastTargetPositions)
-            {
-                var _dir = bonePosition - clothVertLs;
-                var _tryHit = RayCastToMeshCollider(clothVertLs, maxDistance, _dir, meshCollider);
-                //Get closest raycast hit
-                if (_tryHit.distance < lowestDist) 
-                {
-                    lowestDist = _tryHit.distance;
-                    direction = _dir;
-                    hit = _tryHit;
-                }
-            }
-
-            //Also check raycast to the current sphereCenter
-            var _direction = sphereCenter - clothVertLs;
-            var tryHit = RayCastToMeshCollider(clothVertLs, maxDistance, _direction, meshCollider);
-            if (tryHit.distance < lowestDist) 
-            {
-                lowestDist = tryHit.distance;
-                direction = _direction;
-                hit = tryHit;
-            }
-
-            dist = lowestDist;  
         }
 
 

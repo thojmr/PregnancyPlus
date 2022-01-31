@@ -226,7 +226,7 @@ namespace KK_PregnancyPlus
                                        string renderKey, bool isMainBody = false) 
         {
             //The list of bones to get verticies for (Belly area verts).  If a mesh does not contain one of these bones in smr.bones, it is skipped
-            #if KK            
+            #if KKS            
                 var boneFilters = new string[] { "cf_s_spine02", "cf_s_waist01", "cf_s_waist02" };//"cs_s_spine01" optionally for wider affected area
             #elif HS2 || AI
                 var boneFilters = new string[] { "cf_J_Spine02_s", "cf_J_Kosi01_s", "cf_J_Kosi02_s" };
@@ -583,7 +583,7 @@ namespace KK_PregnancyPlus
             }
             else 
             {
-                #if KK
+                #if KKS
                     bbHeight = 0.97f;           
                 #else
                     bbHeight = 10f;

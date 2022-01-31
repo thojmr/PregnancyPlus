@@ -280,7 +280,7 @@ namespace KK_PregnancyPlus
         {
             if (!PregnancyPlusPlugin.DebugLog.Value && !PregnancyPlusPlugin.DebugCalcs.Value) return;
 
-            #if KK 
+            #if KKS 
                 var lineLen = 0.03f;
             #elif AI || HS2
                 var lineLen = 0.3f;

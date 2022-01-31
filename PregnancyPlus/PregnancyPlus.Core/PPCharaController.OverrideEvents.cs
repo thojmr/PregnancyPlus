@@ -8,7 +8,7 @@ using System.Linq;
 using System.Reflection;
 using KKAPI.Maker;
 using KKAPI.Studio;
-#if KK
+#if KKS
     using KKAPI.MainGame;
 #elif HS2
     using AIChara;
@@ -107,7 +107,7 @@ namespace KK_PregnancyPlus
             //Waiting until end of frame lets bones settle so we can take accurate measurements
             if (!infConfig.UseOldCalcLogic()) yield return new WaitForEndOfFrame();
 
-            #if KK || AI
+            #if KKS || AI
                 GetWeeksAndSetBellySize(checkNewMesh: checkNewMesh, callee: callee);  
 
             #elif HS2
@@ -173,7 +173,7 @@ namespace KK_PregnancyPlus
             if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return;        
 
             //Only if body is rendered on screen  (Dont want to do every internally loaded char)
-            #if KK
+            #if KKS
                 if (ChaControl.rendBody == null || !ChaControl.rendBody.isVisible) return;
             #elif HS2 || AI
                 if (ChaControl.cmpBody == null || !ChaControl.cmpBody.isVisible) return;
@@ -298,7 +298,7 @@ namespace KK_PregnancyPlus
         /// </summary>
         internal void CheckMeshVisibility() 
         {
-            #if KK
+            #if KKS
                 if (ChaControl.rendBody == null || !ChaControl.rendBody.isVisible)  
                 {
                     // PregnancyPlusPlugin.Logger.LogInfo($" chaControl.rendBody not visible for {charaFileName}");

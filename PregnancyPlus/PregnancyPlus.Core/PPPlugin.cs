@@ -5,7 +5,7 @@ using System;
 using KKAPI;
 using KKAPI.Studio;
 using KKAPI.Chara;
-#if KK || AI
+#if KKS || AI
     using KKAPI.MainGame;
 #endif
 
@@ -15,10 +15,6 @@ namespace KK_PregnancyPlus
     [BepInDependency("com.deathweasel.bepinex.uncensorselector", BepInDependency.DependencyFlags.SoftDependency)]
     #if KKS
         [BepInDependency(KoikatuAPI.GUID, "1.26")]
-        [BepInDependency("KKPE", BepInDependency.DependencyFlags.SoftDependency)]
-        [BepInDependency("KK_Pregnancy", BepInDependency.DependencyFlags.SoftDependency)]
-    #elif KK
-        [BepInDependency(KoikatuAPI.GUID, "1.14")]
         [BepInDependency("KKPE", BepInDependency.DependencyFlags.SoftDependency)]
         [BepInDependency("KK_Pregnancy", BepInDependency.DependencyFlags.SoftDependency)]
     #elif HS2
@@ -53,7 +49,7 @@ namespace KK_PregnancyPlus
 
             //Attach the mesh inflation logic to each character
             CharacterApi.RegisterExtraBehaviour<PregnancyPlusCharaController>(GUID);
-            #if KK || AI
+            #if KKS || AI
                 GameAPI.RegisterExtraBehaviour<PregnancyPlusGameController>(GUID);
             #endif
 
@@ -62,7 +58,7 @@ namespace KK_PregnancyPlus
             HooksClothing.InitHooks(hi);
             HooksAccessory.InitHooks(hi);
             Hooks_Uncensor.InitHooks(hi);
-            #if KK || AI
+            #if KKS || AI
                 Hooks_KK_Pregnancy.InitHooks(hi);
             #elif HS2
                 Hooks_HS2_Inflation.InitHooks(hi);

@@ -93,7 +93,7 @@ namespace KK_PregnancyPlus
         internal bool MeasureWaist(ChaControl chaControl, Vector3 bodyTopScale, out float waistToRibDist, out float waistWidth) 
         {
             //Bone names
-            #if KK
+            #if KKS
                 var breastRoot = "cf_d_bust00";
                 var ribName = "cf_s_spine02";
                 var waistName = "cf_s_waist02";

@@ -22,7 +22,7 @@ namespace KK_PregnancyPlus
             }
 
 
-        #if KK || KKS
+        #if KKS || KKS
 
             [HarmonyPostfix]
             [HarmonyPatch(typeof(CustomAcsSelectKind), nameof(CustomAcsSelectKind.ChangeSlot))]

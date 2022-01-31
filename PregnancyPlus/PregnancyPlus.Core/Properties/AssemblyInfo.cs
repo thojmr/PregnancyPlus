@@ -8,7 +8,7 @@ using KK_PregnancyPlus;
 [assembly: AssemblyTitle("KK_PregnancyPlus")]
 [assembly: AssemblyDescription("Adds additional belly sliders to the game, and Timeline/VNGE integration")]
 [assembly: AssemblyProduct("KK_PregnancyPlus")]
-[assembly: AssemblyCompany("https://github.com/thojmr/KK_PregnancyPlus")]
+[assembly: AssemblyCompany("https://github.com/thojmr/PregnancyPlus")]
 [assembly: AssemblyCopyright("Copyright ©  2019")]
 
 // Setting ComVisible to false makes the types in this assembly not visible

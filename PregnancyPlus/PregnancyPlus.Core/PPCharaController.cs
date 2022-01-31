@@ -9,7 +9,7 @@ using System.Reflection;
 using KKAPI.Maker;
 using KKAPI.Studio;
 
-#if KK
+#if KKS
     using KKAPI.MainGame;
 #elif HS2
     using AIChara;
@@ -52,7 +52,7 @@ namespace KK_PregnancyPlus
         public const string DefaultBodyMaleGUID = "Default.Body.Male";
 
         //key that allows us to pull KK_pregnancy data values
-        #if KK || KKS
+        #if KKS
             public const string KK_PregnancyPluginName = "KK_Pregnancy";
         #elif AI
             public const string KK_PregnancyPluginName = "AI_Pregnancy";
@@ -64,7 +64,7 @@ namespace KK_PregnancyPlus
 
         //Determine body mesh name based on sex (0 is male)
         public string BodyMeshName {
-            #if KK
+            #if KKS
                 get { return ChaControl.sex == 0 ?  "o_body_a" : "o_body_a"; }
             #elif HS2 || AI
                 get { return ChaControl.sex == 0 ?  "o_body_cm" : "o_body_cf"; }
@@ -114,7 +114,7 @@ namespace KK_PregnancyPlus
             //Initialize the list
             bindPoseList = new BindPoseList(charaFileName); 
 
-            #if KK || AI
+            #if KKS || AI
 
                 //When HScene starts, pre compute inflated size blendshape
                 

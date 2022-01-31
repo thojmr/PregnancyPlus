@@ -56,7 +56,7 @@ namespace KK_PregnancyPlus
             sliders = new List<MakerSlider>();
 
             //Set the menu location of the p+ sliders
-            #if KK          
+            #if KKS          
                 var cat = new MakerCategory(MakerConstants.Parameter.Character.CategoryName, "Pregnancy+");
             #elif HS2 || AI
                 var cat = new MakerCategory(MakerConstants.Body.CategoryName, "Pregnancy+");

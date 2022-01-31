@@ -1,4 +1,4 @@
-#if KK
+#if KKS
     using ActionGame;    
 #endif
 using KKAPI.MainGame;
@@ -9,7 +9,7 @@ namespace KK_PregnancyPlus
     {
 
         //When the day changes, check for end of pregnancies
-        #if KK
+        #if KKS
         
             protected override void OnDayChange(Cycle.Week day)
             {

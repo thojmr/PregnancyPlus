@@ -55,7 +55,7 @@ namespace KK_PregnancyPlus
             Matrix4x4 optionalOffsetMatrix = Matrix4x4.identity;            
 
             //Fix bad body bindpose positions in KK
-            #if KK                
+            #if KKS                
                 var meshOffsetType = MeshOffSet.GetMeshOffsetType(smr);
 
                 //If not default kk body mesh fix with offset
