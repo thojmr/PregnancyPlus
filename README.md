@@ -1,3 +1,5 @@
+`This branch is meant to retain a legacy copy of KK_PregnancyPlus (original KK), for bug fixing purposes.  I will only be adding new features to KKS, HS2, and AI from now on.  Further improvements to this plugin require newer versions of Unity and KK is just too old now.  I will still support KK_PregnancyPlus, but for bugfixes only.`
+
 # Introduction
 This repository contains the PregnancyPlus plugin, that adds additional belly sliders in Studio and Maker.  It is intended to compliment the [KK_Pregnancy](https://github.com/ManlyMarco/KoikatuGameplayMods) plugin, but can be used without it.
 
