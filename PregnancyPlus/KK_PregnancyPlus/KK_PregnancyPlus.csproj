@@ -99,67 +99,17 @@
     </Reference>    
   </ItemGroup>
 
-  <ItemGroup>    
-    <Compile Include="..\PregnancyPlus.Core\Properties\AssemblyInfo.cs" />
-    <Compile Include="..\PregnancyPlus.Core\PPCharaController.cs" />
-    <Compile Include="..\PregnancyPlus.Core\PPCharaController.OverrideEvents.cs" />
-    <Compile Include="..\PregnancyPlus.Core\PPCharaController.MeshInflation.Extras.cs" />
-    <Compile Include="..\PregnancyPlus.Core\PPCharaController.MeshInflation.Transforms.cs" />
-    <Compile Include="..\PregnancyPlus.Core\PPCharaController.MeshInflation.Alteration.cs" />
-    <Compile Include="..\PregnancyPlus.Core\PPCharaController.MeshInflation.Main.cs" />
-    <Compile Include="..\PregnancyPlus.Core\PPCharaController.MeasureBody.cs" />
-    <Compile Include="..\PregnancyPlus.Core\PPCharaController.ClothingOffset.cs" />
-    <Compile Include="..\PregnancyPlus.Core\PPCharaController.FilterVerts.cs" />
-    <Compile Include="..\PregnancyPlus.Core\PPCharaController.BlendShape.cs" />
-    <Compile Include="..\PregnancyPlus.Core\tools\AnimationCurve.cs" />
-    <Compile Include="..\PregnancyPlus.Core\PPCharaController.Legacy.cs" />
-    <Compile Include="..\PregnancyPlus.Core\PPCharaController.KK_Pregnancy.cs" />
-    <Compile Include="..\PregnancyPlus.Core\PPCharaController.HookEvents.cs" />
-    <Compile Include="..\PregnancyPlus.Core\PPGameController.cs" />
-    <Compile Include="..\PregnancyPlus.Core\GUI\PPGui.cs" />
-    <Compile Include="..\PregnancyPlus.Core\GUI\PPBlendShapeGui.cs" />
-    <Compile Include="..\PregnancyPlus.Core\GUI\PPBlendShapeGui.Style.cs" />
-    <Compile Include="..\PregnancyPlus.Core\GUI\PPBlendShapeGui.Gui.cs" />
-    <Compile Include="..\PregnancyPlus.Core\GUI\PPGui.Studio.cs" />
-    <Compile Include="..\PregnancyPlus.Core\GUI\PPGui.Maker.cs" />
-    <Compile Include="..\PregnancyPlus.Core\GUI\PPGui.ButtonTimer.cs" />
-    <Compile Include="..\PregnancyPlus.Core\PPPlugin.cs" />
-    <Compile Include="..\PregnancyPlus.Core\GUI\PPPlugin.PluginConfigGui.cs" />
-    <Compile Include="..\PregnancyPlus.Core\Hooks\PPPlugin.Hooks.cs" />
-    <Compile Include="..\PregnancyPlus.Core\Hooks\PPPlugin.Hooks.Accessory.cs" />
-    <Compile Include="..\PregnancyPlus.Core\Hooks\PPPlugin.Hooks.Clothing.cs" />    
-    <Compile Include="..\PregnancyPlus.Core\Hooks\PPPlugin.Hooks.KK_Pregnancy.cs" />
-    <Compile Include="..\PregnancyPlus.Core\Hooks\PPPlugin.Hooks.Uncensor.cs" />
-    <Compile Include="..\PregnancyPlus.Core\PPHelper.cs" />
-    <Compile Include="..\PregnancyPlus.Core\Data\PPData.cs" />
-    <Compile Include="..\PregnancyPlus.Core\tools\NormalsSolver.cs" />
-    <Compile Include="..\PregnancyPlus.Core\tools\BlendShape\BlendShapeController.cs" />
-    <Compile Include="..\PregnancyPlus.Core\tools\BlendShape\BlendShapeTools.cs" />
-    <Compile Include="..\PregnancyPlus.Core\tools\ConfigurationManagerAttributes.cs" />
-    <Compile Include="..\PregnancyPlus.Core\tools\Smoothing\SmoothMeshUtils.cs" />
-    <Compile Include="..\PregnancyPlus.Core\tools\Smoothing\SmoothFilter.cs" />
-    <Compile Include="..\PregnancyPlus.Core\tools\Smoothing\SmoothMesh.cs" />
-    <Compile Include="..\PregnancyPlus.Core\Tools\ErrorCode.cs" />
-    <Compile Include="..\PregnancyPlus.Core\Tools\BindPose\Matrix.cs" />
-    <Compile Include="..\PregnancyPlus.Core\Tools\MeshInflateFlags.cs" />
-    <Compile Include="..\PregnancyPlus.Core\Tools\MeshData.cs" />
-    <Compile Include="..\PregnancyPlus.Core\Tools\BindPose\MeshSkinning.cs" />
-    <Compile Include="..\PregnancyPlus.Core\Tools\BindPose\BindPoseList.cs" />
-    <Compile Include="..\PregnancyPlus.Core\Tools\BindPose\MeshOffsetType.cs" />
-    <Compile Include="..\PregnancyPlus.Core\Tools\Threading\Threading.cs" />
-    <Compile Include="..\PregnancyPlus.Core\Tools\Threading\ThreadsafeCurve.cs" />
-    <Compile Include="..\PregnancyPlus.Core\Tools\UnityUiTools.cs" />
-    <Compile Include="..\PregnancyPlus.Core\Tools\NativeDetourMesh.cs" />
-    <Compile Include="..\PregnancyPlus.Core\Tools\DebugTools.cs" />
-    <Compile Include="..\PregnancyPlus.Core\Tools\MeshIdentifier.cs" />
-    <Compile Include="..\PregnancyPlus.Core\Tools\BellyInfo.cs" />
-    <Compile Include="..\PregnancyPlus.Core\Tools\Timer.cs" />
-    <Compile Include="..\PregnancyPlus.Core\Tools\TangentSolver.cs" />
-  </ItemGroup>
+  <Import Project="..\PregnancyPlus.Core\Shared.projitems" Label="Shared" />
 
   <ItemGroup>
+    <Compile Include="..\PregnancyPlus.Core\PPGameController.cs" />
+    <Compile Include="..\PregnancyPlus.Core\Hooks\PPPlugin.Hooks.KK_Pregnancy.cs" />
     <None Include="packages.config" />
   </ItemGroup> 
+
+  <Target Name="CleanOutputDir" BeforeTargets="CopyFilesToOutputDirectory">
+    <RemoveDir Directories="$(OutputPath)" ContinueOnError="true"/>
+  </Target>
   
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
