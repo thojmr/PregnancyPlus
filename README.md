@@ -33,6 +33,15 @@ See `Features` for all plugin features
 
 </br>
 
+## Some Tips
+- Use one of the High Poly meshes (uncensors) for screenshots.  It makes the belly more round and less jagged.  The KK one linked bellow works well with cloth too
+- The more Multiplier you apply, the more -StretchX and -StretchY you should apply.  This lets you apply even more Multiplier
+- The Taper sliders are good at making the shape more egg like
+- Too much Roundness slider will cause clothes to clip at the top of the belly
+- If you see jagged edges or shadows on the skin, use the "Smooth Belly Mesh" button to reduce it
+
+<br>
+
 ## Features
 - Adds a number of sliders that will allow you to change the size and shape of a characters belly in Studio, Maker, and Main Gameplay.
     - In Main Game you can further tweak all character's belly shapes with the F1 plugin config sliders.
