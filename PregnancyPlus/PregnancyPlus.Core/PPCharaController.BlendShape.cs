@@ -533,7 +533,7 @@ namespace KK_PregnancyPlus
             if (!exists || !_md.HasInflatedVerts) 
             {
                 if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo(
-                     $"PrepForBlendShape > smr '{renderKey}' meshData do not exists, skipping");
+                     $"PrepForBlendShape > smr '{renderKey}' meshData do not exists, or does not have inflatedVerts, skipping");
 
                 nativeDetour.Undo();
                 return null;

@@ -3,6 +3,7 @@ using KKAPI.Chara;
 using UnityEngine;
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Collections;
 using System.Collections.Generic;
 #if HS2 || AI
@@ -29,13 +30,15 @@ namespace KK_PregnancyPlus
         /// <returns>Will return True if the mesh was altered and False if not</returns>
         public void MeshInflate(MeshInflateFlags meshInflateFlags, string callee)
         {
+            //Only allow one MeshInflate process at a time (Since it runs across multiple frames at a time)
+            if (isProcessing) return;
             //Make sure chatacter objs exists first 
             if (ChaControl.objBodyBone == null) return; 
             // Only female characters, unless plugin config says otherwise 
             if (!PregnancyPlusPlugin.AllowMale.Value && ChaControl.sex == 0) return;         
 
             //Only continue if one of the config values changed, or we need to recompute a mesh
-            if (!meshInflateFlags.NeedsToRun) return;
+            if (!meshInflateFlags.NeedsToRun) return;            
 
             //if outside studio/maker, make sure StoryMode is enabled first
             if (!AllowedToInflate()) return;
@@ -78,26 +81,34 @@ namespace KK_PregnancyPlus
             } 
             else if (!hasMeasuerments && !lastVisibleState) 
             {
-                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" Character not visible, can't measure yet {charaFileName}");  
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" Character not visible, can't measure yet {charaFileName}");
                 return; 
             }       
 
-            //Inflate the body mesh.  When it is done it will trigger the same for all other meshes since others depend on the body to be computed first
-           var renderKey = FindAndAffectBodyMesh(meshInflateFlags);
+            //start the mesh inflation logic
+            DoInflation(meshInflateFlags);
+        }
 
-            //If the body mesh originalVerticies have been cached, we can go ahead and start computing all other meshes too
-            //  Otherwise this will be triggered after ComputeBindPoseMesh()  (Boy do I wish I didnt have to deal with old threading in KK....)
-            if (renderKey == null) return;
-            if (md.TryGetValue(renderKey, out MeshData _md))
-                if (_md.HasOriginalVerts)
-                    FindAndAffectAllMeshes(meshInflateFlags, renderKey);  
+
+        internal async void DoInflation(MeshInflateFlags meshInflateFlags)
+        {
+            //Prevent multiple processes from running at the same time
+            isProcessing = true;
+
+            //Inflate the body mesh first.  When done do the same for all meshes
+            var renderKey = await FindAndAffectBodyMesh(meshInflateFlags);
+            await FindAndAffectAllMeshes(meshInflateFlags, renderKey); 
+
+            //Mark done processing
+            isProcessing = false;
+            //TODO check for any queued MeshInflate calls that were added while processing this request
         }
 
 
         /// <summary>
         /// First find the body mesh and compute its inflation.  Other meshes depend on the body's computed verts so we do this first
         /// </summary>
-        internal string FindAndAffectBodyMesh(MeshInflateFlags meshInflateFlags)
+        internal async Task<string> FindAndAffectBodyMesh(MeshInflateFlags meshInflateFlags)
         {
             var bodyMeshRenderer = GetBodyMeshRenderer();
 
@@ -107,11 +118,10 @@ namespace KK_PregnancyPlus
             if (bindPoseList.bindPoses.Count <= 0) return null;
 
             //Start computing body mesh changes
-            StartMeshChanges(bodyMeshRenderer, meshInflateFlags, isMainBody: true);    
+            await StartMeshChanges(bodyMeshRenderer, meshInflateFlags, isMainBody: true);    
 
             //Return the render key to check for cached verts
             return GetMeshKey(bodyMeshRenderer);
-
         }
 
 
@@ -120,13 +130,15 @@ namespace KK_PregnancyPlus
         ///     Depends on the Body Mesh originalVerticies already existing
         /// </summary>
         /// <param name="ignoreKey">Any smr matching key will be ignored (Prevent computing main body mesh twice)</param>
-        internal void FindAndAffectAllMeshes(MeshInflateFlags meshInflateFlags, string ignoreKey = null)
+        internal async Task FindAndAffectAllMeshes(MeshInflateFlags meshInflateFlags, string ignoreKey = null)
         {
             var bodyMeshRenderer = GetBodyMeshRenderer();
+            //Collect all running mesh tasks
+            List<Task> tasks = new List<Task>();
 
             //Get all body mesh renderers, calculate, and apply inflation changes
             var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, findAll: true);                           
-            LoopAndApplyMeshChanges(bodyRenderers, meshInflateFlags, ignoreKey: ignoreKey);
+            tasks.AddRange(LoopAndApplyMeshChanges(bodyRenderers, meshInflateFlags, ignoreKey: ignoreKey));
             
 
             //Dont check cloth mesh on accessory change
@@ -134,13 +146,16 @@ namespace KK_PregnancyPlus
             {
                 //Get all clothing mesh renderers, calculate, and apply inflation changes
                 var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);            
-                LoopAndApplyMeshChanges(clothRenderers, meshInflateFlags, isClothingMesh: true, bodyMeshRenderer);    
+                tasks.AddRange(LoopAndApplyMeshChanges(clothRenderers, meshInflateFlags, isClothingMesh: true, bodyMeshRenderer));    
             }
 
             //Only affect accessories, when the user wills it
             if (PregnancyPlusPlugin.IgnoreAccessories.Value) return;
             var accessoryRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objAccessory);            
-            LoopAndApplyMeshChanges(accessoryRenderers, meshInflateFlags, isClothingMesh: true, bodyMeshRenderer);             
+            tasks.AddRange(LoopAndApplyMeshChanges(accessoryRenderers, meshInflateFlags, isClothingMesh: true, bodyMeshRenderer));           
+
+            //Wait for all to be done
+            await Task.WhenAll(tasks);
         }
 
 
@@ -150,14 +165,19 @@ namespace KK_PregnancyPlus
         /// <param name="smrs">List of skinnedMeshRenderes</param>
         /// <param name="meshInflateFlags">Contains any flags needed for mesh computation</param>
         /// <param name="isClothingMesh">If this smr is a cloth mesh</param>
+        /// <param name="ignoreKey">Any smr matching key will be ignored (Prevent computing main body mesh twice)</param>
         /// <returns>boolean true if any meshes were changed</returns>
-        internal void LoopAndApplyMeshChanges(List<SkinnedMeshRenderer> smrs, MeshInflateFlags meshInflateFlags, 
+        internal Task[] LoopAndApplyMeshChanges(List<SkinnedMeshRenderer> smrs, MeshInflateFlags meshInflateFlags, 
                                               bool isClothingMesh = false, SkinnedMeshRenderer bodySmr = null, string ignoreKey = null) 
         {
-            foreach (var smr in smrs) 
+            var tasks = new Task[smrs.Count];
+
+            for (var i = 0; i < smrs.Count; i++) 
             {           
-                StartMeshChanges(smr, meshInflateFlags, isClothingMesh, bodySmr, ignoreKey:ignoreKey);              
+                tasks[i] = StartMeshChanges(smrs[i], meshInflateFlags, isClothingMesh, bodySmr, ignoreKey:ignoreKey);              
             }  
+
+            return tasks;
         }
 
 
@@ -167,27 +187,27 @@ namespace KK_PregnancyPlus
         /// <param name="smr">skinnedMeshRender to change</param>
         /// <param name="meshInflateFlags">Contains any flags needed for mesh computation</param>
         /// <param name="isClothingMesh">If this smr is a cloth mesh</param>
+        /// <param name="ignoreKey">Any smr matching key will be ignored (Prevent computing main body mesh twice)</param>
         /// <returns>boolean true if threaded</returns>
-        internal bool StartMeshChanges(SkinnedMeshRenderer smr, MeshInflateFlags meshInflateFlags, bool isClothingMesh = false, 
+        internal async Task StartMeshChanges(SkinnedMeshRenderer smr, MeshInflateFlags meshInflateFlags, bool isClothingMesh = false, 
                                        SkinnedMeshRenderer bodySmr = null, bool isMainBody = false, string ignoreKey = null)
         {        
-            var threadedCompute = false;//Whether the computation has been threaded
             var renderKey = GetMeshKey(smr);
-            if (renderKey == null) return false;
-            if (renderKey == ignoreKey) return false;
+            if (renderKey == null) return;
+            if (renderKey == ignoreKey) return;
 
             //Dont recompute verts if no sliders have changed or clothing added
             var needsComputeVerts = NeedsComputeVerts(smr, renderKey, meshInflateFlags);
             if (needsComputeVerts)
-                threadedCompute = ComputeMeshVerts(smr, isClothingMesh, bodySmr, meshInflateFlags, renderKey, isMainBody);                                                                                               
+            {
+                //If it turns out that the current mesh is cached, then this will just return early
+                await ComputeMeshVerts(smr, isClothingMesh, bodySmr, meshInflateFlags, renderKey, isMainBody);                                                                                               
+            }
 
-            //When threaded, the belly will be set later so we can skip it here (only used when full re-computation is needed)
-            if (threadedCompute) return true; 
-            if (ignoreMeshList.Contains(renderKey)) return false;       
+            if (ignoreMeshList.Contains(renderKey)) return;       
 
-            //We only make it this far when the shape was previously computed, but we need to upddate the blendshape weight
-            FinalizeInflation(smr, meshInflateFlags, blendShapeTempTagName);                   
-            return false;
+            //Take the vert deltas we computed earlier and make a blendshape from them.  Otherwise just adjust the existing blendshape weight
+            FinalizeInflation(smr, meshInflateFlags, blendShapeTempTagName); 
         }
 
 
@@ -222,7 +242,7 @@ namespace KK_PregnancyPlus
         /// Just a helper function to combine searching for verts in a mesh, and then applying the transforms
         /// </summary>
         /// <returns>Will return true if threaded</returns>
-        internal bool ComputeMeshVerts(SkinnedMeshRenderer smr, bool isClothingMesh, SkinnedMeshRenderer bodyMeshRenderer, MeshInflateFlags meshInflateFlags, 
+        internal async Task ComputeMeshVerts(SkinnedMeshRenderer smr, bool isClothingMesh, SkinnedMeshRenderer bodyMeshRenderer, MeshInflateFlags meshInflateFlags, 
                                        string renderKey, bool isMainBody = false) 
         {
             //The list of bones to get verticies for (Belly area verts).  If a mesh does not contain one of these bones in smr.bones, it is skipped
@@ -235,26 +255,30 @@ namespace KK_PregnancyPlus
             var hasVertsToProcess = true;
             var isMeshInitialized = md.TryGetValue(renderKey, out MeshData _md);
 
-            //Only fetch belly vert list when needed since its fairly expensive
+            //Only fetch belly vert list when needed to save compute
             if (meshInflateFlags.NeedsToComputeIndex || !isMeshInitialized)            
-                hasVertsToProcess = GetFilteredVerticieIndexes(smr, PregnancyPlusPlugin.MakeBalloon.Value ? null : boneFilters);                    
+                hasVertsToProcess = await GetFilteredVerticieIndexes(smr, PregnancyPlusPlugin.MakeBalloon.Value ? null : boneFilters);                    
 
             //If mesh was just added to the ignore list, stop here
-            if (ignoreMeshList.Contains(renderKey)) return false; 
+            if (ignoreMeshList.Contains(renderKey)) return; 
 
             //If no belly verts found, or verts already cached, then we can skip this mesh
-            if (!hasVertsToProcess) return false;             
+            if (!hasVertsToProcess) return;             
 
             //Get the newly created/or existing MeshData obj
             md.TryGetValue(renderKey, out _md);
-
-            //On first pass we need to skin the mesh to a T-pose before computing the inflated verts (Threaded as well)
+            
             if (_md.isFirstPass)
             {                
-                return ComputeBindPoseMesh(smr, bodyMeshRenderer, isClothingMesh, meshInflateFlags, isMainBody);            
+                //On first pass we need to skin the mesh to a T-pose before computing the inflated verts (Threaded as well)
+                await ComputeBindPoseMesh(smr, bodyMeshRenderer, isClothingMesh, meshInflateFlags, isMainBody);            
             }
 
-            return GetInflatedVerticies(smr, bellyInfo.SphereRadius, isClothingMesh, bodyMeshRenderer, meshInflateFlags);
+            //Inflate the mesh to give it the round appearance
+            await GetInflatedVerticies(smr, bellyInfo.SphereRadius, isClothingMesh, bodyMeshRenderer, meshInflateFlags);
+
+            //Compute the deltas used to make blendshapes
+            await ComputeDeltas(smr, renderKey, meshInflateFlags);
         }
 
 
@@ -281,12 +305,12 @@ namespace KK_PregnancyPlus
         ///     and to align the meshes together. Results get cached for subsiquent passes
         /// </summary>
         /// <returns>Will return true if threaded</returns>
-        internal bool ComputeBindPoseMesh(SkinnedMeshRenderer smr, SkinnedMeshRenderer bodySmr, bool isClothingMesh, MeshInflateFlags meshInflateFlags, bool isMainBody = false)
+        internal async Task ComputeBindPoseMesh(SkinnedMeshRenderer smr, SkinnedMeshRenderer bodySmr, bool isClothingMesh, MeshInflateFlags meshInflateFlags, bool isMainBody = false)
         {
             if (smr == null) 
             {
                 if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" ComputeBindPoseMesh smr was null"); 
-                return false;
+                return;
             }
 
             if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" Computing BindPoseMesh for {smr.name}");
@@ -299,7 +323,7 @@ namespace KK_PregnancyPlus
             if (!exists) 
             {
                 if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" ComputeBindPoseMesh cant find MeshData for {rendererName}"); 
-                return false;
+                return;
             }
 
             //initialize original verts if not already
@@ -326,38 +350,18 @@ namespace KK_PregnancyPlus
             
             nativeDetour.Undo();
 
-            //Heavy compute task below, run in separate thread
-            WaitCallback threadAction = (System.Object stateInfo) => 
+            //Put threadpool work inside task and await the results
+            await Task.Run(() => 
             {
-                //Compute and store T-pose skinned mesh verts
-                for (int i = 0; i < vertsLength; i++)
-                {
+                //Spread work across multiple threads
+                md[rendererName].originalVertices = Threading.RunParallel(unskinnedVerts, (_, i) => {
                     //Get the skinned vert position from the bindpose matrix we computed earlier
-                    skinnedVerts[i] = MeshSkinning.UnskinnedToSkinnedVertex(unskinnedVerts[i], smrTfTransPt, boneMatrices, boneWeights[i]);
-                }
+                    return MeshSkinning.UnskinnedToSkinnedVertex(unskinnedVerts[i], smrTfTransPt, boneMatrices, boneWeights[i]);
+                });  
 
-                //When this thread task is complete, execute the below in main thread
-                Action threadActionResult = () => 
-                {                    
-                    //This one here is critical.  Once the originalVertices have been computed for the body mesh, the other meshes can now also be computed too
-                    if (isMainBody && md[rendererName].isFirstPass)
-                        FindAndAffectAllMeshes(meshInflateFlags, rendererName);
-
-                    md[rendererName].isFirstPass = false;
-
-                    //Now that the mesh is skinned to T-pose, we can compute the inflated state
-                    GetInflatedVerticies(smr, bellyInfo.SphereRadius, isClothingMesh, bodySmr, meshInflateFlags);
-                };
-
-                //Append to result queue.  Will execute on next Update()
-                threading.AddResultToThreadQueue(threadActionResult);
-            };
-            
-            
-            //Start this threaded task, and will be watched in Update() for completion
-            threading.Start(threadAction);            
-
-            return true;
+                md[rendererName].isFirstPass = false;   
+            });
+                                
         }
 
 
@@ -368,13 +372,13 @@ namespace KK_PregnancyPlus
         /// <param name="sphereRadius">The radius of the inflation sphere</param>
         /// <param name="isClothingMesh">Clothing requires a few tweaks to match skin morphs</param>
         /// <returns>Will return true if threaded</returns>
-        internal bool GetInflatedVerticies(SkinnedMeshRenderer smr, float sphereRadius, bool isClothingMesh, 
+        internal async Task GetInflatedVerticies(SkinnedMeshRenderer smr, float sphereRadius, bool isClothingMesh, 
                                            SkinnedMeshRenderer bodySmr, MeshInflateFlags meshInflateFlags) 
         {
             if (smr == null) 
             {
                 if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" GetInflatedVerticies smr was null"); 
-                return false;
+                return;
             }
 
             if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" GetInflatedVerticies for {smr.name}");
@@ -395,7 +399,7 @@ namespace KK_PregnancyPlus
             if (!exists) 
             {
                 if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" GetInflatedVerticies cant find MeshData for {rendererName}"); 
-                return false;
+                return;
             }
             md[rendererName].inflatedVertices = new Vector3[smr.sharedMesh.vertexCount];
             md[rendererName].alteredVerticieIndexes = new bool[smr.sharedMesh.vertexCount];
@@ -440,28 +444,18 @@ namespace KK_PregnancyPlus
 
             nativeDetour.Undo();
 
-            //Heavy compute task below, run in separate thread
-            WaitCallback threadAction = (System.Object stateInfo) => 
+            //Put threadpool work inside task and await the results
+            await Task.Run(() => 
             {
-                var reduceClothFlattenOffset = 0f;
-
-                #if DEBUG
-                    // var bellyVertsCount = 0;
-                    // for (int i = 0; i < bellyVertIndex.Length; i++)
-                    // {
-                    //     if (bellyVertIndex[i]) bellyVertsCount++;
-                    // }
-                    // if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" Mesh affected vert count {bellyVertsCount} {smr.name}");
-                #endif               
-
-                //For each vert, compute it's new inflated position if it is a belly vert
-                for (int i = 0; i < vertsLength; i++)
+                //Spread work across multiple threads
+                md[rendererName].inflatedVertices = Threading.RunParallel(origVerts, (_, i) => 
                 {
+                    var reduceClothFlattenOffset = 0f;
+
                     //Only care about altering belly verticies
                     if (!bellyVertIndex[i] && !PregnancyPlusPlugin.DebugVerts.Value) 
                     {
-                        inflatedVerts[i] = origVerts[i];
-                        continue;                
+                        return origVerts[i];               
                     }
 
                     //Get the bindpose skinned vertex position
@@ -471,13 +465,11 @@ namespace KK_PregnancyPlus
                     //Ignore verts outside the sphere radius
                     if (vertDistance > vertNormalCaluRadius && !PregnancyPlusPlugin.DebugVerts.Value) 
                     {
-                        inflatedVerts[i] = origVerts[i];
-                        continue;                
+                        return origVerts[i];                
                     }
                     
                     Vector3 inflatedVertLs;                    
                     Vector3 verticieToSpherePos;       
-                    reduceClothFlattenOffset = 0f; 
 
                     // If the vert is within the calculated normals radius, then consider it as an altered vert that needs normal recalculation when applying inflation
                     // This also means we can ignore other verts later saving compute time
@@ -499,32 +491,12 @@ namespace KK_PregnancyPlus
                                                              bellySidesAC, bellyTopAC, bellyEdgeAC, bellyGapLerpAC);   
 
                     //store the new inflated vert, unshifted from 0,0,0                                                           
-                    inflatedVerts[i] = inflatedVertLs;                                                  
-                }                  
+                    return inflatedVertLs;    
+                });
 
-                //When this thread task is complete, execute the below in main thread
-                Action threadActionResult = () => 
-                {
-                    //Debug verts when needed
-                    PostInflationDebugStuff(smr, md[rendererName], isClothingMesh);            
-
-                    //Now that we have the before and after inflated verts we can get the delta of each
-                    var threaded = ComputeDeltas(smr, rendererName, meshInflateFlags);
-
-                    //When we have already pre-computed the deltas we can go ahead and finalize now
-                    if (!threaded)
-                        FinalizeInflation(smr, meshInflateFlags, blendShapeTempTagName);
-                };
-
-                //Append to result queue.  Will execute on next Update()
-                threading.AddResultToThreadQueue(threadActionResult);
-
-            };
-
-            //Start this threaded task, and will be watched in Update() for completion
-            threading.Start(threadAction);
-
-            return true;                 
+                //Debug verts when needed
+                PostInflationDebugStuff(smr, md[rendererName], isClothingMesh); 
+            });
         }
 
 
@@ -737,18 +709,18 @@ namespace KK_PregnancyPlus
         /// Compute the deltas between the original mesh and the inflated one. (This is threaded now)  We use these deltas to build the blendshape
         /// </summary>
         /// <returns>returns bool whether the action needs to be threaded or not</returns>
-        internal bool ComputeDeltas(SkinnedMeshRenderer smr, string rendererName, MeshInflateFlags meshInflateFlags) 
+        internal async Task ComputeDeltas(SkinnedMeshRenderer smr, string rendererName, MeshInflateFlags meshInflateFlags) 
         {           
             //Check for mesh data object
             var isMeshInitialized = md.TryGetValue(rendererName, out MeshData _md);
-            if (!isMeshInitialized) return false;
+            if (!isMeshInitialized) return;
 
             //If we already have the deltas then skip
-            if (_md.HasDeltas && !meshInflateFlags.OverWriteMesh) return false;
+            if (_md.HasDeltas && !meshInflateFlags.OverWriteMesh) return;
 
             //Get the virtual inflated mesh with normal, and tangent recalculation applied
             var inflatedMesh = PrepForBlendShape(smr, rendererName);
-            if (!inflatedMesh) return false;
+            if (!inflatedMesh) return;
 
             if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" Compute BlendShape Deltas for {smr.name}");
 
@@ -771,48 +743,56 @@ namespace KK_PregnancyPlus
             var originalVerts = _md.originalVertices;
             var inflatedVerts = _md.inflatedVertices;
             var alteredVerts = _md.alteredVerticieIndexes;
+            var hasTransform = undoTfMatrix != Matrix4x4.identity;
 
             nativeDetour.Undo();
 
-            //Heavy compute task below, run in separate thread
-            WaitCallback threadAction = (System.Object stateInfo) => 
+            //Put threadpool work inside task and await the results
+            await Task.Run(() => 
             {
+                var deltaVerts = new Vector3[originalVerts.Length];
+                var deltaNormals = new Vector3[originalVerts.Length];
 
-                //Get delta diffs of the two meshes used to make the blendshape
-                var deltaVerticies = BlendShapeTools.GetV3Deltas(originalVerts, inflatedVerts, undoTfMatrix, alteredVerts);
-                var deltaNormals = BlendShapeTools.GetV3Deltas(sourceNormals, targetNormals, undoTfMatrix, alteredVerts);
-                var deltaTangents = BlendShapeTools.GetV3Deltas(sourceTangents, targetTangents, undoTfMatrix, alteredVerts);                            
-
-                //When this thread task is complete, execute the below in main thread
-                Action threadActionResult = () => 
+                //Spread work across multiple threads
+                Threading.RunParallel(sourceNormals, (_, i) => 
                 {
-                    //Cache the computed deltas in MeshData
-                    _md.deltaVerticies = deltaVerticies;
-                    _md.deltaNormals = deltaNormals;
-                    _md.deltaTangents = deltaTangents;
-
-                    //When we need to debug the deltas visually
-                    if (PregnancyPlusPlugin.ShowDeltaVerts.Value) 
+                    //If the vert has not been altered, no delta change
+                    if (alteredVerts[i])
                     {
-                        for (int i = 0; i < deltaVerticies.Length; i++)
-                        {
-                            //Undo delta rotation visually so we can make sure it aligns with the other meshes deltas
-                            DebugTools.DrawLine(_md.originalVertices[i], _md.originalVertices[i] + rotationUndo.inverse.MultiplyPoint3x4(deltaVerticies[i]));     
-                        }                          
+                        //Get Vertex deltas
+                        deltaVerts[i] = BlendShapeTools.GetV3Delta(originalVerts[i], inflatedVerts[i], undoTfMatrix, hasTransform);
+                        //Get normal deltas
+                        deltaNormals[i] = BlendShapeTools.GetV3Delta(sourceNormals[i], targetNormals[i], undoTfMatrix, hasTransform);
                     }
 
-                    //Now we can create and apply the blendshape
-                    FinalizeInflation(smr, meshInflateFlags, blendShapeTempTagName);                
-                };
+                    //WE dont care about return type in this case
+                    return Vector3.zero;
+                });
 
-                //Append to result queue.  Will execute on next Update()
-                threading.AddResultToThreadQueue(threadActionResult);
-            };
+                //Capture results
+                _md.deltaVerticies = deltaVerts;
+                _md.deltaNormals = deltaNormals;
 
-            //Start this threaded task, and will be watched in Update() for completion
-            threading.Start(threadAction);
+                //Spread work across multiple threads
+                _md.deltaTangents = Threading.RunParallel<Vector4, Vector3>(sourceTangents, (_, i) => 
+                {
+                    //Get tangent deltas
+                    if (alteredVerts[i])
+                        return BlendShapeTools.GetV3Delta(sourceTangents[i], targetTangents[i], undoTfMatrix, hasTransform);
 
-            return true;
+                    return sourceTangents[i];
+                });
+
+                //When we need to debug the deltas visually
+                if (PregnancyPlusPlugin.ShowDeltaVerts.Value) 
+                {
+                    for (int i = 0; i < deltaVerts.Length; i++)
+                    {
+                        //Undo delta rotation visually so we can make sure it aligns with the other meshes deltas
+                        DebugTools.DrawLine(_md.originalVertices[i], _md.originalVertices[i] + rotationUndo.inverse.MultiplyPoint3x4(deltaVerts[i]));     
+                    }                          
+                }
+            });
         }
                 
     }

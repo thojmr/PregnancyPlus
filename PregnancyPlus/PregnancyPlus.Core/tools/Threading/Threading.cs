@@ -5,77 +5,78 @@ using UnityEngine;
 
 namespace KK_PregnancyPlus
 {
-    //Contains generic threading methods used to multithread some heavy compute tasks (Can't use Unity Jobs because Koikatsu is too old)
-    public class Threading
-    {   
-        //List of active thread result functions, that we will execute on thread completion
-        public List<Action> ThreadedFunctionQueue = new List<Action>();
-        //Total active threads
-        public int _threadCount = 0;
-        public int ThreadCount 
-        {
-            get { return _threadCount; }
-            set { _threadCount = Math.Max(value, 0); }
-        }
-        //Whether the last frame had running threads
-        public bool lastFrameHadThread = false;
-
-        //Once the last thread in the list has been completed this will be true the next frame
-        //  This is only reliable because we start all mesh compute threads in the same frame
-        public bool AllDone 
-        {
-            get { return lastFrameHadThread && ThreadCount == 0; }
-        }
-
-
-
+    //Contains generic threading methods used to multithread some heavy compute tasks
+     public static class Threading
+    {
         /// <summary>
-        /// Start some function in a new thread
-        ///     ThreadedFunction must call AddResultToThreadQueue in order for the results to return back to the main thread
+        ///     Apply a function to a collection of data by spreading the work evenly between all threads.
+        ///     Outputs of the functions are returned to the current thread and returned when all threads are done.
+        ///         This version of RunParallel, preserves the input/output order by tracking the index
         /// </summary>
-        /// <param name="ThreadedFunction">
-        /// The method that contains the threaded logic, and should call the AddResultToThreadQueue() function when done
-        /// </param>        
-        public void Start(WaitCallback ThreadedFunction) 
+        /// <typeparam name="TIn">Type of the input values.</typeparam>
+        /// <typeparam name="TOut">Type of the output values.</typeparam>
+        /// <param name="data">Input values for the work function.</param>
+        /// <param name="work">Function to apply to the data on multiple threads at once.</param>
+        /// <exception cref="Exception">
+        ///     An exception was thrown inside one of the threads, and the operation was
+        ///     aborted.
+        /// </exception>
+        public static TOut[] RunParallel<TIn, TOut>(this IList<TIn> data, Func<TIn, int, TOut> work, int workerCount = -1)
         {
-            ThreadCount += 1;
-            lastFrameHadThread = true;
-            ThreadPool.QueueUserWorkItem(ThreadedFunction);
-        }
+            if (workerCount < 0)
+                workerCount = Mathf.Max(2, Environment.ProcessorCount/8);
+            else if (workerCount == 0)
+                throw new ArgumentException("Need at least 1 worker", nameof(workerCount));
 
+            var outArr = new TOut[data.Count];
 
-        /// <summary>
-        /// Add a threaded function to the watch queue, to watch for completion, and run on main thread with results of the threaded function
-        ///     Ex: a lambda function that assigns the computed Vecrtor3 back to the unity Game object it belongs to
-        /// </summary>
-        /// <param name="MainThreadResultsFunction">
-        /// The method that contains the result logic, which will be triggered after the thread is done.  Plugs the results back into unity
-        /// </param>
-        public void AddResultToThreadQueue(Action MainThreadResultsFunction) 
-        {
-            ThreadedFunctionQueue.Add(MainThreadResultsFunction);
-        }
+            var currentIndex = data.Count;
 
+            var are = new ManualResetEvent(false);
+            var runningCount = workerCount;
+            Exception exceptionThrown = null;
 
-        /// <summary>
-        /// When a thread is done, execute the results function in the main thread.  Runs in Update()
-        /// </summary>
-        public void WatchAndExecuteThreadResults() 
-        {
-            //Reset last frame tracker when already at 0 this frame
-            if (ThreadCount == 0 && lastFrameHadThread) lastFrameHadThread = false;
-
-            //Watch for completed thread tasks
-            while (ThreadedFunctionQueue.Count > 0) 
+            void DoWork(object _)
             {
-                //Get the latest finished thread task
-                var resultFunction = ThreadedFunctionQueue[0];
-                ThreadedFunctionQueue?.RemoveAt(0);
-                ThreadCount -= 1;                
+                try
+                {
+                    while (true)
+                    {
+                        if (exceptionThrown != null)
+                            return;
 
-                //Execute the "result function" in this main thread to complete its tasks
-                resultFunction();
-            }            
+                        var decrementedIndex = Interlocked.Decrement(ref currentIndex);
+                        if (decrementedIndex < 0)
+                            return;
+
+                        outArr[decrementedIndex] = work(data[decrementedIndex], decrementedIndex);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    exceptionThrown = ex;
+                }
+                finally
+                {
+                    var decCount = Interlocked.Decrement(ref runningCount);
+                    if (decCount <= 0)
+                        are.Set();
+                }
+            }
+
+            // Start threads to process the data
+            for (var i = 0; i < workerCount - 1; i++)
+                ThreadPool.QueueUserWorkItem(DoWork);
+
+            //So some of the work on main thread, while threadpools are queueing
+            DoWork(null);
+
+            are.WaitOne();
+
+            if (exceptionThrown != null)
+                throw new Exception("An exception was thrown inside one of the threads", exceptionThrown);
+
+            return outArr;
         }
     }
 }

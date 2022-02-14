@@ -4,7 +4,7 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 using System.Collections;
-using System.Threading;
+using System.Threading.Tasks;
 using BepInEx;
 
 namespace KK_PregnancyPlus
@@ -103,25 +103,13 @@ namespace KK_PregnancyPlus
         /// Will smooth and jagged edges around the characters belly caused by some slider combinations
         /// </summary>   
         /// <param name="includeClothMesh">Optionally include all cloth meshes as well</param>
-        internal void ApplySmoothing(bool includeClothMesh = false)
-        {
-            //Run in coroutine to "reduce" locking main thread, sine this is a heavy task
-            StartCoroutine(ApplySmoothingCoroutine(includeClothMesh));
-        }
-
-
-        /// <summary>   
-        /// Will smooth and jagged edges around the characters belly caused by some slider combinations
-        /// </summary>   
-        /// <param name="includeClothMesh">Optionally include all cloth meshes as well</param>
-        internal IEnumerator ApplySmoothingCoroutine(bool includeClothMesh = false)
+        internal async Task ApplySmoothing(bool includeClothMesh = false)
         {
             var anySmoothingStarted = false;
 
             //Check that inflationConfig has a value
-            if (!infConfig.HasAnyValue()) yield return null;
-            if (infConfig.inflationSize == 0) yield return null;
-            if (!infConfig.UseOldCalcLogic()) yield return new WaitForEndOfFrame();
+            if (!infConfig.HasAnyValue()) return;
+            if (infConfig.inflationSize == 0) return;
             if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" ApplySmoothing({includeClothMesh})");
 
             PregnancyPlusGui.StartTextCountIncrement();
@@ -136,7 +124,7 @@ namespace KK_PregnancyPlus
                 foreach(var renderKey in keyList) 
                 {
                     var smr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderKey, searchInactive: false);
-                    var _started = SmoothSingleMesh(smr, renderKey);
+                    var _started = await SmoothSingleMesh(smr, renderKey);
                     if (_started) anySmoothingStarted = true;
                 }
             } 
@@ -146,21 +134,19 @@ namespace KK_PregnancyPlus
                 var bodySmr = PregnancyPlusHelper.GetMeshRendererByName(ChaControl, BodyMeshName);
                 var renderKey = GetMeshKey(bodySmr);
 
-                var started = SmoothSingleMesh(bodySmr, renderKey);     
+                var started = await SmoothSingleMesh(bodySmr, renderKey);     
                 if (started) anySmoothingStarted = true;
             }       
 
             //Stop timer if not smoothing is queued
             if (!anySmoothingStarted) CheckForEndOfSmoothing();  
-
-            yield return null;
         }        
 
 
         /// <summary>   
         /// Smooths a single mesh with lapacian smoothing
         /// </summary>   
-        internal bool SmoothSingleMesh(SkinnedMeshRenderer smr, string renderKey)
+        internal async Task<bool> SmoothSingleMesh(SkinnedMeshRenderer smr, string renderKey)
         {
             if (smr == null || renderKey == null) return false;
                         
@@ -179,29 +165,19 @@ namespace KK_PregnancyPlus
             meshCopyTarget.vertices = md[renderKey]._inflatedVertices;//Always use interla _inflatedVerts directly, not the smoothedVerts by accident
             nativeDetour.Undo();
 
-            // Lapacian Smoothing is exetemely costly, and can take multiple seconds to compute with even a small mesh
-            //  So we want to put each mesh smoothing pass in its own thread, and apply the result when done
-            WaitCallback threadAction = (System.Object stateInfo) => 
+            var newVerts = new Vector3[md[renderKey].VertexCount];
+
+            //Put threadpool work inside task and await the results
+            await Task.Run(() => 
             {
                 if (!meshCopyTarget.isReadable) nativeDetour.Apply();
-                var newVerts = SmoothMesh.Start(meshCopyTarget, md[renderKey].alteredVerticieIndexes);
+                newVerts = SmoothMesh.Start(meshCopyTarget, md[renderKey].alteredVerticieIndexes);
                 nativeDetour.Undo();
+            });
 
-                //When this thread task is complete, execute the below in main thread
-                Action threadActionResult = () => 
-                {                    
-                    CheckForEndOfSmoothing();
-                    //Re-trigger ApplyInflation to set the new smoothed mesh
-                    ApplySmoothResults(newVerts, renderKey, smr);                                        
-                };
-
-                //Append to result queue.  Will execute on next Update()
-                threading.AddResultToThreadQueue(threadActionResult);
-
-            };
-
-            //Start this threaded task, and will be watched in Update() for completion
-            threading.Start(threadAction);
+            CheckForEndOfSmoothing();
+            //Re-trigger ApplyInflation to set the new smoothed mesh
+            await ApplySmoothResults(newVerts, renderKey, smr); 
             return true;
         }
 
@@ -209,7 +185,7 @@ namespace KK_PregnancyPlus
         /// <summary>   
         /// Update characters mesh with the new smoothed results
         /// </summary>
-        internal void ApplySmoothResults(Vector3[] newMesh, string renderKey, SkinnedMeshRenderer smr = null) 
+        internal async Task ApplySmoothResults(Vector3[] newMesh, string renderKey, SkinnedMeshRenderer smr = null) 
         {
             //Set the new smoothed mesh verts
             if (newMesh != null) md[renderKey].smoothedVertices = newMesh;
@@ -219,15 +195,19 @@ namespace KK_PregnancyPlus
 
             var meshInflateFlags = new MeshInflateFlags(this, _freshStart: true);
             //Compute the deltas and apply the smoothed mesh
-            ComputeDeltas(smr, renderKey, meshInflateFlags);         
+            await ComputeDeltas(smr, renderKey, meshInflateFlags);      
+                        
+            //When we have already pre-computed the deltas we can go ahead and finalize now
+            FinalizeInflation(smr, meshInflateFlags, blendShapeTempTagName);     
         }
 
 
         //Stop the smoothing timer when done with threads
+        //TODO fix this with tasks 
         internal void CheckForEndOfSmoothing()
         {
             //Stop updating GUI count when done
-            if (threading.ThreadCount == 0) PregnancyPlusGui.StopTextCountIncrement();
+            // if (threading.ThreadCount == 0) PregnancyPlusGui.StopTextCountIncrement();
         }
 
 

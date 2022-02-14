@@ -173,6 +173,7 @@ namespace KK_PregnancyPlus
             var raycastTargetCount = rayCastTargetPositions.Length + 1;
             var rayCastHits = ProcessRayCastCommands(clothSmr, origVerts, bellyVerticieIndexes, sphereCenter, rayCastDist);                
 
+            var meshColliderType = typeof(MeshCollider);
             // Clear existing lines on this mesh
             // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLineAndAttach(clothSmr.transform, Vector3.zero, Vector3.zero, Vector3.zero, true); 
 
@@ -200,7 +201,7 @@ namespace KK_PregnancyPlus
                     //Compute true index of this raycaast command
                     var indexPos = (i * raycastTargetCount) + t;          
                     if (rayCastHits[indexPos].collider == null) continue;
-                    if (rayCastHits[indexPos].collider.GetType() != typeof(MeshCollider)) continue;
+                    if (rayCastHits[indexPos].collider.GetType() != meshColliderType) continue;
 
                     if (rayCastHits[indexPos].distance < closestHit) 
                     {                            

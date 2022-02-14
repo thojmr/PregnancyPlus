@@ -27,7 +27,7 @@ namespace KK_PregnancyPlus
 
         internal bool initialized = false;//Prevent some actions from happening before character data loads   
         internal bool firstStart = true;//When this class just loaded for the first time
-
+        internal bool isProcessing = false;//When the MeshInflate logic is currently computing the mesh shape
         public BellyInfo bellyInfo;
         public string charaFileName = null;
         public bool lastVisibleState = false;//Track last mesh render state, to determine when to re-apply preg+ shape in main game
@@ -70,9 +70,6 @@ namespace KK_PregnancyPlus
                 get { return ChaControl.sex == 0 ?  "o_body_cm" : "o_body_cf"; }
             #endif            
         }
-
-        //Used to multithread some complex tasks.  Cant use fancy new unity threading methods, because of KK's old unity version
-        public Threading threading = new Threading();
 
         //This detour override the mesh canAccess state to make it readable/accessable
         public NativeDetourMesh nativeDetour;
@@ -195,14 +192,7 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.DebugAnimations.Value)
             {
                 if (Time.frameCount % 90 == 0) MeshInflate(new MeshInflateFlags(this, _checkForNewMesh: true, _freshStart: true, _reMeasure: true), "Update");
-            }
-
-            ///** Threading **
-
-            //Execute thread results in main thread, when existing threads are done processing
-            threading.WatchAndExecuteThreadResults();            
-            //Clear some values when all threads finished
-            if (threading.AllDone) RemoveMeshCollider();                            
+            }                         
         }
 
 

@@ -2,6 +2,7 @@
 using KKAPI.Chara;
 using UnityEngine;
 using System;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 #if HS2 || AI
     using AIChara;
@@ -24,7 +25,7 @@ namespace KK_PregnancyPlus
         /// <param name="smr">The target mesh renderer</param>
         /// <param name="boneFilters">The bones that must have weights, if none are passed it will get all bone indexes</param>
         /// <returns>Returns True if any verticies are found with matching boneFilter that needs processing</returns>
-        internal bool GetFilteredVerticieIndexes(SkinnedMeshRenderer smr, string[] boneFilters) 
+        internal async Task<bool> GetFilteredVerticieIndexes(SkinnedMeshRenderer smr, string[] boneFilters) 
         {
             var sharedMesh = smr.sharedMesh;
             var renderKey = GetMeshKey(smr);
@@ -65,32 +66,36 @@ namespace KK_PregnancyPlus
             //The distance backwards from characters center that verts are allowed to be modified
             var backExtent = bindPoseScaleZ * -bellyInfo.ZLimit;
             
-            var c = 0;
-            var meshBoneWeights = sharedMesh.boneWeights;
-            foreach (BoneWeight bw in meshBoneWeights) 
+            //Put threadpool work inside task and await the results
+            await Task.Run(() => 
             {
-                int[] boneIndicies = new int[] { bw.boneIndex0, bw.boneIndex1, bw.boneIndex2, bw.boneIndex3 };
-                float[] boneWeights = new float[] { bw.weight0, bw.weight1, bw.weight2, bw.weight3 };
+                //Spread work across multiple threads
+                md[renderKey].bellyVerticieIndexes = Threading.RunParallel(sharedMesh.boneWeights, (bw, i) => 
+                {
+                    int[] boneIndicies = new int[] { bw.boneIndex0, bw.boneIndex1, bw.boneIndex2, bw.boneIndex3 };
+                    float[] boneWeights = new float[] { bw.weight0, bw.weight1, bw.weight2, bw.weight3 };
 
-                //For each bone weight
-                for (int i = 0; i < 4; i++)
-                {                    
-                    //If it has a weight, and the bone is a belly bone. Weight goes (0-1f) Ignore 0 and maybe filter below 0.1 as well
-                    //Include all if debug = true
-                    if ((boneWeights[i] > minBoneWeight && bellyBoneIndexes.Contains(boneIndicies[i]) || PregnancyPlusPlugin.MakeBalloon.Value))
-                    {
-                        //Make sure to exclude verticies on characters back, we only want to modify the front.  No back bellies!
-                        //add all vertexes in debug mode
-                        if (verticies[c].z >= backExtent || PregnancyPlusPlugin.MakeBalloon.Value) 
+                    //For each bone weight
+                    for (int j = 0; j < 4; j++)
+                    {                    
+                        //If it has a weight, and the bone is a belly bone. Weight goes (0-1f) Ignore 0 and maybe filter below 0.1 as well
+                        //Include all if debug = true
+                        if ((boneWeights[j] > minBoneWeight && bellyBoneIndexes.Contains(boneIndicies[j]) || PregnancyPlusPlugin.MakeBalloon.Value))
                         {
-                            bellyVertIndex[c] = true;
-                            hasBellyVerticies = true;
-                            break;
-                        }                        
-                    }                
-                }
-                c++;//lol                                          
-            }
+                            //Make sure to exclude verticies on characters back, we only want to modify the front.  No back bellies!
+                            //add all vertexes in debug mode
+                            if (verticies[i].z >= backExtent || PregnancyPlusPlugin.MakeBalloon.Value) 
+                            {
+                                hasBellyVerticies = true;
+                                return true;                                
+                            }                        
+                        }                                        
+                    }
+
+                    return false;
+                });
+
+            });
 
             nativeDetour.Undo();
 
