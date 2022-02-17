@@ -38,7 +38,8 @@ namespace KK_PregnancyPlus
 
         //Holds the user entered slider values
         public PregnancyPlusData infConfig = new PregnancyPlusData();
-        internal PregnancyPlusData infConfigHistory = new PregnancyPlusData();        
+        internal PregnancyPlusData infConfigHistory = new PregnancyPlusData();      
+        internal MeshInflateFlags lastMeshInflateFlags = null;   
 
 
         //Keeps track of all belly verticie data for preg+, the dict is indexed by the (meshRenderer.name + the vertex count) to make the mesh indexes unique
@@ -101,6 +102,7 @@ namespace KK_PregnancyPlus
         {  
             uncensorChanged = false;//reset value to signify its not a change made manually by the user
             firstStart = true;
+            isProcessing = false;
             
             //Character card name 
             charaFileName = ChaFileControl.parameter.fullname;        
@@ -152,7 +154,7 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" ");
             if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnReload {currentGameMode}");
             isReloading = true;
-            lastVisibleState = false;            
+            lastVisibleState = false;                      
 
             ClearOnReload();
             #if AI || HS2

@@ -31,7 +31,12 @@ namespace KK_PregnancyPlus
         public void MeshInflate(MeshInflateFlags meshInflateFlags, string callee)
         {
             //Only allow one MeshInflate process at a time (Since it runs across multiple frames at a time)
-            if (isProcessing) return;
+            if (isProcessing) 
+            {
+                //Store the last attempted flags to re-run once processing is finished
+                lastMeshInflateFlags = meshInflateFlags;
+                return;
+            }
             //Make sure chatacter objs exists first 
             if (ChaControl.objBodyBone == null) return; 
             // Only female characters, unless plugin config says otherwise 
@@ -92,6 +97,11 @@ namespace KK_PregnancyPlus
 
         internal async void DoInflation(MeshInflateFlags meshInflateFlags)
         {
+            if (isProcessing) 
+            {
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" Preg+ isProcessing...");
+                return;
+            }
             //Prevent multiple processes from running at the same time
             isProcessing = true;
 
@@ -101,7 +111,16 @@ namespace KK_PregnancyPlus
 
             //Mark done processing
             isProcessing = false;
-            //TODO check for any queued MeshInflate calls that were added while processing this request
+
+            //If any MeshInflate() calls were triggered while isProcessing==true, re-apply that request since it was skipped
+            if (lastMeshInflateFlags == null) return;
+            
+            //Make clone so we can clear the old value now
+            var lastFlagsClone = (MeshInflateFlags)lastMeshInflateFlags.Clone();
+            lastMeshInflateFlags = null;
+
+            MeshInflate(lastFlagsClone, "lastMeshInflateFlags");                
+            
         }
 
 

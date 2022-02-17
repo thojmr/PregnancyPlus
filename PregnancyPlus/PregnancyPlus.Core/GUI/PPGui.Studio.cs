@@ -86,6 +86,7 @@ namespace KK_PregnancyPlus
                         #if DEBUG
                             DebugTools.ClearAllThingsFromCharacter();
                         #endif
+                        ctrl.isProcessing = false;
                         ctrl.infConfig.Reset();                           
                     }            
                 });
