@@ -34,7 +34,7 @@ namespace KK_PregnancyPlus
             if (isProcessing) 
             {
                 //Store the last attempted flags to re-run once processing is finished
-                lastMeshInflateFlags = meshInflateFlags;
+                lastMeshInflateFlags = (MeshInflateFlags)meshInflateFlags.Clone();
                 return;
             }
             //Make sure chatacter objs exists first 
@@ -95,11 +95,16 @@ namespace KK_PregnancyPlus
         }
 
 
+        /// <summary>
+        /// Start the belly inflation logic flow.  Prevent more than one instance of it from running at a time.
+        ///     If an incoming request occurs during processing, stop it and trigger it again when done
+        /// </summary>
         internal async void DoInflation(MeshInflateFlags meshInflateFlags)
         {
             if (isProcessing) 
             {
-                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" Preg+ isProcessing...");
+                //Store the last attempted flags to re-run once processing is finished
+                lastMeshInflateFlags = (MeshInflateFlags)meshInflateFlags.Clone();
                 return;
             }
             //Prevent multiple processes from running at the same time
@@ -121,11 +126,14 @@ namespace KK_PregnancyPlus
 
             MeshInflate(lastFlagsClone, "lastMeshInflateFlags");                
             
+            //Finally remove the mesh collider since it is no longer needed
+            RemoveMeshCollider();
         }
 
 
         /// <summary>
-        /// First find the body mesh and compute its inflation.  Other meshes depend on the body's computed verts so we do this first
+        /// Find the body mesh and compute its inflated verts.  
+        ///     Other meshes depend on the body's computed verts so we do this first
         /// </summary>
         internal async Task<string> FindAndAffectBodyMesh(MeshInflateFlags meshInflateFlags)
         {
