@@ -27,6 +27,7 @@ namespace KK_PregnancyPlus
 
         internal bool initialized = false;//Prevent some actions from happening before character data loads   
         internal bool firstStart = true;//When this class just loaded for the first time
+        internal bool isProcessing = false;//When the MeshInflate logic is currently computing the mesh shape
 
         public BellyInfo bellyInfo;
         public string charaFileName = null;
@@ -39,6 +40,7 @@ namespace KK_PregnancyPlus
         //Holds the user entered slider values
         public PregnancyPlusData infConfig = new PregnancyPlusData();
         internal PregnancyPlusData infConfigHistory = new PregnancyPlusData();        
+        internal MeshInflateFlags lastMeshInflateFlags = null; 
 
 
         //Keeps track of all belly verticie data for preg+, the dict is indexed by the (meshRenderer.name + the vertex count) to make the mesh indexes unique
@@ -202,13 +204,26 @@ namespace KK_PregnancyPlus
             //Execute thread results in main thread, when existing threads are done processing
             threading.WatchAndExecuteThreadResults();            
             //Clear some values when all threads finished
-            if (threading.AllDone) RemoveMeshCollider();                            
+            if (threading.AllDone) 
+            {
+                RemoveMeshCollider(); 
+                isProcessing = false;
+                
+                //If any MeshInflate() calls were triggered while isProcessing==true, re-apply that request since it was skipped
+                if (lastMeshInflateFlags == null) return;
+                
+                //Make clone so we can clear the old value now
+                var lastFlagsClone = (MeshInflateFlags)lastMeshInflateFlags.Clone();
+                lastMeshInflateFlags = null;
+
+                MeshInflate(lastFlagsClone, "lastMeshInflateFlags");                                            
+            }
         }
 
 
         protected override void OnDestroy() 
         {
-            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnDestroy {charaFileName}"); 
+            if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $OnDestroy {charaFileName}");
 
             //Remove the detour we made
             nativeDetour?.Dispose();         

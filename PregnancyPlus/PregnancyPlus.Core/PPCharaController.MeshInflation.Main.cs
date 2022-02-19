@@ -29,6 +29,13 @@ namespace KK_PregnancyPlus
         /// <returns>Will return True if the mesh was altered and False if not</returns>
         public void MeshInflate(MeshInflateFlags meshInflateFlags, string callee)
         {
+            //Only allow one MeshInflate process at a time (Since it runs across multiple frames at a time)
+            if (isProcessing) 
+            {
+                //Store the last attempted flags to re-run once processing is finished
+                lastMeshInflateFlags = (MeshInflateFlags)meshInflateFlags.Clone();
+                return;
+            }
             //Make sure chatacter objs exists first 
             if (ChaControl.objBodyBone == null) return; 
             // Only female characters, unless plugin config says otherwise 
@@ -81,6 +88,8 @@ namespace KK_PregnancyPlus
                 if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" Character not visible, can't measure yet {charaFileName}");  
                 return; 
             }       
+
+            isProcessing = true;
 
             //Inflate the body mesh.  When it is done it will trigger the same for all other meshes since others depend on the body to be computed first
            var renderKey = FindAndAffectBodyMesh(meshInflateFlags);
@@ -273,6 +282,8 @@ namespace KK_PregnancyPlus
 
             //If the inflation is applied, update the previous slider config values
             if (appliedMeshChanges) infConfigHistory = (PregnancyPlusData)infConfig.Clone();
+            if (threading.ThreadCount <= 0)
+                isProcessing = false;
         }
 
 
