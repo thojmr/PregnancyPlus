@@ -17,6 +17,8 @@ namespace KK_PregnancyPlus
 
             //Used to identifiy the assembly class methods during reflection
             #if KKS
+                internal static string pluginName = "KKS_UncensorSelector";
+            #elif KK
                 internal static string pluginName = "KK_UncensorSelector";
             #elif AI
                 internal static string pluginName = "AI_UncensorSelector";
@@ -50,7 +52,7 @@ namespace KK_PregnancyPlus
                 if (uncensorSelector == null)
                 {
                     PregnancyPlusPlugin.Logger.LogInfo(
-                        $"Could not find {pluginName}.UncensorSelector - Not an issue");
+                        $"Could not find {pluginName}.UncensorSelector - Not an issue if you don't have the UncensorSelector plugin installed");
                         return;
                 }
 
