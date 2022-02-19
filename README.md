@@ -10,6 +10,7 @@ See `Features` for all plugin features
 
 ## Latest Features (I will update this occasionally)
 - 6.0+:
+    - Fat Fold Gap slider
     - Core code rewrite to fix many old issues, and pave way for new features
     - SkinnedAccessories now work with Preg+
     - AccessoryClothes now work with Preg+
@@ -31,6 +32,15 @@ See `Features` for all plugin features
     - If you see warnings in game about KKAPI or BepInEx versions, you need to download the latest BetterRepack or HFPatch
 
 </br>
+
+## Some Tips
+- Use one of the High Poly meshes (uncensors) for screenshots.  It makes the belly more round and less jagged.  The KK one linked bellow works well with cloth too
+- The more Multiplier you apply, the more -StretchX and -StretchY you should apply.  This lets you apply even more Multiplier
+- The Taper sliders are good at making the shape more egg like
+- Too much Roundness slider will cause clothes to clip at the top of the belly
+- If you see jagged edges or shadows on the skin, use the "Smooth Belly Mesh" button to reduce it
+
+<br>
 
 ## Features
 - Adds a number of sliders that will allow you to change the size and shape of a characters belly in Studio, Maker, and Main Gameplay.
@@ -115,7 +125,7 @@ See `Features` for all plugin features
 
 </br>
 
-### Some KK_PregnancyPlus technical details
+### Some PregnancyPlus technical details
 - Instead of manipulating the bones like KK_Pregnancy does, this mod alters the mesh itself with blendshapes computed at runtime, which has benefits and drawbacks.
     - The sliders alter the blendshape weight and or create a new blendshape if one does not already exist. 
 - Integrates with KK/AI_Pregnancy in Story Mode so that both plugins can work together.  This can be configured in plugin config
