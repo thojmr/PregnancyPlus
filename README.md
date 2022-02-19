@@ -10,6 +10,7 @@ See `Features` for all plugin features
 
 ## Latest Features (I will update this occasionally)
 - 6.0+:
+    - Implemented c# async await to remove hitching in HS2, AI, and KKS
     - Fat Fold Gap slider
     - Core code rewrite to fix many old issues, and pave way for new features
     - SkinnedAccessories now work with Preg+
