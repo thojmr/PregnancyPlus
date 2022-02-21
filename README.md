@@ -6,7 +6,7 @@ See `How To Install` for installation instructions
 See `Features` for all plugin features
 
 
-<img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/P+ All Menus.png"></img>
+<img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/P+ All Menus.png" height="1000"></img>
 
 ## Latest Features (I will update this occasionally)
 - 6.0+:
