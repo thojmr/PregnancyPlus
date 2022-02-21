@@ -122,6 +122,7 @@ See `Features` for all plugin features
 
 ## High Poly Mesh
 - If you are looking for a higher poly base mesh to make up for Koikatsu's lack of belly polygons, you can try this high poly uncensor (mesh) [Look for [KK][Female]Highpoly_vX.X.zip Here](https://ux.getuploader.com/nHaruka_KK/)  They have done a decent job of preventing cloth clipping with the latest versions.  So if you want smoother belly shapes for screenshots, it's a good idea to try it.
+  - To use it in studio/maker just extract that zip into `<root game folder>/mods/MyMods/`.   Then in game, find the Uncensor dropdown and select "High Poly".
 - They exists for HS2/AI as well if you look around, but generally there are plenty of polygons in those games.
 
 </br>
