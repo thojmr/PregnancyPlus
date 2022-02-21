@@ -15,10 +15,8 @@ See `Features` for all plugin features
     - Core code rewrite to fix many old issues, and pave way for new features
     - SkinnedAccessories now work with Preg+
     - AccessoryClothes now work with Preg+
-    - More Multithreaded computation
 - 5.0+:
     - Preg+ works with all normal clothing types now
-    - Override KK_Pregnancy belly shape
 
 
 </br>
