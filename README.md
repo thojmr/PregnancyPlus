@@ -120,11 +120,14 @@ See `Features` for all plugin features
 
 </br>
 
-## Notes
-- There will always be some amount of cloth clipping.  You can use the Cloth Offset slider to help with it, but It's a difficult problem to solve.
-- If you are looking for a higher poly base mesh to make up for Koikatsu's lack of belly polygons, you can try this [high poly uncensor (mesh)](https://ux.getuploader.com/nHaruka_KK/)  However you will see a lot of cloth clipping with this uncensor, since it doesn't fully line up with the default one. Pick your poison.
+## High Poly Mesh
+- If you are looking for a higher poly base mesh to make up for Koikatsu's lack of belly polygons, you can try this high poly uncensor (mesh) [Look for [KK][Female]Highpoly_vX.X.zip Here](https://ux.getuploader.com/nHaruka_KK/)  They have done a decent job of preventing cloth clipping with the latest versions.  So if you want smoother belly shapes for screenshots, it's a good idea to try it.
+- They exists for HS2/AI as well if you look around, but generally there are plenty of polygons in those games.
 
 </br>
+
+## Notes
+- There will always be some amount of cloth clipping.  You can use the Cloth Offset slider to help with it, but It's a difficult problem to solve.
 
 ### Some PregnancyPlus technical details
 - Instead of manipulating the bones like KK_Pregnancy does, this mod alters the mesh itself with blendshapes computed at runtime, which has benefits and drawbacks.
