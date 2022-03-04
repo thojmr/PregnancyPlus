@@ -1,12 +1,12 @@
 # Pregnancy Plus Introduction
 This repository contains the PregnancyPlus plugin, that adds additional belly sliders in Studio and Maker.  It is intended to compliment the [KK_Pregnancy](https://github.com/ManlyMarco/KoikatuGameplayMods) plugin, but can be used without it.
 
-See `How To Install` for installation instructions
+See [How To Install](#how-to-install) for installation instructions
 </br>
-See `Features` for all plugin features
+See [Features](#features) for all plugin features
 
 
-<img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/P+ All Menus.png" height="1000"></img>
+<img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/P+ All Menus.png" height="900"></img>
 
 ## Latest Features (I will update this occasionally)
 - 6.0+:
@@ -33,26 +33,27 @@ See `Features` for all plugin features
 </br>
 
 ## Some Tips
-- Use one of the High Poly meshes (uncensors) for screenshots.  It makes the belly more round and less jagged.  The KK one linked bellow works well with cloth too
+- Use one of the High Poly meshes (uncensors) for screenshots.  It makes the belly more round and less jagged.  [Install guide below](#high-poly-mesh)
 - The more Multiplier you apply, the more -StretchX and -StretchY you should apply.  This lets you apply even more Multiplier
 - The Taper sliders are good at making the shape more egg like
 - Too much Roundness slider will cause clothes to clip at the top of the belly
 - If you see jagged edges or shadows on the skin, use the "Smooth Belly Mesh" button to reduce it
-
+- There will always be some amount of cloth clipping at extreme sizes.  You can use the Cloth Offset slider to help, but It's a difficult problem to solve.
+- **Hover over any Plugin Config options in game for more detailed descriptions**
+- 
 <br>
 
 ## Features
 - Adds a number of sliders that will allow you to change the size and shape of a characters belly in Studio, Maker, and Main Gameplay.
-    - In Main Game you can further tweak all character's belly shapes with the F1 plugin config sliders.
-- Adds Timeline (KK) and VNGE (HS2/AI) integration for belly animations. Short guides below.
+    - In Main Game you can further bulk tweak all character's belly shapes with the F1 plugin config sliders.
+- Adds Timeline and VNGE integration for belly animations. Short guides below. [Timeline](#timeline-integration) | [VNGE](#vnge-integration)
 - Adds 3 configurable keybinds in plugin config that can be used to increase or decrease the belly size in Main Game, on the fly.   
-- Adds a Fat Fold slider that explains itself, just make sure the Preg+ slider is above 0 as well.
-- Adds an "Override KK_Pregnancy belly shape" toggle, that lets you replace the KK/AI_Pregnancy belly with the Preg+ one in Main Gameplay (Instead of combining the two).
-- Adds a "Mesh Smoothing" button in Studio and Maker, that allows you to smooth the belly mesh and reduce any edge shadows.
-    - The smoothing will reset on slider change or character load, so it's mostly for screenshots, animations, and blendshapes.
+- Adds an additional Fat Fold slider, just make sure the Preg+ slider is above 0 to see the effect.
+- Adds an "Override KK_Pregnancy belly shape" toggle, that lets you use the Preg+ belly shape as the default one in Main Gameplay (Instead of combining both plugin's shapes).
+- Adds a "Mesh Smoothing" button in Studio and Maker, that allows you to smooth the belly mesh and reduce any stretched skin and hard shadows.
+    - The smoothing will reset on slider change or character load, so it's mostly for screenshots, and animations.
     - The smoothed mesh can be saved as a blendshape!    
-    - It's a slow prcess so watch the timer on the button to see when its done. (extremely slow when using a high poly mesh)
-- **Hover over any Plugin Config options in game for more detailed descriptions**
+    - It's a slow prcess, so watch the timer below the button to see when its done. (extremely slow when using a high poly mesh)
 
 </br>
 
@@ -119,14 +120,12 @@ See `Features` for all plugin features
 </br>
 
 ## High Poly Mesh
-- If you are looking for a higher poly base mesh to make up for Koikatsu's lack of belly polygons, you can try this high poly uncensor (mesh) [Look for [KK][Female]Highpoly_vX.X.zip Here](https://ux.getuploader.com/nHaruka_KK/)  They have done a decent job of preventing cloth clipping with the latest versions.  So if you want smoother belly shapes for screenshots, it's a good idea to try it.
+- If you are looking for a higher poly base mesh to make up for Koikatsu's lack of belly polygons, you can use this high poly uncensor (mesh) [Look for [KK][Female]Highpoly_vX.X.zip Here](https://ux.getuploader.com/nHaruka_KK/)  They've done a decent job to prevent clipping with the latest versions.  So if you want a smoother belly  for screenshots, it's a good idea to try it.
   - To use it in studio/maker just extract that zip into `<root game folder>/mods/MyMods/`.   Then in game, find the Uncensor dropdown and select "High Poly".
-- They exists for HS2/AI as well if you look around, but generally there are plenty of polygons in those games.
+- High Poly meshes exist for HS2/AI as well if you look around, but generally there are plenty of polygons in those games.
 
 </br>
 
-## Notes
-- There will always be some amount of cloth clipping.  You can use the Cloth Offset slider to help with it, but It's a difficult problem to solve.
 
 ### Some PregnancyPlus technical details
 - Instead of manipulating the bones like KK_Pregnancy does, this mod alters the mesh itself with blendshapes computed at runtime, which has benefits and drawbacks.
@@ -170,6 +169,7 @@ See `Features` for all plugin features
 - Finally create a build script with tasks.json in VSCode, to automate builds and releases.
 
 Note: If you see a .net version error, you will need to install that version of .net development kit (3.5 for KK, and 4.6 for others)
+Note: You may need to manually copy a few DLL's from the game's directory to `<project_root>/packages/` if you are noticing some missing references (HS2PE, KKPE, etc...).
 
 Example build task:  Debug and Release Tasks
 ```json
