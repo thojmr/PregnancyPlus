@@ -127,7 +127,7 @@ See [Features](#features) for all plugin features
 </br>
 
 
-### Some PregnancyPlus technical details
+## Some PregnancyPlus technical details
 - Instead of manipulating the bones like KK_Pregnancy does, this mod alters the mesh itself with blendshapes computed at runtime, which has benefits and drawbacks.
     - The sliders alter the blendshape weight and or create a new blendshape if one does not already exist. 
 - Integrates with KK/AI_Pregnancy in Story Mode so that both plugins can work together.  This can be configured in plugin config
