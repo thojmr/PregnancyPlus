@@ -152,6 +152,8 @@ See [Features](#features) for all plugin features
 - https://help.github.com/en/github/creating-cloning-and-archiving-repositories/cloning-a-repository
 - https://docs.microsoft.com/en-us/visualstudio/get-started/csharp/?view=vs-2019
 - https://docs.microsoft.com/en-us/visualstudio/ide/troubleshooting-broken-references?view=vs-2019
+    
+Note: You may need to manually copy a few DLL's from the game's directory to `<project_root>/packages/` if you are noticing some missing references (HS2PE, KKPE, etc...).
  </details>
 
 ## (Developers only) Compiling with Visual Studio Code (My way)
@@ -169,6 +171,7 @@ See [Features](#features) for all plugin features
 - Finally create a build script with tasks.json in VSCode, to automate builds and releases.
 
 Note: If you see a .net version error, you will need to install that version of .net development kit (3.5 for KK, and 4.6 for others)
+
 Note: You may need to manually copy a few DLL's from the game's directory to `<project_root>/packages/` if you are noticing some missing references (HS2PE, KKPE, etc...).
 
 Example build task:  Debug and Release Tasks
