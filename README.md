@@ -124,6 +124,9 @@ See [Features](#features) for all plugin features
   - To use it in studio/maker just extract that zip into `<root game folder>/mods/MyMods/`.   Then in game, find the Uncensor dropdown and select "High Poly".
 - High Poly meshes exist for HS2/AI as well if you look around, but generally there are plenty of polygons in those games.
 
+>Right image is HighPoly
+<img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/HighPoly.png" height="300"></img>
+
 </br>
 
 
