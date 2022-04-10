@@ -22,6 +22,9 @@
     <Compile Include="..\PregnancyPlus.Core\GUI\PPBlendShapeGui.cs" />
     <Compile Include="..\PregnancyPlus.Core\GUI\PPBlendShapeGui.Style.cs" />
     <Compile Include="..\PregnancyPlus.Core\GUI\PPBlendShapeGui.Gui.cs" />
+    <Compile Include="..\PregnancyPlus.Core\GUI\PPClothOffsetGui.cs" />
+    <Compile Include="..\PregnancyPlus.Core\GUI\PPClothOffsetGui.Style.cs" />
+    <Compile Include="..\PregnancyPlus.Core\GUI\PPClothOffsetGui.Gui.cs" />
     <Compile Include="..\PregnancyPlus.Core\GUI\PPGui.Studio.cs" />
     <Compile Include="..\PregnancyPlus.Core\GUI\PPGui.Maker.cs" />
     <Compile Include="..\PregnancyPlus.Core\GUI\PPGui.ButtonTimer.cs" />

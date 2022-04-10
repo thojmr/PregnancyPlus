@@ -35,6 +35,7 @@ namespace KK_PregnancyPlus
         public bool isReloading = false;//While character.Reload() is processing prevent other MeshInflate() instances
         internal bool ignoreNextUncensorHook = false;//When we want to ignore a single uncensor hook event
         public PregnancyPlusBlendShapeGui blendShapeGui = new PregnancyPlusBlendShapeGui();
+        public PregnancyPlusClothOffsetGui clothOffsetGui = new PregnancyPlusClothOffsetGui();
 
         //Holds the user entered slider values
         public PregnancyPlusData infConfig = new PregnancyPlusData();

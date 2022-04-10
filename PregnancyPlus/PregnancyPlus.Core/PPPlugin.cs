@@ -4,6 +4,7 @@ using HarmonyLib;
 using System;
 using KKAPI;
 using KKAPI.Studio;
+using KKAPI.Maker;
 using KKAPI.Chara;
 #if KKS || AI
     using KKAPI.MainGame;
@@ -84,7 +85,7 @@ namespace KK_PregnancyPlus
         /// </summary>
         internal void OnGUI()
         {                
-            if (!StudioAPI.InsideStudio) return;
+            if (!StudioAPI.InsideStudio && !MakerAPI.InsideMaker) return;
 
             //Update GUI text
             PregnancyPlusGui.Update();
@@ -110,6 +111,7 @@ namespace KK_PregnancyPlus
 
                 //Update any active gui windows
                 ctrl.blendShapeGui.OnGUI(this);                                                                                 
+                ctrl.clothOffsetGui.OnGUI(this);                                                                                 
             }
         }
     

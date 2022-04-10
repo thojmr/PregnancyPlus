@@ -290,6 +290,13 @@ namespace KK_PregnancyPlus
                 var clothItemChanged = identifier >= 0 ? $": {identifier}" : "N/A";
                 var callee = $"WaitForMeshToSettle({(checkNewClothMesh ? "kind" : "slot") + clothItemChanged})";
 
+                //When clothes change and the offset gui is open, reload slider list
+                if (checkNewClothMesh || forceRecalcVerts) 
+                {
+                    var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);
+                    clothOffsetGui.OnClothingChanged(clothRenderers);
+                }
+
                 MeshInflate(new MeshInflateFlags(this, _checkForNewClothMesh: checkNewClothMesh, _checkForNewAccMesh: checkNewAccessoryMesh, _freshStart: forceRecalcVerts), callee);                
             }
         }

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Globalization;
 using System.Collections.Generic;
@@ -30,8 +31,30 @@ namespace KK_PregnancyPlus
         public float inflationDrop = 0;
         //Tracks which clothing offset vserion this character was made with  v1 == 0, v2 == 1
         public int clothingOffsetVersion = 1;//We no longer use this, but keeping for legacy reasons (Everyone is V2 now)
+        //Each clothing item can have a separate offset now
+        public byte[] individualClothingOffsets = null;
         public byte[] meshBlendShape = null;//Type: List<MeshBlendShape> once Deserialized
         public string pluginVersion = null;
+        
+
+        //Convert the value to byte[] since KeyValuePair, and other IDictionary objects can't be serialized with LZ4MessagePackSerializer
+        public List<KeyValuePair<string, float>> IndividualClothingOffsets 
+        {
+            get 
+            { 
+                if (individualClothingOffsets == null) return null;
+                return MessagePack.LZ4MessagePackSerializer.Deserialize<List<KeyValuePair<string, float>>>(individualClothingOffsets);
+            }
+            set 
+            {
+                if (value == null) 
+                {
+                    individualClothingOffsets = null;
+                    return;
+                }
+                individualClothingOffsets = MessagePack.LZ4MessagePackSerializer.Serialize(value);
+            }
+        }
 
 #endregion
         
@@ -63,7 +86,16 @@ namespace KK_PregnancyPlus
         //Allows cloning, to avoid pass by ref issues when keeping history
         public object Clone()
         {
-            return this.MemberwiseClone();
+            var clonedObj = (PregnancyPlusData)this.MemberwiseClone();
+
+            //Memberwise clone does not deep copy, so copy any objects manually
+            // var individualClothingOffsets = clonedObj.individualClothingOffsets;
+            // if (individualClothingOffsets != null)
+            // {
+            //     clonedObj.individualClothingOffsets = individualClothingOffsets;
+            // }            
+
+            return clonedObj;
         }
 
         public string ValuesToString() 
@@ -77,27 +109,40 @@ namespace KK_PregnancyPlus
             if (obj == null) return false;
             var otherData = obj as PregnancyPlusData;
             if (otherData == null) return false;
-            var hasChanges = false;
 
             //Compare this class instance values to another
-            if (inflationSize != otherData.inflationSize) hasChanges = true;              
-            if (inflationMoveY != otherData.inflationMoveY) hasChanges = true;
-            if (inflationMoveZ != otherData.inflationMoveZ) hasChanges = true;
-            if (inflationStretchX != otherData.inflationStretchX) hasChanges = true;
-            if (inflationStretchY != otherData.inflationStretchY) hasChanges = true;
-            if (inflationShiftY != otherData.inflationShiftY) hasChanges = true;
-            if (inflationShiftZ != otherData.inflationShiftZ) hasChanges = true;
-            if (inflationTaperY != otherData.inflationTaperY) hasChanges = true;
-            if (inflationTaperZ != otherData.inflationTaperZ) hasChanges = true;
-            if (inflationMultiplier != otherData.inflationMultiplier) hasChanges = true;
-            if (inflationClothOffset != otherData.inflationClothOffset) hasChanges = true;
-            if (inflationFatFold != otherData.inflationFatFold) hasChanges = true;           
-            if (inflationFatFoldHeight != otherData.inflationFatFoldHeight) hasChanges = true;           
-            if (inflationFatFoldGap != otherData.inflationFatFoldGap) hasChanges = true;           
-            if (inflationRoundness != otherData.inflationRoundness) hasChanges = true;                      
-            if (inflationDrop != otherData.inflationDrop) hasChanges = true;                      
+            if (inflationSize != otherData.inflationSize) return false;              
+            if (inflationMoveY != otherData.inflationMoveY) return false;
+            if (inflationMoveZ != otherData.inflationMoveZ) return false;
+            if (inflationStretchX != otherData.inflationStretchX) return false;
+            if (inflationStretchY != otherData.inflationStretchY) return false;
+            if (inflationShiftY != otherData.inflationShiftY) return false;
+            if (inflationShiftZ != otherData.inflationShiftZ) return false;
+            if (inflationTaperY != otherData.inflationTaperY) return false;
+            if (inflationTaperZ != otherData.inflationTaperZ) return false;
+            if (inflationMultiplier != otherData.inflationMultiplier) return false;
+            if (inflationClothOffset != otherData.inflationClothOffset) return false;
+            if (inflationFatFold != otherData.inflationFatFold) return false;           
+            if (inflationFatFoldHeight != otherData.inflationFatFoldHeight) return false;           
+            if (inflationFatFoldGap != otherData.inflationFatFoldGap) return false;           
+            if (inflationRoundness != otherData.inflationRoundness) return false;                      
+            if (inflationDrop != otherData.inflationDrop) return false;       
 
-            return !hasChanges;
+            var offsets = IndividualClothingOffsets;
+            var otherOffsets = otherData.IndividualClothingOffsets;  
+            if (offsets != null || otherOffsets != null) 
+            {
+                if (offsets == null && otherOffsets != null) return false;
+                if (offsets != null && otherOffsets == null) return false;
+                if (offsets.Count != otherOffsets.Count) return false;
+
+                for (int i = 0; i < offsets.Count; i++)
+                {
+                    if (offsets[i].Value != otherOffsets[i].Value) return false;
+                }
+            }                     
+
+            return true;
         }
 
 
@@ -107,27 +152,40 @@ namespace KK_PregnancyPlus
             if (obj == null) return false;
             var otherData = obj as PregnancyPlusData;
             if (otherData == null) return false;
-            var inflationSizeOnlyChanges = false;
-
+            
+            if (inflationSize == otherData.inflationSize) return false;              
             //Compare this class instance values to another
-            if (inflationSize != otherData.inflationSize) inflationSizeOnlyChanges = true;              
-            if (inflationMoveY != otherData.inflationMoveY) inflationSizeOnlyChanges = false;
-            if (inflationMoveZ != otherData.inflationMoveZ) inflationSizeOnlyChanges = false;
-            if (inflationStretchX != otherData.inflationStretchX) inflationSizeOnlyChanges = false;
-            if (inflationStretchY != otherData.inflationStretchY) inflationSizeOnlyChanges = false;
-            if (inflationShiftY != otherData.inflationShiftY) inflationSizeOnlyChanges = false;
-            if (inflationShiftZ != otherData.inflationShiftZ) inflationSizeOnlyChanges = false;
-            if (inflationTaperY != otherData.inflationTaperY) inflationSizeOnlyChanges = false;
-            if (inflationTaperZ != otherData.inflationTaperZ) inflationSizeOnlyChanges = false;
-            if (inflationMultiplier != otherData.inflationMultiplier) inflationSizeOnlyChanges = false;
-            if (inflationClothOffset != otherData.inflationClothOffset) inflationSizeOnlyChanges = false;
-            if (inflationFatFold != otherData.inflationFatFold) inflationSizeOnlyChanges = false;           
-            if (inflationFatFoldHeight != otherData.inflationFatFoldHeight) inflationSizeOnlyChanges = false;           
-            if (inflationFatFoldGap != otherData.inflationFatFoldGap) inflationSizeOnlyChanges = false;           
-            if (inflationRoundness != otherData.inflationRoundness) inflationSizeOnlyChanges = false;                      
-            if (inflationDrop != otherData.inflationDrop) inflationSizeOnlyChanges = false;                      
+            if (inflationMoveY != otherData.inflationMoveY) return false;
+            if (inflationMoveZ != otherData.inflationMoveZ) return false;
+            if (inflationStretchX != otherData.inflationStretchX) return false;
+            if (inflationStretchY != otherData.inflationStretchY) return false;
+            if (inflationShiftY != otherData.inflationShiftY) return false;
+            if (inflationShiftZ != otherData.inflationShiftZ) return false;
+            if (inflationTaperY != otherData.inflationTaperY) return false;
+            if (inflationTaperZ != otherData.inflationTaperZ) return false;
+            if (inflationMultiplier != otherData.inflationMultiplier) return false;
+            if (inflationClothOffset != otherData.inflationClothOffset) return false;
+            if (inflationFatFold != otherData.inflationFatFold) return false;           
+            if (inflationFatFoldHeight != otherData.inflationFatFoldHeight) return false;           
+            if (inflationFatFoldGap != otherData.inflationFatFoldGap) return false;           
+            if (inflationRoundness != otherData.inflationRoundness) return false;                      
+            if (inflationDrop != otherData.inflationDrop) return false;  
 
-            return inflationSizeOnlyChanges;
+            var offsets = IndividualClothingOffsets;
+            var otherOffsets = otherData.IndividualClothingOffsets;                      
+            if (offsets != null || otherOffsets != null) 
+            {
+                if (offsets == null && otherOffsets != null) return false;
+                if (offsets != null && otherOffsets == null) return false;
+                if (offsets.Count != otherOffsets.Count) return false;
+
+                for (int i = 0; i < offsets.Count; i++)
+                {
+                    if (offsets[i].Value != otherOffsets[i].Value) return false;
+                }
+            }                  
+
+            return true;
         }
 
         public override int GetHashCode()
@@ -148,6 +206,7 @@ namespace KK_PregnancyPlus
                 clothingOffsetVersion.GetHashCode() +
                 inflationFatFold.GetHashCode() +
                 inflationFatFoldHeight.GetHashCode() +
+                individualClothingOffsets.GetHashCode() +
                 inflationFatFoldGap.GetHashCode();
 
             return hashCode;            

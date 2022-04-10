@@ -33,6 +33,7 @@ namespace KK_PregnancyPlus
         internal const string inflationRoundness = "        Roundness";
         internal const string inflationDrop = "        Drop";
         private const string blendshapeText = "Open BlendShapes";
+        private const string individualClothOffsetText = "Open Individual Offsets";
         private const string smoothBellyMeshText = "Belly Mesh Smoothing";
         private const string smoothClothMeshText = "Include cloth when smoothing";
 
@@ -101,6 +102,19 @@ namespace KK_PregnancyPlus
                     foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) 
                     {             
                         ctrl.OnOpenBlendShapeSelected();                                                   
+                    }
+                });
+
+            cat.AddControl(new CurrentStateCategorySwitch(individualClothOffsetText, c =>
+                {                                         
+                    return false;
+                }))
+                .Value.Subscribe(f => {
+                    if (f == false) return;
+                    //Open Individual Cloth Offset GUI on click
+                    foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) 
+                    {             
+                        ctrl.OnOpenClothOffsetSelected();                                                   
                     }
                 });
 

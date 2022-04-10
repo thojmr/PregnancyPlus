@@ -2,6 +2,7 @@
 using KKAPI.Chara;
 using UnityEngine;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections;
@@ -172,7 +173,7 @@ namespace KK_PregnancyPlus
             if (!meshInflateFlags.checkForNewAcchMesh)
             {
                 //Get all clothing mesh renderers, calculate, and apply inflation changes
-                var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);            
+                var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);         
                 tasks.AddRange(LoopAndApplyMeshChanges(clothRenderers, meshInflateFlags, isClothingMesh: true, bodyMeshRenderer));    
             }
 
@@ -467,6 +468,11 @@ namespace KK_PregnancyPlus
             var bellyEdgeAC = new ThreadsafeCurve(BellyEdgeAC);
             var bellyGapLerpAC = new ThreadsafeCurve(BellyGapLerpAC);
 
+            //Compute any user set, individual cloth offset
+            var offsets = infConfig.IndividualClothingOffsets;
+            var hasIndividualOffset = offsets != null && offsets.Any(o => o.Key == rendererName);
+            var individualOffset = hasIndividualOffset ? (offsets.FirstOrDefault(o => o.Key == rendererName).Value * 4) : 0f;
+
             logCharMeshInfo(md[rendererName], smr, sphereCenter, isClothingMesh);
 
             nativeDetour.Undo();
@@ -506,7 +512,7 @@ namespace KK_PregnancyPlus
                     if (isClothingMesh) 
                     {                        
                         //Calculate clothing offset distance                   
-                        reduceClothFlattenOffset = GetClothesFixOffset(infConfigClone, sphereCenter, sphereRadius, waistWidth, origVertLs, smr.name, clothOffsets[i]);
+                        reduceClothFlattenOffset = GetClothesFixOffset(infConfigClone, sphereCenter, sphereRadius, waistWidth, origVertLs, smr.name, clothOffsets[i], individualOffset);
                     }
                         
                     //Shift each belly vertex away from sphere center in a sphere pattern.  This is the core of the Preg+ belly shape

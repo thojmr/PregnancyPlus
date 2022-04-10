@@ -256,6 +256,12 @@ namespace KK_PregnancyPlus
             });
             e.AddControl(new MakerText("Resets all P+ sliders to their default value", cat, _pluginInstance) { TextColor = hintColor });
 
+            var offsetsBtn = e.AddControl(new MakerButton("Open Individual Offsets", cat, _pluginInstance));
+            offsetsBtn.OnClick.AddListener(() => {
+                OnOffsetsClicked();
+            });
+            e.AddControl(new MakerText("Set individual offset values for each article of clothing.", cat, _pluginInstance) { TextColor = hintColor });
+            
             smoothBtn = e.AddControl(new MakerButton("Belly Mesh Smoothing", cat, _pluginInstance));
             smoothBtn.OnClick.AddListener(() => {
                 OnSmoothClicked();
@@ -339,6 +345,21 @@ namespace KK_PregnancyPlus
 
             //Grab the current belly state
             PregnancyPlusPlugin.copiedBelly = (PregnancyPlusData)charCustFunCtrl.infConfig.Clone();
+        }
+
+
+        /// <summary>
+        /// On Offsets clicked, open offset slider window
+        /// </summary>
+        public static void OnOffsetsClicked()
+        {
+            if (!MakerAPI.InsideAndLoaded) return;
+
+            var chaControl = MakerAPI.GetCharacterControl();
+            var charCustFunCtrl  = PregnancyPlusHelper.GetCharacterBehaviorController<PregnancyPlusCharaController>(chaControl, PregnancyPlusPlugin.GUID);
+            if (charCustFunCtrl == null) return;
+
+            charCustFunCtrl.OnOpenClothOffsetSelected();
         }
 
 
