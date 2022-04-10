@@ -69,6 +69,10 @@ namespace KK_PregnancyPlus
             //Put threadpool work inside task and await the results
             await Task.Run(() => 
             {
+                //In KKS the mesh data key is sometime reset after maker load, so set it again
+                var hasValue = md.TryGetValue(renderKey, out var _meshData);
+                if (!hasValue) md[renderKey] = new MeshData(verticies.Length);
+
                 //Spread work across multiple threads
                 md[renderKey].bellyVerticieIndexes = Threading.RunParallel(sharedMesh.boneWeights, (bw, i) => 
                 {
