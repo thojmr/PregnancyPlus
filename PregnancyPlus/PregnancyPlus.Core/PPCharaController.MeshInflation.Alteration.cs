@@ -105,8 +105,6 @@ namespace KK_PregnancyPlus
         /// <param name="includeClothMesh">Optionally include all cloth meshes as well</param>
         internal async Task ApplySmoothing(bool includeClothMesh = false)
         {
-            var anySmoothingStarted = false;
-
             //Check that inflationConfig has a value
             if (!infConfig.HasAnyValue()) return;
             if (infConfig.inflationSize == 0) return;
@@ -125,7 +123,6 @@ namespace KK_PregnancyPlus
                 {
                     var smr = PregnancyPlusHelper.GetMeshRenderer(ChaControl, renderKey, searchInactive: false);
                     var _started = await SmoothSingleMesh(smr, renderKey);
-                    if (_started) anySmoothingStarted = true;
                 }
             } 
             //Only smooth the body mesh around the belly area
@@ -135,11 +132,10 @@ namespace KK_PregnancyPlus
                 var renderKey = GetMeshKey(bodySmr);
 
                 var started = await SmoothSingleMesh(bodySmr, renderKey);     
-                if (started) anySmoothingStarted = true;
             }       
 
-            //Stop timer if not smoothing is queued
-            if (!anySmoothingStarted) CheckForEndOfSmoothing();  
+            //Stop button timer when done
+            PregnancyPlusGui.StopTextCountIncrement();  
         }        
 
 
@@ -175,7 +171,6 @@ namespace KK_PregnancyPlus
                 nativeDetour.Undo();
             });
 
-            CheckForEndOfSmoothing();
             //Re-trigger ApplyInflation to set the new smoothed mesh
             await ApplySmoothResults(newVerts, renderKey, smr); 
             return true;
@@ -199,15 +194,6 @@ namespace KK_PregnancyPlus
                         
             //When we have already pre-computed the deltas we can go ahead and finalize now
             FinalizeInflation(smr, meshInflateFlags, blendShapeTempTagName);     
-        }
-
-
-        //Stop the smoothing timer when done with threads
-        //TODO fix this with tasks 
-        internal void CheckForEndOfSmoothing()
-        {
-            //Stop updating GUI count when done
-            // if (threading.ThreadCount == 0) PregnancyPlusGui.StopTextCountIncrement();
         }
 
 
