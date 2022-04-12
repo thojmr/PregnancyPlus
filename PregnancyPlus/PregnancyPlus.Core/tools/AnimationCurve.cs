@@ -5,7 +5,7 @@ using System;
 namespace KK_PregnancyPlus
 {
 
-    //This partial class contains the animation curves used in mesh transformations, much better curvature than a simple linear mathf.lerp
+    //This contains the animation curves used in mesh transformations, much better curvature than linear mathf.lerp
     public static class AnimCurve
     {           
 

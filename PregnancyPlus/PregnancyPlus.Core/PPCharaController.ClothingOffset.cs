@@ -141,8 +141,13 @@ namespace KK_PregnancyPlus
 
             //Get the pre calculated preg verts for this mesh
             var renderKey = GetMeshKey(clothSmr);        
-            md.TryGetValue(renderKey, out MeshData _md);            
-
+            var exists = md.TryGetValue(renderKey, out MeshData _md);     
+            if (!exists) 
+            {
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" DoClothMeasurement cant find MeshData for {renderKey}"); 
+                return new float[clothSmr.sharedMesh.vertexCount];
+            }         
+             
             //Check for existing offset values, init if none found
             var clothingOffsetsHasValue = md[renderKey].HasClothingOffsets;
             var clothOffsets = new float[0];

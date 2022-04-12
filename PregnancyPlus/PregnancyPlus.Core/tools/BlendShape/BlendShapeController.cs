@@ -2,7 +2,6 @@ using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using MessagePack;
 
 namespace KK_PregnancyPlus
 {
@@ -12,50 +11,10 @@ namespace KK_PregnancyPlus
         public BlendShape blendShape = new BlendShape();
         public SkinnedMeshRenderer smr = null;
 
-
-        //This format contains all the info a blendshape needs to be created (For a single blendshape frame).  It also server as the format we will save to a character card later
-        [MessagePackObject(keyAsPropertyName: true)]
-        public class BlendShape //This is technically a blendshape frame, but w/e.  Its already set in stone
-        {
-            public string name;
-            private float _frameWeight = 100;//The range that _weight has to stay within
-            public float frameWeight
-            {
-                set { _frameWeight = Mathf.Clamp(value, 0, 100); }
-                get { return _frameWeight <= 0 ? 100 : _frameWeight; }//Fix for old cards not having frameWeight prop, set them to 100
-            }
-            private float _weight = 100;//The current weight
-            public float weight 
-            {
-                set { _weight = value; }
-                get { return _weight; }
-            }
-            public Vector3[] verticies;
-            public Vector3[] normals;
-            public Vector3[] tangents;
-
-            [IgnoreMember]
-            public bool isInitilized
-            {
-                get { return name != null; }
-            }
-
-            [IgnoreMember]
-            public int vertexCount 
-            {
-                get { return verticies.Length; }
-            }
-
-            [IgnoreMember]
-            public string log 
-            {
-                get { return $"name {name} weight {_weight} frameWeight {_frameWeight} vertexCount {vertexCount}"; }
-            }
-        }
-
+#region Constructors
 
         /// <summary>
-        /// Constructor that takes in the pre computed blendshape deltas, and applies them to a target SMR
+        /// Constructor that takes the pre computed blendshape deltas, and applies them to a target SMR
         /// </summary>
         /// <param name="md">The meshData obhect that has our computed blendshape deltas</param>
         /// <param name="blendShapeName">Desired name of the blend shape, should be unique</param>        
@@ -79,7 +38,7 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Constructor overload that takes a saved blendshape and sets it to the correct mesh
+        /// Constructor overload that takes an existing Preg+ blendshape and sets it to an SMR
         ///     Typically used when loading BlendShape from card
         /// </summary>
         /// <param name="smr">The current active mesh</param>
@@ -106,12 +65,12 @@ namespace KK_PregnancyPlus
         
 
         /// <summary>
-        /// Use this constructor just to access any methods inside
+        /// Use this constructor just to access any methods inside this class
         /// </summary>
         public BlendShapeController() { }
 
 
-
+#endregion Constructors
 
 
         /// <summary>
@@ -330,6 +289,7 @@ namespace KK_PregnancyPlus
 
         /// <summary>
         /// Remove a single blendshape from a mesh
+        ///     Unfortunately Unity makes this difficult, by not having an API to remove 1 at a time.  So we reomve all and add back all -1
         /// </summary>
         /// <param name="smr">The mesh containing the blendshapes</param>
         public bool RemoveBlendShape(SkinnedMeshRenderer smr) 
@@ -366,7 +326,7 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Copy all existing blendshape frames on a mesh
+        /// Copy all blendshape frames from an SMR
         /// </summary>
         /// <param name="smr">The mesh containing the blendshapes</param>
         internal Dictionary<int, BlendShape[]> CopyAllBlendShapeFrames(SkinnedMeshRenderer smr) 

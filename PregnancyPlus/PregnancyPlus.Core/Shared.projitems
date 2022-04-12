@@ -39,6 +39,7 @@
     <Compile Include="..\PregnancyPlus.Core\tools\NormalsSolver.cs" />
     <Compile Include="..\PregnancyPlus.Core\tools\BlendShape\BlendShapeController.cs" />
     <Compile Include="..\PregnancyPlus.Core\tools\BlendShape\BlendShapeTools.cs" />
+    <Compile Include="..\PregnancyPlus.Core\tools\BlendShape\BlendShape.cs" />
     <Compile Include="..\PregnancyPlus.Core\tools\ConfigurationManagerAttributes.cs" />
     <Compile Include="..\PregnancyPlus.Core\tools\Smoothing\SmoothMeshUtils.cs" />
     <Compile Include="..\PregnancyPlus.Core\tools\Smoothing\SmoothFilter.cs" />

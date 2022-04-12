@@ -30,9 +30,9 @@ namespace KK_PregnancyPlus
             public string MeshName;//like SkinnedMeshRenderer.name
             public int VertCount;//To differentiate 2 meshes with the same names use vertex count comparison
             public string UncensorGUID;//Stores the uncensorGUID used with this blendshape
-            public BlendShapeController.BlendShape BlendShape;//Store just a single Frame for now, though its possible to have multiple frames.  Preg+ only uses 1
+            public BlendShape BlendShape;//Store just a single Frame for now, though its possible to have multiple frames.  Preg+ only uses 1
 
-            public MeshBlendShape(string meshName, BlendShapeController.BlendShape blendShape, int vertCount, string uncensorGUID) 
+            public MeshBlendShape(string meshName, BlendShape blendShape, int vertCount, string uncensorGUID) 
             {
                 MeshName = meshName;
                 BlendShape = blendShape;
@@ -259,7 +259,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Convert a BlendShape to MeshBlendShape, used for storing as character card data
         /// </summary>
-        internal MeshBlendShape ConvertToMeshBlendShape(string smrMeshName, BlendShapeController.BlendShape blendShape, string uncensorGUID) 
+        internal MeshBlendShape ConvertToMeshBlendShape(string smrMeshName, BlendShape blendShape, string uncensorGUID) 
         {            
             if (blendShape == null) return null;
             return new MeshBlendShape(smrMeshName, blendShape, blendShape.vertexCount, uncensorGUID);
