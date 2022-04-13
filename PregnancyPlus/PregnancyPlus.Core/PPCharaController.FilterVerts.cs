@@ -15,6 +15,8 @@ namespace KK_PregnancyPlus
     public partial class PregnancyPlusCharaController: CharaCustomFunctionController
     {           
 
+        //This limits the area around the belly where we want to affect any verts
+        //This value used to be 0.02f, but in order to make it compatible with BP5 I reduced it to 0f
         const float minBoneWeight = 0.02f;
 
 
@@ -82,7 +84,7 @@ namespace KK_PregnancyPlus
                     //For each bone weight
                     for (int j = 0; j < 4; j++)
                     {                    
-                        //If it has a weight, and the bone is a belly bone. Weight goes (0-1f) Ignore 0 and maybe filter below 0.1 as well
+                        //If it has a weight, and the bone is a belly bone. Weight goes (0-1f)
                         //Include all if debug = true
                         if ((boneWeights[j] > minBoneWeight && bellyBoneIndexes.Contains(boneIndicies[j]) || PregnancyPlusPlugin.MakeBalloon.Value))
                         {
