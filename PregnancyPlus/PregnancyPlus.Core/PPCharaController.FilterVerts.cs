@@ -17,7 +17,7 @@ namespace KK_PregnancyPlus
 
         //This limits the area around the belly where we want to affect any verts
         //This value used to be 0.02f, but in order to make it compatible with BP5 I reduced it to 0f
-        const float minBoneWeight = 0f;
+        const float minBoneWeight = 0f; 
 
 
         /// <summary>
