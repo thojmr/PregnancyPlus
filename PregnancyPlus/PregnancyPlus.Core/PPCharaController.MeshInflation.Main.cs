@@ -92,7 +92,7 @@ namespace KK_PregnancyPlus
             }       
 
             //start the mesh inflation logic
-            DoInflation(meshInflateFlags);
+            DoInflation(meshInflateFlags);            
         }
 
 
@@ -113,7 +113,10 @@ namespace KK_PregnancyPlus
 
             //Inflate the body mesh first.  When done do the same for all meshes
             var renderKey = await FindAndAffectBodyMesh(meshInflateFlags);
-            await FindAndAffectAllMeshes(meshInflateFlags, renderKey); 
+            await FindAndAffectAllMeshes(meshInflateFlags, renderKey);             
+
+            //Debug verts when needed
+            PostInflationDebugStuff(); 
 
             //Mark done processing
             isProcessing = false;
@@ -546,18 +549,15 @@ namespace KK_PregnancyPlus
 
                     //store the new inflated vert, unshifted from 0,0,0                                                           
                     return inflatedVertLs;    
-                });
-
-                //Debug verts when needed
-                PostInflationDebugStuff(smr, md[rendererName], isClothingMesh); 
+                });                
             });
         }
 
 
         /// <summary>
-        /// Depending on plugin config state, shows calculated verts on screen
+        /// Shoe debug spheres on screen when enabled in plugin config
         /// </summary>
-        internal void PostInflationDebugStuff(SkinnedMeshRenderer smr, MeshData md, bool isClothingMesh)
+        internal void PostInflationDebugStuff()
         {
             //If you need to debug the calculated vert positions visually
             if (PregnancyPlusPlugin.DebugLog.Value) 
@@ -578,19 +578,59 @@ namespace KK_PregnancyPlus
                 // if (PregnancyPlusPlugin.DebugLog.Value && isClothingMesh) DebugTools.DrawLineAndAttach(smr.transform, 1, smr.sharedMesh.bounds.center - yOffsetDir);
             }        
 
-            //Show verts on screen when this debug option is enabled (smaller spheres for body meshes)
+            //Skip when no debug mode active
+            if (PregnancyPlusPlugin.ShowUnskinnedVerts.Value 
+                && !PregnancyPlusPlugin.ShowSkinnedVerts.Value
+                && !PregnancyPlusPlugin.ShowInflatedVerts.Value
+                && !PregnancyPlusPlugin.ShowDeltaVerts.Value)
+                return;
+            
+            //Gather all SMR's
+            var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, findAll: true);                           
+            var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);         
+            var accessoryRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objAccessory);     
+
+            bodyRenderers.ForEach((SkinnedMeshRenderer smr) => PostInflationDebugMesh(smr));
+            clothRenderers.ForEach((SkinnedMeshRenderer smr) => PostInflationDebugMesh(smr, isClothingMesh: true));
+            accessoryRenderers.ForEach((SkinnedMeshRenderer smr) => PostInflationDebugMesh(smr, isClothingMesh: true));        
+        }
+
+
+        /// <summary>
+        /// Depending on plugin config state, shows calculated verts on screen (Do not run inside a Task, lol)
+        /// </summary>
+        internal void PostInflationDebugMesh(SkinnedMeshRenderer smr, bool isClothingMesh = false)
+        {
+            //If the mesh has been altered
+            var hasKey = md.TryGetValue(GetMeshKey(smr), out var _md);
+            if (!hasKey) return;
+
+            //Show verts on screen when this debug option is enabled
             if (PregnancyPlusPlugin.ShowUnskinnedVerts.Value)  
             {
                 if (!smr.sharedMesh.isReadable) nativeDetour.Apply();  
+                //Smaller spheres for body meshes
                 DebugTools.DebugMeshVerts(smr.sharedMesh.vertices, size: (isClothingMesh ? 0.01f : 0.005f));                                          
                 nativeDetour.Undo();
             }
 
-            if (PregnancyPlusPlugin.ShowSkinnedVerts.Value)  
-                DebugTools.DebugMeshVerts(md.originalVertices, color: Color.cyan, size: (isClothingMesh ? 0.01f : 0.005f));                                          
+            if (PregnancyPlusPlugin.ShowSkinnedVerts.Value && _md.HasOriginalVerts)  
+                DebugTools.DebugMeshVerts(_md.originalVertices, color: Color.cyan, size: (isClothingMesh ? 0.01f : 0.005f));                                          
 
-            if (PregnancyPlusPlugin.ShowInflatedVerts.Value)  
-                DebugTools.DebugMeshVerts(md.inflatedVertices, color: Color.green, size: (isClothingMesh ? 0.01f : 0.005f)); 
+            if (PregnancyPlusPlugin.ShowInflatedVerts.Value && _md.HasInflatedVerts)  
+                DebugTools.DebugMeshVerts(_md.inflatedVertices, color: Color.green, size: (isClothingMesh ? 0.01f : 0.005f)); 
+
+            //When we need to debug the deltas visually
+            if (PregnancyPlusPlugin.ShowDeltaVerts.Value && _md.HasDeltas) 
+            {
+                //When SMR has local rotation undo it in the deltas
+                var rotationUndo = Matrix4x4.TRS(Vector3.zero, smr.transform.localRotation, Vector3.one).inverse;                
+                for (int i = 0; i < _md.deltaVerticies.Length; i++)
+                {
+                    //Undo delta rotation so we can make sure it aligns with the other meshes deltas
+                    DebugTools.DrawLine(_md.originalVertices[i], _md.originalVertices[i] + rotationUndo.inverse.MultiplyPoint3x4(_md.deltaVerticies[i]));     
+                }                          
+            }
         }
 
 
@@ -836,16 +876,6 @@ namespace KK_PregnancyPlus
 
                     return sourceTangents[i];
                 });
-
-                //When we need to debug the deltas visually
-                if (PregnancyPlusPlugin.ShowDeltaVerts.Value) 
-                {
-                    for (int i = 0; i < deltaVerts.Length; i++)
-                    {
-                        //Undo delta rotation visually so we can make sure it aligns with the other meshes deltas
-                        DebugTools.DrawLine(_md.originalVertices[i], _md.originalVertices[i] + rotationUndo.inverse.MultiplyPoint3x4(deltaVerts[i]));     
-                    }                          
-                }
             });
         }
                 
