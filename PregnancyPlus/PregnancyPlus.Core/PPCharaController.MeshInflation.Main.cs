@@ -579,7 +579,7 @@ namespace KK_PregnancyPlus
             }        
 
             //Skip when no debug mode active
-            if (PregnancyPlusPlugin.ShowUnskinnedVerts.Value 
+            if (!PregnancyPlusPlugin.ShowUnskinnedVerts.Value 
                 && !PregnancyPlusPlugin.ShowSkinnedVerts.Value
                 && !PregnancyPlusPlugin.ShowInflatedVerts.Value
                 && !PregnancyPlusPlugin.ShowDeltaVerts.Value)
@@ -601,7 +601,7 @@ namespace KK_PregnancyPlus
         /// </summary>
         internal void PostInflationDebugMesh(SkinnedMeshRenderer smr, bool isClothingMesh = false)
         {
-            //If the mesh has been altered
+            //If the mesh has been touched it has a key
             var hasKey = md.TryGetValue(GetMeshKey(smr), out var _md);
             if (!hasKey) return;
 
