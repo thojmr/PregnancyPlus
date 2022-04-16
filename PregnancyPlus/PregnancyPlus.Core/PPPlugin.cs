@@ -59,6 +59,7 @@ namespace KK_PregnancyPlus
             HooksClothing.InitHooks(hi);
             HooksAccessory.InitHooks(hi);
             Hooks_Uncensor.InitHooks(hi);
+            Hooks_HSPE.InitHooks(this);
             #if KKS || AI
                 Hooks_KK_Pregnancy.InitHooks(hi);
             #elif HS2

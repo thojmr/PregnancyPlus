@@ -24,7 +24,7 @@ namespace KK_PregnancyPlus
 		internal bool lastAnyMeshEmpty {get; set;} = false;
 
 		#if KKS
-			internal const string HspeNotFoundMessage = "KKPE was not found";
+			internal const string HspeNotFoundMessage = "KKSPE was not found";
 		#elif HS2
 			internal const string HspeNotFoundMessage = "HS2PE was not found";
 		#elif AI
@@ -90,15 +90,7 @@ namespace KK_PregnancyPlus
 		internal void OnRemoveAllGUIBlendShapes()
 		{
 			if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" OnRemoveAllGUIBlendShapes ");
-			try 
-			{
-				ResetHspeBlendShapes(guiSkinnedMeshRenderers);
-			}	
-			catch (Exception e)
-			{
-				PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode("-1", ErrorCode.PregPlus_HSPENotFound, 
-                    	$" OnRemoveAllBlendShapes > HSPE not found: {e.Message} ");
-			}	
+			PregnancyPlusPlugin.Hooks_HSPE.ResetHspeBlendShapes(guiSkinnedMeshRenderers, _charaInstance.ChaControl);
 
 			_charaInstance.OnRemoveAllGUIBlendShapes();
 			guiSkinnedMeshRenderers = new List<MeshIdentifier>();
@@ -137,16 +129,8 @@ namespace KK_PregnancyPlus
 		internal void CloseWindow()
 		{
 			blendShapeWindowShow = false;
-			try 
-			{
-				//We need to reset the HSPE sliders to avoid potential console errors
-				// ResetHspeBlendShapes(guiSkinnedMeshRenderers);
-			}	
-			catch (Exception e)
-			{
-				PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode("-1", ErrorCode.PregPlus_HSPENotFound, 
-                    	$" CloseWindow > HSPE not found: {e.Message} ");
-			}
+			//We need to reset the HSPE sliders to avoid potential console errors
+			// ResetHspeBlendShapes(guiSkinnedMeshRenderers);
 			guiSkinnedMeshRenderers = new List<MeshIdentifier>();
 			lastTouched = -1;
 		}
@@ -232,100 +216,6 @@ namespace KK_PregnancyPlus
 			}
 
 			return -1;
-		}
-
-
-        /// <summary>
-        /// Have to manually update the blendshape slider in the HSPE window in order for Timeline, or VNGE to detect the change
-		/// They don't automagically watch for mesh.blendshape changes
-        /// </summary>
-		/// <returns>Will return True if HSPE was found</returns>
-		internal bool SetHspeBlendShapeWeight(SkinnedMeshRenderer smr, int index, float weight) 
-        {
-			var bsModule = GetHspeBlenShapeModule();
-			if (bsModule == null) return false;
-
-			//Set the following values as if the HSPE blendshape tab was clicked
-			Traverse.Create(bsModule).Field("_skinnedMeshTarget").SetValue(smr);
-			Traverse.Create(bsModule).Field("_lastEditedBlendShape").SetValue(index);
-
-			//Set the blend shape weight in HSPE for a specific smr, (Finally working............)
-			var SetBlendShapeWeight = bsModule.GetType().GetMethod("SetBlendShapeWeight", BindingFlags.NonPublic | BindingFlags.Instance);
-			if (SetBlendShapeWeight == null) return false;
-        	SetBlendShapeWeight.Invoke(bsModule, new object[] { smr, index, weight} );
-
-			//Set last changed smr slider to be visibly active in HSPE
-			var SetMeshRendererDirty = bsModule.GetType().GetMethod("SetMeshRendererDirty", BindingFlags.NonPublic | BindingFlags.Instance);
-			if (SetMeshRendererDirty == null) return false;
-        	SetMeshRendererDirty.Invoke(bsModule, new object[] { smr } );
-
-			return true;
-
-			// (Leaviung behind the pain and misery below as a memorial of what not to do)
-			// Traverse.Create(bsModule).Method("SetBlendShapeWeight", new object[] { smr, index, weight });
-			// Traverse.Create(bsModule).Method("SetMeshRendererDirty", new object[] { smr });
-			// Traverse.Create(bsModule).Method("SetBlendShapeDirty", new object[] { smr, index });
-			// Traverse.Create(bsModule).Method("ApplyBlendShapeWeights", new object[] { });
-			// Traverse.Create(bsModule).Method("Populate", new object[] { });
-
-			// ResetHspeBlendShapes(bsModule, smr, index);
-
-			// var dynMethod = bsModule.GetType().GetMethod("SetBlendShapeWeight", BindingFlags.NonPublic | BindingFlags.Instance);
-			// dynMethod.Invoke(this, new object[] { smr , index, weight });
-        }
-
-		/// <summary>
-        /// Reset HSPE blendshape when character changes
-        /// </summary>
-		/// <returns>Will return True if HSPE was found</returns>
-		internal bool ResetHspeBlendShapes(List<MeshIdentifier> smrIdentifiers) 
-        {
-			if (smrIdentifiers == null || smrIdentifiers.Count <= 0) return true;
-
-			var bsModule = GetHspeBlenShapeModule();
-			if (bsModule == null) return false;
-
-			//Set the following values as if the HSPE blendshape tab was clicked
-			Traverse.Create(bsModule).Field("_lastEditedBlendShape").SetValue(-1);
-
-			//Set the blend shape weight in HSPE for a specific smr, (Finally working............)
-			var SetMeshRendererNotDirty = bsModule.GetType().GetMethod("SetMeshRendererNotDirty", BindingFlags.NonPublic | BindingFlags.Instance);
-			if (SetMeshRendererNotDirty == null) return false;
-
-			//reset all active smrs in HSPE
-			foreach(var smrIdentifier in smrIdentifiers)
-			{	
-				var smr = PregnancyPlusHelper.GetMeshRendererByName(_charaInstance.ChaControl, smrIdentifier.name, smrIdentifier.vertexCount);
-				if (smr == null) continue;
-				SetMeshRendererNotDirty.Invoke(bsModule, new object[] { smr } );	
-			}
-
-			return true;
-        }
-
-		/// <summary>
-        /// Get the active HSPE blend shape module, that we want to make alterations to
-        /// </summary>
-		internal HSPE.AMModules.BlendShapesEditor GetHspeBlenShapeModule()
-		{
-			//Get main HSPE window reference
-			var hspeMainWindow = _pluginInstance.gameObject.GetComponent<HSPE.MainWindow>();
-			if (hspeMainWindow == null) return null;
-
-			//Pose target contains the character main window buttons
-			var poseCtrl = Traverse.Create(hspeMainWindow).Field("_poseTarget").GetValue<HSPE.PoseController>();
-			if (poseCtrl == null) return null;
-
-			//The modules are indivisual popups originating from the pose target window
-			var advModules = Traverse.Create(poseCtrl).Field("_modules").GetValue<List<HSPE.AMModules.AdvancedModeModule>>();
-			if (advModules == null || advModules.Count <= 0) return null;
-
-			//Get the blendShape module  (4 == blendshape.type, or just use the string name)
-			var bsModule = (HSPE.AMModules.BlendShapesEditor)advModules.FirstOrDefault(x => x.displayName.Contains("Blend Shape"));
-			if (bsModule == null) return null;
-
-			return bsModule;
-		
 		}
 
     }

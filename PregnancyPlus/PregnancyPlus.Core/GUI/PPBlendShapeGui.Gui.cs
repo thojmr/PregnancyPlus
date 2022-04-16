@@ -55,7 +55,7 @@ namespace KK_PregnancyPlus
 								PregnancyPlusPlugin.Logger.LogInfo($" IsAnyMeshEmpty > {name} is empty ");
 						}						
 					}
-					ResetHspeBlendShapes(guiSkinnedMeshRenderers);
+					PregnancyPlusPlugin.Hooks_HSPE.ResetHspeBlendShapes(guiSkinnedMeshRenderers, _charaInstance.ChaControl);
 				}
 				lastAnyMeshEmpty = anyMeshEmpty;
 
@@ -168,23 +168,13 @@ namespace KK_PregnancyPlus
 				//If there are no blendshapes for this mesh anymore just reset it in HSPE
 				if (kkBsIndex < 0) 
 				{
-					ResetHspeBlendShapes(new List<MeshIdentifier> { guiSkinnedMeshRenderers[i] });
+					PregnancyPlusPlugin.Hooks_HSPE.ResetHspeBlendShapes(new List<MeshIdentifier> { guiSkinnedMeshRenderers[i] }, _charaInstance.ChaControl);
 					_sliderValuesHistory[smrName] = _sliderValues[smrName];
 					return;
-				}
-
-				try 
-				{					
-					//We want to use HSPE when we can because changes to it will integrate with Timeline and VNGE
-					HSPEExists = SetHspeBlendShapeWeight(guiSmr, kkBsIndex, _sliderValues[smrName]);
 				}	
-				catch (Exception e)
-				{
-					//If KKPE does not exists catch the error, and warn the user
-					PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode("-1", ErrorCode.PregPlus_HSPENotFound, 
-                    	$"SetHspeBlendShapeWeight > HSPE not found: {e.Message} ");
-					HSPEExists = false;
-				}
+							
+				//We want to use HSPE when we can because changes to it will integrate with Timeline and VNGE
+				HSPEExists = PregnancyPlusPlugin.Hooks_HSPE.SetHspeBlendShapeWeight(guiSmr, kkBsIndex, _sliderValues[smrName]);
 
 				if (!HSPEExists) 
 				{

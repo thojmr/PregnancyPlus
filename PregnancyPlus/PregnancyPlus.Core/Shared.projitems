@@ -34,6 +34,7 @@
     <Compile Include="..\PregnancyPlus.Core\Hooks\PPPlugin.Hooks.Accessory.cs" />
     <Compile Include="..\PregnancyPlus.Core\Hooks\PPPlugin.Hooks.Clothing.cs" />    
     <Compile Include="..\PregnancyPlus.Core\Hooks\PPPlugin.Hooks.Uncensor.cs" />
+    <Compile Include="..\PregnancyPlus.Core\Hooks\PPPlugin.Hooks.HSPE.cs" />
     <Compile Include="..\PregnancyPlus.Core\PPHelper.cs" />
     <Compile Include="..\PregnancyPlus.Core\Data\PPData.cs" />
     <Compile Include="..\PregnancyPlus.Core\tools\NormalsSolver.cs" />
