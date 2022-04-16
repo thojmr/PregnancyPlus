@@ -34,14 +34,15 @@ See [Features](#features) for all plugin features
 </br>
 
 ## Some Tips
-- Use one of the High Poly meshes (uncensors) for screenshots.  It makes the belly more round and less jagged.  [Install guide below](#high-poly-mesh)
+- Use one of the High Poly meshes (uncensors) for screenshots.  It makes the belly more round and less jagged.  [Quick Guide Below](#high-poly-mesh)
 - The more Multiplier you apply, the more -StretchX and -StretchY you should apply.  This lets you apply even more Multiplier
 - The Taper sliders are good at making the shape more egg like
 - Too much Roundness slider will cause clothes to clip at the top of the belly
 - If you see jagged edges or shadows on the skin, use the "Smooth Belly Mesh" button to reduce it
-- There will always be some amount of cloth clipping at extreme sizes.  You can use the Cloth Offset slider to help, but It's a difficult problem to solve.
+- There will always be some amount of cloth clipping at extreme sizes.  You can use the Cloth Offset slider to help, but It's a difficult problem to solve
+- You can use the Individual Clohting Offset GUI to offset a single piece of clothing at a time now.  Great for overlaping or tight fitting clothing
 - **Hover over any Plugin Config options in game for more detailed descriptions**
-- 
+
 <br>
 
 ## Features
@@ -83,6 +84,7 @@ See [Features](#features) for all plugin features
   - Move your new blendshape sliders to the desired position.  At least one blendshape slider must be green (touched) before the next step
   - Open Timeline with Ctrl+T, search for "Blendshape" and middle click to add.
   - Follow Timeline guides for further info
+  - See `The BlendShape GUI` below for a longer description of the GUI
 
 ## VNGE Integration
 - Studio VNGE integration in HS2 and AI via blendshapes.  Here's how:
@@ -93,6 +95,18 @@ See [Features](#features) for all plugin features
   - Open VNGE, and add the blendshape(s) under "Clip Manager" 
     - To use BlendShapes in VNGE set ExportChara_XXPE_BlendShapes=1 in vnactor.ini everywhere it is found (may become obsolete)
   - Follow VNGE guides for further info
+  - See `The BlendShape GUI` below for a longer description of the GUI
+
+</br>
+
+## The BlendShape GUI
+In the bottom right corner of the banner image, you can see the blendshape GUI.  The purpose of this GUI is to allow you to capture the current pregnancy+ sliders and save their shape as a permanent blendshape to the character card/scene.  That way, if a character's belly is animated via Timeline or VNGE, the animation will be persistent and shareable with anyone else automatically.  Just keep in mind that a blendshape is tied directly to a specific uncensor or clothing.  If you change either you will need to recreate the blendshapes in most cases.
+
+Tips:
+- You CAN replace characters in the scene after the blendshape is saved. Pregnancy+ will automatically load the same uncensor to the newly replaced character.  However clothing will not retain its' shape when changed.
+- Do not try to animate blendshapes ending in `PregnancyPlus_[temp]` as these exist only temporarily.
+- Once the blendshape has been made, you can opt to use the HSPE/KKPE blendshape window also.  They both do the same thing at this point.
+- If you're feeling really crazy you can actually multiply the effect of any slider by captureing it as a blendshape first, setting the blendshape to 100%, then going back to the normal Pregnancy+ sliders and altering them again.  Rince and repeat to amplify the effect.  You can make some unusual shapes this way.
 
 </br>
 
@@ -124,6 +138,7 @@ See [Features](#features) for all plugin features
 - If you are looking for a higher poly base mesh to make up for Koikatsu's lack of belly polygons, you can use this high poly uncensor (mesh) [Look for [KK][Female]Highpoly_vX.X.zip Here](https://ux.getuploader.com/nHaruka_KK/)  They've done a decent job to prevent clipping with the latest versions.  So if you want a smoother belly  for screenshots, it's a good idea to try it.
   - To use it in studio/maker just extract that zip into `<root game folder>/mods/MyMods/`.   Then in game, find the Uncensor dropdown and select "High Poly".
 - High Poly meshes exist for HS2/AI as well if you look around, but generally there are plenty of polygons in those games.
+- Keep in mind that an uncensor does not save to the character card, anyone you share the card with will see a normal poly uncensor, unless they also have the same high poly one.
 
 >right is HighPoly
 <img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/HighPoly.png" height="200"></img>
