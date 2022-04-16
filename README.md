@@ -34,14 +34,15 @@ See [Features](#features) for all plugin features
 </br>
 
 ## Some Tips
-- Use one of the High Poly meshes (uncensors) for screenshots.  It makes the belly more round and less jagged.  [Install guide below](#high-poly-mesh)
+- Use one of the High Poly meshes (uncensors) for screenshots.  It makes the belly more round and less jagged.  [Quick Guide Below](#high-poly-mesh)
 - The more Multiplier you apply, the more -StretchX and -StretchY you should apply.  This lets you apply even more Multiplier
 - The Taper sliders are good at making the shape more egg like
 - Too much Roundness slider will cause clothes to clip at the top of the belly
 - If you see jagged edges or shadows on the skin, use the "Smooth Belly Mesh" button to reduce it
-- There will always be some amount of cloth clipping at extreme sizes.  You can use the Cloth Offset slider to help, but It's a difficult problem to solve.
+- There will always be some amount of cloth clipping at extreme sizes.  You can use the Cloth Offset slider to help, but It's a difficult problem to solve
+- You can use the Individual Clohting Offset GUI to offset a single piece of clothing at a time now.  Great for overlaping or tight fitting clothing
 - **Hover over any Plugin Config options in game for more detailed descriptions**
-- 
+
 <br>
 
 ## Features
@@ -137,6 +138,7 @@ Tips:
 - If you are looking for a higher poly base mesh to make up for Koikatsu's lack of belly polygons, you can use this high poly uncensor (mesh) [Look for [KK][Female]Highpoly_vX.X.zip Here](https://ux.getuploader.com/nHaruka_KK/)  They've done a decent job to prevent clipping with the latest versions.  So if you want a smoother belly  for screenshots, it's a good idea to try it.
   - To use it in studio/maker just extract that zip into `<root game folder>/mods/MyMods/`.   Then in game, find the Uncensor dropdown and select "High Poly".
 - High Poly meshes exist for HS2/AI as well if you look around, but generally there are plenty of polygons in those games.
+- Keep in mind that an uncensor does not save to the character card, anyone you share the card with will see a normal poly uncensor, unless they also have the same high poly one.
 
 >right is HighPoly
 <img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/HighPoly.png" height="200"></img>
