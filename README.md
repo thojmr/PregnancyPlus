@@ -10,7 +10,7 @@ See [Features](#features) for all plugin features
 
 ## Latest Features (I will update this occasionally)
 - 6.0+:
-    - Individual clothing offsets GUI
+    - Individual clothing offsets GUI (Next to P+ blendshape GUI)
     - Implemented c# async await to remove hitching in HS2, AI, and KKS
     - Fat Fold Gap slider
     - Core code rewrite to fix many old issues, and pave way for new features
@@ -126,7 +126,7 @@ Tips:
 - Q: Where do I put the PregnancyPlus.dll?
     - A: It should end up under {Root game folder}/BepinEx/Plugins/xx_PregnancyPlus.dll
 - Q: Why are some outfits not affected by the sliders?
-    - A: Most likley the unskinned mesh was imported in an unusual way, and would have to be re-imported by the creator.  Feel free to send me a character card with the clothing to debug it.
+    - A: Most likley the unskinned mesh was imported in an unusual way.  Feel free to send me a character card with the clothing on to debug it.  (As of 6.0+ this should be mostly fixed)
 - Q: There are no slider effects when the character has no legs.
     - A: The character must have a leg scale > 0 for the belly sliders to work correctly.
 - Q: What the heck is a BlendShape?
@@ -152,11 +152,11 @@ Tips:
 - Integrates with KK/AI_Pregnancy in Story Mode so that both plugins can work together.  This can be configured in plugin config
 
 ### Some of the drawbacks of generating blendshapes instead of manipulating bones directly
-- Right now clothing can be hit or miss, because of the way the belly grows the mesh loses its local positional data causing clipping. On the other hand, with bone scaling, clothes shift automagically via bone weights which usually results in less clipping.
-- Acessories won't automatically move with the mesh as they do when you manipulate bones unless they are "Skinned Accessories".  And Preg+ works with skinned accessorries with v6.0+
-- It has bigger impact on performance (only when changing a slider) because of the computation it has to perform. However once the shape is calculated the performance is equally as fast as bone manipulation.
+- Right now clothing can be hit or miss, because of the way the belly grows the mesh loses its local positional data causing clipping. On the other hand, when adjusting bone scale, clothing shifts automagically which usually results in less clipping, but less shape controll overall.
+- Acessories won't automatically move with the mesh as they do when you manipulate bones unless they are "Skinned Accessories".  And Preg+ works with skinned accessorries on v6.0+
+- Generating BlendShapes has a bigger impact on performance (only when changing a slider) because of the computations it has to perform. However once the shape is calculated the performance is equally as fast as bone manipulation.
 - Unity doesn't have great blendshape support in older versions like KK is running on, se we have to hack it a bit.
-- Since blendshapes are tied to a single mesh, if the mesh is changed (like uncensors), any saved blendshape will become invalid, and a new blendshape will need to be made. Bone manipulation on the other hand doesn't care about the specific mesh.
+- Since blendshapes are tied to a single mesh, if the mesh is changed (like uncensors), any saved blendshape will become invalid, and a new blendshape will need to be made. Bone manipulation on the other hand doesn't care about the specific mesh as long as it is skinned properly.
 
 </br>
 </br>
