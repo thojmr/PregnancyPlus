@@ -151,8 +151,11 @@ namespace KK_PregnancyPlus
             /// </summary>
             internal static System.Object GetHspeBlenShapeModule()
             {
-                if (pluginInstance == null)
-                    if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($" GetHspeBlenShapeModule(): _pluginInstance must be defined first ");
+                if (pluginInstance == null) 
+                {
+                    if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogWarning($" GetHspeBlenShapeModule(): _pluginInstance must be defined first ");
+                    return null;
+                }
 
             	//Get main HSPE window reference
             	var hspeMainWindow = pluginInstance.gameObject.GetComponent<HSPE.MainWindow>();
