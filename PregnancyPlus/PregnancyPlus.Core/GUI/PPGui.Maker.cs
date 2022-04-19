@@ -5,8 +5,9 @@ using KKAPI.Maker.UI;
 using KKAPI.Studio;
 using UnityEngine;
 using UnityEngine.UI;
-using System;
 using System.Collections.Generic;
+using UniRx;
+
 
 namespace KK_PregnancyPlus
 {
@@ -74,6 +75,15 @@ namespace KK_PregnancyPlus
             });
             e.AddControl(new MakerText("If disabled, you won't see any pregnant effects.", cat, _pluginInstance) { TextColor = hintColor });
 
+            var presetBellyShape = e.AddControl(new MakerDropdown("Apply Preset Shape", BellyTemplate.shapeNames, cat, 0, _pluginInstance));
+            presetBellyShape.ValueChanged.Subscribe((value) =>
+            {
+                var infConfig = BellyTemplate.GetTemplate(value);       
+                //Set the GUI sliders to the PresetShape
+                OnPasteBelly(sliders, infConfig);
+            });
+
+            e.AddControl(new MakerText("Applies a preset belly shape to the character, so you don't have to deal with sliders.", cat, _pluginInstance) { TextColor = hintColor });
 
             var size = e.AddControl(new MakerSlider(cat, inflationSizeMaker, SliderRange.InflationSize[0], SliderRange.InflationSize[1], ppDataDefaults.inflationSize, _pluginInstance));
             size.BindToFunctionController<PregnancyPlusCharaController, float>(controller => controller.infConfig.inflationSize, (controller, value) => {

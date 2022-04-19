@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using BepInEx.Configuration;
 using KKAPI.Studio;
 using KKAPI.Maker;
@@ -52,6 +53,7 @@ namespace KK_PregnancyPlus
         public static ConfigEntry<bool> DebugBlendShapeLog { get; private set; }
         public static ConfigEntry<bool> DebugCalcs { get; private set; }
         public static ConfigEntry<bool> DebugVerts { get; private set; }
+        public static ConfigEntry<string> DebugApplyPresetShape { get; private set; }
 
 
         //Keyboard shortcuts for inflation on the fly!    
@@ -163,6 +165,13 @@ namespace KK_PregnancyPlus
                     new ConfigurationManagerAttributes { Order = 1, IsAdvanced = true })
                 );
             DebugLog.SettingChanged += DebugLog_SettingsChanged;
+            
+            DebugApplyPresetShape = Config.Bind("Debug", "Apply preset shape to all (Debug mode)", "None",
+                new ConfigDescription( "Will apply the selected preset shape to all existing characters in scene",
+                    new AcceptableValueList<string>(BellyTemplate.shapeNames),
+                    new ConfigurationManagerAttributes { Order = 0, IsAdvanced = true }
+                ));
+            DebugApplyPresetShape.SettingChanged += DebugApplyPresetShape_SettingsChanged;
 
 
             //**** General Config *******/
@@ -593,8 +602,6 @@ namespace KK_PregnancyPlus
         
 
 
-
-
         //Trigger fresh start inflation for every active character
         internal void TriggerFreshStartForAll(string callee)
         {
@@ -603,6 +610,21 @@ namespace KK_PregnancyPlus
             {  
                 charCustFunCtrl.MeshInflate(new MeshInflateFlags(charCustFunCtrl, _checkForNewMesh: true, _freshStart: true), callee);             
             }   
+        }
+
+
+        //Apply preset belly shape to all existing characters in scene, for debugging a shape on multiple body types
+        internal void DebugApplyPresetShape_SettingsChanged(object sender, System.EventArgs e) 
+        {
+            var handlers = CharacterApi.GetRegisteredBehaviour(GUID);
+        
+            foreach (PregnancyPlusCharaController charCustFunCtrl in handlers.Instances)
+            {                 
+                charCustFunCtrl.infConfig.SetSliders(BellyTemplate.GetTemplate(DebugApplyPresetShape.Value));       
+                //Set the GUI sliders to the PresetShape
+                PregnancyPlusGui.RestoreSliders(charCustFunCtrl.infConfig);
+                charCustFunCtrl.MeshInflate(new MeshInflateFlags(charCustFunCtrl, _freshStart: true), "DebugApplyPresetShape_SettingsChanged");                                        
+            } 
         }
 
     }
