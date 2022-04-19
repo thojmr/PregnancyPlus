@@ -62,8 +62,8 @@ namespace KK_PregnancyPlus
                     shape.inflationRoundness = 0.005f;                    
                     shape.inflationStretchX = -0.14f;
                     shape.inflationStretchY = -0.12f;
-                    shape.inflationTaperY = -0.01f;
-                    shape.inflationTaperZ = -0.005f;
+                    shape.inflationTaperY = -0.005f;
+                    shape.inflationTaperZ = -0.003f;
                     shape.inflationDrop = 0.05f;
                     return shape;
 
