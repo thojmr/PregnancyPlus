@@ -10,6 +10,7 @@ See [Features](#features) for all plugin features
 
 ## Latest Features (I will update this occasionally)
 - 6.0+:
+    - Added Preset Belly Shape dropdown
     - Individual clothing offsets GUI (Next to P+ blendshape GUI)
     - Implemented c# async await to remove hitching in HS2, AI, and KKS
     - Fat Fold Gap slider
@@ -50,6 +51,7 @@ See [Features](#features) for all plugin features
     - In Main Game you can further bulk tweak all character's belly shapes with the F1 plugin config sliders.
 - Adds Timeline and VNGE integration for belly animations. Short guides below. [Timeline](#timeline-integration) | [VNGE](#vnge-integration)
 - Adds 3 configurable keybinds in plugin config that can be used to increase or decrease the belly size in Main Game, on the fly.   
+- Adds a Preset Belly Shape dropdown to Studio and Maker that allows you to quickly set a base shape for the belly from a variety of styles.
 - Adds an additional Fat Fold slider, just make sure the Preg+ slider is above 0 to see the effect.
 - Adds an "Override KK_Pregnancy belly shape" toggle, that lets you use the Preg+ belly shape as the default one in Main Gameplay (Instead of combining both plugin's shapes).
 - Adds a "Mesh Smoothing" button in Studio and Maker, that allows you to smooth the belly mesh and reduce any stretched skin and hard shadows.
