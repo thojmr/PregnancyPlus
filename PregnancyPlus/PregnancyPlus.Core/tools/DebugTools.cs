@@ -3,6 +3,9 @@ using BepInEx.Logging;
 
 public static class DebugTools
 {     
+    //Game obhect must be in this layer to be visible in KK Studio
+    public static int studioLayerKK = 10;
+
     #if DEBUG
         internal static bool debugLog = true;
     #else
@@ -136,14 +139,15 @@ public static class DebugTools
         sphere.name = sphereGOName;
         sphere.position = position;
         sphere.localScale = new Vector3(radius, radius, radius);
-        var sphereRenderer = sphere.GetComponent<Renderer>();
-        sphereRenderer.material.color = color;
-        sphereRenderer.enabled = true;
+        var sphereRenderer = sphere.GetComponent<Renderer>();                
         #if KKS
             //Makes sphere more visible in KK Maker instead of black
             //I dont think color works with this sprite
             sphereRenderer.material = new Material(Shader.Find("Sprites/Default"));
+            sphere.gameObject.layer = studioLayerKK;
         #endif
+        sphereRenderer.material.color = color;
+        sphereRenderer.enabled = true;
 
         return sphere.gameObject;
     }
@@ -197,10 +201,14 @@ public static class DebugTools
         
         if (startColor == null || startColor == default(Color)) startColor = Color.blue;
 
+        #if KKS
+            lineRendGO.gameObject.layer = studioLayerKK;
+        #endif
+
         lineRenderer.useWorldSpace = useWorldSpace;
-        lineRenderer.startColor = startColor;
-        lineRenderer.endColor = Color.red;
         lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
+        lineRenderer.startColor = startColor;
+        lineRenderer.endColor = Color.red;        
         lineRenderer.startWidth = width;
         lineRenderer.endWidth = width/5;
         lineRenderer.SetPosition(0, fromVector);
