@@ -29,7 +29,7 @@ namespace KK_PregnancyPlus
             Matrix4x4[] bindposes = smr.sharedMesh.bindposes;               
 
             var hasLocalRotation = MeshHasLocalRotation(smr);                                
-            if (PregnancyPlusPlugin.DebugLog.Value && hasLocalRotation) PregnancyPlusPlugin.Logger.LogWarning($" hasLocalRotation {smr.name} ");
+            // if (PregnancyPlusPlugin.DebugLog.Value && hasLocalRotation) PregnancyPlusPlugin.Logger.LogWarning($" hasLocalRotation {smr.name} ");
 
             //Get a default offset to use when a mesh has extra bones not in the skeleton (and is a bad bindpose mesh to begin with)
             var firstNon0Offset = GetFirstBindPoseOffset(chaControl, bindPoseList, smr, smr.sharedMesh.bindposes, smr.bones);
@@ -40,7 +40,7 @@ namespace KK_PregnancyPlus
                 //Prevent out of index errors when clothing has extra bones
                 if (j > skinnedBones.Length -1 || j > bindposes.Length -1) {
                     boneMatrices[j] = firstNon0Offset;
-                    if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" boneMatrix {j} does not match bone {skinnedBones.Length -1}, or bindpose {bindposes.Length -1}");
+                    // if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" boneMatrix {j} does not match bone {skinnedBones.Length -1}, or bindpose {bindposes.Length -1}");
                     continue;
                 }
 

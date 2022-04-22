@@ -67,6 +67,7 @@ namespace KK_PregnancyPlus
             var bindPoseScaleZ = Matrix.GetScale(MeshSkinning.GetBindPoseScale(smr).inverse).z;
             //The distance backwards from characters center that verts are allowed to be modified
             var backExtent = bindPoseScaleZ * -bellyInfo.ZLimit;
+            var debugAnyVerts = PregnancyPlusPlugin.MakeBalloon.Value || PregnancyPlusPlugin.DebugVerts.Value;
             
             //Put threadpool work inside task and await the results
             await Task.Run(() => 
@@ -78,24 +79,30 @@ namespace KK_PregnancyPlus
                 //Spread work across multiple threads
                 md[renderKey].bellyVerticieIndexes = Threading.RunParallel(sharedMesh.boneWeights, (bw, i) => 
                 {
+                    if (debugAnyVerts) 
+                    {
+                        hasBellyVerticies = true;
+                        return true;
+                    }
+                    
                     int[] boneIndicies = new int[] { bw.boneIndex0, bw.boneIndex1, bw.boneIndex2, bw.boneIndex3 };
-                    float[] boneWeights = new float[] { bw.weight0, bw.weight1, bw.weight2, bw.weight3 };
+                    float[] boneWeights = new float[] { bw.weight0, bw.weight1, bw.weight2, bw.weight3 };                    
 
                     //For each bone weight
                     for (int j = 0; j < 4; j++)
-                    {                    
+                    {                                            
                         //If it has a weight, and the bone is a belly bone. Weight goes (0-1f)
                         //Include all if debug = true
-                        if ((boneWeights[j] > minBoneWeight && bellyBoneIndexes.Contains(boneIndicies[j]) || PregnancyPlusPlugin.MakeBalloon.Value))
+                        if ((boneWeights[j] > minBoneWeight && bellyBoneIndexes.Contains(boneIndicies[j])))
                         {
                             //Make sure to exclude verticies on characters back, we only want to modify the front.  No back bellies!
                             //add all vertexes in debug mode
-                            if (verticies[i].z >= backExtent || PregnancyPlusPlugin.MakeBalloon.Value) 
+                            if (verticies[i].z >= backExtent) 
                             {
                                 hasBellyVerticies = true;
                                 return true;                                
                             }                        
-                        }                                        
+                        }                                                                
                     }
 
                     return false;

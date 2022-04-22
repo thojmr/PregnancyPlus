@@ -531,7 +531,8 @@ namespace KK_PregnancyPlus
                     // If the vert is within the calculated normals radius, then consider it as an altered vert that needs normal recalculation when applying inflation
                     // This also means we can ignore other verts later saving compute time
                     //  Hopefully this will reduce breast shadows for smaller bellies
-                    if (vertDistance <= vertNormalCaluRadius) alteredVerts[i] = true;                                                                          
+                    if (vertDistance <= vertNormalCaluRadius || PregnancyPlusPlugin.DebugVerts.Value) 
+                        alteredVerts[i] = true;                                                                          
                     
                     if (isClothingMesh) 
                     {                        
@@ -824,8 +825,8 @@ namespace KK_PregnancyPlus
             var scaleUndo = MeshSkinning.GetBindPoseScale(smr).inverse;
             var undoTfMatrix = rotationUndo * scaleUndo;
 
-            if (PregnancyPlusPlugin.DebugLog.Value && scaleUndo != Matrix4x4.identity) 
-                PregnancyPlusPlugin.Logger.LogWarning($" smr {smr.name} has bindpose scale {Matrix.GetScale(scaleUndo)}");
+            // if (PregnancyPlusPlugin.DebugLog.Value && scaleUndo != Matrix4x4.identity) 
+            //     PregnancyPlusPlugin.Logger.LogWarning($" smr {smr.name} has bindpose scale {Matrix.GetScale(scaleUndo)}");
 
             if (!smr.sharedMesh.isReadable) nativeDetour.Apply();
 
