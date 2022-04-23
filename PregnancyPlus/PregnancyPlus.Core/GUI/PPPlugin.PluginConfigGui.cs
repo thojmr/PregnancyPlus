@@ -42,6 +42,7 @@ namespace KK_PregnancyPlus
 
 
         //Debug config options
+        public static ConfigEntry<bool> OmniToggle { get; private set; }
         public static ConfigEntry<bool> ShowUnskinnedVerts { get; private set; }
         public static ConfigEntry<bool> ShowSkinnedVerts { get; private set; }
         public static ConfigEntry<bool> ShowInflatedVerts { get; private set; }
@@ -66,6 +67,22 @@ namespace KK_PregnancyPlus
         {            
             //**** Debug Config *******/
             //*************************/            
+
+            #if DEBUG
+            var debugMode = true;
+            #else
+            var debugMode = false;
+            #endif
+
+            
+            OmniToggle = Config.Bind<bool>("Debug", "Omni Debug Toggle", false,
+                new ConfigDescription("This toggle is only for comparing new Preg+ logic with old logic, and won't do anything in a real release.",
+                    null,
+                    new ConfigurationManagerAttributes { Order = 16, IsAdvanced = true, ReadOnly = !debugMode })
+                );            
+            
+            OmniToggle.Value = false;//Reset value on restart
+            OmniToggle.SettingChanged += OmniToggle_SettingsChanged;  
 
             ShowUnskinnedVerts = Config.Bind<bool>("Debug", "Show Unskinned Verts", false,
                 new ConfigDescription("This shows the unskinned vert positions (grey dots) as they are imported from the mesh asset. \r\nDon't leave enabled, and dont enable with a ton of characters active.",
@@ -131,7 +148,7 @@ namespace KK_PregnancyPlus
             DebugAnimations = Config.Bind<bool>("Debug", "Refresh X Ticks (Debug mode)", false,
                 new ConfigDescription( "Will force update the belly shape every x ticks to help debug belly shape changes during animations.  \r\nDon't leave enabled.",
                     null,
-                    new ConfigurationManagerAttributes { Order = 9, IsAdvanced = true })
+                    new ConfigurationManagerAttributes { Order = 9, IsAdvanced = true, ReadOnly = !debugMode })
                 );  
             #if !DEBUG
                 DebugAnimations.Value = false;//save users from themselves
@@ -625,6 +642,13 @@ namespace KK_PregnancyPlus
                 PregnancyPlusGui.RestoreSliders(charCustFunCtrl.infConfig);
                 charCustFunCtrl.MeshInflate(new MeshInflateFlags(charCustFunCtrl, _freshStart: true), "DebugApplyPresetShape_SettingsChanged");                                        
             } 
+        }
+
+
+        //Used totoggle different preg + option for debugging source code
+        internal void OmniToggle_SettingsChanged(object sender, System.EventArgs e)
+        {
+            TriggerFreshStartForAll("OmniToggle_SettingsChanged");
         }
 
     }
