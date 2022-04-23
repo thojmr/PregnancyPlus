@@ -381,8 +381,12 @@ namespace KK_PregnancyPlus
 
             //Thread safe lists and objects below                    
             var skinnedVerts = md[rendererName].originalVertices;    
+            var bellyVertIndex = md[rendererName].bellyVerticieIndexes;
             var vertsLength = smr.sharedMesh.vertexCount;
             var smrTfTransPt = smr.transform.localToWorldMatrix;
+            //The highest and lowest a vert can be, to be considerd in the belly area
+            var yBottomLimit = GetSphereCenter().y + (bellyInfo.OriginalSphereRadius * 1.5f);
+            var yTopLimit = GetSphereCenter().y - (bellyInfo.OriginalSphereRadius * 1.5f);
             
             nativeDetour.Undo();
 
@@ -393,14 +397,25 @@ namespace KK_PregnancyPlus
                 var _exists = md.TryGetValue(rendererName, out MeshData _meshData);     
                 if (!_exists) 
                 {
-                    if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" ComputeBindPoseMesh.Task.Run cant find MeshData for {rendererName}"); 
+                    if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" ComputeBindPoseMesh.Task.Run cant find MeshData for {rendererName}");
                     return;
                 }  
 
                 //Spread work across multiple threads
                 md[rendererName].originalVertices = Threading.RunParallel(unskinnedVerts, (_, i) => {
                     //Get the skinned vert position from the bindpose matrix we computed earlier
-                    return MeshSkinning.UnskinnedToSkinnedVertex(unskinnedVerts[i], smrTfTransPt, boneMatrices, boneWeights[i]);
+                    var skinnedVert = MeshSkinning.UnskinnedToSkinnedVertex(unskinnedVerts[i], smrTfTransPt, boneMatrices, boneWeights[i]);
+
+                    //Hijacking this threaded loop
+                    //If any verts are found near the belly append them to the bellyVertIndexes, 
+                    //  We need this because verts in clothing like skirts will be missed at first when the clothing has custom bones
+                    //We could only do this after getting the skinned vert position anyway, so this is the best spot
+                    if (isClothingMesh && !bellyVertIndex[i] && (skinnedVert.y < yBottomLimit && skinnedVert.y > yTopLimit))
+                    {                            
+                        bellyVertIndex[i] = true;
+                    }
+
+                    return skinnedVert;
                 });  
 
                 md[rendererName].isFirstPass = false;   
@@ -552,86 +567,6 @@ namespace KK_PregnancyPlus
                     return inflatedVertLs;    
                 });                
             });
-        }
-
-
-        /// <summary>
-        /// Shoe debug spheres on screen when enabled in plugin config
-        /// </summary>
-        internal void PostInflationDebugStuff()
-        {
-            //If you need to debug the calculated vert positions visually
-            if (PregnancyPlusPlugin.DebugLog.Value) 
-            {
-
-                //Debug mesh with spheres, and include mesh offset
-                // DebugTools.DebugMeshVerts(smr, origVerts, new Vector3(0, md[rendererName].yOffset, 0));
-
-                //Some other internally measured points/boundaries
-                // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(smr.transform, 0.2f, sphereCenter);
-                // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLine(topExtentPos + Vector3.back * 0.5f, topExtentPos);                        
-                // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLine(topExtentPos + Vector3.down * bellyInfo.YLimitOffset + Vector3.back * 0.5f, topExtentPos + Vector3.down * bellyInfo.YLimitOffset);                        
-                // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLine(backExtentPos, backExtentPos + Vector3.left * 4);                        
-                // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLine(sphereCenter, sphereCenter + Vector3.forward * 1);  
-                // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphere(0.1f, preMorphSphereCenter);
-                // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLine(Vector3.zero, Vector3.zero + Vector3.forward * 1);  
-                
-                // if (PregnancyPlusPlugin.DebugLog.Value && isClothingMesh) DebugTools.DrawLineAndAttach(smr.transform, 1, smr.sharedMesh.bounds.center - yOffsetDir);
-            }        
-
-            //Skip when no debug mode active
-            if (!PregnancyPlusPlugin.ShowUnskinnedVerts.Value 
-                && !PregnancyPlusPlugin.ShowSkinnedVerts.Value
-                && !PregnancyPlusPlugin.ShowInflatedVerts.Value
-                && !PregnancyPlusPlugin.ShowDeltaVerts.Value)
-                return;
-            
-            //Gather all SMR's
-            var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, findAll: true);                           
-            var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);         
-            var accessoryRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objAccessory);     
-
-            bodyRenderers.ForEach((SkinnedMeshRenderer smr) => PostInflationDebugMesh(smr));
-            clothRenderers.ForEach((SkinnedMeshRenderer smr) => PostInflationDebugMesh(smr, isClothingMesh: true));
-            accessoryRenderers.ForEach((SkinnedMeshRenderer smr) => PostInflationDebugMesh(smr, isClothingMesh: true));        
-        }
-
-
-        /// <summary>
-        /// Depending on plugin config state, shows calculated verts on screen (Do not run inside a Task, lol)
-        /// </summary>
-        internal void PostInflationDebugMesh(SkinnedMeshRenderer smr, bool isClothingMesh = false)
-        {
-            //If the mesh has been touched it has a key
-            var hasKey = md.TryGetValue(GetMeshKey(smr), out var _md);
-            if (!hasKey) return;
-
-            //Show verts on screen when this debug option is enabled
-            if (PregnancyPlusPlugin.ShowUnskinnedVerts.Value)  
-            {
-                if (!smr.sharedMesh.isReadable) nativeDetour.Apply();  
-                //Smaller spheres for body meshes
-                DebugTools.DebugMeshVerts(smr.sharedMesh.vertices, size: (isClothingMesh ? 0.01f : 0.005f));                                          
-                nativeDetour.Undo();
-            }
-
-            if (PregnancyPlusPlugin.ShowSkinnedVerts.Value && _md.HasOriginalVerts)  
-                DebugTools.DebugMeshVerts(_md.originalVertices, color: Color.cyan, size: (isClothingMesh ? 0.01f : 0.005f));                                          
-
-            if (PregnancyPlusPlugin.ShowInflatedVerts.Value && _md.HasInflatedVerts)  
-                DebugTools.DebugMeshVerts(_md.inflatedVertices, color: Color.green, size: (isClothingMesh ? 0.01f : 0.005f)); 
-
-            //When we need to debug the deltas visually
-            if (PregnancyPlusPlugin.ShowDeltaVerts.Value && _md.HasDeltas) 
-            {
-                //When SMR has local rotation undo it in the deltas
-                var rotationUndo = Matrix4x4.TRS(Vector3.zero, smr.transform.localRotation, Vector3.one).inverse;                
-                for (int i = 0; i < _md.deltaVerticies.Length; i++)
-                {
-                    //Undo delta rotation so we can make sure it aligns with the other meshes deltas
-                    DebugTools.DrawLine(_md.originalVertices[i], _md.originalVertices[i] + rotationUndo.inverse.MultiplyPoint3x4(_md.deltaVerticies[i]));     
-                }                          
-            }
         }
 
 
@@ -878,6 +813,96 @@ namespace KK_PregnancyPlus
                     return sourceTangents[i];
                 });
             });
+        }
+
+                /// <summary>
+        /// Shoe debug spheres on screen when enabled in plugin config
+        /// </summary>
+        internal void PostInflationDebugStuff()
+        {
+            //If you need to debug the calculated vert positions visually
+            if (PregnancyPlusPlugin.DebugLog.Value) 
+            {
+
+                //Debug mesh with spheres, and include mesh offset
+                // DebugTools.DebugMeshVerts(smr, origVerts, new Vector3(0, md[rendererName].yOffset, 0));
+
+                //Some other internally measured points/boundaries
+                // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphereAndAttach(smr.transform, 0.2f, sphereCenter);
+                // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLine(topExtentPos + Vector3.back * 0.5f, topExtentPos);                        
+                // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLine(topExtentPos + Vector3.down * bellyInfo.YLimitOffset + Vector3.back * 0.5f, topExtentPos + Vector3.down * bellyInfo.YLimitOffset);                        
+                // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLine(backExtentPos, backExtentPos + Vector3.left * 4);                        
+                // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLine(sphereCenter, sphereCenter + Vector3.forward * 1);  
+                // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawSphere(0.1f, preMorphSphereCenter);
+                // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DrawLine(Vector3.zero, Vector3.zero + Vector3.forward * 1);  
+                
+                // if (PregnancyPlusPlugin.DebugLog.Value && isClothingMesh) DebugTools.DrawLineAndAttach(smr.transform, 1, smr.sharedMesh.bounds.center - yOffsetDir);
+            }        
+
+            //Skip when no debug mode active
+            if (!PregnancyPlusPlugin.ShowBellyVerts.Value 
+                && !PregnancyPlusPlugin.ShowUnskinnedVerts.Value 
+                && !PregnancyPlusPlugin.ShowSkinnedVerts.Value
+                && !PregnancyPlusPlugin.ShowInflatedVerts.Value
+                && !PregnancyPlusPlugin.ShowDeltaVerts.Value)
+                return;
+            
+            //Gather all SMR's
+            var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, findAll: true);                           
+            var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);         
+            var accessoryRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objAccessory);     
+
+            bodyRenderers.ForEach((SkinnedMeshRenderer smr) => PostInflationDebugMesh(smr));
+            clothRenderers.ForEach((SkinnedMeshRenderer smr) => PostInflationDebugMesh(smr, isClothingMesh: true));
+            accessoryRenderers.ForEach((SkinnedMeshRenderer smr) => PostInflationDebugMesh(smr, isClothingMesh: true));        
+        }
+
+
+        /// <summary>
+        /// Depending on plugin config state, shows calculated verts on screen (Do not run inside a Task, lol)
+        /// </summary>
+        internal void PostInflationDebugMesh(SkinnedMeshRenderer smr, bool isClothingMesh = false)
+        {
+            //If the mesh has been touched it has a key
+            var hasKey = md.TryGetValue(GetMeshKey(smr), out var _md);
+            if (!hasKey) return;
+
+            //Show verts on screen when this debug option is enabled
+            if (PregnancyPlusPlugin.ShowUnskinnedVerts.Value)  
+            {
+                if (!smr.sharedMesh.isReadable) nativeDetour.Apply();  
+                //Smaller spheres for body meshes
+                DebugTools.DebugMeshVerts(smr.sharedMesh.vertices, size: (isClothingMesh ? 0.01f : 0.005f));                                          
+                nativeDetour.Undo();
+            }
+
+            if (PregnancyPlusPlugin.ShowSkinnedVerts.Value && _md.HasOriginalVerts)  
+                DebugTools.DebugMeshVerts(_md.originalVertices, color: Color.cyan, size: (isClothingMesh ? 0.01f : 0.005f));                                          
+
+            if (PregnancyPlusPlugin.ShowInflatedVerts.Value && _md.HasInflatedVerts)  
+                DebugTools.DebugMeshVerts(_md.inflatedVertices, color: Color.green, size: (isClothingMesh ? 0.01f : 0.005f));
+
+            //When we need to debug the deltas visually
+            if (PregnancyPlusPlugin.ShowDeltaVerts.Value && _md.HasDeltas) 
+            {
+                //When SMR has local rotation undo it in the deltas
+                var rotationUndo = Matrix4x4.TRS(Vector3.zero, smr.transform.localRotation, Vector3.one).inverse;                
+                for (int i = 0; i < _md.deltaVerticies.Length; i++)
+                {
+                    //Undo delta rotation so we can make sure it aligns with the other meshes deltas
+                    DebugTools.DrawLine(_md.originalVertices[i], _md.originalVertices[i] + rotationUndo.inverse.MultiplyPoint3x4(_md.deltaVerticies[i]));     
+                }                          
+            }
+
+            if (PregnancyPlusPlugin.ShowBellyVerts.Value && _md.HasOriginalVerts) 
+            {
+                for (int i = 0; i < _md.bellyVerticieIndexes.Length; i++)
+                {
+                    //Place spheres on each vert to debug the mesh calculated position relative to other meshes      
+                    if (_md.bellyVerticieIndexes[i])          
+                        DebugTools.DrawSphere((isClothingMesh ? 0.01f : 0.005f), _md.originalVertices[i], color: Color.grey);                                  
+                } 
+            }
         }
                 
     }

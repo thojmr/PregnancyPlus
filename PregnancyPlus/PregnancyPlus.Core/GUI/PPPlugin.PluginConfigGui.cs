@@ -43,6 +43,7 @@ namespace KK_PregnancyPlus
 
         //Debug config options
         public static ConfigEntry<bool> OmniToggle { get; private set; }
+        public static ConfigEntry<bool> ShowBellyVerts { get; private set; }
         public static ConfigEntry<bool> ShowUnskinnedVerts { get; private set; }
         public static ConfigEntry<bool> ShowSkinnedVerts { get; private set; }
         public static ConfigEntry<bool> ShowInflatedVerts { get; private set; }
@@ -78,11 +79,21 @@ namespace KK_PregnancyPlus
             OmniToggle = Config.Bind<bool>("Debug", "Omni Debug Toggle", false,
                 new ConfigDescription("This toggle is only for comparing new Preg+ logic with old logic, and won't do anything in a real release.",
                     null,
-                    new ConfigurationManagerAttributes { Order = 16, IsAdvanced = true, ReadOnly = !debugMode })
+                    new ConfigurationManagerAttributes { Order = 17, IsAdvanced = true, ReadOnly = !debugMode })
                 );            
             
             OmniToggle.Value = false;//Reset value on restart
             OmniToggle.SettingChanged += OmniToggle_SettingsChanged;  
+
+            ShowBellyVerts = Config.Bind<bool>("Debug", "Show Belly Verts", false,
+                new ConfigDescription("This shows the verticies that were determined to be belly verts.",
+                    null,
+                    new ConfigurationManagerAttributes { Order = 16, IsAdvanced = true })
+                );            
+            #if !DEBUG
+                ShowBellyVerts.Value = false;//save users from themselves
+            #endif
+            ShowBellyVerts.SettingChanged += ShowBellyVerts_SettingsChanged;            
 
             ShowUnskinnedVerts = Config.Bind<bool>("Debug", "Show Unskinned Verts", false,
                 new ConfigDescription("This shows the unskinned vert positions (grey dots) as they are imported from the mesh asset. \r\nDon't leave enabled, and dont enable with a ton of characters active.",
@@ -139,20 +150,15 @@ namespace KK_PregnancyPlus
                     null,
                     new ConfigurationManagerAttributes { Order = 10, IsAdvanced = true })
                 );
-            #if !DEBUG
-                MakeBalloon.Value = false;//save users from themselves
-            #endif 
+            MakeBalloon.Value = false;//save users from themselves
             MakeBalloon.SettingChanged += MakeBalloon_SettingsChanged;
-
 
             DebugAnimations = Config.Bind<bool>("Debug", "Refresh X Ticks (Debug mode)", false,
                 new ConfigDescription( "Will force update the belly shape every x ticks to help debug belly shape changes during animations.  \r\nDon't leave enabled.",
                     null,
-                    new ConfigurationManagerAttributes { Order = 9, IsAdvanced = true, ReadOnly = !debugMode })
+                    new ConfigurationManagerAttributes { Order = 9, IsAdvanced = true })
                 );  
-            #if !DEBUG
-                DebugAnimations.Value = false;//save users from themselves
-            #endif      
+            DebugAnimations.Value = false;//save users from themselves
 
             DebugVerts = Config.Bind<bool>("Debug", "Entire Mesh Debugging (Debug mode)", false,
                 new ConfigDescription( "Will cause all mesh verticies to be affected by sliders so I can narrow down which meshes are behaving, and which are not.  \r\nDon't leave enabled",
@@ -615,6 +621,21 @@ namespace KK_PregnancyPlus
 
             //Trigger inflation to add debug vert spheres
             TriggerFreshStartForAll("ShowDeltaVerts_SettingsChanged");
+        }
+
+        internal void ShowBellyVerts_SettingsChanged(object sender, System.EventArgs e) 
+        {
+            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" ShowBellyVerts_SettingsChanged ");
+            
+            //When disabled, remove any vert spheres
+            if (!PregnancyPlusPlugin.ShowBellyVerts.Value)
+            {                
+                DebugTools.ClearSpheres();                          
+                return;
+            }
+
+            //Trigger inflation to add debug vert spheres
+            TriggerFreshStartForAll("ShowBellyVerts_SettingsChanged");
         }
         
 

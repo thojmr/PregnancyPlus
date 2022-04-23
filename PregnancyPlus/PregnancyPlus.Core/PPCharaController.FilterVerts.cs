@@ -59,7 +59,6 @@ namespace KK_PregnancyPlus
 
             //Create new mesh dictionary key from scratch (Note: This will overwrite existing)
             md[renderKey] = new MeshData(sharedMesh.vertexCount);           
-            var bellyVertIndex = md[renderKey].bellyVerticieIndexes;
             var verticies = sharedMesh.vertices;
 
             //Since the z limit check is done on the unskinned verts, we need to apply any bindpose scale to the limit to make it match the real unskinned vert positions
@@ -90,10 +89,11 @@ namespace KK_PregnancyPlus
 
                     //For each bone weight
                     for (int j = 0; j < 4; j++)
-                    {                                            
+                    {                                    
                         //If it has a weight, and the bone is a belly bone. Weight goes (0-1f)
                         //Include all if debug = true
-                        if ((boneWeights[j] > minBoneWeight && bellyBoneIndexes.Contains(boneIndicies[j])))
+                        var hasValidWeight = boneWeights[j] > minBoneWeight && bellyBoneIndexes.Contains(boneIndicies[j]);
+                        if (hasValidWeight)
                         {
                             //Make sure to exclude verticies on characters back, we only want to modify the front.  No back bellies!
                             //add all vertexes in debug mode
