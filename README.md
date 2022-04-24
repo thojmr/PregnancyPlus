@@ -5,7 +5,7 @@ See [How To Install](#how-to-install) for installation instructions
 </br>
 See [Features](#features) for all plugin features
 </br>
-See [Plugin Tips](#Some Tips) for tips and tricks
+See [Plugin Tips](#some-tips) for tips and tricks
 
 
 <img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/P+ All Menus.png" height="900"></img>
