@@ -4,6 +4,8 @@ This repository contains the PregnancyPlus plugin, that adds additional belly sl
 See [How To Install](#how-to-install) for installation instructions
 </br>
 See [Features](#features) for all plugin features
+</br>
+See [Plugin Tips](#Some Tips) for tips and tricks
 
 
 <img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/P+ All Menus.png" height="900"></img>
@@ -36,11 +38,12 @@ See [Features](#features) for all plugin features
 
 ## Some Tips
 - Use one of the High Poly meshes (uncensors) for screenshots.  It makes the belly more round and less jagged.  [Quick Guide Below](#high-poly-mesh)
-- The more Multiplier you apply, the more -StretchX and -StretchY you should apply.  This lets you apply even more Multiplier
+- The more Multiplier you apply, the more -StretchX and -StretchY you should apply.  Otherwise the belly gets too wide and tall
 - The Taper sliders are good at making the shape more egg like
-- Too much Roundness slider will cause clothes to clip at the top of the belly
-- If you see jagged edges or shadows on the skin, use the "Smooth Belly Mesh" button to reduce it.
+- Too much Roundness slider will cause clothes to clip at the top/bottom of the belly.  Maybe I'll fix this one day...
+- If you see stretched skin near the edges, use the "Smooth Belly Mesh" button to correct it, or reduce your Stretch sliders if that doesn't help.
   - Optionally if you have the Vanilla+ shaders from Xukmi, the ones with tesselation can achieve the same effect if you increase the Tesselation Smoothness.
+  - A HighPoly mesh will have the greatest effect on reducing this
 - There will always be some amount of cloth clipping at extreme sizes.  You can use the Cloth Offset slider to help, but It's a difficult problem to solve
 - You can use the Individual Clohting Offset GUI to offset a single piece of clothing at a time now.  Great for overlaping or tight fitting clothing
 - **Hover over any Plugin Config options in game for more detailed descriptions**
@@ -142,6 +145,7 @@ Tips:
   - To use it in studio/maker just extract that zip into `<root game folder>/mods/MyMods/`.   Then in game, find the Uncensor dropdown and select "High Poly".
 - High Poly meshes exist for HS2/AI as well if you look around, but generally there are plenty of polygons in those games.
 - Keep in mind that an uncensor does not save to the character card, anyone you share the card with will see a normal poly uncensor, unless they also have the same high poly one.
+- One additional note.  The new Vanilla+ shaders by Xukmi come with tesselation built in.  And can be a good alternative to a HighPoly mesh since everyone has the shaders now included.
 
 >right is HighPoly
 <img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/HighPoly.png" height="200"></img>
