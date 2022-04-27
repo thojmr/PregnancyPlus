@@ -328,11 +328,16 @@ namespace KK_PregnancyPlus
         public static void OnResetAll(List<MakerSlider> _sliders)
         {
             if (!MakerAPI.InsideAndLoaded) return;
-            #if DEBUG
-                DebugTools.ClearAllThingsFromCharacter();
-            #endif
             if (_sliders == null || _sliders.Count <= 0 || !_sliders[0].Exists) return;
             if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" Resetting sliders ");
+
+            var handlers = CharacterApi.GetRegisteredBehaviour(PregnancyPlusPlugin.GUID);
+            //Find the active character
+            foreach (PregnancyPlusCharaController charCustFunCtrl in handlers.Instances) 
+            {            
+                //Reset all slider states, and remove existing mesh keys
+                charCustFunCtrl.CleanSlate();                                                                         
+            } 
 
             //For each slider, reset to last stored character slider values
             foreach (var slider in _sliders) 
@@ -389,15 +394,14 @@ namespace KK_PregnancyPlus
 
             //If no belly state has been copied, skip this
             if (_infConfig == null) return;
+            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" Restoring sliders OnPasteBelly()");
 
             //For each slider, set to default which will reset the belly shape
             foreach (var slider in _sliders) 
             {
                 //Get the private slider object name from the game GUI
                 var settingName = Traverse.Create(slider).Field("_settingName").GetValue<string>();
-                if (settingName == null) continue;
-                
-                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" Restoring slider > {settingName}");
+                if (settingName == null) continue;                            
 
                 //Set the correct slider with it's old config value
                 switch (settingName) 

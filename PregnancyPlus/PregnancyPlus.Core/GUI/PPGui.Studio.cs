@@ -81,15 +81,14 @@ namespace KK_PregnancyPlus
                 }))
                 .Value.Subscribe(f => {
                     if (f == false) return;//This will trigger on studio first load
-                    UnityUiTools.ResetAllSliders(cat);       
                     foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) 
                     {      
-                        #if DEBUG
-                            DebugTools.ClearAllThingsFromCharacter();
-                        #endif
+                        //Reset all slider states, and remove existing mesh keys
+                        ctrl.CleanSlate();
                         ctrl.isProcessing = false;
                         ctrl.infConfig.Reset();                           
-                    }            
+                    }    
+                    UnityUiTools.ResetAllSliders(cat);                
                 });
 
             cat.AddControl(new CurrentStateCategorySwitch(blendshapeText, c =>
@@ -468,7 +467,7 @@ namespace KK_PregnancyPlus
             {
                 if (!subItem.Created) continue;
                 var itemGo = subItem.RootGameObject;
-                var sliders = itemGo.GetComponentsInChildren<UnityEngine.UI.Slider>();
+                var sliders = itemGo.GetComponentsInChildren<UnityEngine.UI.Slider>();             
 
                 //For each slider component (should just be one per subItem) set to last good value
                 foreach(var slider in sliders) 
