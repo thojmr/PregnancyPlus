@@ -720,7 +720,7 @@ namespace KK_PregnancyPlus
 
             //Don't allow any morphs to move behind the character's.z = 0 + extentOffset position, otherwise skin sometimes pokes out the back side :/
             if (backExtentPos.z > smoothedVectorLs.z)             
-                return originalVerticeLs;            
+                return new Vector3(smoothedVectorLs.x, smoothedVectorLs.y, originalVerticeLs.z);            
 
             //Don't allow any morphs to move behind the original verticie z position, only forward expansion (ignoring ones already behind sphere center)
             if (originalVerticeLs.z > smoothedVectorLs.z && originalVerticeLs.z > sphereCenterLs.z) 
