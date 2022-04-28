@@ -224,18 +224,18 @@ namespace KK_PregnancyPlus
                 var storyConfigTitle = "Story/Main-Game Mode";     
                 var additionalSliderText = " for all pregnant characters";
 
-                var maxBellySizeTitle = "KK_Pregnancy Integration";
+                var integrationConfigTitle = "KK_Pregnancy Integration";
                 var maxBellySizeDescription = "The maximum additional belly size/shape that this plugin will add to the original KK_Pregnancy belly. The character must be pregnant or inflated.\r\n0 will result in the original KK_Pregnancy belly, while 40 will be the original + the full Preg+ size/shape.";
-                var overrideBellyShapeTitle = "Override KK_Pregnancy belly shape";
-                var overrideBellyShapeDescription = "When enabled, the Preg+ belly shape will be the only shape used for pregnancy and inflation.  It disables the KK_Pregnancy shape in main gameplay.";
+                var overrideBellyShapeTitle = "Override KKS_Pregnancy belly shapes";
+                var overrideBellyShapeDescription = "When enabled, the Preg+ belly shape will be the only shape used for pregnancy and inflation.  It disables the KKS_Pregnancy shape in main gameplay.";
             
             #elif AI
                 var storyConfigTitle = "Story/Main-Game Mode";     
                 var additionalSliderText = " for all pregnant characters";
 
-                var maxBellySizeTitle = "AI_Pregnancy Integration";
+                var integrationConfigTitle = "AI_Pregnancy Integration";
                 var maxBellySizeDescription = "The maximum additional belly size/shape that this plugin will add to the original AI_Pregnancy belly. The character must be pregnant or inflated.\r\n0 will result in the original AI_Pregnancy belly, while 40 will be the original + the full Preg+ size/shape.";
-                var overrideBellyShapeTitle = "Override AI_Pregnancy belly shape";
+                var overrideBellyShapeTitle = "Override AI_Pregnancy belly shapes";
                 var overrideBellyShapeDescription = "When enabled, the Preg+ belly shape will be the only shape used for pregnancy and inflation.  It disables the AI_Pregnancy shape in main gameplay.";
 
             #elif HS2
@@ -391,7 +391,7 @@ namespace KK_PregnancyPlus
 
             #if KKS || AI
                 //This config is for KK/AI_Pregnancy integration to set the additional size this plugin will add to KK/AI_Pregnancy
-                MaxStoryModeBelly = Config.Bind<float>(maxBellySizeTitle, "Max additional belly size", 10f, 
+                MaxStoryModeBelly = Config.Bind<float>(integrationConfigTitle, "Max additional belly size", 10f, 
                     new ConfigDescription(maxBellySizeDescription,
                         new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.InflationSize[0], PregnancyPlusGui.SliderRange.InflationSize[1]),
                         new ConfigurationManagerAttributes { Order = 1 })
@@ -400,7 +400,7 @@ namespace KK_PregnancyPlus
 
 
                 //Allows us to override the default KK_Pregnancy belly shape with out own.  For when we don't want to mix them.
-                OverrideBelly = Config.Bind<bool>(maxBellySizeTitle, overrideBellyShapeTitle, false,
+                OverrideBelly = Config.Bind<bool>(integrationConfigTitle, overrideBellyShapeTitle, true,
                 new ConfigDescription(overrideBellyShapeDescription,
                     null,
                     new ConfigurationManagerAttributes { Order = 1 })
