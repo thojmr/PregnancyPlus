@@ -487,7 +487,7 @@ namespace KK_PregnancyPlus
             var backExtentPos = new Vector3(preMorphSphereCenter.x, sphereCenter.y, preMorphSphereCenter.z) + Vector3.forward * -bellyInfo.ZLimit;
             //calculate the furthest top morph point based under the breast position, include character animated height differences
             var topExtentPos = new Vector3(preMorphSphereCenter.x, preMorphSphereCenter.y, preMorphSphereCenter.z) + Vector3.up * bellyInfo.YLimit;
-            var vertNormalCaluRadius = sphereRadius + bellyInfo.WaistWidth/10;//Only recalculate normals for verts within this radius to prevent shadows under breast at small belly sizes          
+            var vertNormalCaluRadius = sphereRadius + bellyInfo.OriginalSphereRadius/20;//Only recalculate normals for verts within this radius to prevent shadows under breast at small belly sizes          
             var waistWidth = bellyInfo.WaistWidth;
 
             //Lock in current slider values for threaded calculation
@@ -521,24 +521,18 @@ namespace KK_PregnancyPlus
 
                 //Spread work across multiple threads
                 md[rendererName].inflatedVertices = Threading.RunParallel(origVerts, (_, i) => 
-                {
-                    var reduceClothFlattenOffset = 0f;
-
+                {                    
                     //Only care about altering belly verticies
-                    if (!bellyVertIndex[i] && !PregnancyPlusPlugin.DebugVerts.Value) 
-                    {
+                    if (!bellyVertIndex[i] && !PregnancyPlusPlugin.DebugVerts.Value)                     
                         return origVerts[i];               
-                    }
-
+                    
                     //Get the bindpose skinned vertex position
                     var origVertLs = origVerts[i];                
                     var vertDistance = Vector3.Distance(origVertLs, sphereCenter);                    
 
                     //Ignore verts outside the sphere radius
-                    if (vertDistance > vertNormalCaluRadius && !PregnancyPlusPlugin.DebugVerts.Value) 
-                    {
-                        return origVerts[i];                
-                    }
+                    if (vertDistance > vertNormalCaluRadius && !PregnancyPlusPlugin.DebugVerts.Value)                 
+                        return origVerts[i];                                    
                     
                     Vector3 inflatedVertLs;                    
                     Vector3 verticieToSpherePos;       
@@ -549,22 +543,27 @@ namespace KK_PregnancyPlus
                     if (vertDistance <= vertNormalCaluRadius || PregnancyPlusPlugin.DebugVerts.Value) 
                         alteredVerts[i] = true;                                                                          
                     
-                    if (isClothingMesh) 
-                    {                        
-                        //Calculate clothing offset distance                   
-                        reduceClothFlattenOffset = GetClothesFixOffset(infConfigClone, sphereCenter, sphereRadius, waistWidth, origVertLs, smr.name, clothOffsets[i], individualOffset);
-                    }
+                    var restoreClothThickness = 0f;
+
+                    //Calculate clothing offset distance 
+                    if (isClothingMesh)                                                                                      
+                        restoreClothThickness = GetClothesFixOffset(infConfigClone, sphereCenter, sphereRadius, waistWidth, origVertLs, smr.name, clothOffsets[i], individualOffset);                    
                         
                     //Shift each belly vertex away from sphere center in a sphere pattern.  This is the core of the Preg+ belly shape
-                    verticieToSpherePos = (origVertLs - sphereCenter).normalized * (sphereRadius + reduceClothFlattenOffset) + sphereCenter;                                                    
+                    verticieToSpherePos = (origVertLs - sphereCenter).normalized * (sphereRadius + restoreClothThickness) + sphereCenter;                                                    
 
                     //Make adjustments to the shape to make it smooth, and feed in user slider input
-                    inflatedVertLs =  SculptInflatedVerticie(infConfigClone, origVertLs, verticieToSpherePos, sphereCenter, waistWidth, 
+                    var inflationResult =  SculptInflatedVerticie(infConfigClone, origVertLs, verticieToSpherePos, sphereCenter, waistWidth, 
                                                              preMorphSphereCenter, sphereRadius, backExtentPos, topExtentPos, 
                                                              bellySidesAC, bellyTopAC, bellyEdgeAC, bellyGapLerpAC);   
 
-                    //store the new inflated vert, unshifted from 0,0,0                                                           
-                    return inflatedVertLs;    
+                    //TODO At the moment this needs to include more connected verts otherwise the shadows stop abruptly where the belly meets the body... leave this out for now
+                    //If we did not need to alter the vert, reset its altered index
+                    // if (inflationResult.Item2 == false && !PregnancyPlusPlugin.DebugVerts.Value)                    
+                    //     alteredVerts[i] = false;                     
+
+                    //Return the new inflated vert                                                          
+                    return inflationResult.Item1;    
                 });                
             });
         }
@@ -609,12 +608,14 @@ namespace KK_PregnancyPlus
         /// <param name="preMorphSphereCenter">The original sphere center location, before user slider input</param>
         /// <param name="backExtentPos">The point behind which no mesh changes allowed</param>
         /// <param name="topExtentPos">The point above which no mesh changes allowed</param>
-        internal Vector3 SculptInflatedVerticie(PregnancyPlusData infConfigClone, Vector3 originalVerticeLs, Vector3 inflatedVerticieLs, Vector3 sphereCenterLs, float waistWidth, 
+        /// <returns>Tuple containing the final morphed vert, and whether the vert actually changed position</returns>
+        internal Tuple<Vector3, bool> SculptInflatedVerticie(PregnancyPlusData infConfigClone, Vector3 originalVerticeLs, Vector3 inflatedVerticieLs, Vector3 sphereCenterLs, float waistWidth, 
                                                 Vector3 preMorphSphereCenter, float sphereRadius, Vector3 backExtentPos, Vector3 topExtentPos, 
                                                 ThreadsafeCurve bellySidesAC, ThreadsafeCurve bellyTopAC, ThreadsafeCurve bellyEdgeAC, ThreadsafeCurve bellyGapLerpAC) 
         {
             //No smoothing modification in debug mode
-            if (PregnancyPlusPlugin.MakeBalloon.Value || PregnancyPlusPlugin.DebugVerts.Value) return inflatedVerticieLs;                       
+            if (PregnancyPlusPlugin.MakeBalloon.Value || PregnancyPlusPlugin.DebugVerts.Value) 
+                return new Tuple<Vector3, bool>(inflatedVerticieLs, true); 
             
             //get the smoothing distance limits so we don't have weird polygons and shapes on the edges, and prevents morphs from shrinking past original skin boundary
             var pmSkinToCenterDist = Math.Abs(Vector3.Distance(preMorphSphereCenter, originalVerticeLs));
@@ -624,7 +625,8 @@ namespace KK_PregnancyPlus
             
 
             //Only apply morphs if the imaginary sphere is outside of the skins boundary (Don't want to shrink anything inwards, only out)
-            if (skinToCenterDist >= inflatedToCenterDist || pmSkinToCenterDist > pmInflatedToCenterDist) return originalVerticeLs; 
+            if (skinToCenterDist >= inflatedToCenterDist || pmSkinToCenterDist > pmInflatedToCenterDist) 
+                return new Tuple<Vector3, bool>(originalVerticeLs, false); 
             
             //Get the base shape with XY plane size limits
             var smoothedVectorLs = SculptBaseShape(originalVerticeLs, inflatedVerticieLs, sphereCenterLs);                 
@@ -686,7 +688,8 @@ namespace KK_PregnancyPlus
             }
 
             //At this point if the smoothed vector is still the originalVector just return it
-            if (smoothedVectorLs.Equals(originalVerticeLs)) return smoothedVectorLs;
+            if (smoothedVectorLs.Equals(originalVerticeLs)) 
+                return new Tuple<Vector3, bool>(smoothedVectorLs, false);
 
 
             //**** All of the below are post vert calculation checks to make sure the vertex position don't go outside of bounds (or inside the character)
@@ -716,17 +719,17 @@ namespace KK_PregnancyPlus
 
             //Don't allow any morphs to shrink towards the sphere center more than its original distance, only outward morphs allowed
             if (skinToCenterDist > currentVectorDistance || pmSkinToCenterDist > pmCurrentVectorDistance)             
-                return originalVerticeLs;            
+                return new Tuple<Vector3, bool>(originalVerticeLs, false);            
 
             //Don't allow any morphs to move behind the character's.z = 0 + extentOffset position, otherwise skin sometimes pokes out the back side :/
             if (backExtentPos.z > smoothedVectorLs.z)             
-                return new Vector3(smoothedVectorLs.x, smoothedVectorLs.y, originalVerticeLs.z);            
+                smoothedVectorLs = new Vector3(smoothedVectorLs.x, smoothedVectorLs.y, originalVerticeLs.z);            
 
             //Don't allow any morphs to move behind the original verticie z position, only forward expansion (ignoring ones already behind sphere center)
             if (originalVerticeLs.z > smoothedVectorLs.z && originalVerticeLs.z > sphereCenterLs.z)     
                 smoothedVectorLs = new Vector3(smoothedVectorLs.x, smoothedVectorLs.y, originalVerticeLs.z);            
 
-            return smoothedVectorLs;             
+            return new Tuple<Vector3, bool>(smoothedVectorLs, true);  
         }
 
 

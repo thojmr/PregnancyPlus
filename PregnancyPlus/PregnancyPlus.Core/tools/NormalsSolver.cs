@@ -55,7 +55,7 @@ public static class NormalSolver
                 int i2 = triangles[i + 1];
                 int i3 = triangles[i + 2];
 
-                //Break early if this all of these verts are not belly verts
+                //Break early if all of these verts are not belly verts
                 if (indexedVerts != null)                 
                     if (!indexedVerts[i1] && !indexedVerts[i2] && !indexedVerts[i3]) 
                         continue;            
