@@ -723,13 +723,8 @@ namespace KK_PregnancyPlus
                 return new Vector3(smoothedVectorLs.x, smoothedVectorLs.y, originalVerticeLs.z);            
 
             //Don't allow any morphs to move behind the original verticie z position, only forward expansion (ignoring ones already behind sphere center)
-            if (originalVerticeLs.z > smoothedVectorLs.z && originalVerticeLs.z > sphereCenterLs.z) 
-            {
-                //Get the average(not really average after all...) x and y change to move the new position halfway back to the oiriginal vert (hopefullt less strange triangles near belly to body edge)
-                var yChangeAvg = (smoothedVectorLs.y - originalVerticeLs.y)/3;
-                var xChangeAvg = (smoothedVectorLs.x - originalVerticeLs.x)/3;
-                smoothedVectorLs = new Vector3(smoothedVectorLs.x - xChangeAvg, smoothedVectorLs.y - yChangeAvg, originalVerticeLs.z);
-            }
+            if (originalVerticeLs.z > smoothedVectorLs.z && originalVerticeLs.z > sphereCenterLs.z)     
+                smoothedVectorLs = new Vector3(smoothedVectorLs.x, smoothedVectorLs.y, originalVerticeLs.z);            
 
             return smoothedVectorLs;             
         }
