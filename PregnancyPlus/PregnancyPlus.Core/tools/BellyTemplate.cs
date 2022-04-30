@@ -129,15 +129,15 @@ namespace KK_PregnancyPlus
 
                 case "Hyper":
                     #if KKS 
-                        shape.inflationMultiplier = 0.8f;
-                        shape.inflationRoundness = 1f;
-                        shape.inflationStretchX = -0.3f;
-                        shape.inflationStretchY = -0.3f;
-                    #else
                         shape.inflationMultiplier = 0.7f;
                         shape.inflationRoundness = 0.14f;
                         shape.inflationStretchX = -0.25f;
                         shape.inflationStretchY = -0.25f;
+                    #else                    
+                        shape.inflationMultiplier = 0.8f;
+                        shape.inflationRoundness = 1f;
+                        shape.inflationStretchX = -0.3f;
+                        shape.inflationStretchY = -0.3f;
                     #endif
                     shape.inflationShiftZ = 0.015f;
                     shape.inflationTaperZ = -0.002f;
