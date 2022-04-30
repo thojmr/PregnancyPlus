@@ -574,22 +574,12 @@ namespace KK_PregnancyPlus
         /// </summary>
         internal Vector3 GetSphereCenter() 
         {          
-            float bbHeight;
-
-            //in 6.0+ we can use a static sphere center height
-            if (infConfig.IsPluginVersionBelow(6.0))
-            {
-                //Measure from feet to belly 
-                bbHeight = GetBellyButtonLocalHeight();
-            }
-            else 
-            {
-                #if KKS
-                    bbHeight = 0.97f;           
-                #else
-                    bbHeight = 10f;
-                #endif
-            }
+            #if KKS
+                var bbHeight = 0.97f;           
+            #else
+                var bbHeight = 10f;
+            #endif
+            
             bellyInfo.BellyButtonHeight = bbHeight;           
             Vector3 bellyButtonPos = Vector3.up * bbHeight; 
 
