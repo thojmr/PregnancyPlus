@@ -383,10 +383,12 @@ namespace KK_PregnancyPlus
             var skinnedVerts = md[rendererName].originalVertices;    
             var bellyVertIndex = md[rendererName].bellyVerticieIndexes;
             var vertsLength = smr.sharedMesh.vertexCount;
-            var smrTfTransPt = smr.transform.localToWorldMatrix;
-            //The highest and lowest a vert can be, to be considerd in the belly area
-            var yBottomLimit = GetSphereCenter().y + (bellyInfo.OriginalSphereRadius * 1.5f);
-            var yTopLimit = GetSphereCenter().y - (bellyInfo.OriginalSphereRadius * 1.5f);
+            var smrTfTransPt = smr.transform.localToWorldMatrix;            
+
+            var preSliderSphereCenter = GetSphereCenter() - GetUserMoveTransform();
+            //The lowest a vert can be, to be considerd in the belly area
+            var yBottomLimit = preSliderSphereCenter.y - (bellyInfo.OriginalSphereRadius * 1.5f);
+            var ySphereCenter = preSliderSphereCenter.y;
             
             nativeDetour.Undo();
 
@@ -410,7 +412,7 @@ namespace KK_PregnancyPlus
                     //If any verts are found near the belly append them to the bellyVertIndexes, 
                     //  We need this because verts in clothing like skirts will be missed at first when the clothing has custom bones
                     //We could only do this after getting the skinned vert position anyway, so this is the best spot
-                    if (isClothingMesh && !bellyVertIndex[i] && (skinnedVert.y < yBottomLimit && skinnedVert.y > yTopLimit))
+                    if (isClothingMesh && !bellyVertIndex[i] && (skinnedVert.y > yBottomLimit && skinnedVert.y < ySphereCenter))
                     {                            
                         bellyVertIndex[i] = true;
                     }
