@@ -1,5 +1,6 @@
 using UnityEngine;
 using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -168,6 +169,35 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
+        /// This will merge new deltas with an existing blendshape
+        /// </summary>
+        /// <param name="md">The mesh data containing the new deltas</param>
+        /// <param name="percentage">The percentage of the new deltas we want to apply to the existing ones (1 == 100%)</param>
+        public void MergeMeshDeltas(MeshData md, float percentage = 1f) 
+        {
+            //These should be set when calling new ()
+            if (smr == null) return;            
+            if (blendShape == null) return;
+            if (!md.HasDeltas) return;
+
+            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" MergeDeltas > {smr.name}");
+
+            var mergedBlendShape = new BlendShape();
+            mergedBlendShape.name = blendShape.name;
+
+            //Add deltas from both blendshapes together
+            mergedBlendShape.verticies = blendShape.verticies.Zip(md.deltaVerticies, (x, y) => x + (y * percentage)).ToArray();
+            mergedBlendShape.normals = blendShape.normals.Zip(md.deltaNormals, (x, y) => x + (y * percentage)).ToArray();
+            mergedBlendShape.tangents = blendShape.tangents.Zip(md.deltaTangents, (x, y) => x + (y * percentage)).ToArray();
+
+            blendShape = mergedBlendShape;
+
+            //Add the merged blendshape back to the mesh
+            AddBlendShapeToMesh(smr);
+        }
+
+
+        /// <summary>
         /// This will change the weight (apperance) of an existing BlendShape. Weight 0 will reset to the default shape.
         /// </summary>
         /// <param name="smr">The skinned mesh renderer to update the blend shape weight</param>
@@ -255,6 +285,31 @@ namespace KK_PregnancyPlus
             bsFrame.name = name;
 
             return bsFrame;
+        }
+
+
+        /// <summary>
+        /// Check whether a SMR has an existing blendshape with maching name
+        /// </summary>
+        /// <param name="smr">The skinned mesh renderer to search for the blend shape</param>
+        /// <param name="blendShapeName">The blendshape name to search for</param>
+        public bool HasBlendshape(SkinnedMeshRenderer smr, string blendShapeName) 
+        {
+            if (smr == null) 
+            {
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" HasBlendshape > smr should not be mull!");
+                return false;
+            }
+
+            if (smr.sharedMesh.blendShapeCount <= 0) return false;
+
+            //Check whether the blendshape exists
+            var shapeIndex = GetBlendShapeIndex(smr, blendShapeName);
+
+            //If the blendshape is not found return
+            if (shapeIndex < 0) return false;
+
+            return true;
         }
 
 

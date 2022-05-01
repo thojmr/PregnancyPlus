@@ -57,7 +57,7 @@ namespace KK_PregnancyPlus
 
             var uncensorGUID = GetUncensorGuid();
 
-            //Get all cloth renderes and attempt to create blendshapes from current inflatedVerticies
+            //Attempt to create blendshapes from current inflatedVerticies        
             var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objClothes);
             meshBlendShapes = LoopAndCreateBlendShape(clothRenderers, meshBlendShapes, uncensorGUID);
 
@@ -107,7 +107,7 @@ namespace KK_PregnancyPlus
                 var smr = PregnancyPlusHelper.GetMeshRendererByName(ChaControl, meshBlendShape.MeshName, meshBlendShape.VertCount);
                 if (smr == null) continue;            
 
-                var blendShapeName = MakeBlendShapeName(GetMeshKey(smr));
+                var blendShapeName = GetBlendShapeName(GetMeshKey(smr));
                 //Get existing blend shape from mesh            
                 var bsc = new BlendShapeController(smr, blendShapeName);
                 if (bsc.blendShape == null) continue;
@@ -158,7 +158,7 @@ namespace KK_PregnancyPlus
         /// </summary>
         internal void OnRemoveAllGUIBlendShapes()
         {
-            //Set all GUI blendshapes to 0 weight
+            //For each blemdshape represented in the GUI
             foreach (var smrIdentifier in meshWithBlendShapes)
             {
                 var smr = PregnancyPlusHelper.GetMeshRendererByName(ChaControl, smrIdentifier.name, smrIdentifier.vertexCount);
@@ -169,10 +169,9 @@ namespace KK_PregnancyPlus
                     //Search for GUI blendshape
                     var name = smr.sharedMesh.GetBlendShapeName(i);
                     if (name.EndsWith(PregnancyPlusPlugin.GUID))
-                    {
-                        //Set weight to 0.  Maybe in the future we'll actually remove them
+                    {                        
                         var bsc = new BlendShapeController(smr, name);
-                        bsc.ApplyBlendShapeWeight(smr, 0);
+                        bsc.RemoveBlendShape(smr);
                     }
                 }
             }
@@ -209,7 +208,7 @@ namespace KK_PregnancyPlus
                 {
                     //Search for all blendshapes on a mesh
                     var name = smr.sharedMesh.GetBlendShapeName(i);
-                    var blendShapePartialName = MakeBlendShapeName(GetMeshKey(smr), blendShapeTempTagName);
+                    var blendShapePartialName = GetBlendShapeName(GetMeshKey(smr), blendShapeTempTagName);
 
                     //If it is a [temp] blendshape
                     if (name.EndsWith(blendShapePartialName))
@@ -241,7 +240,7 @@ namespace KK_PregnancyPlus
                 //Dont create blend shape if no inflated verts exists
                 if (!exists || !md[renderKey].HasInflatedVerts) continue;
 
-                var blendShapeCtrl = CreateBlendShape(smr, renderKey);
+                var blendShapeCtrl = CreateOrMergeBlendShape(smr, renderKey);
 
                 //Get the blendshape format that can be saved to character card
                 var meshBlendShape = ConvertToMeshBlendShape(smr.name, blendShapeCtrl.blendShape, uncensorGUID);
@@ -471,6 +470,56 @@ namespace KK_PregnancyPlus
 
         
         /// <summary>
+        /// If a blendshape of matching name exists, add the current deltas to it, otherwise create a new blendshape with the deltas
+        /// </summary>
+        /// <param name="smr">Target mesh renderer to update (original shape)</param>
+        /// <param name="renderKey">The Shared Mesh render name, used in dictionary keys to get the current verticie values</param>
+        /// <param name="blendShapeTag">Optional blend shape tag to append to the blend shape name, used for identification if needed</param>
+        /// <returns>Returns the MeshBlendShape that is created. Can be null</returns>
+        internal BlendShapeController CreateOrMergeBlendShape(SkinnedMeshRenderer smr, string renderKey, string blendShapeTag = null) 
+        {        
+            //When the mesh is not readable, temporarily make it readble
+            if (!smr.sharedMesh.isReadable) nativeDetour.Apply();
+
+            //Make sure we have an existing belly shape to work with (can be null if user hasnt used sliders yet)
+            var exists = md.TryGetValue(renderKey, out MeshData _md);
+            if (!exists || !_md.HasInflatedVerts) 
+            {
+                if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo(
+                     $"CreateOrMergeBlendShape > smr '{renderKey}' meshData do not exists, skipping");
+
+                nativeDetour.Undo();
+                return new BlendShapeController();
+            }
+
+            if (!_md.HasDeltas) 
+            {
+                if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogWarning($" CreateOrMergeBlendShape must have deltas present in MeshData, no shape applied for {smr.name}");
+                return new BlendShapeController();
+            }
+
+            var blendShapeName = GetBlendShapeName(renderKey, blendShapeTag);
+            var smrHasBlendshape = new BlendShapeController().HasBlendshape(smr, blendShapeName);
+            BlendShapeController bsc;
+
+            //Merge the existing blendshape deltas with the new one
+            if (smrHasBlendshape)
+            {
+                bsc = new BlendShapeController(smr, blendShapeName);  
+                bsc.MergeMeshDeltas(_md, (infConfig.inflationSize/40));
+            }
+            else 
+            {
+                //Create a new blend shape object on the mesh, and return it
+                bsc = new BlendShapeController(_md, blendShapeName, smr);            
+            }
+
+            nativeDetour.Undo();
+            return bsc;
+        }  
+
+
+        /// <summary>
         /// This will create a blendshape frame for a mesh from earlier computed deltas
         /// </summary>
         /// <param name="smr">Target mesh renderer to update (original shape)</param>
@@ -499,7 +548,7 @@ namespace KK_PregnancyPlus
                 return new BlendShapeController();
             }
 
-            var blendShapeName = MakeBlendShapeName(renderKey, blendShapeTag);
+            var blendShapeName = GetBlendShapeName(renderKey, blendShapeTag);
 
             //Create a blend shape object on the mesh, and return the controller object
             var bsc = new BlendShapeController(_md, blendShapeName, smr);            
@@ -571,7 +620,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// This is how we name preg+ blendshapes
         /// </summary>
-        internal string MakeBlendShapeName(string renderKey, string blendShapeTag = null) 
+        internal string GetBlendShapeName(string renderKey, string blendShapeTag = null) 
         {
             return blendShapeTag == null ? $"{renderKey}_{PregnancyPlusPlugin.GUID}" : $"{renderKey}_{PregnancyPlusPlugin.GUID}_{blendShapeTag}";
         }
@@ -586,7 +635,7 @@ namespace KK_PregnancyPlus
         /// <param name="blendShapeTag">Optional blend shape tag to append to the blend shape name, used for identification if needed</param>
         internal bool ApplyBlendShapeWeight(SkinnedMeshRenderer smr, string renderKey, bool needsOverwrite, string blendShapeTag = null) 
         {
-            var blendShapeName = MakeBlendShapeName(renderKey, blendShapeTag);
+            var blendShapeName = GetBlendShapeName(renderKey, blendShapeTag);
 
             if (!smr.sharedMesh.isReadable) nativeDetour.Apply();
             //Try to find an existing blendshape by name
@@ -619,7 +668,7 @@ namespace KK_PregnancyPlus
         /// <param name="blendShapeTag">Optional blend shape tag to append to the blend shape name, used for identification if needed</param>
         internal bool ResetBlendShapeWeight(SkinnedMeshRenderer smr, string renderKey, string blendShapeTag = null) 
         {
-            var blendShapeName = MakeBlendShapeName(renderKey, blendShapeTag);
+            var blendShapeName = GetBlendShapeName(renderKey, blendShapeTag);
 
             //Try to find an existing blendshape by name
             BlendShapeController bsc = new BlendShapeController(smr, blendShapeName);
@@ -643,7 +692,7 @@ namespace KK_PregnancyPlus
             //For each mesh, grab any existing Preg+ blendshapes and add to list
             foreach(var smr in clothRenderers)
             {
-                var blendShapeName = MakeBlendShapeName(GetMeshKey(smr), blendShapeTempTagName);
+                var blendShapeName = GetBlendShapeName(GetMeshKey(smr), blendShapeTempTagName);
                 var blendshapeCtrl = new BlendShapeController(smr, blendShapeName);
                 if (blendshapeCtrl.blendShape != null) blendshapes.Add(blendshapeCtrl);
             }
@@ -653,7 +702,7 @@ namespace KK_PregnancyPlus
                 var accessoryRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objAccessory);
                 foreach(var smr in accessoryRenderers)
                 {
-                    var blendShapeName = MakeBlendShapeName(GetMeshKey(smr), blendShapeTempTagName);
+                    var blendShapeName = GetBlendShapeName(GetMeshKey(smr), blendShapeTempTagName);
                     var blendshapeCtrl = new BlendShapeController(smr, blendShapeName);
                     if (blendshapeCtrl.blendShape != null) blendshapes.Add(blendshapeCtrl);
                 }
@@ -662,7 +711,7 @@ namespace KK_PregnancyPlus
             var bodyRenderers = PregnancyPlusHelper.GetMeshRenderers(ChaControl.objBody, findAll: true);
             foreach(var smr in bodyRenderers)
             {
-                var blendShapeName = MakeBlendShapeName(GetMeshKey(smr), blendShapeTempTagName);
+                var blendShapeName = GetBlendShapeName(GetMeshKey(smr), blendShapeTempTagName);
                 var blendshapeCtrl = new BlendShapeController(smr, blendShapeName);
                 if (blendshapeCtrl.blendShape != null) blendshapes.Add(blendshapeCtrl);
             }

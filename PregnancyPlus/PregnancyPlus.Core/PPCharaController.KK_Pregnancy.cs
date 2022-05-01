@@ -180,7 +180,7 @@ namespace KK_PregnancyPlus
         public void AppendToQuickInflateList(SkinnedMeshRenderer smr)
         {
             if (!smr.sharedMesh.isReadable) nativeDetour.Apply();
-            var blendShapeName = MakeBlendShapeName(GetMeshKey(smr), blendShapeTempTagName);
+            var blendShapeName = GetBlendShapeName(GetMeshKey(smr), blendShapeTempTagName);
             //Find blendshape by name
             var blendshapeCtrl = new BlendShapeController(smr, blendShapeName);
             nativeDetour.Undo();
