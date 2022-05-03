@@ -389,6 +389,12 @@ namespace KK_PregnancyPlus
             //The lowest a vert can be, to be considerd in the belly area
             var yBottomLimit = preSliderSphereCenter.y - (bellyInfo.OriginalSphereRadius * 1.5f);
             var ySphereCenter = preSliderSphereCenter.y;
+
+            //Since the z limit check is done on the unskinned verts, we need to apply any bindpose scale to the limit to make it match the real unskinned vert positions
+            //  Note: I bet rotated meshes are similarily affected, but that's a lot of math to correct
+            var bindPoseScaleZ = Matrix.GetScale(MeshSkinning.GetBindPoseScale(smr).inverse).z;
+            //The distance backwards from characters center that verts are allowed to be modified
+            var backExtent = bindPoseScaleZ * -bellyInfo.ZLimit;
             
             nativeDetour.Undo();
 
@@ -412,7 +418,7 @@ namespace KK_PregnancyPlus
                     //If any verts are found near the belly append them to the bellyVertIndexes, 
                     //  We need this because verts in clothing like skirts will be missed at first when the clothing has custom bones
                     //We could only do this after getting the skinned vert position anyway, so this is the best spot
-                    if (isClothingMesh && !bellyVertIndex[i] && (skinnedVert.y > yBottomLimit && skinnedVert.y < ySphereCenter))
+                    if (isClothingMesh && !bellyVertIndex[i] && skinnedVert.z > backExtent && (skinnedVert.y > yBottomLimit && skinnedVert.y < ySphereCenter))
                     {                            
                         bellyVertIndex[i] = true;
                     }

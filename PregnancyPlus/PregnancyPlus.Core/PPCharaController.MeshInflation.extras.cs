@@ -157,7 +157,7 @@ namespace KK_PregnancyPlus
 
             //Always clear debug objects from character in debug mode
             #if DEBUG
-                DebugTools.ClearAllThingsFromCharacter(ChaControl.gameObject);
+                DebugTools.ClearAllThingsFromCharacter();
             #endif
         }
         
