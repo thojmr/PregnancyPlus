@@ -78,7 +78,7 @@ namespace KK_PregnancyPlus
             var presetBellyShape = e.AddControl(new MakerDropdown("Apply Preset Shape", BellyTemplate.shapeNames, cat, 0, _pluginInstance));
             presetBellyShape.ValueChanged.Subscribe((value) =>
             {
-                var infConfig = BellyTemplate.GetTemplate(value);       
+                var infConfig = BellyTemplate.GetTemplate(value);     
                 //Set the GUI sliders to the PresetShape
                 OnPasteBelly(sliders, infConfig);
             });
@@ -390,11 +390,14 @@ namespace KK_PregnancyPlus
             var charCustFunCtrl  = PregnancyPlusHelper.GetCharacterBehaviorController<PregnancyPlusCharaController>(chaControl, PregnancyPlusPlugin.GUID);
             if (charCustFunCtrl == null) return;
 
-            var _infConfig = restoreToState != null ? restoreToState : PregnancyPlusPlugin.copiedBelly;
+            var _infConfig = restoreToState != null ? restoreToState : PregnancyPlusPlugin.copiedBelly;            
 
             //If no belly state has been copied, skip this
             if (_infConfig == null) return;
             if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" Restoring sliders OnPasteBelly()");
+
+            //when pasting belly make sure Preg+ is enabled
+            _infConfig.GameplayEnabled = true;
 
             //For each slider, set to default which will reset the belly shape
             foreach (var slider in _sliders) 

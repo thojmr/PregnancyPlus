@@ -72,7 +72,14 @@ namespace KK_PregnancyPlus
                 .Value.Subscribe(f => {         
                     if (f == false) return;          
                     if (PregnancyPlusPlugin.copiedBelly != null && PregnancyPlusPlugin.copiedBelly.HasAnyValue()) 
-                        RestoreSliders(PregnancyPlusPlugin.copiedBelly);
+                    {
+                        //when pasting belly make sure Preg+ is enabled for selected character
+                        foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) 
+                        {         
+                            ctrl.infConfig.GameplayEnabled = true;
+                        }
+                        RestoreSliders(PregnancyPlusPlugin.copiedBelly);  
+                    }
                  });
 
             cat.AddControl(new CurrentStateCategorySwitch("Reset Belly", c =>
@@ -381,7 +388,7 @@ namespace KK_PregnancyPlus
                         {  
                             if (ctrl.infConfig.inflationFatFold == f) continue;                    
                             ctrl.infConfig.inflationFatFold = f;
-                            ctrl.MeshInflate(new MeshInflateFlags(ctrl), "StudioSlider");                             
+                            ctrl.MeshInflate(new MeshInflateFlags(ctrl), "StudioSlider");                            
                         }
                     });
                     
