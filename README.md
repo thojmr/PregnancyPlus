@@ -139,6 +139,8 @@ Tips:
     - A: Most likley the unskinned mesh was imported in an unusual way.  Feel free to send me a character card with the clothing on to debug it.  (As of 6.0+ this should be mostly fixed)
 - Q: There are no slider effects when the character has no legs.
     - A: The character must have a leg scale > 0 for the belly sliders to work correctly.
+- Q: The belly sliders suddenly stoped working!?
+    - A: Most of the time this is because KKPE/HSPE sometimes locks the belly blendshapes.  You can try opening KKPE > Advanced > Blendshapes > and "Reset" the Pregnancy+ blendshapes on each mesh that is modified (purple).  Otherwise your output_log.txt may have more details if an error occured.
 - Q: What the heck is a BlendShape?
     - A: Put simply a blendshape is a "copy" of the mesh that has some deformation that you want to be able to ease into.  Like visually morphing from originalMesh -> morphedMesh.
 
