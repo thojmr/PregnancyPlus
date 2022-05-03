@@ -47,6 +47,29 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
+        /// Search all SMR's that have existing MeshData values
+        /// </summary>
+        internal static List<SkinnedMeshRenderer> GetMeshRenderersWithMeshData(ChaControl chaControl, Dictionary<string, MeshData> md) 
+        {
+            var renderers = chaControl.GetComponentsInChildren<SkinnedMeshRenderer>(true);//Even search inactive renderers
+            var meshDataRenderers = new List<SkinnedMeshRenderer>();
+
+            foreach(var smr in renderers) 
+            {
+                var meshKey = GetMeshKey(smr);
+                //Only add the smr if we have computed its mesh data
+                var hasMeshData = md.TryGetValue(meshKey, out var _md);
+                if (!hasMeshData) 
+                    continue;
+
+                meshDataRenderers.Add(smr);
+            }
+
+            return meshDataRenderers;
+        }
+
+
+        /// <summary>
         /// Craft smr render key from the name and instance id, used to identify a stored mesh inflation
         /// </summary>
         internal static string KeyFromNameAndVerts(SkinnedMeshRenderer smr) 
@@ -229,6 +252,15 @@ namespace KK_PregnancyPlus
         public static string ConvertToCm(float unitySize)
         {
             return (unitySize * gameSizeToCentimetersRatio).ToString("F1") + "cm";
+        }
+
+        /// <summary>   
+        /// Creates a mesh dictionary key based on mesh name and vert count. (because mesh names can be the same, vertex count makes it almost always unique)
+        /// </summary>    
+        internal static string GetMeshKey(SkinnedMeshRenderer smr) 
+        {
+            if (!smr || !smr.sharedMesh) return null;
+            return PregnancyPlusHelper.KeyFromNameAndVerts(smr);
         }
     
     }

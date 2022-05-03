@@ -114,18 +114,8 @@ namespace KK_PregnancyPlus
             {
                 if (smrIdentifiers == null || smrIdentifiers.Count <= 0) return true;
 
-                System.Object bsModule;
-                try 
-                {
-                    bsModule = GetHspeBlenShapeModule();
-                    if (bsModule == null) return false;
-                }	
-                catch (Exception e)
-                {
-                    PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode("-1", ErrorCode.PregPlus_HSPENotFound, 
-                            $" ResetHspeBlendShapes > HSPE not found: {e.Message} ");
-                    return false;
-                }
+                var bsModule = TryGetHspeBlenShapeModule("ResetHspeBlendShapes1");
+                if (bsModule == null) return false;
 
                 //Set the following values as if the HSPE blendshape tab was clicked
                 Traverse.Create(bsModule).Field("_lastEditedBlendShape").SetValue(-1);
@@ -147,7 +137,54 @@ namespace KK_PregnancyPlus
 
 
             /// <summary>
-            /// Get the active HSPE blend shape module, that we want to make alterations to
+            /// Reset HSPE blendshape when character changes, overload that take an SMR as a param
+            /// </summary>
+            /// <returns>Will return True if HSPE was found</returns>
+            internal static bool ResetHspeBlendShapes(List<SkinnedMeshRenderer> smrs, ChaControl chaControl) 
+            {
+                if (smrs == null || smrs.Count <= 0) return true;
+
+                var bsModule = TryGetHspeBlenShapeModule("ResetHspeBlendShapes2");
+                if (bsModule == null) return false;
+
+                //Set the blend shape weight in HSPE for a specific smr, (Finally working............)
+                var SetMeshRendererNotDirty = bsModule.GetType().GetMethod("SetMeshRendererNotDirty", BindingFlags.NonPublic | BindingFlags.Instance);
+                if (SetMeshRendererNotDirty == null) return false;
+
+                //reset all active smrs in HSPE
+                foreach(var smr in smrs)
+                {	
+                    if (smr == null) continue;
+                    SetMeshRendererNotDirty.Invoke(bsModule, new object[] { smr } );	
+                }
+
+                return true;
+            }
+
+
+            /// <summary>
+            /// Try to get the active HSPE blend shape module
+            /// </summary>
+            internal static System.Object TryGetHspeBlenShapeModule(string callee)
+            {
+                System.Object bsModule;
+                try 
+                {
+                    bsModule = GetHspeBlenShapeModule();
+                }	
+                catch (Exception e)
+                {
+                    PregnancyPlusPlugin.errorCodeCtrl.LogErrorCode("-1", ErrorCode.PregPlus_HSPENotFound, 
+                            $" {callee} > HSPE not found: {e.Message} ");
+                    return null;
+                }
+
+                return bsModule;
+            }
+
+
+            /// <summary>
+            /// Infer the active HSPE blend shape module, that we want to make alterations to
             /// </summary>
             internal static System.Object GetHspeBlenShapeModule()
             {

@@ -70,7 +70,7 @@ namespace KK_PregnancyPlus
             if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) ResetInflation();
 
             //Load any blendshapes from card.  If the uncensor matches the blendshapes they will load to the character visibly
-            LoadBlendShapes(infConfig);
+            LoadBlendShapes(infConfig);            
 
             StartCoroutine(ReloadStoryInflation(0.5f, "OnUncensorChanged-story", uncensorChanged: true));     
             StartCoroutine(ReloadStudioMakerInflation(1f, reMeasure: false, "OnUncensorChanged", uncensorChanged: true));  //Give time for character to load, and settle 
