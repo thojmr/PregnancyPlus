@@ -90,7 +90,7 @@ See [Plugin Tips](#some-tips) for tips and tricks
   - Move your new blendshape sliders to the desired position.  At least one blendshape slider must be green (touched) before the next step
   - Open Timeline with Ctrl+T, search for "Blendshape" and middle click to add.
   - Follow Timeline guides for further info
-  - See `The BlendShape GUI` below for a longer description of the GUI
+  - See [The BlendShape GUI](#the-blendshape-gui) below for a longer description of the GUI and it's behaviors
 
 ## VNGE Integration
 - Studio VNGE integration in HS2 and AI via blendshapes.  Here's how:
@@ -101,12 +101,16 @@ See [Plugin Tips](#some-tips) for tips and tricks
   - Open VNGE, and add the blendshape(s) under "Clip Manager" 
     - To use BlendShapes in VNGE set ExportChara_XXPE_BlendShapes=1 in vnactor.ini everywhere it is found (may become obsolete)
   - Follow VNGE guides for further info
-  - See `The BlendShape GUI` below for a longer description of the GUI
+  - See [The BlendShape GUI](#the-blendshape-gui) below for a longer description of the GUI and it's behaviors
 
 </br>
 
 ## The BlendShape GUI
-In the bottom right corner of the banner image, you can see the blendshape GUI.  The purpose of this GUI is to allow you to capture the current pregnancy+ sliders and save their shape as a permanent blendshape to the character card/scene.  That way, if a character's belly is animated via Timeline or VNGE, the animation will be persistent and shareable with anyone else automatically.  Just keep in mind that a blendshape is tied directly to a specific uncensor or clothing.  If you change either you will need to recreate the blendshapes in most cases.
+In the bottom right corner of the banner image, you can see the blendshape GUI.  The purpose of this GUI is to allow you to capture the current pregnancy+ sliders and save their shape as a permanent blendshape to the character card/scene.  That way, if a character's belly is animated via Timeline or VNGE, the animation will be persistent and shareable with anyone else automatically.  
+
+Note:
+- Keep in mind that a blendshape is tied directly to a specific uncensor or clothing.  If you change either you will need to recreate the blendshapes in most cases.
+- If you plan on loading a scene made in KK to KKS, the uncensor you used in KK MUST exist in KKS.  Otherwise you will have to re-create the blendshape in KKS.
 
 Tips:
 - You CAN replace characters in the scene after the blendshape is saved. Pregnancy+ will automatically load the same uncensor to the newly replaced character.  However clothing will not retain its' shape when changed.
@@ -135,6 +139,8 @@ Tips:
     - A: Most likley the unskinned mesh was imported in an unusual way.  Feel free to send me a character card with the clothing on to debug it.  (As of 6.0+ this should be mostly fixed)
 - Q: There are no slider effects when the character has no legs.
     - A: The character must have a leg scale > 0 for the belly sliders to work correctly.
+- Q: The belly sliders suddenly stoped working!?
+    - A: Most of the time this is because KKPE/HSPE sometimes locks the belly blendshapes.  You can try opening KKPE > Advanced > Blendshapes > and "Reset" the Pregnancy+ blendshapes on each mesh that is modified (purple).  Otherwise your output_log.txt may have more details if an error occured.
 - Q: What the heck is a BlendShape?
     - A: Put simply a blendshape is a "copy" of the mesh that has some deformation that you want to be able to ease into.  Like visually morphing from originalMesh -> morphedMesh.
 
