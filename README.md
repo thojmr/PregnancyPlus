@@ -38,15 +38,16 @@ See [Plugin Tips](#some-tips) for tips and tricks
 
 ## Some Tips
 - Use one of the High Poly meshes (uncensors) for screenshots.  It makes the belly more round and less jagged.  [Quick Guide Below](#high-poly-mesh)
-- The more Multiplier you apply, the more -StretchX and -StretchY you should apply.  Otherwise the belly gets too wide and tall
-- The Taper sliders are good at making the shape more egg like
+- The Vanilla+ shaders by Xukmi have a Tesselation slider which is another alternative to a high poly mesh in KK and KKS.  It sub divides the mesh, making it appear more smooth. You can apply it in Material Editor.
+- The more Multiplier you apply, the more -StretchX and -StretchY you should apply.  Otherwise the belly gets too wide and tall for the body.
+- The Taper sliders are good at making the shape more egg like.
 - Too much Roundness slider will cause clothes to clip at the top/bottom of the belly.  Maybe I'll fix this one day...
 - If you see stretched skin near the edges, use the "Smooth Belly Mesh" button to correct it, or reduce your Stretch sliders if that doesn't help.
   - Optionally if you have the Vanilla+ shaders from Xukmi, the ones with tesselation can achieve the same effect if you increase the Tesselation Smoothness.
-  - A HighPoly mesh will have the greatest effect on reducing this
-- There will always be some amount of cloth clipping at extreme sizes.  You can use the Cloth Offset slider to help, but It's a difficult problem to solve
+  - A HighPoly mesh or tesselation will have the greatest effect on reducing this.
+- There will always be some amount of cloth clipping at extreme sizes.  You can use the Cloth Offset slider to help, but It's a difficult problem to solve.
 - You can use the Individual Clohting Offset GUI to offset a single piece of clothing at a time now.  Great for overlaping or tight fitting clothing
-- **Hover over any Plugin Config options in game for more detailed descriptions**
+- **Hover over any of the F1 Plugin Config options for more detailed descriptions**
 
 <br>
 
