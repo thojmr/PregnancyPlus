@@ -45,8 +45,8 @@ namespace KK_PregnancyPlus
         /// </summary>
         public Mesh CreateMeshCollider(SkinnedMeshRenderer bodySmr = null)
         {        
-            var colliderExists = GetMeshCollider(bodySmr);
-            if (colliderExists != null) return null;
+            var existingCollider = GetMeshCollider(bodySmr);
+            if (existingCollider != null) return null;
 
 
             //Check for body mesh data dict
@@ -93,8 +93,6 @@ namespace KK_PregnancyPlus
             var collider = bodySmr.gameObject.GetComponent<MeshCollider>();
             if (collider == null) return null;
 
-            // if (PregnancyPlusPlugin.DebugLog.Value) DebugTools.DebugMeshVerts(collider.sharedMesh.vertices);
-
             return collider;
         }
 
@@ -125,7 +123,10 @@ namespace KK_PregnancyPlus
         public void RemoveMeshCollider()
         {
             var collider = GetMeshCollider();
-            if (collider != null) Destroy(collider);
+            if (collider == null)                          
+                return;
+                    
+            Destroy(collider);
         }
 
 

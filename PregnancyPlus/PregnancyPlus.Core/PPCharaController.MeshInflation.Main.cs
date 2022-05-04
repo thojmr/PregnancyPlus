@@ -122,7 +122,11 @@ namespace KK_PregnancyPlus
             isProcessing = false;
 
             //If any MeshInflate() calls were triggered while isProcessing==true, re-apply that request since it was skipped
-            if (lastMeshInflateFlags == null) return;
+            if (lastMeshInflateFlags == null) 
+            {
+                RemoveMeshCollider();
+                return;
+            }
             
             //Make clone so we can clear the old value now
             var lastFlagsClone = (MeshInflateFlags)lastMeshInflateFlags.Clone();
@@ -475,7 +479,8 @@ namespace KK_PregnancyPlus
             Vector3 sphereCenter = GetSphereCenter();            
 
             //Create mesh collider to make clothing measurements from skin (if it doesnt already exists)         
-            if (NeedsClothMeasurement(smr, bodySmr, sphereCenter, isClothingMesh)) CreateMeshCollider(bodySmr); 
+            if (NeedsClothMeasurement(smr, bodySmr, sphereCenter, isClothingMesh)) 
+                CreateMeshCollider(bodySmr); 
            
             //Get the cloth offset for each cloth vertex via raycast to skin
             //  Unfortunately this cant be inside the thread below because Unity Raycast are not thread safe...
@@ -542,7 +547,6 @@ namespace KK_PregnancyPlus
                     if (vertDistance > vertNormalCaluRadius && !PregnancyPlusPlugin.DebugVerts.Value)                 
                         return origVerts[i];                                    
                     
-                    Vector3 inflatedVertLs;                    
                     Vector3 verticieToSpherePos;       
 
                     // If the vert is within the calculated normals radius, then consider it as an altered vert that needs normal recalculation when applying inflation
