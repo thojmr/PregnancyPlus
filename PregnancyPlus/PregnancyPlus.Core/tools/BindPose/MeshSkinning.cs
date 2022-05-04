@@ -298,18 +298,34 @@ namespace KK_PregnancyPlus
                 //Get a bone's bindPose position/rotation
                 GetBindPoseBoneTransform(smr, smr.sharedMesh.bindposes[i], bindPoseOffset, out var position, out var rotation, bindPoseList, smr.bones[i]);
 
-                if (parent == null) 
-                {
-                    DebugTools.DrawLine(position + Vector3.right * lineLen, position);
-                    DebugTools.DrawLine(position + Vector3.up * lineLen, position);
-                    DebugTools.DrawLine(position + Vector3.forward * lineLen, position);
-                } 
-                else
-                {
-                    DebugTools.DrawLineAndAttach(parent, position + Vector3.right * lineLen, position, removeExisting: false);
-                    DebugTools.DrawLineAndAttach(parent, position + Vector3.up * lineLen, position, removeExisting: false);
-                    DebugTools.DrawLineAndAttach(parent, position + Vector3.forward * lineLen, position, removeExisting: false);
-                }
+                DebugTools.DrawAxis(position, lineLen, parent);
+            }
+        }
+
+
+        /// <summary>
+        /// Show the raw bindpose locations of an SMR with debug lines
+        /// </summary> 
+        /// <param name="parent">optional: Attach lines to this parent transform</param>   
+        public static void ShowRawBindPose(SkinnedMeshRenderer smr, Transform parent = null)
+        {
+            if (!PregnancyPlusPlugin.DebugLog.Value && !PregnancyPlusPlugin.DebugCalcs.Value) return;
+
+            #if KKS 
+                var lineLen = 0.03f;
+            #elif AI || HS2
+                var lineLen = 0.3f;
+            #endif            
+
+            for (int i = 0; i < smr.bones.Length; i++)
+            {            
+                //Sometimes smr has more bones than bindPoses, so skip these extra bones
+                if (i > smr.sharedMesh.bindposes.Length -1) continue;
+                
+                //Get a bone's bindPose position/rotation
+                var position = Matrix.GetPosition(smr.transform.localToWorldMatrix * smr.sharedMesh.bindposes[i].inverse);
+
+                DebugTools.DrawAxis(position, lineLen, parent);
             }
         }
 

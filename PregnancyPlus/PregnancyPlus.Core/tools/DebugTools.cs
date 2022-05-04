@@ -254,6 +254,26 @@ public static class DebugTools
         DrawLineAndAttach(parent, Vector3.zero, new Vector3(0, 0, 1)* length, localPosition, removeExisting, worldPositionStays);
     }
 
+
+    /// <summary>
+    /// Draw an Axis with three converging lines
+    /// </summary>
+    public static void DrawAxis(Vector3 position, float lineLen, Transform parent = null)
+    {
+        if (parent == null) 
+        {
+            DebugTools.DrawLine(position + Vector3.right * lineLen, position);
+            DebugTools.DrawLine(position + Vector3.up * lineLen, position);
+            DebugTools.DrawLine(position + Vector3.forward * lineLen, position);
+        } 
+        else
+        {
+            DebugTools.DrawLineAndAttach(parent, position + Vector3.right * lineLen, position, removeExisting: false);
+            DebugTools.DrawLineAndAttach(parent, position + Vector3.up * lineLen, position, removeExisting: false);
+            DebugTools.DrawLineAndAttach(parent, position + Vector3.forward * lineLen, position, removeExisting: false);
+        }
+    }
+
     
     /// <summary>
     /// This will create a sphere on every vert in the given mesh so you can visually see changes in a computed mesh
