@@ -12,13 +12,12 @@ See [Plugin Tips](#some-tips) for tips and tricks
 
 ## Latest Features (I will update this occasionally)
 - 6.0+:
+    - Fixed Skirt and Jackets clipping below the belly
     - Added Preset Belly Shape dropdown
-    - Individual clothing offsets GUI (Next to P+ blendshape GUI)
-    - Implemented c# async await to remove hitching in HS2, AI, and KKS
+    - Individual clothing offsets GUI in Studio and Maker
+    - Major performance improvements
     - Fat Fold Gap slider                                                    <- (Last Vanilla KK version)
-    - Core code rewrite to fix many old issues, and pave way for new features
-    - SkinnedAccessories now work with Preg+
-    - AccessoryClothes now work with Preg+
+    - All skinned accessories will work with Preg+
 - 5.0+:
     - Preg+ works with all normal clothing types now
 
@@ -38,15 +37,16 @@ See [Plugin Tips](#some-tips) for tips and tricks
 
 ## Some Tips
 - Use one of the High Poly meshes (uncensors) for screenshots.  It makes the belly more round and less jagged.  [Quick Guide Below](#high-poly-mesh)
-- The more Multiplier you apply, the more -StretchX and -StretchY you should apply.  Otherwise the belly gets too wide and tall
-- The Taper sliders are good at making the shape more egg like
+- The Vanilla+ shaders by Xukmi have a Tesselation slider which is another alternative to a high poly mesh in KK and KKS.  It sub divides the mesh, making it appear more smooth. You can apply it in Material Editor.
+- The more Multiplier you apply, the more -StretchX and -StretchY you should apply.  Otherwise the belly gets too wide and tall for the body.
+- The Taper sliders are good at making the shape more egg like.
 - Too much Roundness slider will cause clothes to clip at the top/bottom of the belly.  Maybe I'll fix this one day...
 - If you see stretched skin near the edges, use the "Smooth Belly Mesh" button to correct it, or reduce your Stretch sliders if that doesn't help.
   - Optionally if you have the Vanilla+ shaders from Xukmi, the ones with tesselation can achieve the same effect if you increase the Tesselation Smoothness.
-  - A HighPoly mesh will have the greatest effect on reducing this
-- There will always be some amount of cloth clipping at extreme sizes.  You can use the Cloth Offset slider to help, but It's a difficult problem to solve
+  - A HighPoly mesh or tesselation will have the greatest effect on reducing this.
+- There will always be some amount of cloth clipping at extreme sizes.  You can use the Cloth Offset slider to help, but It's a difficult problem to solve.
 - You can use the Individual Clohting Offset GUI to offset a single piece of clothing at a time now.  Great for overlaping or tight fitting clothing
-- **Hover over any Plugin Config options in game for more detailed descriptions**
+- **Hover over any of the F1 Plugin Config options for more detailed descriptions**
 
 <br>
 
@@ -55,7 +55,7 @@ See [Plugin Tips](#some-tips) for tips and tricks
     - In Main Game you can further bulk tweak all character's belly shapes with the F1 plugin config sliders.
 - Adds Timeline and VNGE integration for belly animations. Short guides below. [Timeline](#timeline-integration) | [VNGE](#vnge-integration)
 - Adds 3 configurable keybinds in plugin config that can be used to increase or decrease the belly size in Main Game, on the fly.   
-- Adds a Preset Belly Shape dropdown to Studio and Maker that allows you to quickly set a base shape for the belly from a variety of styles.
+- Adds a Preset Belly Shape dropdown to Studio and Maker that allows you to quickly set a base shape for the belly from a variety of styles.  Keep in mind it was tuned  for normal size characters, and will appear different based on character body scales.
 - Adds an additional Fat Fold slider, just make sure the Preg+ slider is above 0 to see the effect.
 - Adds an "Override KK_Pregnancy belly shape" toggle, that lets you use the Preg+ belly shape as the default one in Main Gameplay (Instead of combining both plugin's shapes).
 - Adds a "Mesh Smoothing" button in Studio and Maker, that allows you to smooth the belly mesh and reduce any stretched skin and hard shadows.
