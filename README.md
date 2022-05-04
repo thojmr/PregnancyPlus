@@ -12,13 +12,12 @@ See [Plugin Tips](#some-tips) for tips and tricks
 
 ## Latest Features (I will update this occasionally)
 - 6.0+:
+    - Fixed Skirt and Jackets clipping below the belly
     - Added Preset Belly Shape dropdown
-    - Individual clothing offsets GUI (Next to P+ blendshape GUI)
-    - Implemented c# async await to remove hitching in HS2, AI, and KKS
+    - Individual clothing offsets GUI in Studio and Maker
+    - Major performance improvements
     - Fat Fold Gap slider                                                    <- (Last Vanilla KK version)
-    - Core code rewrite to fix many old issues, and pave way for new features
-    - SkinnedAccessories now work with Preg+
-    - AccessoryClothes now work with Preg+
+    - All skinned accessories will work with Preg+
 - 5.0+:
     - Preg+ works with all normal clothing types now
 
