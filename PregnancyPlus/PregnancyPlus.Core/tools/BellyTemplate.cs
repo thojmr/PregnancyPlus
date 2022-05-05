@@ -94,15 +94,16 @@ namespace KK_PregnancyPlus
                 case "Torpedo":
                     #if KKS                         
                         shape.inflationRoundness = 0.05f;                    
-                        shape.inflationShiftZ = 0.02f;                    
+                        shape.inflationShiftZ = 0.02f;        
+                        shape.inflationMoveZ = 0.01f;            
                     #elif HS2 || AI
                         shape.inflationRoundness = 0.3f;                                    
-                        shape.inflationShiftZ = 0.2f;                        
+                        shape.inflationShiftZ = 0.2f;
+                        shape.inflationMoveZ = 0.1f;                        
                     #endif
                     shape.inflationMultiplier = 0.4f;
                     shape.inflationStretchX = -0.35f;
                     shape.inflationStretchY = -0.35f;
-                    shape.inflationMoveZ = 0.1f;
                     shape.inflationTaperY = -0.01f;
                     shape.inflationTaperZ = -0.005f;
                     shape.inflationDrop = 0.07f;
