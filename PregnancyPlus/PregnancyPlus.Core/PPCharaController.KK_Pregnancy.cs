@@ -146,8 +146,8 @@ namespace KK_PregnancyPlus
                 return;
             } 
             
-            //Lerp the change in size over 3 seconds
-            _inflationChange = Mathf.Lerp(_inflationStartSize, TargetPregPlusSize, timeElapsed / 3);
+            //Lerp the change in size over x seconds
+            _inflationChange = Mathf.Lerp(_inflationStartSize, TargetPregPlusSize, timeElapsed / PregnancyPlusPlugin.InflationSpeed.Value);
             timeElapsed += Time.deltaTime;  
 
             //Snap the value at the end, in case the lerp never quite reaches 100%

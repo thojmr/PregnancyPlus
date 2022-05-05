@@ -34,11 +34,12 @@ namespace KK_PregnancyPlus
         public static ConfigEntry<float> StoryModeInflationDrop { get; private set; }
 
 
-        //Cumflation
+        //HS2 Only
         public static ConfigEntry<bool> AllowCumflation { get; private set; }
         public static ConfigEntry<int> CumflationMaxLevel { get; private set; }
         public static ConfigEntry<int> InflationLevel { get; private set; }
         public static ConfigEntry<int> DeflationLevel { get; private set; }
+        public static ConfigEntry<int> InflationSpeed { get; private set; }
 
 
         //Debug config options
@@ -269,6 +270,12 @@ namespace KK_PregnancyPlus
                 new ConfigDescription("Inflation levels decreased when pull out after cum inside.",
                     null,
                     new ConfigurationManagerAttributes { Order = 1 })
+                );
+                
+                InflationSpeed = Config.Bind(CumflationTitle, "Inflation Speed", 3,
+                new ConfigDescription( "The speed that the belly will inflate when triggered over x seconds",
+                    new AcceptableValueList<int>(new int[]{1,2,3,4,5}),
+                    new ConfigurationManagerAttributes { Order = 0 })
                 );
             #endif
 
