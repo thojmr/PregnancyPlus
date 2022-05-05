@@ -12,6 +12,7 @@ See [Plugin Tips](#some-tips) for tips and tricks
 
 ## Latest Features (I will update this occasionally)
 - 6.0+:
+    - Inflation Speed config option for HS2
     - Fixed Skirt and Jackets clipping below the belly
     - Added Preset Belly Shape dropdown
     - Individual clothing offsets GUI in Studio and Maker
