@@ -1,8 +1,8 @@
 ﻿using HarmonyLib;
-#if AI || HS2
+#if HS2 || AI
     using AIChara;
     using CharaCustom;
-#elif KK
+#elif KKS
     using KKAPI.MainGame; 
     using ChaCustom;   
 #endif
@@ -22,7 +22,7 @@ namespace KK_PregnancyPlus
             }
 
 
-        #if KKS || KKS
+        #if KKS
 
             [HarmonyPostfix]
             [HarmonyPatch(typeof(CustomAcsSelectKind), nameof(CustomAcsSelectKind.ChangeSlot))]
@@ -104,19 +104,11 @@ namespace KK_PregnancyPlus
                 var controller = GetCharaController(chaControl);
                 if (controller == null) return;
 
-                #if KKS
-                    var slotNum = __instance.selDst;
-                #elif KK
-                    var slotNum = Traverse.Create(__instance).Field("selDst").GetValue<int>();
-                #endif
-
+                var slotNum = __instance.selDst;
                 controller.AccessoryStateChangeEvent(chaControl.chaID, slotNum); 
             }
 
-        #endif
-
-
-        #if AI || HS2
+        #elif HS2 || AI
 
             [HarmonyPostfix]
             [HarmonyPatch(typeof(CvsA_Slot), nameof(CvsA_Slot.ChangeMenuFunc))]
@@ -156,7 +148,7 @@ namespace KK_PregnancyPlus
 
                 // OnAccessoryKindChanged(__instance, __instance.SNo);
                 // if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $ChangeAcsTypePostfix");
-                                var chaControl = Traverse.Create(__instance).Property("chaCtrl").GetValue<ChaControl>();
+                var chaControl = Traverse.Create(__instance).Property("chaCtrl").GetValue<ChaControl>();
                 var controller = GetCharaController(chaControl);
                 if (controller == null) return;
 
@@ -171,7 +163,7 @@ namespace KK_PregnancyPlus
 
                 // OnChangeAcs(__instance, __instance.selSrc, __instance.selDst);
                 // if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo($"+= $CopyAccessory");
-                                var chaControl = Traverse.Create(__instance).Property("chaCtrl").GetValue<ChaControl>();
+                var chaControl = Traverse.Create(__instance).Property("chaCtrl").GetValue<ChaControl>();
                 var controller = GetCharaController(chaControl);
                 if (controller == null) return;
 

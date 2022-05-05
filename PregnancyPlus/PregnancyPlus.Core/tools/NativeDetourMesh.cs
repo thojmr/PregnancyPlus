@@ -26,13 +26,7 @@ namespace KK_PregnancyPlus
         {              
             if (nativeDetour != null) nativeDetour.Dispose();
 
-            #if !KK || KKS
-                nativeDetour = new NativeDetour(AccessTools.Property(typeof(Mesh), "canAccess").GetMethod, AccessTools.Method(typeof(NativeDetourMesh), "canAccess"));                                     
-            #else
-                //Typical...  We have to do it differently in KK
-                nativeDetour = new NativeDetour(AccessTools.Property(typeof(Mesh), "canAccess").GetGetMethod(true), AccessTools.Method(typeof(NativeDetourMesh), "canAccess"));                                     
-            #endif
-
+            nativeDetour = new NativeDetour(AccessTools.Property(typeof(Mesh), "canAccess").GetMethod, AccessTools.Method(typeof(NativeDetourMesh), "canAccess"));                                     
             return nativeDetour;
         }
 

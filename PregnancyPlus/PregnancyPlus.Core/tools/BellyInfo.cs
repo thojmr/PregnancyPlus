@@ -18,7 +18,7 @@ namespace KK_PregnancyPlus
         //In 6.0+ we use a static distance, since we have a static virtual mesh to work with
         #if KKS
             public float WaistThick = 0.045f;
-        #else
+        #elif HS2 || AI
             public float WaistThick = 0.45f;
         #endif 
 
@@ -46,7 +46,7 @@ namespace KK_PregnancyPlus
         //In 6.0+ we use a static distance
         #if KKS
             public float BellyToBreastDist = 0.182f;
-        #else
+        #elif HS2 || AI
             public float BellyToBreastDist = 1.82f;
         #endif          
 

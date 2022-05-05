@@ -103,7 +103,7 @@ namespace KK_PregnancyPlus
             {
                 #if KKS
                     return 0.13f;
-                #else
+                #elif HS2 || AI
                     return 1.3f;
                 #endif
             }

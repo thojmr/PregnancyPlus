@@ -1,7 +1,7 @@
 ﻿using HarmonyLib;
 using KKAPI.Maker;
 using KKAPI.Studio;
-#if AI || HS2
+#if HS2 || AI
     using AIChara;
 #endif
 

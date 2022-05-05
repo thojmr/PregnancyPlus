@@ -5,7 +5,7 @@ using UnityEngine;
 using HarmonyLib;
 using System.Reflection;
 using System.Linq;
-#if KK
+#if KKS
     using KKAPI.MainGame;
 #elif HS2
     using AIChara;

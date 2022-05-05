@@ -4,7 +4,7 @@ using KKAPI.Chara;
 using UnityEngine;
 #if HS2
     using AIChara;
-#elif KK
+#elif KKS
     using KKAPI.MainGame;
 #elif AI
     using AIChara;

@@ -47,7 +47,7 @@ namespace KK_PregnancyPlus
                     #if KKS                                 
                         shape.inflationMultiplier = -0.1f;
                         shape.inflationStretchY = -0.05f;
-                    #else
+                    #elif HS2 || AI
                         shape.inflationMultiplier = -0.05f;
                     #endif
                     shape.inflationRoundness = 0.005f;
@@ -62,7 +62,7 @@ namespace KK_PregnancyPlus
                         shape.inflationStretchY = -0.07f;
                         shape.inflationTaperY = -0.005f;
                         shape.inflationTaperZ = -0.003f;                        
-                    #else
+                    #elif HS2 || AI
                         shape.inflationMultiplier = 0.3f;
                         shape.inflationStretchX = -0.18f;
                         shape.inflationStretchY = -0.13f;
@@ -79,7 +79,7 @@ namespace KK_PregnancyPlus
                         shape.inflationStretchX = -0.02f;
                         shape.inflationStretchY = -0.018f;
                         shape.inflationShiftZ = -0.005f;                        
-                    #else
+                    #elif HS2 || AI
                         shape.inflationStretchX = -0.1f;
                         shape.inflationStretchY = -0.1f;
                         shape.inflationShiftZ = -0.2f;
@@ -95,7 +95,7 @@ namespace KK_PregnancyPlus
                     #if KKS                         
                         shape.inflationRoundness = 0.05f;                    
                         shape.inflationShiftZ = 0.02f;                    
-                    #else
+                    #elif HS2 || AI
                         shape.inflationRoundness = 0.3f;                                    
                         shape.inflationShiftZ = 0.2f;                        
                     #endif
@@ -115,7 +115,7 @@ namespace KK_PregnancyPlus
                         shape.inflationStretchX = -0.22f;
                         shape.inflationStretchY = -0.2f;
                         shape.inflationDrop = 0.07f;
-                    #else
+                    #elif HS2 || AI
                         shape.inflationMultiplier = 0.6f;
                         shape.inflationRoundness = 0.15f;
                         shape.inflationStretchX = -0.25f;
@@ -133,7 +133,7 @@ namespace KK_PregnancyPlus
                         shape.inflationRoundness = 0.14f;
                         shape.inflationStretchX = -0.25f;
                         shape.inflationStretchY = -0.25f;
-                    #else                    
+                    #elif HS2 || AI                   
                         shape.inflationMultiplier = 0.8f;
                         shape.inflationRoundness = 1f;
                         shape.inflationStretchX = -0.3f;

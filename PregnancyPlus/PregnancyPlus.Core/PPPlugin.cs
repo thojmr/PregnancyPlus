@@ -33,7 +33,7 @@ namespace KK_PregnancyPlus
         internal static new ManualLogSource Logger { get; private set; }
    
 
-        //Used to hold the last non zero belly shape slider values that were applied to any character for Restore button
+        //Used to hold the last non zero belly shape slider values that were applied to any character for the Paste button
         public static PregnancyPlusData copiedBelly = null;    
         //Logs important error messages to console   
         public static ErrorCodeController errorCodeCtrl;
@@ -42,13 +42,15 @@ namespace KK_PregnancyPlus
 
         internal void Start()
         {
+            //Set up logging config
             Logger = base.Logger;    
             DebugTools.logger = Logger;          
             errorCodeCtrl = new ErrorCodeController(Logger, PregnancyPlusPlugin.DebugLog != null ? PregnancyPlusPlugin.DebugLog.Value : false);  
+
             //Initilize the Bepinex F1 ConfigurationManager options
             PluginConfig();                    
 
-            //Attach the mesh inflation logic to each character
+            //Attach the Preg+ logic to each character
             CharacterApi.RegisterExtraBehaviour<PregnancyPlusCharaController>(GUID);
             #if KKS || AI
                 GameAPI.RegisterExtraBehaviour<PregnancyPlusGameController>(GUID);
@@ -82,20 +84,20 @@ namespace KK_PregnancyPlus
 
     
         /// <summary>
-        /// Updates any GUI components when blendshape GUI is opened in studio
+        /// Updates any GUI components when blendshape GUI is opened in studio and maker
         /// </summary>
         internal void OnGUI()
         {                
             if (!StudioAPI.InsideStudio && !MakerAPI.InsideMaker) return;
 
-            //Update GUI text
+            //Update method to track GUI text changes when needed
             PregnancyPlusGui.Update();
 
             //Need to trigger all children GUI that should be active. 
             var handlers = CharacterApi.GetRegisteredBehaviour(GUID);
             if (handlers == null || handlers.Instances == null) return;
 
-            //For each character controller, update GUI
+            //For each character controller with an open GUI, update their GUI
             foreach (var charCustFunCtrl in handlers.Instances)
             {            
                 PregnancyPlusCharaController ctrl;                          

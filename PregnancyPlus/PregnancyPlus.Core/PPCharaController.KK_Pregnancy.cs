@@ -4,7 +4,7 @@ using KKAPI.Chara;
 using UnityEngine;
 #if HS2
     using AIChara;
-#elif KK
+#elif KKS
     using KKAPI.MainGame;
 #elif AI
     using AIChara;
@@ -54,8 +54,8 @@ namespace KK_PregnancyPlus
                 return;
             }
 
-            //Only AI and KK have KK_Pregnancy plugin hooks right now
-            #if AI || KK
+            //Only AI and KKS have KK_Pregnancy plugin hooks right now
+            #if AI || KKS
             
                 var weeks = PregnancyPlusPlugin.Hooks_KK_Pregnancy.GetWeeksFromPregnancyPluginData(ChaControl, KK_PregnancyPluginName);
                 if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" GetWeeksAndSetBellySize {ChaControl.name} >  Week:{weeks} checkNewMesh:{checkNewMesh} slidersChanged:{slidersChanged}");
@@ -97,7 +97,7 @@ namespace KK_PregnancyPlus
             //No additional preg+ inflation until the KKinflation amount is >= the current inflation.config.  We want both sizes to grow together.
             if (infConfig.inflationSize > kkInflationSize && kkInflationSize > 0) return;
 
-            #if !HS2
+            #if AI || KKS
                 //No Preg+ inflation when the max additional size is set to 0
                 if (PregnancyPlusPlugin.MaxStoryModeBelly.Value == 0) return;
 
@@ -113,7 +113,7 @@ namespace KK_PregnancyPlus
 
             //Compute the target belly size up to 40
             //When TargetPregPlusSize changes, it will trigger ComputeInflationChange()
-            #if !HS2
+            #if AI || KKS
                 //Scale it correctly based on MaxStoryModeBelly size
                 TargetPregPlusSize = kkInflationSize * (PregnancyPlusPlugin.MaxStoryModeBelly.Value/40);
             #else
@@ -126,12 +126,12 @@ namespace KK_PregnancyPlus
 
         /// <summary>
         /// When inflation is triggered we need to spread the effect over time
-        /// Runs inside Update()
+        ///     Runs inside Update()
         /// </summary>
         public void ComputeInflationChange() 
         {
             //Only process inflation in HScenes
-            #if !HS2              
+            #if AI || KKS             
                 if (!GameAPI.InsideHScene) 
                 {
                     if (_inflationChange > 0 || TargetPregPlusSize > 0) ClearInflationStuff();
@@ -235,7 +235,7 @@ namespace KK_PregnancyPlus
                     customInfConfig.inflationTaperZ = -0.005f;
                     customInfConfig.inflationDrop = 0.05f;
 
-                #else
+                #elif HS2 || AI
                     customInfConfig.inflationMultiplier = 0.1f;
                     customInfConfig.inflationStretchX = -0.15f;          
                     customInfConfig.inflationStretchY = -0.05f;
@@ -257,7 +257,7 @@ namespace KK_PregnancyPlus
                 customInfConfig.inflationShiftZ = -0.03f;
                 customInfConfig.inflationDrop = 0.15f;
 
-            #else
+            #elif HS2 || AI
                 customInfConfig.inflationMultiplier = 0.13f * 5;
                 customInfConfig.inflationStretchX = -0.06f * 5;          
                 customInfConfig.inflationStretchY = -0.02f * 5;

@@ -71,9 +71,9 @@ namespace KK_PregnancyPlus
             //*************************/            
 
             #if DEBUG
-            var debugMode = true;
+                var debugMode = true;
             #else
-            var debugMode = false;
+                var debugMode = false;
             #endif
 
             
@@ -677,6 +677,18 @@ namespace KK_PregnancyPlus
         internal void OmniToggle_SettingsChanged(object sender, System.EventArgs e)
         {
             TriggerFreshStartForAll("OmniToggle_SettingsChanged");
+        }
+
+
+        //Whether any primitive game objects are toggled on
+        internal static bool AnyDebugPrimitivesToggled()
+        {
+            return ShowBindPose.Value || 
+                ShowUnskinnedVerts.Value || 
+                ShowBindPose.Value ||
+                ShowBellyVerts.Value ||
+                ShowInflatedVerts.Value ||
+                ShowDeltaVerts.Value;
         }
 
     }

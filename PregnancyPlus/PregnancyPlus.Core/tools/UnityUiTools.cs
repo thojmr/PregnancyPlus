@@ -36,7 +36,7 @@ namespace KK_PregnancyPlus
                 return null;
             }
             
-        #elif KK
+        #elif KKS
 
             public static Text GetTextComponent(CurrentStateCategory cat, string inputName)
             {

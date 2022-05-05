@@ -158,8 +158,8 @@ namespace KK_PregnancyPlus
             lastVisibleState = false;                      
 
             ClearOnReload();
-            #if AI || HS2
-                //Fix for the way AI injects new characters in Main Game by copying existing character first.  This will remove the old blendshapes.
+            #if HS2 || AI
+                //Fix for the way AI injects new characters in Main Game by copying existing character first.  This will remove old blendshapes.
                 ScrubTempBlendShapes();
             #endif
 
@@ -206,11 +206,11 @@ namespace KK_PregnancyPlus
             //Remove the detour we made
             nativeDetour?.Dispose();         
 
-            //Always clear debug objects from character in debug mode
+            //Always clear debug objects from character in debug mode, just to be safe
             #if DEBUG
                 DebugTools.ClearAllThingsFromCharacter();
             #else
-                if (PregnancyPlusPlugin.ShowBindPose.Value || PregnancyPlusPlugin.ShowUnskinnedVerts.Value || PregnancyPlusPlugin.ShowBindPose.Value)
+                if (PregnancyPlusPlugin.AnyDebugPrimitivesToggled())
                     DebugTools.ClearAllThingsFromCharacter();
             #endif
         }

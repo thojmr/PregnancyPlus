@@ -21,7 +21,7 @@
     <DebugType>embedded</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>..\..\bin\KKS_PregnancyPlus\BepInEx\plugins</OutputPath>
-    <DefineConstants>TRACE;DEBUG;KK;KKS</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;KKS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
@@ -31,7 +31,7 @@
     <DebugType>embedded</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>..\..\bin\KKS_PregnancyPlus\BepInEx\plugins</OutputPath>
-    <DefineConstants>TRACE;KK;KKS</DefineConstants>
+    <DefineConstants>TRACE;KKS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DebugSymbols>true</DebugSymbols>

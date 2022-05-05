@@ -282,7 +282,7 @@ namespace KK_PregnancyPlus
 
             #if KKS 
                 var lineLen = 0.03f;
-            #elif AI || HS2
+            #elif HS2 || AI
                 var lineLen = 0.3f;
             #endif            
             
@@ -313,7 +313,7 @@ namespace KK_PregnancyPlus
 
             #if KKS 
                 var lineLen = 0.03f;
-            #elif AI || HS2
+            #elif HS2 || AI
                 var lineLen = 0.3f;
             #endif            
 

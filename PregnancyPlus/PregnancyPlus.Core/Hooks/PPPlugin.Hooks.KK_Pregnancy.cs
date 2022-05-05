@@ -19,8 +19,6 @@ namespace KK_PregnancyPlus
             //Used to identifiy the assembly class methods during reflection
             #if KKS
                 internal static string pluginName = "KKS_Pregnancy";
-            #elif KK
-                internal static string pluginName = "KK_Pregnancy";
             #elif AI
                 internal static string pluginName = "AI_Pregnancy";
             #endif

@@ -589,7 +589,7 @@ namespace KK_PregnancyPlus
         {          
             #if KKS
                 var bbHeight = 0.97f;           
-            #else
+            #elif HS2 || AI
                 var bbHeight = 10f;
             #endif
             
@@ -841,11 +841,7 @@ namespace KK_PregnancyPlus
             }        
 
             //Skip when no debug mode active
-            if (!PregnancyPlusPlugin.ShowBellyVerts.Value 
-                && !PregnancyPlusPlugin.ShowUnskinnedVerts.Value 
-                && !PregnancyPlusPlugin.ShowSkinnedVerts.Value
-                && !PregnancyPlusPlugin.ShowInflatedVerts.Value
-                && !PregnancyPlusPlugin.ShowDeltaVerts.Value)
+            if (!PregnancyPlusPlugin.AnyDebugPrimitivesToggled())
                 return;
             
             //Gather all SMR's
