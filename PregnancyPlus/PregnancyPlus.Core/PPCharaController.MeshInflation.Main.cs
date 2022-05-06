@@ -375,9 +375,12 @@ namespace KK_PregnancyPlus
             Vector3[] unskinnedVerts = null; 
         
             //Plugin config option lets us visalize bindpose positions 
-            if (PregnancyPlusPlugin.ShowBindPose.Value)                 
+            if (PregnancyPlusPlugin.ShowBindPose.Value) 
+            {             
                 MeshSkinning.ShowBindPose(ChaControl, smr, bindPoseList);  
-                // MeshSkinning.ShowRawBindPose(smr);
+                //The raw bindpose is the original one, that is not aligned by Preg+ yet
+                MeshSkinning.ShowRawBindPose(smr);
+            }
 
             //Matricies used to compute the T-pose mesh
             boneMatrices = MeshSkinning.GetBoneMatrices(ChaControl, smr, bindPoseList);

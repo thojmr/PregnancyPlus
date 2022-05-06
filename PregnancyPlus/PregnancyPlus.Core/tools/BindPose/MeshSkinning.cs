@@ -298,7 +298,7 @@ namespace KK_PregnancyPlus
                 //Get a bone's bindPose position/rotation
                 GetBindPoseBoneTransform(smr, smr.sharedMesh.bindposes[i], bindPoseOffset, out var position, out var rotation, bindPoseList, smr.bones[i]);
 
-                DebugTools.DrawAxis(position, lineLen, parent);
+                DebugTools.DrawAxis(position, lineLen, parent: parent);
             }
         }
 
@@ -325,7 +325,7 @@ namespace KK_PregnancyPlus
                 //Get a bone's bindPose position/rotation
                 var position = Matrix.GetPosition(smr.transform.localToWorldMatrix * smr.sharedMesh.bindposes[i].inverse);
 
-                DebugTools.DrawAxis(position, lineLen, parent);
+                DebugTools.DrawAxis(position, lineLen, parent: parent, startColor: Color.grey);
             }
         }
 

@@ -199,7 +199,8 @@ public static class DebugTools
             #endif
         }
         
-        if (startColor == null || startColor == default(Color)) startColor = Color.blue;
+        if (startColor == null || startColor == default(Color)) 
+            startColor = Color.blue;
 
         #if KKS
             lineRendGO.gameObject.layer = studioLayerKK;
@@ -232,9 +233,9 @@ public static class DebugTools
     /// Draw line and attach to a parent transform (optional offset)
     /// </summary>
     public static void DrawLineAndAttach(Transform parent, Vector3 fromVector = new Vector3(), Vector3 toVector = new Vector3(), Vector3 localPosition = new Vector3(), 
-                                         bool removeExisting = true, bool worldPositionStays = false, float width = 0.001f)
+                                         bool removeExisting = true, bool worldPositionStays = false, float width = 0.001f, Color startColor = default(Color))
     {
-        var line = DrawLine(fromVector, toVector, width);
+        var line = DrawLine(fromVector, toVector, width, startColor: startColor);
 
         //If parent has a debug sphere delete it
         if (removeExisting)
@@ -249,28 +250,28 @@ public static class DebugTools
     /// <summary>
     /// Overload for DrawLineAndAttach when you just want to set a forward line length
     /// </summary>
-    public static void DrawLineAndAttach(Transform parent, float length, Vector3 localPosition = new Vector3(), bool removeExisting = true, bool worldPositionStays = false)
+    public static void DrawLineAndAttach(Transform parent, float length, Vector3 localPosition = new Vector3(), bool removeExisting = true, bool worldPositionStays = false, Color startColor = default(Color))
     {
-        DrawLineAndAttach(parent, Vector3.zero, new Vector3(0, 0, 1)* length, localPosition, removeExisting, worldPositionStays);
+        DrawLineAndAttach(parent, Vector3.zero, new Vector3(0, 0, 1)* length, localPosition, removeExisting, worldPositionStays, startColor: startColor);
     }
 
 
     /// <summary>
     /// Draw an Axis with three converging lines
     /// </summary>
-    public static void DrawAxis(Vector3 position, float lineLen, Transform parent = null)
+    public static void DrawAxis(Vector3 position, float lineLen, Transform parent = null, Color startColor = default(Color))
     {
         if (parent == null) 
         {
-            DebugTools.DrawLine(position + Vector3.right * lineLen, position);
-            DebugTools.DrawLine(position + Vector3.up * lineLen, position);
-            DebugTools.DrawLine(position + Vector3.forward * lineLen, position);
+            DebugTools.DrawLine(position + Vector3.right * lineLen, position, startColor: startColor);
+            DebugTools.DrawLine(position + Vector3.up * lineLen, position, startColor: startColor);
+            DebugTools.DrawLine(position + Vector3.forward * lineLen, position, startColor: startColor);
         } 
         else
         {
-            DebugTools.DrawLineAndAttach(parent, position + Vector3.right * lineLen, position, removeExisting: false);
-            DebugTools.DrawLineAndAttach(parent, position + Vector3.up * lineLen, position, removeExisting: false);
-            DebugTools.DrawLineAndAttach(parent, position + Vector3.forward * lineLen, position, removeExisting: false);
+            DebugTools.DrawLineAndAttach(parent, position + Vector3.right * lineLen, position, removeExisting: false, startColor: startColor);
+            DebugTools.DrawLineAndAttach(parent, position + Vector3.up * lineLen, position, removeExisting: false, startColor: startColor);
+            DebugTools.DrawLineAndAttach(parent, position + Vector3.forward * lineLen, position, removeExisting: false, startColor: startColor);
         }
     }
 
