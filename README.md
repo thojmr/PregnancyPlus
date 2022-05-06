@@ -142,6 +142,7 @@ Tips:
     - A: The character must have a leg scale > 0 for the belly sliders to work correctly.
 - Q: The belly sliders suddenly stoped working!?
     - A: Most of the time this is because KKPE/HSPE sometimes locks the belly blendshapes.  You can try opening KKPE > Advanced > Blendshapes > and "Reset" the Pregnancy+ blendshapes on each mesh that is modified (purple).  Otherwise your output_log.txt may have more details if an error occured.
+    - A: Alternatively try changing the uncensor.  Sometimes they are just poorly imported into the game.
 - Q: What the heck is a BlendShape?
     - A: Put simply a blendshape is a "copy" of the mesh that has some deformation that you want to be able to ease into.  Like visually morphing from originalMesh -> morphedMesh.
 
