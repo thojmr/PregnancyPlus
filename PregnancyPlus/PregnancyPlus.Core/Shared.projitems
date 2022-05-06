@@ -44,8 +44,7 @@
     <Compile Include="..\PregnancyPlus.Core\tools\ConfigurationManagerAttributes.cs" />
     <Compile Include="..\PregnancyPlus.Core\tools\Smoothing\SmoothMeshUtils.cs" />
     <Compile Include="..\PregnancyPlus.Core\tools\Smoothing\SmoothFilter.cs" />
-    <Compile Include="..\PregnancyPlus.Core\tools\Smoothing\SmoothMesh.cs" />
-    <Compile Include="..\PregnancyPlus.Core\Tools\ErrorCode.cs" />
+    <Compile Include="..\PregnancyPlus.Core\tools\Smoothing\SmoothMesh.cs" />    
     <Compile Include="..\PregnancyPlus.Core\Tools\MeshInflateFlags.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\BindPose\Matrix.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\MeshData.cs" />
@@ -56,10 +55,12 @@
     <Compile Include="..\PregnancyPlus.Core\Tools\Threading\ThreadsafeCurve.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\UnityUiTools.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\NativeDetourMesh.cs" />
-    <Compile Include="..\PregnancyPlus.Core\Tools\DebugTools.cs" />
+    <Compile Include="..\PregnancyPlus.Core\Tools\Debugging\DebugTools.cs" />
+    <Compile Include="..\PregnancyPlus.Core\Tools\Debugging\ErrorCode.cs" />
+    <Compile Include="..\PregnancyPlus.Core\Tools\Debugging\PostInflationDebug.cs" />
+    <Compile Include="..\PregnancyPlus.Core\Tools\Debugging\Timer.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\MeshIdentifier.cs" />
-    <Compile Include="..\PregnancyPlus.Core\Tools\BellyInfo.cs" />
-    <Compile Include="..\PregnancyPlus.Core\Tools\Timer.cs" />
+    <Compile Include="..\PregnancyPlus.Core\Tools\BellyInfo.cs" />    
     <Compile Include="..\PregnancyPlus.Core\Tools\TangentSolver.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\BellyTemplate.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\Rotation.cs" />
