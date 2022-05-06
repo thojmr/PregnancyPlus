@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 #if HS2 || AI
@@ -160,6 +161,41 @@ namespace KK_PregnancyPlus
             }            
 
             return scale;
+        }
+
+        /// <summary>
+        /// When an SMR bindpose has a uniform rotation return it so we can correct it later
+        /// </summary>  
+        public static Quaternion GetBindPoseRotation(SkinnedMeshRenderer smr)
+        {            
+            //For a bindpose check for any non 0 rotation repeated more than a few times
+            var bindposes = smr.sharedMesh.bindposes;
+            var totalX = 0f;
+            var totalY = 0f;
+            var totalZ = 0f;
+            var totalW = 0f;
+
+            //Add up all the rotations for each bindpose
+            for (int i = 0; i < bindposes.Length; i++)
+            {      
+                //Round them to the nearest 90 degree axis since most offset rotations are at 90 degree intervals
+                var currentRotation = Rotation.AxisRound(Matrix.GetRotation(smr.transform.localToWorldMatrix * bindposes[i].inverse));                
+                totalX+=currentRotation.x;
+                totalY+=currentRotation.y;
+                totalZ+=currentRotation.z;
+                totalW+=currentRotation.w;                
+            }                        
+
+            //Compute the average rotation
+            var averageRotation = new Quaternion(x: totalX/bindposes.Length, y: totalY/bindposes.Length, z: totalZ/bindposes.Length, w: totalW/bindposes.Length);
+
+            //Round the final rotation to the nearest 90 degree axis
+            var roundedRotation = Rotation.AxisRound(averageRotation);
+
+            if (PregnancyPlusPlugin.DebugLog.Value && roundedRotation != Quaternion.identity) 
+                PregnancyPlusPlugin.Logger.LogWarning($" GetBindPoseRotation {smr.name} has bindpose rotation {roundedRotation}");
+            
+            return roundedRotation;            
         }
 
 

@@ -33,12 +33,14 @@ public static class NormalSolver
     ///     the same vertex will be smooth regardless of the angle! 
     /// </param>
     /// <param name="indexedVerts">optional list of indexes to include.  False indexes will be skipped</param>
-    public static void RecalculateNormals(this Mesh mesh, float angle, bool[] indexedVerts = null) 
+    /// <param name="rotationUndo">Used to undo any normals rotation due to mesh or bindpose rotations in localspace</param>
+    public static void RecalculateNormals(this Mesh mesh, float angle, bool[] indexedVerts = null, Matrix4x4 rotationUndo = new Matrix4x4()) 
     {
         var cosineThreshold = Mathf.Cos(angle * Mathf.Deg2Rad);
 
         var vertices = mesh.vertices;
         var normals = debugShowBellyVertsOnly ? new Vector3[vertices.Length] : mesh.normals;
+        var hasRotationUndo = rotationUndo != Matrix4x4.identity;
 
         // Holds the normal of each triangle in each sub mesh.
         var triNormals = new Vector3[mesh.subMeshCount][];
@@ -124,6 +126,9 @@ public static class NormalSolver
                 }
                 
                 normals[lhsEntry.VertexIndex] = sum.normalized;
+
+                if (hasRotationUndo)
+                    normals[lhsEntry.VertexIndex] = rotationUndo.MultiplyPoint3x4(normals[lhsEntry.VertexIndex]);
             }
         }
 

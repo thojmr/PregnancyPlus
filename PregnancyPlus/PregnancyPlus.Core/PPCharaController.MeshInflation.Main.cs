@@ -208,7 +208,7 @@ namespace KK_PregnancyPlus
             var tasks = new Task[smrs.Count];
 
             for (var i = 0; i < smrs.Count; i++) 
-            {           
+            {                           
                 tasks[i] = StartMeshChanges(smrs[i], meshInflateFlags, isClothingMesh, bodySmr, ignoreKey:ignoreKey);              
             }  
 
@@ -745,21 +745,27 @@ namespace KK_PregnancyPlus
         /// <returns>returns bool whether the action needs to be threaded or not</returns>
         internal async Task ComputeDeltas(SkinnedMeshRenderer smr, string rendererName, MeshInflateFlags meshInflateFlags) 
         {           
+            if (smr == null) 
+            {
+                if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" ComputeDeltas smr was null"); 
+                return;
+            }
+
             //Check for mesh data object
             var isMeshInitialized = md.TryGetValue(rendererName, out MeshData _md);
             if (!isMeshInitialized) return;
 
             //If we already have the deltas then skip
             if (_md.HasDeltas && !meshInflateFlags.OverWriteMesh) return;
+            //When SMR has local rotation undo it in the deltas (Also if a bindpose is rotated undo that too)
+            var rotationUndo = Matrix4x4.TRS(Vector3.zero, smr.transform.localRotation, Vector3.one).inverse * Matrix4x4.TRS(Vector3.zero, MeshSkinning.GetBindPoseRotation(smr), Vector3.one);            
 
             //Get the virtual inflated mesh with normal, and tangent recalculation applied
-            var inflatedMesh = PrepForBlendShape(smr, rendererName);
+            var inflatedMesh = PrepForBlendShape(smr, rendererName, rotationUndo);
             if (!inflatedMesh) return;
 
             if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" Compute BlendShape Deltas for {smr.name}");
 
-            //When SMR has local rotation undo it in the deltas
-            var rotationUndo = Matrix4x4.TRS(Vector3.zero, smr.transform.localRotation, Vector3.one).inverse;
             //When a smr bindpose has scale, we need to undo it in the delta similar to rotation
             var scaleUndo = MeshSkinning.GetBindPoseScale(smr).inverse;
             var undoTfMatrix = rotationUndo * scaleUndo;
@@ -795,8 +801,8 @@ namespace KK_PregnancyPlus
                     {
                         //Get Vertex deltas
                         deltaVerts[i] = BlendShapeTools.GetV3Delta(originalVerts[i], inflatedVerts[i], undoTfMatrix, hasTransform);
-                        //Get normal deltas
-                        deltaNormals[i] = BlendShapeTools.GetV3Delta(sourceNormals[i], targetNormals[i], undoTfMatrix, hasTransform);
+                        //Get normal deltas, dont rotate normals, they are alreay corrected in RecalculateNormals()
+                        deltaNormals[i] = BlendShapeTools.GetV3Delta(sourceNormals[i], targetNormals[i], undoTfMatrix, false);
                     }
 
                     //WE dont care about return type in this case

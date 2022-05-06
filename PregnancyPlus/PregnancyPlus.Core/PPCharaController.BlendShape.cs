@@ -564,7 +564,7 @@ namespace KK_PregnancyPlus
         /// <param name="smr">Target mesh renderer to update (original shape)</param>
         /// <param name="renderKey">The Shared Mesh render name, used in dictionary keys to get the current verticie values</param>
         /// <returns>Returns the copied mesh with new recalculated values</returns>
-        internal Mesh PrepForBlendShape(SkinnedMeshRenderer smr, string renderKey) 
+        internal Mesh PrepForBlendShape(SkinnedMeshRenderer smr, string renderKey, Matrix4x4 rotationUndo) 
         {     
             if (smr == null) 
             {
@@ -601,7 +601,7 @@ namespace KK_PregnancyPlus
             //Calculate the new normals, but don't show them.  We just want it for the blendshape shape target
             meshCopyTarget.vertices = md[renderKey].inflatedVertices;
             meshCopyTarget.RecalculateBounds();
-            NormalSolver.RecalculateNormals(meshCopyTarget, 40f, md[renderKey].alteredVerticieIndexes);
+            NormalSolver.RecalculateNormals(meshCopyTarget, 40f, md[renderKey].alteredVerticieIndexes, rotationUndo);
             //Since we are hacking this readable state, prevent hard crash when calculating tangents on originally unreadable meshes            
             if (meshCopyTarget.isReadable) 
             {
