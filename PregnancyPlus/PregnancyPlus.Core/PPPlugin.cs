@@ -6,6 +6,7 @@ using KKAPI;
 using KKAPI.Studio;
 using KKAPI.Maker;
 using KKAPI.Chara;
+using KKAPI.Utilities;
 #if KKS || AI
     using KKAPI.MainGame;
 #endif
@@ -71,6 +72,26 @@ namespace KK_PregnancyPlus
             //Set up studio/malker GUI sliders
             PregnancyPlusGui.InitStudio(hi, this);
             PregnancyPlusGui.InitMaker(hi, this);       
+
+
+            //Requires KKAPI 1.30+ and Bepinex 5.4.15 to use the timeline interpolable, but its just a soft depencendy for this plugin
+            try {
+                //Set up the timeline imterpolable tool
+                if (TimelineCompatibility.IsTimelineAvailable())
+                {
+                    const string timelineGUID = "PregnancyPlus";//Never change
+
+                    TimelineCompatibility.AddCharaFunctionInterpolable<int, PregnancyPlusCharaController>(
+                        timelineGUID, 
+                        "0", 
+                        "Pregnancy+",
+                        (oci, ctrl, leftValue, rightValue, factor) => ctrl.MeshInflate(factor * 40, "timeline_interpolable"),
+                        null,
+                        (oci, ctrl) => (int)ctrl.infConfig.inflationSize/40
+                        );
+                }
+            }
+            catch {}
         }
 
 
