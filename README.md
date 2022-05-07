@@ -84,6 +84,8 @@ See [Plugin Tips](#some-tips) for tips and tricks
 </del>
 
 </br>
+</br>
+</br>
 
 ## Timeline Integration
 ### New way
@@ -102,6 +104,9 @@ See [Plugin Tips](#some-tips) for tips and tricks
   - Open Timeline with Ctrl+T, search for "Blendshape" and middle click to add.
   - Follow Timeline guides for further info
   - See [The BlendShape GUI](#the-blendshape-gui) below for a longer description of the GUI and it's behaviors
+
+</br>
+</br>
 
 ## VNGE Integration
 - Studio VNGE integration in HS2 and AI via blendshapes.  Here's how:
