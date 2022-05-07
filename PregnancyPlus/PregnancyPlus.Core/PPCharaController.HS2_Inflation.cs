@@ -19,11 +19,6 @@ namespace KK_PregnancyPlus
     {   
         //How many times the belly has been inflated, up to he max
         private int _currentInflationLevel = 0;
-        //public int maxInflationLevel = 6;
-
-        //public int inflationStep = 1;
-        //public int deflationStep = 1;
-
 
         /// <summary>
         /// Trigger belly inflation in HS2 after hsceneflag hook fired
@@ -33,15 +28,15 @@ namespace KK_PregnancyPlus
             int _nextInflationLevel;
 
             if (deflate)
-                _nextInflationLevel = _currentInflationLevel - PregnancyPlusPlugin.DeflationLevel.Value;
+                _nextInflationLevel = 0;
             else
-                _nextInflationLevel = _currentInflationLevel + PregnancyPlusPlugin.InflationLevel.Value;
+                _nextInflationLevel = _currentInflationLevel + 1;
 
             //clip 
-            _currentInflationLevel = Math.Max(0, Math.Min(_nextInflationLevel, PregnancyPlusPlugin.CumflationMaxLevel.Value));
+            _currentInflationLevel = Math.Max(0, Math.Min(_nextInflationLevel, PregnancyPlusPlugin.HS2InflationMaxLevel.Value));
 
             //Re-use the kk pregnancy inflation code here to smooth the inflation animation
-            OnInflationChanged(_currentInflationLevel, PregnancyPlusPlugin.CumflationMaxLevel.Value);
+            OnInflationChanged(_currentInflationLevel, PregnancyPlusPlugin.HS2InflationMaxLevel.Value);
         }
 
     }

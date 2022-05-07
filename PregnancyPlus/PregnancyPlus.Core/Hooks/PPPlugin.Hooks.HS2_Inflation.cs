@@ -189,7 +189,7 @@ namespace KK_PregnancyPlus
             {
                 if (charCustFunCtrl == null) return;
                 if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return;//Don't allow in studio/maker
-                if (!StoryMode.Value || !AllowCumflation.Value) return;
+                if (!StoryMode.Value || !HS2AllowInflation.Value) return;
                                     
                 if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($"Trigger {(deflate?"deflation": "inflation")} to {charCustFunCtrl.name}:{charCustFunCtrl.charaFileName}");
 

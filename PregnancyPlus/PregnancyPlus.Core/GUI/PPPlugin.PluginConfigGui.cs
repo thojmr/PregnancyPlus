@@ -35,11 +35,9 @@ namespace KK_PregnancyPlus
 
 
         //HS2 Only
-        public static ConfigEntry<bool> AllowCumflation { get; private set; }
-        public static ConfigEntry<int> CumflationMaxLevel { get; private set; }
-        public static ConfigEntry<int> InflationLevel { get; private set; }
-        public static ConfigEntry<int> DeflationLevel { get; private set; }
-        public static ConfigEntry<int> InflationSpeed { get; private set; }
+        public static ConfigEntry<bool> HS2AllowInflation { get; private set; }
+        public static ConfigEntry<int> HS2InflationMaxLevel { get; private set; }
+        public static ConfigEntry<int> HS2InflationSpeed { get; private set; }
 
 
         //Debug config options
@@ -243,36 +241,23 @@ namespace KK_PregnancyPlus
                 var storyConfigTitle = "Story/Main-Game Mode";
                 var additionalSliderText = "";
 
-                var CumflationTitle = "Cumflation";
+                var inflationTitle = "Cumflation";
 
 
                 //**** Inflation Config *******/
-
-                AllowCumflation = Config.Bind<bool>(CumflationTitle, "Allow cumflation", false,
-                new ConfigDescription("Automatically increase belly InflationSize when cum inside.",
+                HS2AllowInflation = Config.Bind<bool>(inflationTitle, "Allow cumflation", false,
+                new ConfigDescription("Automatically increase belly InflationSize when releasing inside.",
                     null,
                     new ConfigurationManagerAttributes { Order = 4 })
                 );
 
-                CumflationMaxLevel = Config.Bind<int>(CumflationTitle, "Cumflation Max Level", 6,
+                HS2InflationMaxLevel = Config.Bind<int>(inflationTitle, "Max Level", 6,
                 new ConfigDescription("Inflation levels required to reach max belly size.",
                     null,
                     new ConfigurationManagerAttributes { Order = 3 })
                 );
-
-                InflationLevel = Config.Bind<int>(CumflationTitle, "Inflation Level", 1,
-                new ConfigDescription("Inflation levels increased when cum inside.",
-                    null,
-                    new ConfigurationManagerAttributes { Order = 2 })
-                );
-
-                DeflationLevel = Config.Bind<int>(CumflationTitle, "Deflation Level", 1,
-                new ConfigDescription("Inflation levels decreased when pull out after cum inside.",
-                    null,
-                    new ConfigurationManagerAttributes { Order = 1 })
-                );
                 
-                InflationSpeed = Config.Bind(CumflationTitle, "Inflation Speed", 3,
+                HS2InflationSpeed = Config.Bind(inflationTitle, "Inflation Speed", 3,
                 new ConfigDescription( "The speed that the belly will inflate when triggered over x seconds",
                     new AcceptableValueList<int>(new int[]{1,2,3,4,5}),
                     new ConfigurationManagerAttributes { Order = 0 })
