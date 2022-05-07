@@ -41,6 +41,7 @@ namespace KK_PregnancyPlus
             if (sharedMesh.boneWeights.Length == 0) 
             {
                 if (!ignoreMeshList.Contains(renderKey)) ignoreMeshList.Add(renderKey);//Ignore this mesh/key from now on
+                if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" No Bone Weights found for {smr.name} skipping");
 
                 nativeDetour.Undo();
                 return false; 
@@ -50,6 +51,7 @@ namespace KK_PregnancyPlus
             if (!indexesFound) 
             {
                 if (!ignoreMeshList.Contains(renderKey)) ignoreMeshList.Add(renderKey);
+                if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" No FilteredBoneIndexes found for {smr.name} skipping");
 
                 nativeDetour.Undo();
                 return false;             
@@ -116,7 +118,7 @@ namespace KK_PregnancyPlus
             if (!hasBellyVerticies) 
             {
                 if (!ignoreMeshList.Contains(renderKey)) ignoreMeshList.Add(renderKey);
-                // PregnancyPlusPlugin.Logger.LogInfo($"bellyVerticieIndexes > removing {renderKey}"); 
+                if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" hasBellyVerticies none found for {smr.name} skipping");
                 RemoveRenderKey(renderKey);
             } 
             else
