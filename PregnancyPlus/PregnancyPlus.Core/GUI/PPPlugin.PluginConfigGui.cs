@@ -78,16 +78,15 @@ namespace KK_PregnancyPlus
             OmniToggle = Config.Bind<bool>("Debug", "Omni Debug Toggle", false,
                 new ConfigDescription("This toggle is only for comparing new Preg+ logic with old logic, and won't do anything in a real release.",
                     null,
-                    new ConfigurationManagerAttributes { Order = 17, IsAdvanced = true, ReadOnly = !debugMode })
-                );            
-            
+                    new ConfigurationManagerAttributes { Order = 17, IsAdvanced = true, ReadOnly = !debugMode, Browsable = debugMode })
+                );                                    
             OmniToggle.Value = false;//Reset value on restart
             OmniToggle.SettingChanged += OmniToggle_SettingsChanged;  
 
             ShowBellyVerts = Config.Bind<bool>("Debug", "Show Belly Verts", false,
                 new ConfigDescription("This shows the verticies that were determined to be belly verts.",
                     null,
-                    new ConfigurationManagerAttributes { Order = 16, IsAdvanced = true })
+                    new ConfigurationManagerAttributes { Order = 16, IsAdvanced = true, Browsable = debugMode })
                 );            
             #if !DEBUG
                 ShowBellyVerts.Value = false;//save users from themselves
@@ -97,7 +96,7 @@ namespace KK_PregnancyPlus
             ShowUnskinnedVerts = Config.Bind<bool>("Debug", "Show Unskinned Verts", false,
                 new ConfigDescription("This shows the unskinned vert positions (grey dots) as they are imported from the mesh asset. \r\nDon't leave enabled, and dont enable with a ton of characters active.",
                     null,
-                    new ConfigurationManagerAttributes { Order = 15, IsAdvanced = true })
+                    new ConfigurationManagerAttributes { Order = 15, IsAdvanced = true, Browsable = debugMode })
                 );            
             #if !DEBUG
                 ShowUnskinnedVerts.Value = false;//save users from themselves
@@ -107,7 +106,7 @@ namespace KK_PregnancyPlus
             ShowSkinnedVerts = Config.Bind<bool>("Debug", "Show P+ Skinned Verts", false,
                 new ConfigDescription("This shows the initial skinned vert positions (cyan dots) that Preg+ has computed. Not the inflated ones. \r\nDon't leave enabled, and dont enable with a ton of characters active.",
                     null,
-                    new ConfigurationManagerAttributes { Order = 14, IsAdvanced = true })
+                    new ConfigurationManagerAttributes { Order = 14, IsAdvanced = true, Browsable = debugMode })
                 );
             #if !DEBUG
                 ShowSkinnedVerts.Value = false;//save users from themselves
@@ -117,7 +116,7 @@ namespace KK_PregnancyPlus
             ShowInflatedVerts = Config.Bind<bool>("Debug", "Show P+ Inflated Verts", false,
                 new ConfigDescription("This shows the inflated vert positions (green dots) that Preg+ has computed. \r\nDon't leave enabled, and dont enable with a ton of characters active.",
                     null,
-                    new ConfigurationManagerAttributes { Order = 13, IsAdvanced = true })
+                    new ConfigurationManagerAttributes { Order = 13, IsAdvanced = true, Browsable = debugMode })
                 );
             #if !DEBUG
                 ShowInflatedVerts.Value = false;//save users from themselves
@@ -127,7 +126,7 @@ namespace KK_PregnancyPlus
             ShowDeltaVerts = Config.Bind<bool>("Debug", "Show P+ vertex deltas", false,
                 new ConfigDescription("This shows the deltas computed from the base mesh that we use to build the blendshape. \r\nDon't leave enabled, and dont enable with a ton of characters active.",
                     null,
-                    new ConfigurationManagerAttributes { Order = 12, IsAdvanced = true })
+                    new ConfigurationManagerAttributes { Order = 12, IsAdvanced = true, Browsable = debugMode })
                 );
             #if !DEBUG
                 ShowDeltaVerts.Value = false;//save users from themselves
@@ -137,7 +136,7 @@ namespace KK_PregnancyPlus
             ShowBindPose = Config.Bind<bool>("Debug", "Show Bind Pose", false,
                 new ConfigDescription("This shows the characters bones bind poses. \r\nDon't leave enabled.",
                     null,
-                    new ConfigurationManagerAttributes { Order = 11, IsAdvanced = true })
+                    new ConfigurationManagerAttributes { Order = 11, IsAdvanced = true, Browsable = debugMode })
                 );
             #if !DEBUG
                 ShowBindPose.Value = false;//save users from themselves
@@ -147,7 +146,7 @@ namespace KK_PregnancyPlus
             MakeBalloon = Config.Bind<bool>("Debug", "Balloon mode (Debug mode)", false,
                 new ConfigDescription("This will allow me to debug where the mesh is, or is not, affected by the main Preg+ slider.  This will disable some Preg+ sliders temporarily. \r\nDon't leave enabled.",
                     null,
-                    new ConfigurationManagerAttributes { Order = 10, IsAdvanced = true })
+                    new ConfigurationManagerAttributes { Order = 10, IsAdvanced = true, Browsable = debugMode })
                 );
             MakeBalloon.Value = false;//save users from themselves
             MakeBalloon.SettingChanged += MakeBalloon_SettingsChanged;
@@ -155,14 +154,14 @@ namespace KK_PregnancyPlus
             DebugAnimations = Config.Bind<bool>("Debug", "Refresh X Ticks (Debug mode)", false,
                 new ConfigDescription( "Will force update the belly shape every x ticks to help debug belly shape changes during animations.  \r\nDon't leave enabled.",
                     null,
-                    new ConfigurationManagerAttributes { Order = 9, IsAdvanced = true })
+                    new ConfigurationManagerAttributes { Order = 9, IsAdvanced = true, Browsable = debugMode })
                 );  
             DebugAnimations.Value = false;//save users from themselves
 
             DebugVerts = Config.Bind<bool>("Debug", "Entire Mesh Debugging (Debug mode)", false,
                 new ConfigDescription( "Will cause all mesh verticies to be affected by sliders so I can narrow down which meshes are behaving, and which are not.  \r\nDon't leave enabled",
                     null,
-                    new ConfigurationManagerAttributes { Order = 8, IsAdvanced = true })
+                    new ConfigurationManagerAttributes { Order = 8, IsAdvanced = true, Browsable = debugMode })
                 );
             #if !DEBUG
                 DebugVerts.Value = false;//save users from themselves
