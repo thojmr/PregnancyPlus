@@ -56,7 +56,7 @@ namespace KK_PregnancyPlus
             //If the mesh has been touched it has a key
             var hasKey = md.TryGetValue(PregnancyPlusHelper.GetMeshKey(smr), out var _md);
             if (!hasKey) return;
-
+        
             //Show verts on screen when this debug option is enabled
             if (PregnancyPlusPlugin.ShowUnskinnedVerts.Value)  
             {

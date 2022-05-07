@@ -12,7 +12,6 @@ namespace KK_PregnancyPlus
     {  
         //Contains the list of body bones' bindPose positions (T-pose)
         public Dictionary<string, Trans> bindPoses = new Dictionary<string, Trans>();
-        public const string UncensorCOMName = "com.deathweasel.bepinex.uncensorselector";
         //Used as key for ErrorCode
         public string charaFileName;
 
@@ -25,7 +24,7 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Get a bone's bind pose position from cached list
+        /// Get a bone's aligned position from the cached list
         /// </summary> 
         public Trans Get(string boneName)
         {
@@ -34,6 +33,7 @@ namespace KK_PregnancyPlus
                 return new Trans(Vector3.zero, Quaternion.identity);
             }
             
+            //Check that the bone name exists
             if (!bindPoses.ContainsKey(boneName)) 
                 return new Trans(Vector3.zero, Quaternion.identity);
 
@@ -42,7 +42,7 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Get the bindpose positions from a list of bones in the body SMR.
+        /// Get the bindpose positions from a list of bones in the body SMR
         /// </summary> 
         public void ComputeBindPose(ChaControl chaCtrl, SkinnedMeshRenderer smr, bool force = false)
         {
@@ -71,7 +71,7 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// If a valid bind pose mesh is found get its bone positions, and add them to the bindPoses Dictionary
+        /// Store the body mesh bindpose transforms as a dictionary.  This includes offsets to align the mesh back to 0,0,0
         /// </summary> 
         internal Dictionary<string, Trans> SetBindPosePositions(SkinnedMeshRenderer smr, ChaControl chaCtrl, Matrix4x4 bindPoseOffset = new Matrix4x4())
         {        
@@ -94,20 +94,18 @@ namespace KK_PregnancyPlus
                 //Sometimes body has more bones than bindPoses, so skip these extra bones
                 if (i > smr.sharedMesh.bindposes.Length -1) continue;
 
+                //Get the true bindpose transforms that we will use to align all meshes virtually
                 MeshSkinning.GetBindPoseBoneTransform(smr, smr.sharedMesh.bindposes[i], bindPoseOffset, out var position, out var rotation);
-
-                //subtract chaCtrl position to ignore characters worldspace position/movement
                 _bindPoses.Add(smr.bones[i].name, new Trans(position, rotation));
             }
 
             return _bindPoses;
         }
 
-
     }
 
 
-    //Store transform data from bones
+    //Store bindpose transform data from bones
     public class Trans
     {
         public Vector3 position;
