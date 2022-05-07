@@ -2,6 +2,7 @@
 using KKAPI.Chara;
 using UnityEngine;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 #if HS2 || AI
@@ -26,13 +27,13 @@ namespace KK_PregnancyPlus
         /// </summary>
         /// <param name="smr">The target mesh renderer</param>
         /// <param name="boneFilters">The bones that must have weights, if none are passed it will get all bone indexes</param>
+        /// <param name="boneExclusions">Any mesh vertex with weights to these bones should be exlcuded and left alone, the float part is the minimum weight it must have to be ignored</param>
         /// <returns>Returns True if any verticies are found with matching boneFilter that needs processing</returns>
-        internal async Task<bool> GetFilteredVerticieIndexes(SkinnedMeshRenderer smr, string[] boneFilters) 
+        internal async Task<bool> GetFilteredVerticieIndexes(SkinnedMeshRenderer smr, string[] boneFilters, string[] boneExclusions) 
         {
             var sharedMesh = smr.sharedMesh;
             var renderKey = GetMeshKey(smr);
             var bones = smr.bones;
-            var bellyBoneIndexes = new List<int>();
             var hasBellyVerticies = false;            
 
             if (!sharedMesh.isReadable) nativeDetour.Apply();
@@ -47,7 +48,8 @@ namespace KK_PregnancyPlus
                 return false; 
             }
 
-            var indexesFound = GetFilteredBoneIndexes(bones, boneFilters, bellyBoneIndexes);
+            //Get bone indexes belonging to belly verts
+            var indexesFound = GetFilteredBoneIndexes(bones, boneFilters, boneExclusions, out List<int> bellyBoneIndexes, out List<int> bellyBoneExclusionIndexes);
             if (!indexesFound) 
             {
                 if (!ignoreMeshList.Contains(renderKey)) ignoreMeshList.Add(renderKey);
@@ -91,7 +93,12 @@ namespace KK_PregnancyPlus
 
                     //For each bone weight
                     for (int j = 0; j < 4; j++)
-                    {                                    
+                    {            
+                        var isExcludedWeight = bellyBoneExclusionIndexes != null && bellyBoneExclusionIndexes.Contains(boneIndicies[j]);
+                        //When an excluded bone has any weight ignore this vert
+                        if (isExcludedWeight)                     
+                            return false;                                                
+
                         //If it has a weight, and the bone is a belly bone. Weight goes (0-1f)
                         //Include all if debug = true
                         var hasValidWeight = boneWeights[j] > minBoneWeight && bellyBoneIndexes.Contains(boneIndicies[j]);
@@ -136,16 +143,28 @@ namespace KK_PregnancyPlus
         /// </summary>
         /// <param name="bones">the mesh's bones list</param>
         /// <param name="boneFilters">The bones that must have weights, if none are passed it will get all bone indexes</param>
-        /// <param name="bellyBoneIndexes">Where we store the matching index values</param>
-        /// <returns>Returns false if no bones found, or no indexes found</returns>
-        internal bool GetFilteredBoneIndexes(Transform[] bones, string[] boneFilters, List<int> bellyBoneIndexes) 
+        /// <param name="boneExclusionFilters">The bones that we want to ignore any verts with weights to them</param>
+        /// <param name="bellyBoneIndexes">Where we store the matching bone index values</param>
+        /// <param name="bellyBoneExclusionIndexes">List of bone indexes that we want to ignore any verts with weights to</param>
+        /// <returns>Returns false if no bones found, or no bone indexes found</returns>
+        internal bool GetFilteredBoneIndexes(Transform[] bones, string[] boneFilters, string[] boneExclusionFilters, 
+                                             out List<int> bellyBoneIndexes, out List<int> bellyBoneExclusionIndexes) 
         {
-            if (bones.Length <= 0) return false;
-            var hasBoneFilters = boneFilters != null && boneFilters.Length > 0;
+            bellyBoneIndexes = new List<int>();
+            bellyBoneExclusionIndexes = new List<int>();
 
+            //Don't even know if this is possible, so why not
+            if (bones.Length <= 0) 
+            {
+                bellyBoneExclusionIndexes = null;
+                return false;
+            }
+
+            var hasBoneFilters = boneFilters != null && boneFilters.Length > 0;
+            var hasBoneExclusionFilters = boneExclusionFilters != null && boneExclusionFilters.Length > 0;
             var bonesLength = bones.Length;
 
-            //For each bone, see if it matches a belly boneFilter
+            //For each bone, see if it matches a the boneFilter list
             for (int i = 0; i < bonesLength; i++)
             {   
                 if (!bones[i]) continue;  
@@ -154,20 +173,41 @@ namespace KK_PregnancyPlus
                 if (!hasBoneFilters) 
                 {
                     bellyBoneIndexes.Add(i);
-                    continue;
                 }
 
                 var boneName = bones[i].name;
 
-                //If the current bone matches the current boneFilter, add it's index
+                //If the current bone matches the current boneFilter, add its index
                 foreach(var boneFilter in boneFilters)
                 {
                     if (boneFilter == boneName) 
                     {
                         bellyBoneIndexes.Add(i);
-                        break;
+                        continue;
                     }  
                 }
+
+                //If bone exclusions list exists, add its index
+                if (!hasBoneExclusionFilters) continue;
+                foreach(var boneExcludeName in boneExclusionFilters)
+                {        
+                    if (boneExcludeName == boneName) 
+                    {
+                        //Only add new values
+                        bellyBoneExclusionIndexes.Add(i);
+                        continue;
+                    }  
+                }
+            }
+
+            //Only keep distinct indexes to reduce compute later
+            bellyBoneExclusionIndexes = bellyBoneExclusionIndexes.Distinct().ToList();
+            bellyBoneIndexes = bellyBoneIndexes.Distinct().ToList();
+
+            //If no exclusions, then set back to null
+            if (bellyBoneExclusionIndexes.Count <= 0)
+            {
+                bellyBoneExclusionIndexes = null;
             }
             
             return bellyBoneIndexes.Count > 0;

@@ -90,7 +90,9 @@ namespace KK_PregnancyPlus
                 {
                     //Place spheres on each vert to debug the mesh calculated position relative to other meshes      
                     if (_md.bellyVerticieIndexes[i])          
-                        DebugTools.DrawSphere((isClothingMesh ? 0.01f : 0.005f), _md.originalVertices[i], color: Color.grey);                                  
+                        DebugTools.DrawSphere((isClothingMesh ? 0.01f : 0.005f), _md.originalVertices[i], color: Color.white);   
+                    else
+                        DebugTools.DrawSphere((isClothingMesh ? 0.01f : 0.005f), _md.originalVertices[i], color: Color.grey);   
                 } 
             }
         }

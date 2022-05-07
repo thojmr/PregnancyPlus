@@ -289,16 +289,26 @@ namespace KK_PregnancyPlus
             //The list of bones to get verticies for (Belly area verts).  If a mesh does not contain one of these bones in smr.bones, it is skipped
             #if KKS            
                 var boneFilters = new string[] { "cf_s_spine02", "cf_s_waist01", "cf_s_waist02" };//"cs_s_spine01" optionally for wider affected area
+                //Verts weighted to these bones will not be affected by Preg+ at all
+                var boneExcludeFilters = new string[] { "cf_s_bust03_L", "cf_s_bust03_R" };
             #elif HS2 || AI
                 var boneFilters = new string[] { "cf_J_Spine02_s", "cf_J_Kosi01_s", "cf_J_Kosi02_s" };
+                var boneExcludeFilters = new string[] {  "cf_J_Mune03_s_L", "cf_J_Mune03_s_R" };
             #endif
 
             var hasVertsToProcess = true;
             var isMeshInitialized = md.TryGetValue(renderKey, out MeshData _md);
 
+            //When debug mesh we want to affect all mesh, so don't filter it
+            if (PregnancyPlusPlugin.MakeBalloon.Value || PregnancyPlusPlugin.DebugVerts.Value)
+            {
+                boneFilters = null;
+                boneExcludeFilters = null;
+            }
+
             //Only fetch belly vert list when needed to save compute
             if (meshInflateFlags.NeedsToComputeIndex || !isMeshInitialized)            
-                hasVertsToProcess = await GetFilteredVerticieIndexes(smr, PregnancyPlusPlugin.MakeBalloon.Value ? null : boneFilters);                    
+                hasVertsToProcess = await GetFilteredVerticieIndexes(smr, boneFilters, boneExcludeFilters);                    
 
             //If mesh was just added to the ignore list, stop here
             if (ignoreMeshList.Contains(renderKey)) return false; 

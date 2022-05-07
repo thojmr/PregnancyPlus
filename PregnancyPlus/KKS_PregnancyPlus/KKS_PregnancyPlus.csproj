@@ -120,7 +120,7 @@
     </Reference>
   </ItemGroup>
 
-  <Import Project="..\PregnancyPlus.Core\Shared.projitems" Label="Shared" />  
+  <Import Project="..\PregnancyPlus.Core\Shared.projitems" Label="Shared" />
 
   <ItemGroup>
     <Compile Include="..\PregnancyPlus.Core\PPGameController.cs" />    
