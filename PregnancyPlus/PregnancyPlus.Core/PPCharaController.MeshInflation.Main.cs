@@ -387,9 +387,9 @@ namespace KK_PregnancyPlus
             //Plugin config option lets us visalize bindpose positions 
             if (PregnancyPlusPlugin.ShowBindPose.Value) 
             {             
-                MeshSkinning.ShowBindPose(ChaControl, smr, bindPoseList);  
+                PostInflationDebug.ShowBindPose(ChaControl, smr, bindPoseList);  
                 //The raw bindpose is the original one, that is not aligned by Preg+ yet
-                MeshSkinning.ShowRawBindPose(smr);
+                PostInflationDebug.ShowRawBindPose(smr);
             }
 
             //Matricies used to compute the T-pose mesh
@@ -410,7 +410,7 @@ namespace KK_PregnancyPlus
 
             //Since the z limit check is done on the unskinned verts, we need to apply any bindpose scale to the limit to make it match the real unskinned vert positions
             //  Note: I bet rotated meshes are similarily affected, but that's a lot of math to correct
-            var bindPoseScaleZ = Matrix.GetScale(MeshSkinning.GetBindPoseScale(smr).inverse).z;
+            var bindPoseScaleZ = Matrix.GetScale(BindPose.GetScale(smr).inverse).z;
             //The distance backwards from characters center that verts are allowed to be modified
             var backExtent = bindPoseScaleZ * -bellyInfo.ZLimit;
             
@@ -771,7 +771,11 @@ namespace KK_PregnancyPlus
             if (_md.HasDeltas && !meshInflateFlags.OverWriteMesh) return;
 
             //When SMR has local rotation undo it in the deltas,  Or if a bindpose is rotated undo that as well
-            var rotationUndo = Matrix4x4.TRS(Vector3.zero, smr.transform.localRotation, Vector3.one).inverse * Matrix4x4.TRS(Vector3.zero, MeshSkinning.GetBindPoseRotation(smr), Vector3.one);            
+            var bindPoseRotation = BindPose.GetAverageRotation(smr);
+            if (PregnancyPlusPlugin.DebugLog.Value && bindPoseRotation != Quaternion.identity) 
+                PregnancyPlusPlugin.Logger.LogWarning($" {smr.name} has bindpose rotation {bindPoseRotation}");
+
+            var rotationUndo = Matrix4x4.TRS(Vector3.zero, smr.transform.localRotation, Vector3.one).inverse * Matrix4x4.TRS(Vector3.zero, bindPoseRotation, Vector3.one);            
 
             //Get the virtual inflated mesh with normal, and tangent recalculation applied
             var inflatedMesh = PrepForBlendShape(smr, rendererName, rotationUndo);
@@ -780,7 +784,7 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" Compute BlendShape Deltas for {smr.name}");
 
             //When a smr bindpose has scale, we need to undo it in the delta similar to rotation
-            var scaleUndo = MeshSkinning.GetBindPoseScale(smr).inverse;
+            var scaleUndo = BindPose.GetScale(smr).inverse;
             var undoTfMatrix = rotationUndo * scaleUndo;
 
             // if (PregnancyPlusPlugin.DebugLog.Value && scaleUndo != Matrix4x4.identity) 

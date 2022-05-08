@@ -47,6 +47,7 @@
     <Compile Include="..\PregnancyPlus.Core\tools\Smoothing\SmoothMesh.cs" />    
     <Compile Include="..\PregnancyPlus.Core\Tools\MeshInflateFlags.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\BindPose\Matrix.cs" />
+    <Compile Include="..\PregnancyPlus.Core\Tools\BindPose\BindPose.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\MeshData.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\BindPose\MeshSkinning.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\BindPose\BindPoseList.cs" />

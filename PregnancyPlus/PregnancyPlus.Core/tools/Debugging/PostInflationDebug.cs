@@ -96,5 +96,63 @@ namespace KK_PregnancyPlus
                 } 
             }
         }
+
+
+        /// <summary>
+        /// Show the computed bindpose locations with debug lines
+        /// </summary> 
+        /// <param name="parent">optional: Attach lines to this parent transform</param>   
+        public static void ShowBindPose(ChaControl chaControl, SkinnedMeshRenderer smr, BindPoseList bindPoseList, Transform parent = null)
+        {
+            if (!PregnancyPlusPlugin.DebugLog.Value && !PregnancyPlusPlugin.DebugCalcs.Value) return;
+
+            #if KKS 
+                var lineLen = 0.03f;
+            #elif HS2 || AI
+                var lineLen = 0.3f;
+            #endif            
+            
+            //Get a default offset to use when a mesh has extra bones not in the skeleton
+            var firstNon0Offset = MeshSkinning.GetFirstBindPoseOffset(chaControl, bindPoseList, smr, smr.sharedMesh.bindposes, smr.bones);
+
+            for (int i = 0; i < smr.bones.Length; i++)
+            {            
+                //Sometimes smr has more bones than bindPoses, so skip these extra bones
+                if (i > smr.sharedMesh.bindposes.Length -1) continue;
+                
+                var bindPoseOffset = MeshSkinning.GetBindPoseOffset(chaControl, bindPoseList, smr, smr.sharedMesh.bindposes[i], smr.bones[i]) ?? firstNon0Offset;
+                //Get a bone's bindPose position/rotation
+                MeshSkinning.GetBindPoseBoneTransform(smr, smr.sharedMesh.bindposes[i], bindPoseOffset, out var position, out var rotation, bindPoseList, smr.bones[i]);
+
+                DebugTools.DrawAxis(position, lineLen, parent: parent);
+            }
+        }
+
+
+        /// <summary>
+        /// Show the raw bindpose locations of an SMR with debug lines
+        /// </summary> 
+        /// <param name="parent">optional: Attach lines to this parent transform</param>   
+        public static void ShowRawBindPose(SkinnedMeshRenderer smr, Transform parent = null)
+        {
+            if (!PregnancyPlusPlugin.DebugLog.Value && !PregnancyPlusPlugin.DebugCalcs.Value) return;
+
+            #if KKS 
+                var lineLen = 0.03f;
+            #elif HS2 || AI
+                var lineLen = 0.3f;
+            #endif            
+
+            for (int i = 0; i < smr.bones.Length; i++)
+            {            
+                //Sometimes smr has more bones than bindPoses, so skip these extra bones
+                if (i > smr.sharedMesh.bindposes.Length -1) continue;
+                
+                //Get a bone's bindPose position/rotation
+                var position = Matrix.GetPosition(smr.transform.localToWorldMatrix * smr.sharedMesh.bindposes[i].inverse);
+
+                DebugTools.DrawAxis(position, lineLen, parent: parent, startColor: Color.grey);
+            }
+        }
     }
 }

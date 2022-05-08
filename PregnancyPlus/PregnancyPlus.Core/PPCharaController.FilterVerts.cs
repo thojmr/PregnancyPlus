@@ -67,7 +67,7 @@ namespace KK_PregnancyPlus
 
             //Since the z limit check is done on the unskinned verts, we need to apply any bindpose scale to the limit to make it match the real unskinned vert positions
             //  Note: I bet rotated meshes are similarily affected, but that's a lot of math to correct
-            var bindPoseScaleZ = Matrix.GetScale(MeshSkinning.GetBindPoseScale(smr).inverse).z;
+            var bindPoseScaleZ = Matrix.GetScale(BindPose.GetScale(smr).inverse).z;
             //The distance backwards from characters center that verts are allowed to be modified
             var backExtent = bindPoseScaleZ * -bellyInfo.ZLimit;
             var debugAnyVerts = PregnancyPlusPlugin.MakeBalloon.Value || PregnancyPlusPlugin.DebugVerts.Value;
