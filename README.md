@@ -1,5 +1,5 @@
 # Pregnancy Plus Introduction
-This repository contains the PregnancyPlus plugin, that adds additional belly sliders in Studio and Maker.  It is intended to compliment the [KK_Pregnancy](https://github.com/ManlyMarco/KoikatuGameplayMods) plugin, but can be used without it.
+This repository contains the PregnancyPlus plugin, that adds additional belly sliders in Studio and Maker for Illusion games.  It is intended to compliment the [KK_Pregnancy](https://github.com/ManlyMarco/KoikatuGameplayMods) plugin, but can be used without it.
 
 See [How To Install](#how-to-install) for installation instructions
 </br>
@@ -31,10 +31,10 @@ See [Plugin Tips](#some-tips) for tips and tricks
 ## How to install
 1. Requires BetterRepack or HF Patch (Preg+ is included with these, but probably not the latest version)
 3. Download the latest release of Preg+ [here](https://github.com/thojmr/KK_PregnancyPlus/releases).
-4. Right click the zip > "Extract Here" and copy that `BepInEx/` folder to your root game directory. The plugin .dll will end up inside your `BepInEx/plugins/` directory like:
+4. Then right click the zip and select "Extract Here".  Copy that `BepInEx/` folder to your root game directory. The plugin `.dll` will end up inside your `BepInEx/plugins/` directory like this:
     -> `{root game}/BepInEx/plugins/XX_PregnancyPlus.dll`
-5. Check for warnings on game startup, if the plugin loaded it should appear in Plugin Config.
-    - If you see warnings in game about KKAPI or BepInEx versions, you need to download the latest BetterRepack or HFPatch
+5. That's it.  If the plugin loaded it should appear in the F1 Plugin Config.
+    - If you see warnings in game about KKAPI or BepInEx versions, you probably need to download the latest BetterRepack or HFPatch
 
 </br>
 
