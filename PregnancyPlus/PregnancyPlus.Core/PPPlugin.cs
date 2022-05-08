@@ -7,6 +7,7 @@ using KKAPI.Studio;
 using KKAPI.Maker;
 using KKAPI.Chara;
 using KKAPI.Utilities;
+using UnityEngine;
 #if KKS || AI
     using KKAPI.MainGame;
 #endif
@@ -73,7 +74,6 @@ namespace KK_PregnancyPlus
             PregnancyPlusGui.InitStudio(hi, this);
             PregnancyPlusGui.InitMaker(hi, this);       
 
-
             //Requires KKAPI 1.30+ and Bepinex 5.4.15 to use the timeline interpolable, but its just a soft depencendy for this plugin
             try {
                 //Set up the timeline imterpolable tool
@@ -85,9 +85,12 @@ namespace KK_PregnancyPlus
                         timelineGUID, 
                         "0", 
                         "Pregnancy+",
-                        (oci, ctrl, leftValue, rightValue, factor) => ctrl.MeshInflate(factor * 40, "timeline_interpolable"),
+                        (oci, ctrl, leftValue, rightValue, factor) => {
+                            var inflationSize = Mathf.Lerp(leftValue, rightValue, factor);
+                            ctrl.MeshInflate(inflationSize, "timeline_interpolable");
+                        },
                         null,
-                        (oci, ctrl) => (int)ctrl.infConfig.inflationSize/40
+                        (oci, ctrl) => (int)ctrl.infConfig.inflationSize
                         );
                 }
             }
