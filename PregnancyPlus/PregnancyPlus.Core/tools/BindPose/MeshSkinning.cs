@@ -177,9 +177,12 @@ namespace KK_PregnancyPlus
 
             //Add up all the rotations for each bindpose
             for (int i = 0; i < bindposes.Length; i++)
-            {      
+            {   
+                var worldRotation = Matrix.GetRotation(smr.transform.localToWorldMatrix * bindposes[i].inverse);
+                var localRotation = Quaternion.Inverse(smr.transform.rotation) * worldRotation;
+                
                 //Round them to the nearest 90 degree axis since most offset rotations are at 90 degree intervals
-                var currentRotation = Rotation.AxisRound(Matrix.GetRotation(smr.transform.localToWorldMatrix * bindposes[i].inverse));                
+                var currentRotation = Rotation.AxisRound(localRotation);                
                 totalX+=currentRotation.x;
                 totalY+=currentRotation.y;
                 totalZ+=currentRotation.z;
