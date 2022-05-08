@@ -11,7 +11,9 @@ See [Plugin Tips](#some-tips) for tips and tricks
 <img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/P+ All Menus.png" height="900"></img>
 
 ## Latest Features (I will update this occasionally)
-- 6.0+:
+- 7.0+
+    - Dedicated timeline slider
+- 6.0+:    
     - Inflation Speed config option for HS2
     - Fixed Skirt and Jackets clipping below the belly
     - Added Preset Belly Shape dropdown
@@ -82,8 +84,18 @@ See [Plugin Tips](#some-tips) for tips and tricks
 </del>
 
 </br>
+</br>
+</br>
 
 ## Timeline Integration
+### New way
+- Studio Timeline integration via the new timeline Preg+ slider.  Here's how:
+  
+  `Keep in mind you will need KKSAPI or HS2API v1.30 and BepInEx v5.4.15 to see this feature`
+    - Set the Preg+ character sliders to the desired shape you want
+    - Open timeline, find the PregnancyPlus section and add timeline nodes.  Set value to desired level.
+    - That's It!
+### Old way (still works, but not recomended)
 - Studio Timeline integration via blendshapes.  Here's how:
   - Set the P+ character sliders to the desired shape you want (including belly smoothing).
   - Click "Open Blendshapes" button. You will see a popup that will show you any existing P+ blendshapes.  If none are found, then use the "Create New" button.
@@ -92,6 +104,9 @@ See [Plugin Tips](#some-tips) for tips and tricks
   - Open Timeline with Ctrl+T, search for "Blendshape" and middle click to add.
   - Follow Timeline guides for further info
   - See [The BlendShape GUI](#the-blendshape-gui) below for a longer description of the GUI and it's behaviors
+
+</br>
+</br>
 
 ## VNGE Integration
 - Studio VNGE integration in HS2 and AI via blendshapes.  Here's how:
