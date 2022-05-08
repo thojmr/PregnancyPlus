@@ -31,7 +31,7 @@ namespace KK_PregnancyPlus
     public partial class PregnancyPlusPlugin : BaseUnityPlugin
     {
         public const string GUID = "KK_PregnancyPlus";
-        public const string Version = "7.1";
+        public const string Version = "7.2";
         internal static new ManualLogSource Logger { get; private set; }
    
 
@@ -86,7 +86,7 @@ namespace KK_PregnancyPlus
                         "0", 
                         "Pregnancy+",
                         (oci, ctrl, leftValue, rightValue, factor) => {
-                            var inflationSize = Mathf.Lerp(leftValue, rightValue, factor);
+                            var inflationSize = Mathf.LerpUnclamped(leftValue, rightValue, factor);                            
                             ctrl.MeshInflate(inflationSize, "timeline_interpolable");
                         },
                         null,
