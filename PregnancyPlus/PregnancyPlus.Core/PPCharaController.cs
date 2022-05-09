@@ -64,6 +64,13 @@ namespace KK_PregnancyPlus
 
         internal Guid debounceGuid;//Track multiple events with a debounce based on these id's
 
+        //The list of bones that preg+ uses to determine if a mesh has vert weights to the belly area.  Ignoring any meshes that dont touch these bones.
+        #if KKS            
+            public static string[] bellyBones = { "cf_s_spine02", "cf_s_waist01", "cf_s_waist02" };//"cs_s_spine01" optionally for wider affected area
+        #elif HS2 || AI
+            public static string[] bellyBones =  { "cf_J_Spine02_s", "cf_J_Kosi01_s", "cf_J_Kosi02_s" };
+        #endif
+
         //Determine body mesh name based on sex (0 is male)
         public string BodyMeshName {
             #if KKS

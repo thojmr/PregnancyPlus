@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Linq;
 
 
 //Contains methods to extract bindpose data from a mesh
@@ -50,7 +51,8 @@ public static class BindPose
     /// <summary>
     /// Get the average rotation of all the bindposes in localspace
     /// </summary>  
-    public static Quaternion GetAverageRotation(SkinnedMeshRenderer smr)
+    /// <param name="boneFilters">When included, only bindposes with matching bone names will be considered</param> 
+    public static Quaternion GetAverageRotation(SkinnedMeshRenderer smr, string[] boneFilters)
     {            
         //For a bindpose check for any non 0 rotation repeated more than a few times
         var bindposes = smr.sharedMesh.bindposes;
@@ -59,9 +61,33 @@ public static class BindPose
         var totalZ = 0f;
         var totalW = 0f;
 
+        var hasBoneFilters = boneFilters != null && boneFilters.Length > 0;
+        var numAdded = 0;
+        var bonesCount = smr.bones.Length;
+
+        if ((hasBoneFilters && bonesCount == 0) || bindposes.Length == 0)
+            return Quaternion.identity;
+
         //Add up all the rotations for each bindpose
         for (int i = 0; i < bindposes.Length; i++)
         {   
+            //The current bone must match the filter if a filter exists
+            //  We need this because a handfull of meshes come with extra bones that have totally arbitrary rotations
+            if (hasBoneFilters)
+            {
+                //If there are more bindposes than bones, skip (is this even possible?)
+                if (i >= bonesCount)
+                    continue;
+
+                //Check the bone name matches filter name
+                var bone = smr.bones[i];
+                if (bone == null)
+                    continue;
+
+                if (!boneFilters.Contains(bone.name))
+                    continue;                    
+            }
+
             var bindposeRotation = GetRotation(smr, bindposes[i]);
             //We want to ignore character rotation, so convert to local rotation
             var localRotation = Quaternion.Inverse(smr.transform.rotation) * bindposeRotation;
@@ -71,15 +97,17 @@ public static class BindPose
             totalX+=currentRotation.x;
             totalY+=currentRotation.y;
             totalZ+=currentRotation.z;
-            totalW+=currentRotation.w;                
+            totalW+=currentRotation.w;        
+
+            numAdded++;
         }                        
 
         //Compute the average rotation
         var averageRotation = new Quaternion(
-                x: totalX/bindposes.Length, 
-                y: totalY/bindposes.Length, 
-                z: totalZ/bindposes.Length, 
-                w: totalW/bindposes.Length
+                x: totalX/numAdded, 
+                y: totalY/numAdded, 
+                z: totalZ/numAdded, 
+                w: totalW/numAdded
             );
 
         //Round the final rotation to the nearest 90 degree axis

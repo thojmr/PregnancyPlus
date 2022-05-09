@@ -12,7 +12,7 @@ namespace KK_PregnancyPlus
         /// <summary>
         /// Shoe debug spheres on screen when enabled in plugin config
         /// </summary>
-        internal static void Start(ChaControl chaControl, Dictionary<string, MeshData> md, NativeDetourMesh nativeDetour)
+        internal static void Start(ChaControl chaControl, Dictionary<string, MeshData> md, NativeDetourMesh nativeDetour, string[] bellyBones)
         {
             //If you need to debug the calculated vert positions visually
             if (PregnancyPlusPlugin.DebugLog.Value) 
@@ -42,16 +42,16 @@ namespace KK_PregnancyPlus
             var clothRenderers = PregnancyPlusHelper.GetMeshRenderers(chaControl.objClothes);         
             var accessoryRenderers = PregnancyPlusHelper.GetMeshRenderers(chaControl.objAccessory);     
 
-            bodyRenderers.ForEach((SkinnedMeshRenderer smr) => DebugMesh(smr, md, nativeDetour));
-            clothRenderers.ForEach((SkinnedMeshRenderer smr) => DebugMesh(smr, md, nativeDetour, isClothingMesh: true));
-            accessoryRenderers.ForEach((SkinnedMeshRenderer smr) => DebugMesh(smr, md, nativeDetour, isClothingMesh: true));        
+            bodyRenderers.ForEach((SkinnedMeshRenderer smr) => DebugMesh(smr, md, nativeDetour, bellyBones));
+            clothRenderers.ForEach((SkinnedMeshRenderer smr) => DebugMesh(smr, md, nativeDetour, bellyBones, isClothingMesh: true));
+            accessoryRenderers.ForEach((SkinnedMeshRenderer smr) => DebugMesh(smr, md, nativeDetour, bellyBones, isClothingMesh: true));        
         }
 
 
         /// <summary>
         /// Depending on plugin config state, shows calculated verts on screen (Do not run inside a Task, lol)
         /// </summary>
-        internal static void DebugMesh(SkinnedMeshRenderer smr, Dictionary<string, MeshData> md, NativeDetourMesh nativeDetour, bool isClothingMesh = false)
+        internal static void DebugMesh(SkinnedMeshRenderer smr, Dictionary<string, MeshData> md, NativeDetourMesh nativeDetour, string[] bellyBones, bool isClothingMesh = false)
         {
             //If the mesh has been touched it has a key
             var hasKey = md.TryGetValue(PregnancyPlusHelper.GetMeshKey(smr), out var _md);
@@ -76,7 +76,7 @@ namespace KK_PregnancyPlus
             if (PregnancyPlusPlugin.ShowDeltaVerts.Value && _md.HasDeltas) 
             {
                 //Undo any bindpose rotation in the deltas to make them line up visually for debugging
-                var bindPoseRotation = BindPose.GetAverageRotation(smr);
+                var bindPoseRotation = BindPose.GetAverageRotation(smr, bellyBones);
                 //When SMR has local rotation undo it in the deltas
                 var rotationUndo = Matrix4x4.TRS(Vector3.zero, smr.transform.localRotation, Vector3.one).inverse * Matrix4x4.TRS(Vector3.zero, bindPoseRotation, Vector3.one);                           
                 for (int i = 0; i < _md.deltaVerticies.Length; i++)
