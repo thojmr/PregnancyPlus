@@ -75,8 +75,10 @@ namespace KK_PregnancyPlus
             //When we need to debug the deltas visually
             if (PregnancyPlusPlugin.ShowDeltaVerts.Value && _md.HasDeltas) 
             {
+                //Undo any bindpose rotation in the deltas to make them line up visually for debugging
+                var bindPoseRotation = BindPose.GetAverageRotation(smr);
                 //When SMR has local rotation undo it in the deltas
-                var rotationUndo = Matrix4x4.TRS(Vector3.zero, smr.transform.localRotation, Vector3.one).inverse;                
+                var rotationUndo = Matrix4x4.TRS(Vector3.zero, smr.transform.localRotation, Vector3.one).inverse * Matrix4x4.TRS(Vector3.zero, bindPoseRotation, Vector3.one);                           
                 for (int i = 0; i < _md.deltaVerticies.Length; i++)
                 {
                     //Undo delta rotation so we can make sure it aligns with the other meshes deltas

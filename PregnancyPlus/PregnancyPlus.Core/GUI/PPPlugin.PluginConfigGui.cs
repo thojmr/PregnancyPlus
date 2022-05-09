@@ -669,6 +669,7 @@ namespace KK_PregnancyPlus
         {
             return ShowBindPose.Value || 
                 ShowUnskinnedVerts.Value || 
+                ShowSkinnedVerts.Value || 
                 ShowBindPose.Value ||
                 ShowBellyVerts.Value ||
                 ShowInflatedVerts.Value ||

@@ -529,6 +529,7 @@ namespace KK_PregnancyPlus
             //Compute any user set, individual cloth offset
             var offsets = infConfig.IndividualClothingOffsets;
             var hasIndividualOffset = offsets != null && offsets.Any(o => o.Key == rendererName);
+            //Multiply the individual by 4 to allow greater movement
             var individualOffset = hasIndividualOffset ? (offsets.FirstOrDefault(o => o.Key == rendererName).Value * 4) : 0f;
 
             logCharMeshInfo(md[rendererName], smr, sphereCenter, isClothingMesh);

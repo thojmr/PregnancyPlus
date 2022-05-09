@@ -320,11 +320,23 @@ public static class DebugTools
     /// Add debug lines and spheres to raycast hits and misses
     /// </summary>
     public static void ShowRayCast(Vector3 origin, Vector3 direction, RaycastHit hit) {
+
+        #if KKS
+            var hitwidth = 0.0005f;
+            var normalWidth = 0.00025f;
+        #elif HS2 || AI
+            var hitwidth = 0.0005f;
+            var normalWidth = 0.00025f;
+        #endif
+
         //Draw the raycast line        
-        if (hit.collider) DrawLine(origin, origin + (hit.point - origin), width: 0.001f); 
-        else DrawLine(origin, origin + direction, width: 0.0005f, startColor: Color.yellow); 
+        if (hit.collider) 
+            DrawLine(origin, origin + (hit.point - origin), width: hitwidth); 
+        else 
+            DrawLine(origin, origin + direction, width: normalWidth, startColor: Color.yellow); 
+            
         //Mark hit point, if it hit
-        if (hit.collider) DrawSphere(0.001f, hit.point); 
+        if (hit.collider) DrawSphere(hitwidth * 2, hit.point); 
     }
 
 
