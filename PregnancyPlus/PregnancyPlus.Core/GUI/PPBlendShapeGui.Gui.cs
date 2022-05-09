@@ -66,8 +66,8 @@ namespace KK_PregnancyPlus
 					GuiSliderControlls(i);
 				}	
 
-				GUILayout.Label("The blendshape sliders above can be adjusted and then saved to Timeline (Ctrl+T) or VNGE > Clip Manager.  The blendshapes will persist to the character card after the scene is saved.", _labelTextStyle, new GUILayoutOption[0]);
-				GUILayout.Label("You can 'Create New' blendshapes with the current P+ character sliders (Overwrites existing).", _labelTextStyle, new GUILayoutOption[0]);
+				GUILayout.Label("The blendshape sliders above can be adjusted and then saved to Timeline (Ctrl+T) or VNGE > Clip Manager.  The blendshapes will persist to the character card after the scene is saved. But the character must be using the same uncensor.", _labelTextStyle, new GUILayoutOption[0]);
+				GUILayout.Label("Note: This is the old way to do timeline scenes.  Look for the Preg+ interpolable in timeline for the new way.", _labelInfoTextStyle, new GUILayoutOption[0]);
 
 				//Error messages for the user, when something goes wrong
 				if (!HSPEExists) GUILayout.Label(HspeNotFoundMessage, _labelErrorTextStyle, new GUILayoutOption[0]);

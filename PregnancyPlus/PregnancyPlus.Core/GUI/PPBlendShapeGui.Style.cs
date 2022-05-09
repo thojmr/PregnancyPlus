@@ -43,6 +43,18 @@ namespace KK_PregnancyPlus
         };
 
 
+		internal GUIStyle _labelInfoTextStyle = new GUIStyle
+        {
+            alignment = TextAnchor.MiddleLeft,
+			padding = new RectOffset(5, 5, 20, 20),
+			wordWrap = true,
+            normal = new GUIStyleState
+            {
+                textColor = Color.cyan
+            }
+        };
+
+
 		internal GUIStyle _labelErrorTextStyle = new GUIStyle
         {
             alignment = TextAnchor.MiddleLeft,
@@ -93,7 +105,7 @@ namespace KK_PregnancyPlus
 			if (hasBlendShapes)
 			{
 				var sliderTotals = ((15 + (_labelTitleStyle.padding.bottom * 2)) * guiSkinnedMeshRenderers.Count);
-				var textsTotals = (_labelTextStyle.padding.bottom * 2) + (30 * 4);
+				var textsTotals = (_labelTextStyle.padding.bottom * 2) + (30 * 5);
 				var btnTotals = (40 * 3);
                 var errorTotals = HSPEExists ? 0 : 30;
                 errorTotals = anyMeshEmpty ? errorTotals + (30 * 3) : errorTotals;
@@ -103,7 +115,7 @@ namespace KK_PregnancyPlus
 			//Otherwise, its just text and buttons
 			else 
 			{
-				var textsTotals = (_labelTextStyle.padding.bottom * 2) + (30 * 2);
+				var textsTotals = (_labelTextStyle.padding.bottom * 2) + (30 * 1);
 				var btnTotals = (40 * 2);
 				return (textsTotals + btnTotals); 
 			}
