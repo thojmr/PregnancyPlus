@@ -189,6 +189,29 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
+        /// This will return the matrix transform needed to take the aligned T pose mesh and rotate back to its original position
+        ///     We need this to offset the deltas for the blendshape in the correct direction
+        /// </summary>
+        public static Matrix4x4 UndoMeshAlignment(SkinnedMeshRenderer smr, Quaternion bindPoseRotation)
+        {
+            var hasSmrRotation = MeshHasLocalRotation(smr);
+
+            //If a mesh any bindpose rotation, we can ignore the local rotaion because the bindpose rotation will fix both
+            if (bindPoseRotation != Quaternion.identity)
+            {
+                return Matrix4x4.TRS(Vector3.zero, bindPoseRotation, Vector3.one);
+            }
+            //If the mesh only has local rotation we undo that only
+            else if (hasSmrRotation)
+            {
+                return Matrix4x4.TRS(Vector3.zero, smr.transform.localRotation, Vector3.one).inverse;
+            }
+            
+            return Matrix4x4.identity;
+        }
+
+
+        /// <summary>
         /// Convert an unskinned mesh vert into the default T-pose mesh vert using the bindpose bone positions
         /// </summary>
         public static Vector3 UnskinnedToSkinnedVertex(Vector3 unskinnedVert, Matrix4x4 smrMatrix, Matrix4x4[] boneMatrices, BoneWeight boneWeight)

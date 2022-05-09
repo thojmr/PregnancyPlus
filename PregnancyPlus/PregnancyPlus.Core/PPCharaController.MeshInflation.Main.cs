@@ -116,7 +116,7 @@ namespace KK_PregnancyPlus
             await FindAndAffectAllMeshes(meshInflateFlags, renderKey);             
 
             //Debug verts when needed
-            PostInflationDebug.Start(ChaControl, md, nativeDetour); 
+            PostInflationDebug.Start(ChaControl, md, nativeDetour, bellyBones); 
 
             //Mark done processing
             isProcessing = false;
@@ -288,11 +288,11 @@ namespace KK_PregnancyPlus
         {
             //The list of bones to get verticies for (Belly area verts).  If a mesh does not contain one of these bones in smr.bones, it is skipped
             #if KKS            
-                var boneFilters = new string[] { "cf_s_spine02", "cf_s_waist01", "cf_s_waist02" };//"cs_s_spine01" optionally for wider affected area
+                var boneFilters = bellyBones;
                 //Verts weighted to these bones will not be affected by Preg+ at all
                 var boneExcludeFilters = new string[] { "cf_s_bust03_L", "cf_s_bust03_R" };
             #elif HS2 || AI
-                var boneFilters = new string[] { "cf_J_Spine02_s", "cf_J_Kosi01_s", "cf_J_Kosi02_s" };
+                var boneFilters = bellyBones;
                 var boneExcludeFilters = new string[] {  "cf_J_Mune03_s_L", "cf_J_Mune03_s_R" };
             #endif
 
@@ -439,6 +439,14 @@ namespace KK_PregnancyPlus
                     if (isClothingMesh && !bellyVertIndex[i] && skinnedVert.z > backExtent && (skinnedVert.y > yBottomLimit && skinnedVert.y < ySphereCenter))
                     {                            
                         bellyVertIndex[i] = true;
+                        return skinnedVert;
+                    }
+
+                    //Now that the mesh is skinned we can exclude verts on the backside entirely by its z position
+                    if (bellyVertIndex[i] && skinnedVert.z < backExtent)
+                    {
+                        bellyVertIndex[i] = false;
+                        return skinnedVert;
                     }
 
                     return skinnedVert;
@@ -772,14 +780,15 @@ namespace KK_PregnancyPlus
             if (_md.HasDeltas && !meshInflateFlags.OverWriteMesh) return;
 
             //When SMR has local rotation undo it in the deltas,  Or if a bindpose is rotated undo that as well
-            var bindPoseRotation = BindPose.GetAverageRotation(smr);
+            var bindPoseRotation = BindPose.GetAverageRotation(smr, bellyBones);
             if (PregnancyPlusPlugin.DebugLog.Value && bindPoseRotation != Quaternion.identity) 
                 PregnancyPlusPlugin.Logger.LogWarning($" {smr.name} has bindpose rotation {bindPoseRotation}");
-
-            var rotationUndo = Matrix4x4.TRS(Vector3.zero, smr.transform.localRotation, Vector3.one).inverse * Matrix4x4.TRS(Vector3.zero, bindPoseRotation, Vector3.one);            
+       
+            var rotationUndo = MeshSkinning.UndoMeshAlignment(smr, bindPoseRotation);
+            var bindPoseRotationMatrix = Matrix.SetRotation(bindPoseRotation);
 
             //Get the virtual inflated mesh with normal, and tangent recalculation applied
-            var inflatedMesh = PrepForBlendShape(smr, rendererName, rotationUndo);
+            var inflatedMesh = PrepForBlendShape(smr, rendererName, bindPoseRotationMatrix);
             if (!inflatedMesh) return;
 
             if (PregnancyPlusPlugin.DebugCalcs.Value) PregnancyPlusPlugin.Logger.LogInfo($" Compute BlendShape Deltas for {smr.name}");

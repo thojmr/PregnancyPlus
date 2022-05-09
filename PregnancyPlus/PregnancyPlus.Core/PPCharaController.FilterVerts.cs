@@ -65,11 +65,6 @@ namespace KK_PregnancyPlus
             md[renderKey] = new MeshData(sharedMesh.vertexCount);           
             var verticies = sharedMesh.vertices;
 
-            //Since the z limit check is done on the unskinned verts, we need to apply any bindpose scale to the limit to make it match the real unskinned vert positions
-            //  Note: I bet rotated meshes are similarily affected, but that's a lot of math to correct
-            var bindPoseScaleZ = Matrix.GetScale(BindPose.GetScale(smr).inverse).z;
-            //The distance backwards from characters center that verts are allowed to be modified
-            var backExtent = bindPoseScaleZ * -bellyInfo.ZLimit;
             var debugAnyVerts = PregnancyPlusPlugin.MakeBalloon.Value || PregnancyPlusPlugin.DebugVerts.Value;
             
             //Put threadpool work inside task and await the results
@@ -104,13 +99,8 @@ namespace KK_PregnancyPlus
                         var hasValidWeight = boneWeights[j] > minBoneWeight && bellyBoneIndexes.Contains(boneIndicies[j]);
                         if (hasValidWeight)
                         {
-                            //Make sure to exclude verticies on characters back, we only want to modify the front.  No back bellies!
-                            //add all vertexes in debug mode
-                            if (verticies[i].z >= backExtent) 
-                            {
-                                hasBellyVerticies = true;
-                                return true;                                
-                            }                        
+                            hasBellyVerticies = true;
+                            return true;                                                     
                         }                                                                
                     }
 
