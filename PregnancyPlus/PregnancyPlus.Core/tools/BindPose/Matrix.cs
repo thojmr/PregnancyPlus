@@ -14,11 +14,29 @@ public static class Matrix
 
 
     /// <summary>
+    /// Returns the position in a Matrix4x4
+    /// </summary> 
+    public static Matrix4x4 SetPosition(Vector3 position)
+    {
+        return Matrix4x4.TRS(position, Quaternion.identity, Vector3.one);
+    }
+
+
+    /// <summary>
     /// Returns the rotation as Quaternion of a Matrix4x4
     /// </summary> 
     public static Quaternion GetRotation(Matrix4x4 matrix)
     {
         return Quaternion.LookRotation(matrix.GetColumn(2), matrix.GetColumn(1));
+    }
+
+
+    /// <summary>
+    /// Returns the rotation as a Matrix4x4
+    /// </summary> 
+    public static Matrix4x4 SetRotation(Quaternion rotation)
+    {
+        return Matrix4x4.TRS(Vector3.zero, rotation, Vector3.one);
     }
 
 
@@ -29,6 +47,15 @@ public static class Matrix
     {
         var scaleMatrix = GetScaleOnlyMatrix(matrix);
         return new Vector3(scaleMatrix.m00, scaleMatrix.m11, scaleMatrix.m22);
+    }
+
+
+    /// <summary>
+    /// Returns the scale as a Matrix4x4
+    /// </summary> 
+    public static Matrix4x4 SetScale(Vector3 scale)
+    {
+        return Matrix4x4.TRS(Vector3.zero, Quaternion.identity, scale);
     }
 
 
