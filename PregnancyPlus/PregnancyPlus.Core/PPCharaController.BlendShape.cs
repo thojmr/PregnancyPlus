@@ -470,7 +470,8 @@ namespace KK_PregnancyPlus
 
         
         /// <summary>
-        /// If a blendshape of matching name exists, add the current deltas to it, otherwise create a new blendshape with the deltas
+        /// If a blendshape GUI blendshape already exists, add the current deltas to it, otherwise create a new blendshape with the deltas.
+        ///     This allows you to stack the blendshape size/shape in the BlendShape GUI
         /// </summary>
         /// <param name="smr">Target mesh renderer to update (original shape)</param>
         /// <param name="renderKey">The Shared Mesh render name, used in dictionary keys to get the current verticie values</param>
@@ -481,7 +482,7 @@ namespace KK_PregnancyPlus
             //When the mesh is not readable, temporarily make it readble
             if (!smr.sharedMesh.isReadable) nativeDetour.Apply();
 
-            //Make sure we have an existing belly shape to work with (can be null if user hasnt used sliders yet)
+            //Make sure we have existing meshdata (will be null if user hasnt used sliders yet)
             var exists = md.TryGetValue(renderKey, out MeshData _md);
             if (!exists || !_md.HasInflatedVerts) 
             {
@@ -506,7 +507,7 @@ namespace KK_PregnancyPlus
             if (smrHasBlendshape)
             {
                 bsc = new BlendShapeController(smr, blendShapeName);  
-                bsc.MergeMeshDeltas(_md, (infConfig.inflationSize/40));
+                bsc.MergeMeshDeltas(smr,_md, (infConfig.inflationSize/40));
             }
             else 
             {
@@ -520,7 +521,7 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// This will create a blendshape frame for a mesh from earlier computed deltas
+        /// This will create a blendshape frame from computed deltas, and add it to an SMR
         /// </summary>
         /// <param name="smr">Target mesh renderer to update (original shape)</param>
         /// <param name="renderKey">The Shared Mesh render name, used in dictionary keys to get the current verticie values</param>
@@ -572,11 +573,6 @@ namespace KK_PregnancyPlus
                 return null;
             }
 
-            //Make a copy of the mesh. We dont want to affect the existing for this
-            var meshCopyTarget = PregnancyPlusHelper.CopyMesh(smr.sharedMesh);   
-            //When the mesh is not readable, temporarily make it readble
-            if (!meshCopyTarget.isReadable) nativeDetour.Apply();
-
             //Make sure we have an existing belly shape to work with (can be null if user hasnt used sliders yet)
             var exists = md.TryGetValue(renderKey, out MeshData _md);
             if (!exists || !_md.HasInflatedVerts) 
@@ -584,9 +580,13 @@ namespace KK_PregnancyPlus
                 if (PregnancyPlusPlugin.DebugLog.Value)  PregnancyPlusPlugin.Logger.LogInfo(
                      $"PrepForBlendShape > smr '{renderKey}' meshData do not exists, or does not have inflatedVerts, skipping");
 
-                nativeDetour.Undo();
                 return null;
             }
+
+            //Make a copy of the mesh. We dont want to affect the existing mesh
+            var meshCopyTarget = PregnancyPlusHelper.CopyMesh(smr.sharedMesh);   
+            //When the mesh is not readable, temporarily make it readble
+            if (!meshCopyTarget.isReadable) nativeDetour.Apply();
 
             //Make sure the vertex count matches what the blendshape has (differs when swapping meshes)
             if (md[renderKey].VertexCount != meshCopyTarget.vertexCount) 
@@ -602,15 +602,9 @@ namespace KK_PregnancyPlus
             meshCopyTarget.vertices = md[renderKey].inflatedVertices;
             meshCopyTarget.RecalculateBounds();
             NormalSolver.RecalculateNormals(meshCopyTarget, 40f, md[renderKey].alteredVerticieIndexes, rotationUndo);
-            //Since we are hacking this readable state, prevent hard crash when calculating tangents on originally unreadable meshes            
-            if (meshCopyTarget.isReadable) 
-            {
-                //I think I fixed this accidently at some point during the bindpose refactor, but ill leave this here in case it comes up again
-                //Note: if we recalculate tangents after chaning normals, it causes problems with nipples, and probably other body parts, so we undo the calculation for non belly verts
-                // var originalTangents = meshCopyTarget.tangents;
+            //Since we are hacking the meshes readable state, prevent hard crash when calculating tangents on originally unreadable meshes            
+            if (meshCopyTarget.isReadable)             
                 meshCopyTarget.RecalculateTangents();
-                // meshCopyTarget.tangents = TangentSolver.UnRecalculateTangents(meshCopyTarget.tangents, originalTangents, md[renderKey].alteredVerticieIndexes);         
-            }
 
             nativeDetour.Undo();
             return meshCopyTarget;
@@ -627,7 +621,7 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Find a blendshape by name on a smr, and change its weight.  If it does not exists, create it.
+        /// Create or update a blendshapes weight
         /// </summary>
         /// <param name="smr">Target mesh renderer to update (original shape)</param>
         /// <param name="renderKey">The Shared Mesh render name, used in dictionary keys to get the current verticie values</param>
@@ -679,7 +673,7 @@ namespace KK_PregnancyPlus
 
 
         /// <summary>
-        /// Compute the blendshapes for a character to be used during inflation HScene (Does not apply the shape)
+        /// Compute the blendshapes for a character to be used during inflation HScene (Does not apply the shape, just pre bakes it)
         /// </summary>
         internal List<BlendShapeController> ComputeHSceneBlendShapes() 
         {

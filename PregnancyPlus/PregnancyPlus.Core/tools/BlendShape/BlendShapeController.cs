@@ -10,6 +10,7 @@ namespace KK_PregnancyPlus
     public class BlendShapeController
     {
         public BlendShape blendShape = new BlendShape();
+        //In certain cases we want to store the smr reference on this class for later
         public SkinnedMeshRenderer smr = null;
 
 #region Constructors
@@ -173,10 +174,10 @@ namespace KK_PregnancyPlus
         /// </summary>
         /// <param name="md">The mesh data containing the new deltas</param>
         /// <param name="percentage">The percentage of the new deltas we want to apply to the existing ones (1 == 100%)</param>
-        public void MergeMeshDeltas(MeshData md, float percentage = 1f) 
+        public void MergeMeshDeltas(SkinnedMeshRenderer smr, MeshData md, float percentage = 1f) 
         {
-            //These should be set when calling new ()
             if (smr == null) return;            
+            //A blendshape should alredy exists when calling constructor of this class
             if (blendShape == null) return;
             if (!md.HasDeltas) return;
 
