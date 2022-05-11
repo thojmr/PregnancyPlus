@@ -368,7 +368,7 @@ namespace KK_PregnancyPlus
 
 
                 //Allows us to override the default KK_Pregnancy belly shape with out own.  For when we don't want to mix them.
-                OverrideBelly = Config.Bind<bool>(maxBellySizeTitle, overrideBellyShapeTitle, false,
+                OverrideBelly = Config.Bind<bool>(maxBellySizeTitle, overrideBellyShapeTitle, true,
                 new ConfigDescription(overrideBellyShapeDescription,
                     null,
                     new ConfigurationManagerAttributes { Order = 1 })

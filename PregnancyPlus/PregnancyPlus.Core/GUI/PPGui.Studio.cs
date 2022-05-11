@@ -71,7 +71,14 @@ namespace KK_PregnancyPlus
                 .Value.Subscribe(f => {         
                     if (f == false) return;          
                     if (PregnancyPlusPlugin.copiedBelly != null && PregnancyPlusPlugin.copiedBelly.HasAnyValue()) 
+                    {
+                        //when pasting belly make sure Preg+ is enabled for selected character
+                        foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) 
+                        {         
+                            ctrl.infConfig.GameplayEnabled = true;
+                        }
                         RestoreSliders(PregnancyPlusPlugin.copiedBelly);
+                    }
                  });
 
             cat.AddControl(new CurrentStateCategorySwitch("Reset Belly", c =>

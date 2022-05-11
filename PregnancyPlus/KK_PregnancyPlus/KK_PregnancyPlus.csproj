@@ -39,6 +39,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="System.Xml" />
     <Reference Include="0Harmony,  Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\IllusionLibs.BepInEx.Harmony.2.0.3.1\lib\net35\0Harmony.dll</HintPath>
@@ -68,8 +69,8 @@
       <HintPath>..\..\packages\ABMX.KKABMX.4.3.0\lib\net35\KKABMX.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="KKAPI, Version=1.14.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\IllusionModdingAPI.KKAPI.1.14.0\lib\net35\KKAPI.dll</HintPath>
+    <Reference Include="KKAPI, Version=1.30.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IllusionModdingAPI.KKAPI.1.30.0\lib\net35\KKAPI.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Sirenix.Serialization, Version=1.0.5.1, Culture=neutral, processorArchitecture=MSIL">

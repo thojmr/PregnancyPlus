@@ -359,6 +359,9 @@ namespace KK_PregnancyPlus
             //If no belly state has been copied, skip this
             if (_infConfig == null) return;
 
+            //when pasting belly make sure Preg+ is enabled
+            _infConfig.GameplayEnabled = true;
+
             //For each slider, set to default which will reset the belly shape
             foreach (var slider in _sliders) 
             {

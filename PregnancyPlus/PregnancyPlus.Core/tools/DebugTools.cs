@@ -15,6 +15,8 @@ public static class DebugTools
     public static string lineRendererGOName = "Preg+DebugLineRenderer";
     public static string sphereGOName = "Preg+DebugSphere";
 
+    //Game obhect must be in this layer to be visible in KK Studio
+    public static int studioLayerKK = 10;
 
     /// <summary>
     /// Visualize the GameObject tree and components under each (debug only)
@@ -143,6 +145,7 @@ public static class DebugTools
             //Makes sphere more visible in KK Maker instead of black
             //I dont think color works with this sprite
             sphereRenderer.material = new Material(Shader.Find("Sprites/Default"));
+            sphere.gameObject.layer = studioLayerKK;
         #endif
 
         return sphere.gameObject;
@@ -196,6 +199,10 @@ public static class DebugTools
         }
         
         if (startColor == null || startColor == default(Color)) startColor = Color.blue;
+
+        #if KK
+            lineRendGO.gameObject.layer = studioLayerKK;
+        #endif
 
         lineRenderer.useWorldSpace = useWorldSpace;
         lineRenderer.startColor = startColor;

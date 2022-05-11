@@ -332,8 +332,15 @@ namespace KK_PregnancyPlus
 
             //Thread safe lists and objects below                    
             var skinnedVerts = md[rendererName].originalVertices;    
+            var bellyVertIndex = md[rendererName].bellyVerticieIndexes;
             var vertsLength = smr.sharedMesh.vertexCount;
             var smrTfTransPt = smr.transform.localToWorldMatrix;
+
+            //The highest and lowest a vert can be, to be considerd in the belly area
+            var preSliderSphereCenter = GetSphereCenter() - GetUserMoveTransform();
+            //The lowest a vert can be, to be considerd in the belly area
+            var yBottomLimit = preSliderSphereCenter.y - (bellyInfo.OriginalSphereRadius * 1.5f);
+            var ySphereCenter = preSliderSphereCenter.y;
             
             nativeDetour.Undo();
 
@@ -345,6 +352,15 @@ namespace KK_PregnancyPlus
                 {
                     //Get the skinned vert position from the bindpose matrix we computed earlier
                     skinnedVerts[i] = MeshSkinning.UnskinnedToSkinnedVertex(unskinnedVerts[i], smrTfTransPt, boneMatrices, boneWeights[i]);
+
+                    //Hijacking this threaded loop
+                    //If any verts are found near the belly append them to the bellyVertIndexes, 
+                    //  We need this because verts in clothing like skirts will be missed at first when the clothing has custom bones
+                    //We could only do this after getting the skinned vert position anyway, so this is the best spot
+                    if (isClothingMesh && !bellyVertIndex[i] && (skinnedVerts[i].y > yBottomLimit && skinnedVerts[i].y < ySphereCenter))
+                    {                            
+                        bellyVertIndex[i] = true;
+                    }
                 }
 
                 //When this thread task is complete, execute the below in main thread
@@ -584,22 +600,12 @@ namespace KK_PregnancyPlus
         /// </summary>
         internal Vector3 GetSphereCenter() 
         {          
-            float bbHeight;
+            #if KK
+                var bbHeight = 0.97f;           
+            #else
+                var bbHeight = 10f;
+            #endif
 
-            //in 6.0+ we can use a static sphere center height
-            if (infConfig.IsPluginVersionBelow(6.0))
-            {
-                //Measure from feet to belly 
-                bbHeight = GetBellyButtonLocalHeight();
-            }
-            else 
-            {
-                #if KK
-                    bbHeight = 0.97f;           
-                #else
-                    bbHeight = 10f;
-                #endif
-            }
             bellyInfo.BellyButtonHeight = bbHeight;           
             Vector3 bellyButtonPos = Vector3.up * bbHeight; 
 
@@ -729,16 +735,11 @@ namespace KK_PregnancyPlus
 
             //Don't allow any morphs to move behind the character's.z = 0 + extentOffset position, otherwise skin sometimes pokes out the back side :/
             if (backExtentPos.z > smoothedVectorLs.z)             
-                return originalVerticeLs;            
+                return new Vector3(smoothedVectorLs.x, smoothedVectorLs.y, originalVerticeLs.z);           
 
             //Don't allow any morphs to move behind the original verticie z position, only forward expansion (ignoring ones already behind sphere center)
-            if (originalVerticeLs.z > smoothedVectorLs.z && originalVerticeLs.z > sphereCenterLs.z) 
-            {
-                //Get the average(not really average after all...) x and y change to move the new position halfway back to the oiriginal vert (hopefullt less strange triangles near belly to body edge)
-                var yChangeAvg = (smoothedVectorLs.y - originalVerticeLs.y)/3;
-                var xChangeAvg = (smoothedVectorLs.x - originalVerticeLs.x)/3;
-                smoothedVectorLs = new Vector3(smoothedVectorLs.x - xChangeAvg, smoothedVectorLs.y - yChangeAvg, originalVerticeLs.z);
-            }
+            if (originalVerticeLs.z > smoothedVectorLs.z && originalVerticeLs.z > sphereCenterLs.z)     
+                smoothedVectorLs = new Vector3(smoothedVectorLs.x, smoothedVectorLs.y, originalVerticeLs.z); 
 
             return smoothedVectorLs;             
         }

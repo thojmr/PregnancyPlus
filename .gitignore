@@ -338,3 +338,6 @@ TODO.txt
 release/
 bin/
 ReleaseNotes*
+
+copy-debug.sh
+copy-release.sh

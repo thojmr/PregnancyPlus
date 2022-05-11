@@ -14,7 +14,8 @@ namespace KK_PregnancyPlus
     public partial class PregnancyPlusCharaController: CharaCustomFunctionController
     {           
 
-        const float minBoneWeight = 0.02f;
+        //Changed to 0f for BP5 uncensor compatibility
+        const float minBoneWeight = 0f;
 
 
         /// <summary>
