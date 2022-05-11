@@ -13,6 +13,7 @@ namespace KK_PregnancyPlus
     {
         public static ConfigEntry<bool> StoryMode { get; private set; }
         public static ConfigEntry<bool> OverrideBelly { get; private set; }
+        public static ConfigEntry<string> BellyShapeForOverride { get; private set; }
         public static ConfigEntry<bool> IgnoreAccessories { get; private set; }
         public static ConfigEntry<bool> AllowMale { get; private set; }
         public static ConfigEntry<bool> PerferTargetBelly { get; private set; }
@@ -385,7 +386,7 @@ namespace KK_PregnancyPlus
                 MaxStoryModeBelly = Config.Bind<float>(integrationConfigTitle, "Max additional belly size", 10f, 
                     new ConfigDescription(maxBellySizeDescription,
                         new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.InflationSize[0], PregnancyPlusGui.SliderRange.InflationSize[1]),
-                        new ConfigurationManagerAttributes { Order = 1 })
+                        new ConfigurationManagerAttributes { Order = 2 })
                     );
                 MaxStoryModeBelly.SettingChanged += InflationConfig_SettingsChanged;
 
@@ -397,6 +398,14 @@ namespace KK_PregnancyPlus
                     new ConfigurationManagerAttributes { Order = 1 })
                 );
                 OverrideBelly.SettingChanged += OverrideBelly_SettingsChanged;
+
+                //When Override is enabbled allow setting custom belly shape
+                BellyShapeForOverride = Config.Bind(integrationConfigTitle, "Preset Shape for Pregnancy Progression", "Main Game",
+                new ConfigDescription( "Lets you choose from a variety of belly shapes for pregnancy progrression (and inflation). Only works when Override is enabled.  \r\nThis will be further affected by the Global sliders as well.",
+                    new AcceptableValueList<string>(BellyTemplate.shapeNames),
+                    new ConfigurationManagerAttributes { Order = 0, IsAdvanced = true }
+                ));
+                BellyShapeForOverride.SettingChanged += BellyShapeForOverride_SettingChanged;
             #endif
                     
 
@@ -639,6 +648,26 @@ namespace KK_PregnancyPlus
             {  
                 charCustFunCtrl.MeshInflate(new MeshInflateFlags(charCustFunCtrl, _checkForNewMesh: true, _freshStart: true), callee);             
             }   
+        }
+
+
+        //Set new belly shape for MainGame characters
+        internal void BellyShapeForOverride_SettingChanged(object sender, System.EventArgs e)
+        {
+            //Only allow in Main Game, and when Overide is enabled
+            if (!OverrideBelly.Value || StudioAPI.InsideStudio || MakerAPI.InsideMaker)
+                return;
+
+            var handlers = CharacterApi.GetRegisteredBehaviour(GUID);
+            foreach (PregnancyPlusCharaController charCustFunCtrl in handlers.Instances)
+            {  
+                var currentInflationSize = charCustFunCtrl.infConfig.inflationSize;
+                var customBellyShape = BellyTemplate.GetTemplate(PregnancyPlusPlugin.BellyShapeForOverride.Value);                
+                charCustFunCtrl.infConfig.SetSliders(customBellyShape);
+                //Retain the current size value
+                charCustFunCtrl.infConfig.inflationSize = currentInflationSize;
+                charCustFunCtrl.MeshInflate(new MeshInflateFlags(charCustFunCtrl, _freshStart: true), "BellyShapeForOverride_SettingChanged");             
+            }                  
         }
 
 

@@ -5,7 +5,7 @@ namespace KK_PregnancyPlus
     //These are the preset belly shape templates that are used to set a specific belly shape from a dropdown
     public static class BellyTemplate 
     {
-        public static string[] shapeNames = {"None", "Small", "Standard", "Standard Flat", "Multiples", "Torpedo", "Hyper", "Chub Small", "Chub Standard", "Fat"};
+        public static string[] shapeNames = {"None", "Small", "Standard", "Standard Flat", "Main Game", "Multiples", "Torpedo", "Hyper", "Chub Small", "Chub Standard", "Fat"};
 
         
         /// <summary>
@@ -89,6 +89,23 @@ namespace KK_PregnancyPlus
                     shape.inflationTaperY = -0.01f;
                     shape.inflationTaperZ = -0.005f;      
                     shape.inflationDrop = 0.05f;          
+                    return shape;
+
+                //This was the original shape used in main game before these BellyTemplates were added
+                case "Main Game":
+                    #if KKS
+                        shape.inflationMultiplier = 0.4f;
+                        shape.inflationStretchX = -0.2f;
+                        shape.inflationStretchY = -0.1f;
+                        shape.inflationTaperZ = -0.005f;                        
+                    #elif HS2 || AI
+                        shape.inflationMultiplier = 0.1f;
+                        shape.inflationStretchX = -0.15f;          
+                        shape.inflationStretchY = -0.05f;                        
+                        shape.inflationTaperZ = -0.01f;
+                    #endif
+                    shape.inflationTaperY = -0.02f;
+                    shape.inflationDrop = 0.05f;
                     return shape;
                 
                 case "Torpedo":
