@@ -122,11 +122,12 @@ See [Plugin Tips](#some-tips) for tips and tricks
 </br>
 
 ## The BlendShape GUI
-In the bottom right corner of the banner image, you can see the blendshape GUI.  The purpose of this GUI is to allow you to capture the current pregnancy+ sliders and save their shape as a permanent blendshape to the character card/scene.  That way, if a character's belly is animated via Timeline or VNGE, the animation will be persistent and shareable with anyone else automatically.  
+In the bottom right corner of the banner image, you can see the blendshape GUI.  The purpose of this GUI is to allow you to capture the current pregnancy+ sliders and save their shape as a permanent blendshape to the character card/scene.  That way, if a character's belly is animated via Timeline or VNGE, the animation will be persistent and shareable with anyone else automatically. `(Although you should use the new Preg+ timeline interpolable instead)`
 
 Note:
 - Keep in mind that a blendshape is tied directly to a specific uncensor or clothing.  If you change either you will need to recreate the blendshapes in most cases.
 - If you plan on loading a scene made in KK to KKS, the uncensor you used in KK MUST exist in KKS.  Otherwise you will have to re-create the blendshape in KKS.
+- This is why the new timeline interpolable is better.  It's not dependent on any mesh, and will work after swaping characters.
 
 Tips:
 - You CAN replace characters in the scene after the blendshape is saved. Pregnancy+ will automatically load the same uncensor to the newly replaced character.  However clothing will not retain its' shape when changed.
@@ -164,7 +165,7 @@ Tips:
 </br>
 
 ## High Poly Mesh
-- If you are looking for a higher poly base mesh to make up for Koikatsu's lack of belly polygons, you can use this high poly uncensor (mesh) [Look for [KK][Female]Highpoly_vX.X.zip Here](https://ux.getuploader.com/nHaruka_KK/)  They've done a decent job to prevent clipping with the latest versions.  So if you want a smoother belly  for screenshots, it's a good idea to try it.
+- If you are looking for a higher poly base mesh to make up for Koikatsu's lack of belly polygons, you can use this high poly uncensor (mesh) [Look for [KK][Female]Highpoly_vX.X.zip Here](https://ux.getuploader.com/nHaruka_KK/)  They've done a decent job to prevent clipping with the latest versions.  So if you want a smoother belly  for screenshots, it's a good idea to try it.  You can alter the xml in the zipmod to get it working in KKS by changing the game name from "Koikatsu" to "Koikatsu Sunshine" if it's not available in KKS yet. 
   - To use it in studio/maker just extract that zip into `<root game folder>/mods/MyMods/`.   Then in game, find the Uncensor dropdown and select "High Poly".
 - High Poly meshes exist for HS2/AI as well if you look around, but generally there are plenty of polygons in those games.
 - Keep in mind that an uncensor does not save to the character card, anyone you share the card with will see a normal poly uncensor, unless they also have the same high poly one.
