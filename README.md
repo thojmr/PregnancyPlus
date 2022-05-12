@@ -40,7 +40,7 @@ See [Plugin Tips](#some-tips) for tips and tricks
 
 ## Some Tips
 - Use one of the High Poly meshes (uncensors) for screenshots.  It makes the belly more round and less jagged.  [Quick Guide Below](#high-poly-mesh)
-- The Vanilla+ shaders by Xukmi have a Tesselation slider which is another alternative to a high poly mesh in KK and KKS.  It sub divides the mesh, making it appear more smooth. You can apply it in Material Editor.
+- The Vanilla+ shaders by Xukmi have a Tesselation slider which is another alternative to a high poly mesh , and it comes standard in KK and KKS repacks.  It sub divides the mesh, making it appear more smooth. You can apply it in Material Editor. Or use the ShaderSwapper plugin (The next ShaderSwapper verison will have auto tesselation if you configure it).
 - The more Multiplier you apply, the more -StretchX and -StretchY you should apply.  Otherwise the belly gets too wide and tall for the body.
 - The Taper sliders are good at making the shape more egg like.
 - Too much Roundness slider will cause clothes to clip at the top/bottom of the belly.  Maybe I'll fix this one day...
