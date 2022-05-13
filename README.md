@@ -39,8 +39,7 @@ See [Plugin Tips](#some-tips) for tips and tricks
 </br>
 
 ## Some Tips
-- Use one of the High Poly meshes (uncensors) for screenshots.  It makes the belly more round and less jagged.  [Quick Guide Below](#high-poly-mesh)
-- The Vanilla+ shaders by Xukmi have a Tesselation slider which is another alternative to a high poly mesh , and it comes standard in KK and KKS repacks.  It sub divides the mesh, making it appear more smooth. You can apply it in Material Editor. Or use the ShaderSwapper plugin (The next ShaderSwapper verison will have auto tesselation if you configure it).
+- To increase the poly count of meshes making the more smooth you can use [Shader Tesselation](#tesselation-shader)  or a [High Poly Mesh](#high-poly-mesh)
 - The more Multiplier you apply, the more -StretchX and -StretchY you should apply.  Otherwise the belly gets too wide and tall for the body.
 - The Taper sliders are good at making the shape more egg like.
 - Too much Roundness slider will cause clothes to clip at the top/bottom of the belly.  Maybe I'll fix this one day...
@@ -163,19 +162,39 @@ Tips:
     - A: Put simply a blendshape is a "copy" of the mesh that has some deformation that you want to be able to ease into.  Like visually morphing from originalMesh -> morphedMesh.
 
 </br>
+</br>
 
-## High Poly Mesh
-- If you are looking for a higher poly base mesh to make up for Koikatsu's lack of belly polygons, you can use this high poly uncensor (mesh) [Look for [KK][Female]Highpoly_vX.X.zip Here](https://ux.getuploader.com/nHaruka_KK/)  They've done a decent job to prevent clipping with the latest versions.  So if you want a smoother belly  for screenshots, it's a good idea to try it.  You can alter the xml in the zipmod to get it working in KKS by changing the game name from "Koikatsu" to "Koikatsu Sunshine" if it's not available in KKS yet. 
+## Mesh Smoothing Options
+### Tesselation Shader
+- There are a few shaders you can apply to a character that have tesselation sliders.  Tesselation subdivides the mesh verticies, making the mesh appear more smooth.  And unlike the HighPoly mesh it is better on performance, and comes default with all Repacks.
+- These are the shaders that have tesselation sliders (That I know of):
+    - The Vanilla+ shaders by Xukmi 
+    - The KKUTS shaders by Haruka 
+- If you have the ShaderSwapper pluggin latest release you can automatically apply tesselation with `CTRL + P` if you configure it first.
+    - Otherwise you can apply them manually via Material Editor
+- I'm not sure if a tesselation shader exists for HS2/AI though.
+
+### High Poly Mesh
+- A high poly uncensor is a body mesh that contains more verticies than the normal mesh, which makes the mesh more smooth overall.
+- If you want my recomendation [Look for [KK][Female]Highpoly_vX.X.zip Here](https://ux.getuploader.com/nHaruka_KK/)  They've done a decent job to prevent clipping with the latest versions. 
+  - You can alter the xml in the zipmod to get it working in KKS by changing the game name from "Koikatsu" to "Koikatsu Sunshine" if it's not available in KKS yet. 
   - To use it in studio/maker just extract that zip into `<root game folder>/mods/MyMods/`.   Then in game, find the Uncensor dropdown and select "High Poly".
 - High Poly meshes exist for HS2/AI as well if you look around, but generally there are plenty of polygons in those games.
-- Keep in mind that an uncensor does not save to the character card, anyone you share the card with will see a normal poly uncensor, unless they also have the same high poly one.
-- One additional note.  The new Vanilla+ shaders by Xukmi come with tesselation built in.  And can be a good alternative to a HighPoly mesh since everyone has the shaders now included.
+- The downsides are:
+    - The performance cost is higher than a tesselation shader, since a shader is handled almost entirely on the GPU.
+    - While an uncensor does save to the character card, anyone you share the card with must also have downloaded the same high poly mesh.    
 
 >right is HighPoly
 <img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/HighPoly.png" height="200"></img>
 
-</br>
+### Lapacian Smoothing (Preg+ Belly Mesh Smoothing button)
+- Finally there is the Mesh Smoothing button in Pregnancy+.  This will perform a Lapacian Smoothing pass over the existing mesh to help smooth out rough areas.  It's very slow to process, but great at reducing skin stretching near the edge of the belly.
+- This type of smoothing does not save to the character card unless you save it as a Blendshape in the BlendShape GUI.  But that has its own drawbacks.  See [BlendShape GUI](#the-blendshape-gui)
+- I recomend this when all you want to do is fix some problem areas around the belly for screenshots.
 
+</br>
+</br>
+</br>
 
 ## Some PregnancyPlus technical details
 - Instead of manipulating the bones like KK_Pregnancy does, this mod alters the mesh itself with blendshapes computed at runtime, which has benefits and drawbacks.
