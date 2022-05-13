@@ -39,13 +39,12 @@ See [Plugin Tips](#some-tips) for tips and tricks
 </br>
 
 ## Some Tips
-- To increase the poly count of meshes making the more smooth you can use [Shader Tesselation](#tesselation-shader)  or a [High Poly Mesh](#high-poly-mesh)
+- To increase the poly count of meshes making them appear more smooth, you can use [Shader Tesselation](#tesselation-shader) or a [High Poly Mesh](#high-poly-mesh)
 - The more Multiplier you apply, the more -StretchX and -StretchY you should apply.  Otherwise the belly gets too wide and tall for the body.
 - The Taper sliders are good at making the shape more egg like.
 - Too much Roundness slider will cause clothes to clip at the top/bottom of the belly.  Maybe I'll fix this one day...
 - If you see stretched skin near the edges, use the "Smooth Belly Mesh" button to correct it, or reduce your Stretch sliders if that doesn't help.
-  - Optionally if you have the Vanilla+ shaders from Xukmi, the ones with tesselation can achieve the same effect if you increase the Tesselation Smoothness.
-  - A HighPoly mesh or tesselation will have the greatest effect on reducing this.
+  - Optionally you can try [Shader Tesselation](#tesselation-shader) or a [High Poly Mesh](#high-poly-mesh) as a more permanent solution
 - There will always be some amount of cloth clipping at extreme sizes.  You can use the Cloth Offset slider to help, but It's a difficult problem to solve.
 - You can use the Individual Clohting Offset GUI to offset a single piece of clothing at a time now.  Great for overlaping or tight fitting clothing
 - **Hover over any of the F1 Plugin Config options for more detailed descriptions**
@@ -166,13 +165,13 @@ Tips:
 
 ## Mesh Smoothing Options
 ### Tesselation Shader
-- There are a few shaders you can apply to a character that have tesselation sliders.  Tesselation subdivides the mesh verticies, making the mesh appear more smooth.  And unlike the HighPoly mesh it is better on performance, and comes default with all Repacks.
-- These are the shaders that have tesselation sliders (That I know of):
+- There are a few shaders you can apply to a character that have tesselation sliders.  Tesselation subdivides the mesh, making the mesh appear more smooth.  And unlike the HighPoly mesh, it is better on performance and comes default with all Repacks.
+- These are the shaders with tesselation sliders (that I know of):
     - The Vanilla+ shaders by Xukmi 
     - The KKUTS shaders by Haruka 
 - If you have the ShaderSwapper pluggin latest release you can automatically apply tesselation with `CTRL + P` if you configure it first.
     - Otherwise you can apply them manually via Material Editor
-- I'm not sure if a tesselation shader exists for HS2/AI though.
+- I'm not sure if tesselation shaders exist for HS2/AI.
 
 ### High Poly Mesh
 - A high poly uncensor is a body mesh that contains more verticies than the normal mesh, which makes the mesh more smooth overall.
