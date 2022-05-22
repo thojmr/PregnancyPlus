@@ -34,7 +34,7 @@ namespace KK_PregnancyPlus
     public partial class PregnancyPlusPlugin : BaseUnityPlugin
     {
         public const string GUID = "KK_PregnancyPlus";
-        public const string Version = "6.3.1";
+        public const string Version = "6.3.2";
         internal static new ManualLogSource Logger { get; private set; }
    
 
