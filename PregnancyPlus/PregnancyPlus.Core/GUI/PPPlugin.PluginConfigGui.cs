@@ -359,7 +359,8 @@ namespace KK_PregnancyPlus
 
             #if KK || AI
                 //This config is for KK/AI_Pregnancy integration to set the additional size this plugin will add to KK/AI_Pregnancy
-                MaxStoryModeBelly = Config.Bind<float>(maxBellySizeTitle, "Max additional belly size", 10f, 
+                // I set this to 40 by default now since "Override" is enabled by default now
+                MaxStoryModeBelly = Config.Bind<float>(maxBellySizeTitle, "Max additional belly size", 40f, 
                     new ConfigDescription(maxBellySizeDescription,
                         new AcceptableValueRange<float>(PregnancyPlusGui.SliderRange.InflationSize[0], PregnancyPlusGui.SliderRange.InflationSize[1]),
                         new ConfigurationManagerAttributes { Order = 1 })
