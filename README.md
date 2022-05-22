@@ -39,14 +39,12 @@ See [Plugin Tips](#some-tips) for tips and tricks
 </br>
 
 ## Some Tips
-- Use one of the High Poly meshes (uncensors) for screenshots.  It makes the belly more round and less jagged.  [Quick Guide Below](#high-poly-mesh)
-- The Vanilla+ shaders by Xukmi have a Tesselation slider which is another alternative to a high poly mesh in KK and KKS.  It sub divides the mesh, making it appear more smooth. You can apply it in Material Editor.
+- To increase the poly count of meshes making them appear more smooth, you can use [Shader Tesselation](#tesselation-shader) or a [High Poly Mesh](#high-poly-mesh)
 - The more Multiplier you apply, the more -StretchX and -StretchY you should apply.  Otherwise the belly gets too wide and tall for the body.
 - The Taper sliders are good at making the shape more egg like.
 - Too much Roundness slider will cause clothes to clip at the top/bottom of the belly.  Maybe I'll fix this one day...
 - If you see stretched skin near the edges, use the "Smooth Belly Mesh" button to correct it, or reduce your Stretch sliders if that doesn't help.
-  - Optionally if you have the Vanilla+ shaders from Xukmi, the ones with tesselation can achieve the same effect if you increase the Tesselation Smoothness.
-  - A HighPoly mesh or tesselation will have the greatest effect on reducing this.
+  - Optionally you can try [Shader Tesselation](#tesselation-shader) or a [High Poly Mesh](#high-poly-mesh) as a more permanent solution
 - There will always be some amount of cloth clipping at extreme sizes.  You can use the Cloth Offset slider to help, but It's a difficult problem to solve.
 - You can use the Individual Clohting Offset GUI to offset a single piece of clothing at a time now.  Great for overlaping or tight fitting clothing
 - **Hover over any of the F1 Plugin Config options for more detailed descriptions**
@@ -88,14 +86,14 @@ See [Plugin Tips](#some-tips) for tips and tricks
 </br>
 
 ## Timeline Integration
-### New way (KKS and HS2)
+### New way
 - Studio Timeline integration via the new timeline Preg+ slider.  Here's how:
   
   `Keep in mind you will need KKSAPI or HS2API v1.30 and BepInEx v5.4.15 to see this feature`
     - Set the Preg+ character sliders to the desired shape you want
     - Open timeline, find the PregnancyPlus section and add timeline nodes.  Set value to desired level.
     - That's It!
-### Old way (KK) [sill works in others, but not recomended]
+### Old way [sill works, but not recomended]
 - Studio Timeline integration via blendshapes.  Here's how:
   - Set the P+ character sliders to the desired shape you want (including belly smoothing).
   - Click "Open Blendshapes" button. You will see a popup that will show you any existing P+ blendshapes.  If none are found, then use the "Create New" button.
@@ -122,11 +120,12 @@ See [Plugin Tips](#some-tips) for tips and tricks
 </br>
 
 ## The BlendShape GUI
-In the bottom right corner of the banner image, you can see the blendshape GUI.  The purpose of this GUI is to allow you to capture the current pregnancy+ sliders and save their shape as a permanent blendshape to the character card/scene.  That way, if a character's belly is animated via Timeline or VNGE, the animation will be persistent and shareable with anyone else automatically.  
+In the bottom right corner of the banner image, you can see the blendshape GUI.  The purpose of this GUI is to allow you to capture the current pregnancy+ sliders and save their shape as a permanent blendshape to the character card/scene.  That way, if a character's belly is animated via Timeline or VNGE, the animation will be persistent and shareable with anyone else automatically. `(Although you should use the new Preg+ timeline interpolable instead)`
 
 Note:
 - Keep in mind that a blendshape is tied directly to a specific uncensor or clothing.  If you change either you will need to recreate the blendshapes in most cases.
 - If you plan on loading a scene made in KK to KKS, the uncensor you used in KK MUST exist in KKS.  Otherwise you will have to re-create the blendshape in KKS.
+- This is why the new timeline interpolable is better.  It's not dependent on any mesh, and will work after swaping characters.
 
 Tips:
 - You CAN replace characters in the scene after the blendshape is saved. Pregnancy+ will automatically load the same uncensor to the newly replaced character.  However clothing will not retain its' shape when changed.
@@ -162,19 +161,39 @@ Tips:
     - A: Put simply a blendshape is a "copy" of the mesh that has some deformation that you want to be able to ease into.  Like visually morphing from originalMesh -> morphedMesh.
 
 </br>
+</br>
 
-## High Poly Mesh
-- If you are looking for a higher poly base mesh to make up for Koikatsu's lack of belly polygons, you can use this high poly uncensor (mesh) [Look for [KK][Female]Highpoly_vX.X.zip Here](https://ux.getuploader.com/nHaruka_KK/)  They've done a decent job to prevent clipping with the latest versions.  So if you want a smoother belly  for screenshots, it's a good idea to try it.
+## Mesh Smoothing Options
+### Tesselation Shader
+- There are a few shaders you can apply to a character that have tesselation sliders.  Tesselation subdivides the mesh, making the mesh appear more smooth.  And unlike the HighPoly mesh, it is better on performance and comes default with all Repacks.
+- These are the shaders with tesselation sliders (that I know of):
+    - The Vanilla+ shaders by Xukmi 
+    - The KKUTS shaders by Haruka 
+- If you have the ShaderSwapper pluggin latest release you can automatically apply tesselation with `CTRL + P` if you configure it first.
+    - Otherwise you can apply them manually via Material Editor
+- I'm not sure if tesselation shaders exist for HS2/AI.
+
+### High Poly Mesh
+- A high poly uncensor is a body mesh that contains more verticies than the normal mesh, which makes the mesh more smooth overall.
+- If you want my recomendation [Look for [KK][Female]Highpoly_vX.X.zip Here](https://ux.getuploader.com/nHaruka_KK/)  They've done a decent job to prevent clipping with the latest versions. 
+  - You can alter the xml in the zipmod to get it working in KKS by changing the game name from "Koikatsu" to "Koikatsu Sunshine" if it's not available in KKS yet. 
   - To use it in studio/maker just extract that zip into `<root game folder>/mods/MyMods/`.   Then in game, find the Uncensor dropdown and select "High Poly".
 - High Poly meshes exist for HS2/AI as well if you look around, but generally there are plenty of polygons in those games.
-- Keep in mind that an uncensor does not save to the character card, anyone you share the card with will see a normal poly uncensor, unless they also have the same high poly one.
-- One additional note.  The new Vanilla+ shaders by Xukmi come with tesselation built in.  And can be a good alternative to a HighPoly mesh since everyone has the shaders now included.
+- The downsides are:
+    - The performance cost is higher than a tesselation shader, since a shader is handled almost entirely on the GPU.
+    - While an uncensor does save to the character card, anyone you share the card with must also have downloaded the same high poly mesh.    
 
 >right is HighPoly
 <img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/HighPoly.png" height="200"></img>
 
-</br>
+### Lapacian Smoothing (Preg+ Belly Mesh Smoothing button)
+- Finally there is the Mesh Smoothing button in Pregnancy+.  This will perform a Lapacian Smoothing pass over the existing mesh to help smooth out rough areas.  It's very slow to process, but great at reducing skin stretching near the edge of the belly.
+- This type of smoothing does not save to the character card unless you save it as a Blendshape in the BlendShape GUI.  But that has its own drawbacks.  See [BlendShape GUI](#the-blendshape-gui)
+- I recomend this when all you want to do is fix some problem areas around the belly for screenshots.
 
+</br>
+</br>
+</br>
 
 ## Some PregnancyPlus technical details
 - Instead of manipulating the bones like KK_Pregnancy does, this mod alters the mesh itself with blendshapes computed at runtime, which has benefits and drawbacks.
