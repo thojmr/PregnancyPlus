@@ -40,6 +40,9 @@ namespace KK_PregnancyPlus
         //Holds the user entered slider values
         public PregnancyPlusData infConfig = new PregnancyPlusData();
         internal PregnancyPlusData infConfigHistory = new PregnancyPlusData();      
+        //Perserves cloth coefficients so they are not lost when appening blendshapes.  Seems like a Unity bug
+        internal Dictionary<string, ClothSkinningCoefficient[]> preservedClothCoefficients = new Dictionary<string, ClothSkinningCoefficient[]>();      
+        internal Dictionary<string, int> coefficientCounter = new Dictionary<string, int>();      
         internal MeshInflateFlags lastMeshInflateFlags = null;   
 
 

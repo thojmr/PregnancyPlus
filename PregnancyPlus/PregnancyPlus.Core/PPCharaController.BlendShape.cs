@@ -637,7 +637,14 @@ namespace KK_PregnancyPlus
             nativeDetour.Undo();
             
             //If not found then create it
-            if (bsc.blendShape == null || needsOverwrite) bsc = CreateBlendShape(smr, renderKey, blendShapeTag);
+            if (bsc.blendShape == null || needsOverwrite) 
+            {
+                //Store existing active Unity Cloth coeffients, since they are erased by unity after adding a new blendshape for some reason...
+                PregnancyPlusHelper.GetClothCoefficients(smr.gameObject, renderKey, preservedClothCoefficients, coefficientCounter);
+
+                //Create the blendshape on the smr
+                bsc = CreateBlendShape(smr, renderKey, blendShapeTag);
+            }
 
             if (bsc == null || bsc.blendShape == null) 
             {
@@ -645,6 +652,9 @@ namespace KK_PregnancyPlus
                      $"ApplyBlendShapeWeight > There was a problem creating the blendshape ${blendShapeName}");
                 return false;
             }
+
+            //If a mesh has unity cloth, re-apply coefficenets when necessary
+            PregnancyPlusHelper.SetClothCoefficients(smr.gameObject, renderKey, preservedClothCoefficients, coefficientCounter);
             
             //Determine the current infaltion size
             var size = isDuringInflationScene ? CurrentInflationChange : infConfig.inflationSize;

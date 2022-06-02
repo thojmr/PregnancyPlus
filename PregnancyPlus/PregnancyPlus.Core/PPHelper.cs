@@ -262,6 +262,64 @@ namespace KK_PregnancyPlus
             if (!smr || !smr.sharedMesh) return null;
             return PregnancyPlusHelper.KeyFromNameAndVerts(smr);
         }
+
+
+        /// <summary>   
+        /// Get the cloth coeffients from an active unity cloth component
+        ///     Apparently adding a blendshape at runtime destroys any existing cloth coefficents on that mesh.  Yay more Unity problems...
+        /// </summary>   
+        /// <param name="clothCoefficientsDict">The coefficients we want to reapply later</param>
+        /// <param name="coefficientCounter">Counts the number of times we have re applied coefficients to a Cloth component (lets us limit it)</param>
+        internal static bool GetClothCoefficients(GameObject clothObject, string renderKey, Dictionary<string, ClothSkinningCoefficient[]> clothCoefficientsDict, 
+                                                  Dictionary<string, int> coefficientCounter) 
+        {
+            if (clothObject == null) 
+                return false;
+                
+            var cloth = clothObject.GetComponent<Cloth>();
+            if (cloth == null || !cloth.enabled)
+                return false;
+
+            //Reset count
+            coefficientCounter[renderKey] = 0;
+
+            //If we did not already store this meshes's cloth coefficients, store them
+            if (!clothCoefficientsDict.ContainsKey(renderKey))
+                clothCoefficientsDict[renderKey] = cloth.coefficients;
+
+            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" Saving Cloth coefficients for later on {renderKey}"); 
+            return true;            
+        }
+
+
+        /// <summary>   
+        /// Re-apply a saved cloth coefficient list to an existing unity cloth component
+        /// </summary> 
+        /// <param name="clothCoefficientsDict">The coefficients we want to reapply later</param>
+        /// <param name="coefficientCounter">Counts the number of times we have re applied coefficients to a Cloth component (lets us limit it)</param>
+        internal static void SetClothCoefficients(GameObject clothObject, string renderKey, Dictionary<string, ClothSkinningCoefficient[]> clothCoefficientsDict, 
+                                                  Dictionary<string, int> coefficientCounter) 
+        {
+            if (clothObject == null) 
+                return;
+            
+            //If the key does not exists, skip
+            if (!clothCoefficientsDict.ContainsKey(renderKey))
+                return;
+    
+            var cloth = clothObject.GetComponent<Cloth>();
+            if (cloth == null)
+                return;            
+
+            if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogWarning($" Setting original cloth coefficients");
+            cloth.coefficients = clothCoefficientsDict[renderKey];   
+
+            //Because we don't want to continue altering the coefficent state after bypassing the unity issue, remove the renderKey after updating the cloth component twice
+            if (coefficientCounter[renderKey] > 0)   
+                clothCoefficientsDict.Remove(renderKey);
+
+            coefficientCounter[renderKey] += 1;
+        }
     
     }
 }
