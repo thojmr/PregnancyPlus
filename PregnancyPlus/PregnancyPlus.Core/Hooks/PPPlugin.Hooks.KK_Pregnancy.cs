@@ -103,6 +103,10 @@ namespace KK_PregnancyPlus
                 var inflationEnabled = (ConfigEntry<bool>) inflationEnabledObj; 
                 if (!inflationEnabled.Value) return;
 
+                var inflationSpeedObj = pregnancyPlugin.GetProperty("InflationSpeed").GetValue(pregnancyPlugin, null);
+                if (inflationSpeedObj == null) return;                    
+                var inflationSpeed = (ConfigEntry<int>) inflationSpeedObj; 
+
                 var maxInflationSizeObj = pregnancyPlugin.GetProperty("InflationMaxCount").GetValue(pregnancyPlugin, null);
                 if (maxInflationSizeObj == null) return;                    
                 var maxInflationSize = (ConfigEntry<int>) maxInflationSizeObj; 
@@ -116,7 +120,7 @@ namespace KK_PregnancyPlus
                 if (controller == null) return;
 
                 //Set the inflation amount on the characters controller
-                controller.OnInflationChanged(inflationAmount, maxInflationSize.Value);
+                controller.OnInflationChanged(inflationAmount, maxInflationSize.Value, inflationSpeed.Value);
             }
 
 

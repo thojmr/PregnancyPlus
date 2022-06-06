@@ -20,6 +20,7 @@ namespace KK_PregnancyPlus
         internal float _inflationStartSize = 0;
         internal float _inflationChange = 0f;//The current inflation size
         internal float _targetPregPlusSize = 0f;//The final desired inflation size
+        internal int inflationSpeed = 3;//The KK_Pregnancy config speed value
         internal int currentWeeks = 0;
         
         //The final size to inflate to (since it can be done in increments)
@@ -88,8 +89,11 @@ namespace KK_PregnancyPlus
         /// </summary>
         /// <param name="inflationCount">TThe KK_Pregnancy inflation count, or number of times inflated</param>
         /// <param name="maxInflationCount">The Max number of inflations it takes to get to max size</param>
-        public void OnInflationChanged(float inflationCount, int maxInflationCount) 
+        public void OnInflationChanged(float inflationCount, int maxInflationCount, int _inflationSpeed) 
         {
+            //Store the config value for later in ComputeInflationChange()
+            inflationSpeed = _inflationSpeed;
+
             //Convert the inflationCount into a usable number
             var kkInflationSize = inflationCount/maxInflationCount * 40;
             if (PregnancyPlusPlugin.DebugLog.Value) 
@@ -149,7 +153,7 @@ namespace KK_PregnancyPlus
             } 
             
             //Lerp the change in size over x seconds
-            _inflationChange = Mathf.Lerp(_inflationStartSize, TargetPregPlusSize, timeElapsed / PregnancyPlusPlugin.HS2InflationSpeed.Value);
+            _inflationChange = Mathf.Lerp(_inflationStartSize, TargetPregPlusSize, timeElapsed / GetInflationSpeed());
             timeElapsed += Time.deltaTime;  
 
             //Snap the value at the end, in case the lerp never quite reaches 100%
@@ -157,6 +161,17 @@ namespace KK_PregnancyPlus
             
             //Increment blenshapes size
             QuickInflate((float) _inflationChange, blendShapeCtrlList);                                    
+        }
+
+
+        public int GetInflationSpeed() 
+        {
+            #if HS2
+                return PregnancyPlusPlugin.HS2InflationSpeed.Value;
+            #else
+                //The value configured in the KK_Pregnancy plugin
+                return inflationSpeed;
+            #endif
         }
 
 

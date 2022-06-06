@@ -36,7 +36,7 @@ namespace KK_PregnancyPlus
             _currentInflationLevel = Math.Max(0, Math.Min(_nextInflationLevel, PregnancyPlusPlugin.HS2InflationMaxLevel.Value));
 
             //Re-use the kk pregnancy inflation code here to smooth the inflation animation
-            OnInflationChanged(_currentInflationLevel, PregnancyPlusPlugin.HS2InflationMaxLevel.Value);
+            OnInflationChanged(_currentInflationLevel, PregnancyPlusPlugin.HS2InflationMaxLevel.Value, 0);
         }
 
     }
