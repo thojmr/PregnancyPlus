@@ -35,6 +35,12 @@ namespace KK_PregnancyPlus
             get => _inflationChange;
         }
 
+        public float MaxStoryModeBellySize
+        {
+            //When "belly override" is enabled force 100% belly size to prevent people accidently setting MaxStoryModeBelly to 0 and not seeing any belly changes
+            get => PregnancyPlusPlugin.OverrideBelly.Value ? 40f : PregnancyPlusPlugin.MaxStoryModeBelly.Value;
+        }
+
         internal float timeElapsed = 0f;
         internal List<BlendShapeController> blendShapeCtrlList = new List<BlendShapeController>();//Holds the list of blendshapes we want to alter during inflation for quick changes
 
@@ -76,7 +82,7 @@ namespace KK_PregnancyPlus
                     infConfig = GetDefaultShapeFor_KK_Pregnancy();
 
                 //Compute the additonal belly size added based on user configured value from 0-40
-                var additionalPregPlusSize = Mathf.Lerp(0, weeks, PregnancyPlusPlugin.MaxStoryModeBelly.Value/40);
+                var additionalPregPlusSize = Mathf.Lerp(0, weeks, MaxStoryModeBellySize/40);
                 
                 MeshInflate(additionalPregPlusSize, callee, new MeshInflateFlags(this, _checkForNewMesh: checkNewMesh, _pluginConfigSliderChanged: slidersChanged));
 
@@ -104,7 +110,7 @@ namespace KK_PregnancyPlus
 
             #if AI || KKS
                 //No Preg+ inflation when the max additional size is set to 0
-                if (PregnancyPlusPlugin.MaxStoryModeBelly.Value == 0) return;
+                if (MaxStoryModeBellySize == 0) return;
 
                 //When char is already pregnant, make that the starting inflation size
                 if (currentWeeks > _inflationStartSize) _inflationStartSize = _inflationChange = TargetPregPlusSize = currentWeeks;
@@ -121,7 +127,7 @@ namespace KK_PregnancyPlus
             //When TargetPregPlusSize changes, it will trigger ComputeInflationChange()
             #if AI || KKS
                 //Scale it correctly based on MaxStoryModeBelly size
-                TargetPregPlusSize = kkInflationSize * (PregnancyPlusPlugin.MaxStoryModeBelly.Value/40);
+                TargetPregPlusSize = kkInflationSize * (MaxStoryModeBellySize/40);
             #else
                 TargetPregPlusSize = kkInflationSize;
             #endif

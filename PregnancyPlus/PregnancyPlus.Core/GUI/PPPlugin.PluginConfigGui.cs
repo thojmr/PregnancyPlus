@@ -467,12 +467,6 @@ namespace KK_PregnancyPlus
         {            
             if (StudioAPI.InsideStudio || MakerAPI.InsideMaker) return;//Don't allow toggle event in studio
             if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" OverrideBelly_SettingsChanged > {OverrideBelly.Value}");
-        
-            //Make sure the belly can reach its normal size when at full term 
-            if (OverrideBelly != null && OverrideBelly.Value) MaxStoryModeBelly.Value = 40f;
-            if (OverrideBelly != null && !OverrideBelly.Value) MaxStoryModeBelly.Value = 10f;//Otherwise back to default
-
-            //The next time the KK_Pregnancy bone modifier triggers it will set the correct size based on OverrideBelly.Value
         }
 
 
