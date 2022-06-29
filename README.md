@@ -169,6 +169,7 @@ Tips:
 The default mesh in KK and KKS are quite low poly.  Here are some ways to correct that.
 
 ### Tesselation Shader
+This can affect skin or clothing mesh
 - There are a few shaders you can apply to a character that have tesselation sliders.  Tesselation subdivides the mesh, making the mesh appear more smooth.  And unlike the HighPoly mesh, it is better on performance and comes default with all Repacks.
 - These are the shaders with tesselation sliders (that I know of):
     - The Vanilla+ shaders by Xukmi 
@@ -178,6 +179,7 @@ The default mesh in KK and KKS are quite low poly.  Here are some ways to correc
 - I'm not sure if tesselation shaders exist for HS2/AI.
 
 ### High Poly Mesh
+This only affects the skin mesh
 - A high poly uncensor is a body mesh that contains more verticies than the normal mesh, which makes the mesh more smooth overall.
 - If you want my recomendation [Look for [KK][Female]Highpoly_vX.X.zip Here](https://ux.getuploader.com/nHaruka_KK/)  They've done a decent job to prevent clipping with the latest versions. 
   - You can alter the xml in the zipmod to get it working in KKS by changing the game name from "Koikatsu" to "Koikatsu Sunshine" if it's not available in KKS yet. 
@@ -191,6 +193,7 @@ The default mesh in KK and KKS are quite low poly.  Here are some ways to correc
 <img src="https://github.com/thojmr/KK_PregnancyPlus/blob/master/images/HighPoly.png" height="200"></img>
 
 ### Lapacian Smoothing (Preg+ Belly Mesh Smoothing button)
+This affects skin and clothing mesh
 - Finally there is the Mesh Smoothing button in Pregnancy+.  This will perform a Lapacian Smoothing pass over the existing mesh to help smooth out rough areas.  It's very slow to process, but great at reducing skin stretching near the edge of the belly.
 - This type of smoothing does not save to the character card unless you save it as a Blendshape in the BlendShape GUI.  But that has its own drawbacks.  See [BlendShape GUI](#the-blendshape-gui)
 - I recomend this when all you want to do is fix some problem areas around the belly for screenshots.
