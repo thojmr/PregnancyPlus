@@ -1,6 +1,8 @@
 # Pregnancy Plus Introduction
 This repository contains the PregnancyPlus plugin, that adds additional belly sliders in Studio and Maker for Illusion games.  It is intended to compliment the [KK_Pregnancy](https://github.com/ManlyMarco/KoikatuGameplayMods) plugin, but can be used without it.
 
+** No new features currently planned.  We'll see if I get the urge to add more later
+
 See [How To Install](#how-to-install) for installation instructions
 </br>
 See [Features](#features) for all plugin features
@@ -164,6 +166,8 @@ Tips:
 </br>
 
 ## Mesh Smoothing Options
+The default mesh in KK and KKS are quite low poly.  Here are some ways to correct that.
+
 ### Tesselation Shader
 - There are a few shaders you can apply to a character that have tesselation sliders.  Tesselation subdivides the mesh, making the mesh appear more smooth.  And unlike the HighPoly mesh, it is better on performance and comes default with all Repacks.
 - These are the shaders with tesselation sliders (that I know of):
