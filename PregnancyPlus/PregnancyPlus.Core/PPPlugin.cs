@@ -40,6 +40,8 @@ namespace KK_PregnancyPlus
         //Logs important error messages to console   
         public static ErrorCodeController errorCodeCtrl;
         internal Harmony hi;
+        //Used to fetch all active preg+ character controllers
+        internal CharacterApi.ControllerRegistration charCustFunCtrlHandler;
 
 
         internal void Start()
@@ -73,6 +75,8 @@ namespace KK_PregnancyPlus
             //Set up studio/malker GUI sliders
             PregnancyPlusGui.InitStudio(hi, this);
             PregnancyPlusGui.InitMaker(hi, this);       
+
+            charCustFunCtrlHandler = CharacterApi.GetRegisteredBehaviour(GUID);
 
             //Requires KKAPI 1.30+ and Bepinex 5.4.15 to use the timeline interpolable, but its just a soft depencendy for this plugin
             try {
@@ -118,27 +122,14 @@ namespace KK_PregnancyPlus
             PregnancyPlusGui.Update();
 
             //Need to trigger all children GUI that should be active. 
-            var handlers = CharacterApi.GetRegisteredBehaviour(GUID);
-            if (handlers == null || handlers.Instances == null) return;
+            if (charCustFunCtrlHandler == null || charCustFunCtrlHandler.Instances == null) return;
 
             //For each character controller with an open GUI, update their GUI
-            foreach (var charCustFunCtrl in handlers.Instances)
+            foreach (PregnancyPlusCharaController ppcc in charCustFunCtrlHandler.Instances)
             {            
-                PregnancyPlusCharaController ctrl;                          
-                try 
-                {
-                    //Try casting.  ScriptEngine reloads will cause errors here otherwise
-                    ctrl = (PregnancyPlusCharaController) charCustFunCtrl;
-                }      
-                catch(Exception e)
-                {
-                    //If fails to cast then the charController is old and can be skipped
-                    continue;
-                }    
-
                 //Update any active gui windows
-                ctrl.blendShapeGui.OnGUI(this);                                                                                 
-                ctrl.clothOffsetGui.OnGUI(this);                                                                                 
+                ppcc?.blendShapeGui.OnGUI(this);                                                                                 
+                ppcc?.clothOffsetGui.OnGUI(this);                                                                                 
             }
         }
     
