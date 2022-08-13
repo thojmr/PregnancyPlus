@@ -404,7 +404,7 @@ namespace KK_PregnancyPlus
                 BellyShapeForOverride = Config.Bind(integrationConfigTitle, "Preset Shape for Pregnancy Progression", "Main Game",
                 new ConfigDescription( "Lets you choose from a variety of belly shapes for pregnancy progrression (and inflation). Only works when Override is enabled.  \r\nThis will be further affected by the Global sliders as well.",
                     new AcceptableValueList<string>(BellyTemplate.shapeNames),
-                    new ConfigurationManagerAttributes { Order = 0, IsAdvanced = true }
+                    new ConfigurationManagerAttributes { Order = 0 }
                 ));
                 BellyShapeForOverride.SettingChanged += BellyShapeForOverride_SettingChanged;
             #endif
