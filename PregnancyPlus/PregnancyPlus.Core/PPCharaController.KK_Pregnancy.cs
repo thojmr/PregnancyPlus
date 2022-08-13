@@ -221,33 +221,22 @@ namespace KK_PregnancyPlus
             var customInfConfig = new PregnancyPlusData();
             customInfConfig.pluginVersion = PregnancyPlusPlugin.Version;
 
-            //When we are overriding the KK_Pregnancy belly shape, we want a different custom shape than the default one
+            //When we are overriding the KK_Pregnancy belly shape, we want a different custom shape than the default one (one selected by the user)
             if (PregnancyPlusPlugin.OverrideBelly != null && PregnancyPlusPlugin.OverrideBelly.Value) 
             {
                 if (PregnancyPlusPlugin.DebugLog.Value) PregnancyPlusPlugin.Logger.LogInfo($" GetDefaultInflationShape > OverrideBelly is set, Loading custom belly shape");
 
-                #if KK
-                    //These values looked decent on most default characters, but they can always be changed.
-                    customInfConfig.inflationMultiplier = 0.4f;
-                    customInfConfig.inflationStretchX = -0.2f;
-                    customInfConfig.inflationStretchY = -0.1f;
-                    customInfConfig.inflationTaperY = -0.02f;
-                    customInfConfig.inflationTaperZ = -0.005f;
-                    customInfConfig.inflationDrop = 0.05f;
+                var currentInflationSize = infConfig.inflationSize;
+                var customBellyShape = BellyTemplate.GetTemplate(PregnancyPlusPlugin.BellyShapeForOverride.Value);
 
-                #else
-                    customInfConfig.inflationMultiplier = 0.1f;
-                    customInfConfig.inflationStretchX = -0.15f;          
-                    customInfConfig.inflationStretchY = -0.05f;
-                    customInfConfig.inflationTaperY = -0.02f;
-                    customInfConfig.inflationTaperZ = -0.01f;
-                    customInfConfig.inflationDrop = 0.05f;
-
-                #endif
+                customInfConfig.SetSliders(customBellyShape);
+                //Retain the current size value
+                customInfConfig.inflationSize = currentInflationSize;
 
                 return customInfConfig;
             }
             
+            //This is the default shape to use when mixing with the KK_Pregnancy belly shape
             #if KK
                 //These values looked decent on most default characters, but they can always be changed.
                 customInfConfig.inflationMultiplier = 0.3f;

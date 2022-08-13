@@ -110,6 +110,22 @@ namespace KK_PregnancyPlus
                         ctrl.OnOpenBlendShapeSelected();                                                   
                     }
                 });
+        
+            cat.AddControl(new CurrentStateCategoryDropdown("Apply Preset Shape", BellyTemplate.shapeNames, c =>
+                {                     
+                    return 0;
+                }))
+                .Value.Subscribe(f => {
+                    if (f == 0) return;//Do nothing when none is selected
+
+                    foreach (var ctrl in StudioAPI.GetSelectedControllers<PregnancyPlusCharaController>()) 
+                    {  
+                        ctrl.infConfig.SetSliders(BellyTemplate.GetTemplate(f));       
+                        //Set the GUI sliders to the PresetShape
+                        RestoreSliders(ctrl.infConfig);
+                        ctrl.MeshInflate(new MeshInflateFlags(ctrl), "BellyTemplateDropdown"); 
+                    }           
+                });
 
             cat.AddControl(new CurrentStateCategorySlider(inflationSize, c =>
                 {   

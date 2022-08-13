@@ -66,6 +66,27 @@ namespace KK_PregnancyPlus
             return this.MemberwiseClone();
         }
 
+        //When you want to copy the slider values of one config to another, but leave everythig else as is
+        public void SetSliders(PregnancyPlusData source)
+        {
+            inflationSize = source.inflationSize;
+            inflationMoveY = source.inflationMoveY;
+            inflationMoveZ = source.inflationMoveZ;
+            inflationStretchX = source.inflationStretchX;
+            inflationStretchY = source.inflationStretchY;
+            inflationShiftY = source.inflationShiftY;
+            inflationShiftZ = source.inflationShiftZ;
+            inflationTaperY = source.inflationTaperY;
+            inflationTaperZ = source.inflationTaperZ;
+            inflationMultiplier = source.inflationMultiplier;
+            inflationClothOffset = source.inflationClothOffset;
+            inflationFatFold = source.inflationFatFold;
+            inflationFatFoldHeight = source.inflationFatFoldHeight;
+            inflationFatFoldGap = source.inflationFatFoldGap;
+            inflationRoundness = source.inflationRoundness;
+            inflationDrop = source.inflationDrop;
+        }
+
         public string ValuesToString() 
         {
             return $"v{GetPluginVersion()} inflationSize {inflationSize} GameplayEnabled {GameplayEnabled} BS {HasBlendShape()}";

@@ -156,6 +156,7 @@
     <Compile Include="..\PregnancyPlus.Core\Tools\BellyInfo.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\Timer.cs" />
     <Compile Include="..\PregnancyPlus.Core\Tools\TangentSolver.cs" />
+    <Compile Include="..\PregnancyPlus.Core\Tools\BellyTemplate.cs" />
   </ItemGroup>
 
   <ItemGroup>

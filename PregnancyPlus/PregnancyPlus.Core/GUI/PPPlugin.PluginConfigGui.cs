@@ -12,6 +12,7 @@ namespace KK_PregnancyPlus
     {
         public static ConfigEntry<bool> StoryMode { get; private set; }
         public static ConfigEntry<bool> OverrideBelly { get; private set; }
+        public static ConfigEntry<string> BellyShapeForOverride { get; private set; }
         public static ConfigEntry<bool> IgnoreAccessories { get; private set; }
         public static ConfigEntry<bool> AllowMale { get; private set; }
         public static ConfigEntry<bool> PerferTargetBelly { get; private set; }
@@ -52,6 +53,7 @@ namespace KK_PregnancyPlus
         public static ConfigEntry<bool> DebugBlendShapeLog { get; private set; }
         public static ConfigEntry<bool> DebugCalcs { get; private set; }
         public static ConfigEntry<bool> DebugVerts { get; private set; }
+        public static ConfigEntry<string> DebugApplyPresetShape { get; private set; }
 
 
         //Keyboard shortcuts for inflation on the fly!    
@@ -164,6 +166,12 @@ namespace KK_PregnancyPlus
                 );
             DebugLog.SettingChanged += DebugLog_SettingsChanged;
 
+            DebugApplyPresetShape = Config.Bind("Debug", "Apply preset shape to all (Debug mode)", "None",
+                new ConfigDescription( "Will apply the selected preset shape to all existing characters in scene",
+                    new AcceptableValueList<string>(BellyTemplate.shapeNames),
+                    new ConfigurationManagerAttributes { Order = 0, IsAdvanced = true }
+                ));
+            DebugApplyPresetShape.SettingChanged += DebugApplyPresetShape_SettingsChanged;
 
             //**** General Config *******/
             //***************************/
@@ -375,6 +383,14 @@ namespace KK_PregnancyPlus
                     new ConfigurationManagerAttributes { Order = 1 })
                 );
                 OverrideBelly.SettingChanged += OverrideBelly_SettingsChanged;
+
+                //When Override is enabbled allow setting custom belly shape
+                BellyShapeForOverride = Config.Bind(maxBellySizeTitle, "Preset Shape for Pregnancy Progression", "Main Game",
+                new ConfigDescription( "Lets you choose from a variety of belly shapes for pregnancy progrression (and inflation). Only works when Override is enabled.  \r\nThis will be further affected by the Global sliders as well.",
+                    new AcceptableValueList<string>(BellyTemplate.shapeNames),
+                    new ConfigurationManagerAttributes { Order = 0 }
+                ));
+                BellyShapeForOverride.SettingChanged += BellyShapeForOverride_SettingChanged;
             #endif
                     
 
@@ -594,6 +610,25 @@ namespace KK_PregnancyPlus
         
 
 
+        //Set new belly shape for MainGame characters
+        internal void BellyShapeForOverride_SettingChanged(object sender, System.EventArgs e)
+        {
+            //Only allow in Main Game, and when Overide is enabled
+            if (!OverrideBelly.Value || StudioAPI.InsideStudio || MakerAPI.InsideMaker)
+                return;
+
+            var handlers = CharacterApi.GetRegisteredBehaviour(GUID);
+            foreach (PregnancyPlusCharaController charCustFunCtrl in handlers.Instances)
+            {  
+                var currentInflationSize = charCustFunCtrl.infConfig.inflationSize;
+                var customBellyShape = BellyTemplate.GetTemplate(PregnancyPlusPlugin.BellyShapeForOverride.Value);                
+                charCustFunCtrl.infConfig.SetSliders(customBellyShape);
+                //Retain the current size value
+                charCustFunCtrl.infConfig.inflationSize = currentInflationSize;
+                charCustFunCtrl.MeshInflate(new MeshInflateFlags(charCustFunCtrl, _freshStart: true), "BellyShapeForOverride_SettingChanged");             
+            }                  
+        }
+
 
 
         //Trigger fresh start inflation for every active character
@@ -604,6 +639,21 @@ namespace KK_PregnancyPlus
             {  
                 charCustFunCtrl.MeshInflate(new MeshInflateFlags(charCustFunCtrl, _checkForNewMesh: true, _freshStart: true), callee);             
             }   
+        }
+
+
+        //Apply preset belly shape to all existing characters in scene, for debugging a shape on multiple body types
+        internal void DebugApplyPresetShape_SettingsChanged(object sender, System.EventArgs e) 
+        {
+            var handlers = CharacterApi.GetRegisteredBehaviour(GUID);
+
+            foreach (PregnancyPlusCharaController charCustFunCtrl in handlers.Instances)
+            {                 
+                charCustFunCtrl.infConfig.SetSliders(BellyTemplate.GetTemplate(DebugApplyPresetShape.Value));       
+                //Set the GUI sliders to the PresetShape
+                PregnancyPlusGui.RestoreSliders(charCustFunCtrl.infConfig);
+                charCustFunCtrl.MeshInflate(new MeshInflateFlags(charCustFunCtrl, _freshStart: true), "DebugApplyPresetShape_SettingsChanged");                                        
+            } 
         }
 
     }
