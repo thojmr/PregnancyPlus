@@ -56,6 +56,7 @@ See [Plugin Tips](#some-tips) for tips and tricks
 ## Features
 - Adds a number of sliders that will allow you to change the size and shape of a characters belly in Studio, Maker, and Main Gameplay.
     - In Main Game you can further bulk tweak all character's belly shapes with the F1 plugin config sliders.
+    - Optionally the "Preset Belly Shape" dropdown is a quick way to select a belly shape if you dont want to mess with sliders.  You can also select one of these preset shapes as the default Main Game belly progression shape.
 - Adds Timeline and VNGE integration for belly animations. Short guides below. [Timeline](#timeline-integration) | [VNGE](#vnge-integration)
 - Adds 3 configurable keybinds in plugin config that can be used to increase or decrease the belly size in Main Game, on the fly.   
 - Adds a Preset Belly Shape dropdown to Studio and Maker that allows you to quickly set a base shape for the belly from a variety of styles.  Keep in mind it was tuned  for normal size characters, and will appear different based on character body scales.
