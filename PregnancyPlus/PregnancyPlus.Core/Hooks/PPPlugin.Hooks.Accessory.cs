@@ -104,7 +104,7 @@ namespace KK_PregnancyPlus
                 var controller = GetCharaController(chaControl);
                 if (controller == null) return;
 
-                var slotNum = __instance.selDst;
+                var slotNum = (int)AccessTools.Field(typeof(CvsAccessoryChange), "selDst").GetValue(__instance);
                 controller.AccessoryStateChangeEvent(chaControl.chaID, slotNum); 
             }
 
